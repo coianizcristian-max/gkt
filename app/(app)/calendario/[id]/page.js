@@ -14,13 +14,15 @@ export default async function AllenamentoPage({ params }) {
     .from('allenamenti').select('*, squadre(nome)').eq('id', id).maybeSingle()
   if (!allenamento) notFound()
 
-  const [{ data: catRows }, { data: iscr }, { data: parametri }, { data: vals }] = await Promise.all([
+  const [{ data: catRows }, { data: iscr }, { data: parametri }, { data: vals }, { data: scalaRows }] = await Promise.all([
     supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
     supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
       .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
     supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
     supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
+    supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
   ])
+  const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
 
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
   const portieri = (iscr ?? []).map((r) => r.portieri).filter(Boolean)
@@ -55,6 +57,7 @@ export default async function AllenamentoPage({ params }) {
             parametri={parametri ?? []}
             valIniziali={valIniziali}
             punteggiIniziali={punteggiIniziali}
+            scalaVoti={scalaVoti}
           />
         ) : (
           <div className="empty">Nessun portiere iscritto a questa categoria per la stagione.</div>

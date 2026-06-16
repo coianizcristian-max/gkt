@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function ValutazioniAllenamento({ allenamentoId, portieri, parametri, valIniziali, punteggiIniziali }) {
+export default function ValutazioniAllenamento({ allenamentoId, portieri, parametri, valIniziali, punteggiIniziali, scalaVoti = [] }) {
   const router = useRouter()
   const [rows, setRows] = useState(() =>
     portieri.map((p) => {
@@ -67,8 +67,15 @@ export default function ValutazioniAllenamento({ allenamentoId, portieri, parame
             <span className="val-nome">{r.nome}</span>
             <div className="val-voto">
               <span>Voto</span>
-              <input type="number" step="0.25" min="1" max="10" value={r.voto}
-                disabled={!r.presente} onChange={(e) => setRow(i, { voto: e.target.value })} />
+              {scalaVoti.length > 0 ? (
+                <select value={r.voto} disabled={!r.presente} onChange={(e) => setRow(i, { voto: e.target.value })}>
+                  <option value="">—</option>
+                  {scalaVoti.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              ) : (
+                <input type="number" step="0.25" min="1" max="10" value={r.voto}
+                  disabled={!r.presente} onChange={(e) => setRow(i, { voto: e.target.value })} />
+              )}
             </div>
           </div>
           {r.presente && (

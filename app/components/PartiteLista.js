@@ -29,9 +29,9 @@ export default function PartiteLista({ partite, categorie }) {
                 <span className="pr-data">{new Date(p.data + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}</span>
                 <span className="pr-cat">{p.squadra_nome}</span>
                 <span className="pr-match">{p.casa ? 'Casa' : 'Trasferta'} &middot; vs {p.avversario || '\u2014'}</span>
-                {esito && <span className={`pr-esito esito-${esito}`}>{esitoLabel[esito]}</span>}
                 <span className="pr-score">{p.gol_fatti ?? '\u2013'}&ndash;{p.gol_subiti ?? '\u2013'}</span>
-                {cs && <span className="badge-cs">Clean sheet</span>}
+                <span className="pr-esito-cell">{esito && <span className={`pr-esito esito-${esito}`}>{esitoLabel[esito]}</span>}</span>
+                <span className="pr-cs-cell">{cs && <span className="badge-cs">Clean sheet</span>}</span>
               </Link>
             )
           })}

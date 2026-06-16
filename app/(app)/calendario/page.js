@@ -14,23 +14,27 @@ export default async function CalendarioPage() {
   if (stagione) {
     const [al, cat] = await Promise.all([
       supabase.from('allenamenti')
-        .select('id, data, squadra_id, squadre(nome)')
+        .select('id, data, squadra_id, nessuna_valutazione, squadre(nome)')
         .eq('stagione_id', stagione.id).order('data'),
       supabase.from('stagione_categorie')
         .select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
     ])
     allenamenti = (al.data ?? []).map((a) => ({
       id: a.id, data: a.data, squadra_id: a.squadra_id, squadra_nome: a.squadre?.nome ?? '',
+      nessuna_valutazione: a.nessuna_valutazione,
     }))
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
 
     // Stato "valutato": un allenamento e' valutato se ha almeno una riga in valutazioni
+    // Valutato = c'e' almeno un voto reale, OPPURE l'allenamento e' segnato "Nessuno"
     const allIds = allenamenti.map((a) => a.id)
+    let valutati = new Set()
     if (allIds.length) {
-      const { data: vrows } = await supabase.from('valutazioni').select('allenamento_id').in('allenamento_id', allIds)
-      const valutati = new Set((vrows ?? []).map((r) => r.allenamento_id))
-      allenamenti = allenamenti.map((a) => ({ ...a, valutato: valutati.has(a.id) }))
+      const { data: vrows } = await supabase.from('valutazioni')
+        .select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allIds)
+      valutati = new Set((vrows ?? []).map((r) => r.allenamento_id))
     }
+    allenamenti = allenamenti.map((a) => ({ ...a, valutato: valutati.has(a.id) || a.nessuna_valutazione }))
   }
 
   return (

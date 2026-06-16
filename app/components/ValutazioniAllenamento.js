@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function ValutazioniAllenamento({ allenamentoId, portieri, parametri, valIniziali, punteggiIniziali, scalaVoti = [] }) {
+export default function ValutazioniAllenamento({ allenamentoId, portieri, parametri, valIniziali, punteggiIniziali, scalaVoti = [], allenamentoNessuno = false }) {
   const router = useRouter()
   const [rows, setRows] = useState(() =>
     portieri.map((p) => {
@@ -25,6 +25,7 @@ export default function ValutazioniAllenamento({ allenamentoId, portieri, parame
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
+  const [nessuno, setNessuno] = useState(allenamentoNessuno)
 
   const setRow = (i, patch) => { setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r))); setDone(false) }
   const setPunt = (i, parId, val) => { setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, punteggi: { ...r.punteggi, [parId]: val } } : r))); setDone(false) }
@@ -34,6 +35,9 @@ export default function ValutazioniAllenamento({ allenamentoId, portieri, parame
     setSaving(true); setError(''); setDone(false)
     const supabase = createClient()
     try {
+      const { error: eFlag } = await supabase.from('allenamenti')
+        .update({ nessuna_valutazione: nessuno }).eq('id', allenamentoId)
+      if (eFlag) throw eFlag
       for (const r of rows) {
         const { data: vrow, error: e1 } = await supabase.from('valutazioni').upsert({
           allenamento_id: allenamentoId, portiere_id: r.portiere_id,
@@ -57,6 +61,10 @@ export default function ValutazioniAllenamento({ allenamentoId, portieri, parame
   return (
     <div className="val-grid">
       {error && <div className="err">{error}</div>}
+      <label className="val-nessuno">
+        <input type="checkbox" checked={nessuno} onChange={(e) => { setNessuno(e.target.checked); setDone(false) }} />
+        Allenamento svolto senza valutazioni (Nessuno)
+      </label>
       {rows.map((r, i) => (
         <div className={`val-card ${r.presente ? '' : 'assente'}`} key={r.portiere_id}>
           <div className="val-head">

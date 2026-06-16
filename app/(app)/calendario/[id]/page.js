@@ -58,6 +58,7 @@ export default async function AllenamentoPage({ params }) {
             valIniziali={valIniziali}
             punteggiIniziali={punteggiIniziali}
             scalaVoti={scalaVoti}
+            allenamentoNessuno={allenamento.nessuna_valutazione ?? false}
           />
         ) : (
           <div className="empty">Nessun portiere iscritto a questa categoria per la stagione.</div>

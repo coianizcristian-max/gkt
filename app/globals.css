@@ -442,3 +442,16 @@ a { color: inherit; text-decoration: none; }
 .btn-mini:hover { background: var(--azzurro-scuro); }
 .btn-mini.btn-del { background: none; color: var(--rosso); border: 1px solid rgba(192,57,43,0.3); }
 .btn-mini.btn-del:hover { border-color: var(--rosso); background: rgba(192,57,43,0.06); }
+
+/* Badge "Proposta" negli elenchi (tipologie proposte dagli allenatori) */
+.badge-proposta {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #fde68a;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

@@ -69,6 +69,10 @@ export default async function StatistichePage() {
     return { p, totAllen: totAllenByCat[p.squadra_id] ?? 0, presenze, mediaA, mediaP, nPartite: vpPresent.length, cleanSheet, punti }
   })
 
+  const categorieOrd = (cats ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
+  const byCat = {}
+  for (const st of stats) (byCat[st.p.squadra_id] ??= []).push(st)
+
   return (
     <>
       <div className="topbar topbar-row">
@@ -78,35 +82,47 @@ export default async function StatistichePage() {
         {stats.length === 0 ? (
           <div className="empty">Nessun portiere iscritto alla stagione.</div>
         ) : (
-          <div className="stat-grid">
-            {stats.map((s) => (
-              <div className="stat-card" key={s.p.id}>
-                <div className="stat-head">
-                  <div className="stat-foto">
-                    {s.p.foto_url ? <img src={s.p.foto_url} alt="" /> : <span>{(s.p.nome || '?').charAt(0)}</span>}
-                  </div>
-                  <div>
-                    <div className="stat-nome">{s.p.nome} {s.p.cognome ?? ''}</div>
-                    <div className="stat-cat">{catNome[s.p.squadra_id] ?? ''}{s.p.numero_maglia ? ` \u00b7 #${s.p.numero_maglia}` : ''}</div>
-                  </div>
+          categorieOrd.map((cat) => {
+            const lista = byCat[cat.id] ?? []
+            if (lista.length === 0) return null
+            return (
+              <section key={cat.id}>
+                <div className="squadra-head">
+                  <h2>{cat.nome}</h2>
+                  <span className="conta">{lista.length} portieri</span>
                 </div>
-                <div className="stat-rows">
-                  <div className="stat-block">
-                    <h4>Allenamenti</h4>
-                    <div className="stat-line"><span>Presenze</span><b>{s.presenze}/{s.totAllen}</b></div>
-                    <div className="stat-line"><span>Media voto</span><b>{fmt(s.mediaA)}</b></div>
-                  </div>
-                  <div className="stat-block">
-                    <h4>Partite</h4>
-                    <div className="stat-line"><span>Giocate</span><b>{s.nPartite}</b></div>
-                    <div className="stat-line"><span>Media voto</span><b>{fmt(s.mediaP)}</b></div>
-                    <div className="stat-line"><span>Clean sheet</span><b>{s.cleanSheet}</b></div>
-                    <div className="stat-line"><span>Punti</span><b>{fmt(s.punti)}</b></div>
-                  </div>
+                <div className="stat-grid">
+                  {lista.map((s) => (
+                    <div className="stat-card" key={s.p.id}>
+                      <div className="stat-head">
+                        <div className="stat-foto">
+                          {s.p.foto_url ? <img src={s.p.foto_url} alt="" /> : <span>{(s.p.nome || '?').charAt(0)}</span>}
+                        </div>
+                        <div>
+                          <div className="stat-nome">{s.p.nome} {s.p.cognome ?? ''}</div>
+                          {s.p.numero_maglia ? <div className="stat-cat">#{s.p.numero_maglia}</div> : null}
+                        </div>
+                      </div>
+                      <div className="stat-rows">
+                        <div className="stat-block">
+                          <h4>Allenamenti</h4>
+                          <div className="stat-line"><span>Presenze</span><b>{s.presenze}/{s.totAllen}</b></div>
+                          <div className="stat-line"><span>Media voto</span><b>{fmt(s.mediaA)}</b></div>
+                        </div>
+                        <div className="stat-block">
+                          <h4>Partite</h4>
+                          <div className="stat-line"><span>Giocate</span><b>{s.nPartite}</b></div>
+                          <div className="stat-line"><span>Media voto</span><b>{fmt(s.mediaP)}</b></div>
+                          <div className="stat-line"><span>Clean sheet</span><b>{s.cleanSheet}</b></div>
+                          <div className="stat-line"><span>Punti</span><b>{fmt(s.punti)}</b></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
+              </section>
+            )
+          })
         )}
       </div>
     </>

@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import SupervisoreNav from '@/app/components/SupervisoreNav'
 import RicorrenzeManager from '@/app/components/RicorrenzeManager'
 
 export const dynamic = 'force-dynamic'
 
-export default async function RicorrenzeSupPage() {
+export default async function RicorrenzePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -29,11 +28,10 @@ export default async function RicorrenzeSupPage() {
   return (
     <>
       <div className="topbar">
-        <div className="eyebrow">Area riservata</div>
-        <h1>Supervisore</h1>
+        <div className="eyebrow">Stagione {stagione?.nome ?? '\u2014'}</div>
+        <h1>Ricorrenze allenamenti</h1>
       </div>
       <div className="content">
-        <SupervisoreNav />
         {stagione
           ? <RicorrenzeManager stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} />
           : <div className="empty">Nessuna stagione attiva.</div>}

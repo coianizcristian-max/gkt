@@ -32,6 +32,7 @@ export default async function AppLayout({ children }) {
         </div>
         <NavLink href="/portieri">Portieri</NavLink>
         <NavLink href="/calendario">Calendario</NavLink>
+        {isStaff && <NavLink href="/ricorrenze">Ricorrenze</NavLink>}
         <NavLink href="/partite">Partite</NavLink>
         <NavLink href="/statistiche">Statistiche</NavLink>
         {isStaff && <NavLink href="/esercizi">Esercizi</NavLink>}

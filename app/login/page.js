@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -52,6 +53,10 @@ export default function LoginPage() {
             {loading ? 'Accesso…' : 'Entra'}
           </button>
         </form>
+        <p className="login-alt">
+          Non hai un account? <Link href="/registrati">Registrati</Link>
+        </p>
+        <p className="login-back"><Link href="/">&larr; Torna al sito</Link></p>
       </div>
     </div>
   )

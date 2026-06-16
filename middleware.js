@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 // Solo queste sezioni richiedono il login. Il resto (/, /login, /auth) e' pubblico.
-const PROTETTE = ['/portieri', '/calendario', '/partite', '/statistiche']
+const PROTETTE = ['/portieri', '/calendario', '/partite', '/statistiche', '/supervisore']
 
 export async function middleware(request) {
   let response = NextResponse.next({ request })

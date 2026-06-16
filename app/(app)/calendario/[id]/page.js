@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AllenamentoForm from '@/app/components/AllenamentoForm'
 import ValutazioniAllenamento from '@/app/components/ValutazioniAllenamento'
+import AllenamentoEsercizi from '@/app/components/AllenamentoEsercizi'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,14 +15,18 @@ export default async function AllenamentoPage({ params }) {
     .from('allenamenti').select('*, squadre(nome)').eq('id', id).maybeSingle()
   if (!allenamento) notFound()
 
-  const [{ data: catRows }, { data: iscr }, { data: parametri }, { data: vals }, { data: scalaRows }] = await Promise.all([
+  const [{ data: catRows }, { data: iscr }, { data: parametri }, { data: vals }, { data: scalaRows }, { data: libRows }, { data: aeRows }] = await Promise.all([
     supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
     supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
       .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
     supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
     supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
     supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
+    supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve').order('titolo'),
+    supabase.from('allenamento_esercizi').select('esercizio_id').eq('allenamento_id', id),
   ])
+  const libreria = libRows ?? []
+  const eserciziSelezionati = (aeRows ?? []).map((r) => r.esercizio_id)
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
 
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
@@ -63,6 +68,8 @@ export default async function AllenamentoPage({ params }) {
         ) : (
           <div className="empty">Nessun portiere iscritto a questa categoria per la stagione.</div>
         )}
+        <h2 className="sezione-titolo">Esercizi della seduta</h2>
+        <AllenamentoEsercizi allenamentoId={id} esercizi={libreria} selezionatiIniziali={eserciziSelezionati} />
       </div>
     </>
   )

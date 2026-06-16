@@ -23,6 +23,14 @@ export default async function CalendarioPage() {
       id: a.id, data: a.data, squadra_id: a.squadra_id, squadra_nome: a.squadre?.nome ?? '',
     }))
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
+
+    // Stato "valutato": un allenamento e' valutato se ha almeno una riga in valutazioni
+    const allIds = allenamenti.map((a) => a.id)
+    if (allIds.length) {
+      const { data: vrows } = await supabase.from('valutazioni').select('allenamento_id').in('allenamento_id', allIds)
+      const valutati = new Set((vrows ?? []).map((r) => r.allenamento_id))
+      allenamenti = allenamenti.map((a) => ({ ...a, valutato: valutati.has(a.id) }))
+    }
   }
 
   return (

@@ -24,6 +24,11 @@ export default function CalendarioMese({ allenamenti, categorie }) {
   const daysInMonth = new Date(year, month + 1, 0).getDate()
 
   const filtrati = allenamenti.filter((a) => !filtro || a.squadra_id === filtro)
+  const pad = (n) => String(n).padStart(2, '0')
+  const oggiStr = `${oggi.getFullYear()}-${pad(oggi.getMonth() + 1)}-${pad(oggi.getDate())}`
+  const daValutare = filtrati
+    .filter((a) => !a.valutato && a.data < oggiStr)
+    .sort((a, b) => (a.data < b.data ? 1 : -1))
   const byDay = {}
   for (const a of filtrati) {
     const d = new Date(a.data + 'T00:00:00')
@@ -40,6 +45,19 @@ export default function CalendarioMese({ allenamenti, categorie }) {
 
   return (
     <div className="cal">
+      {daValutare.length > 0 && (
+        <div className="da-valutare">
+          <h3>Da valutare ({daValutare.length})</h3>
+          <div className="dv-list">
+            {daValutare.map((a) => (
+              <Link key={a.id} href={`/calendario/${a.id}`} className="dv-item">
+                <span className="dv-data">{new Date(a.data + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</span>
+                <span>{a.squadra_nome}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="cal-bar">
         <div className="cal-nav">
           <button type="button" onClick={() => setCursor(new Date(year, month - 1, 1))}>‹</button>
@@ -63,9 +81,12 @@ export default function CalendarioMese({ allenamenti, categorie }) {
             <div key={i} className={`cal-cell ${isOggi(day) ? 'oggi' : ''}`}>
               <Link href={`/calendario/nuovo?data=${fmt(day)}`} className="cal-day" title="Nuovo allenamento">{day}</Link>
               <div className="cal-evs">
-                {evs.map((a) => (
-                  <Link key={a.id} href={`/calendario/${a.id}`} className="cal-ev">{a.squadra_nome}</Link>
-                ))}
+                {evs.map((a) => {
+                  const cls = a.valutato ? 'ev-verde' : (a.data < oggiStr ? 'ev-rosso' : '')
+                  return (
+                    <Link key={a.id} href={`/calendario/${a.id}`} className={`cal-ev ${cls}`}>{a.squadra_nome}</Link>
+                  )
+                })}
               </div>
             </div>
           )

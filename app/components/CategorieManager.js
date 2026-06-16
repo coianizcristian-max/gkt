@@ -34,22 +34,36 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
     setBusy(false); router.refresh()
   }
 
+  async function muovi(index, dir) {
+    const a = categorie[index]
+    const b = categorie[index + dir]
+    if (!a || !b) return
+    setBusy(true)
+    const supabase = createClient()
+    const e1 = (await supabase.from('squadre').update({ ordine: b.ordine }).eq('id', a.id)).error
+    const e2 = (await supabase.from('squadre').update({ ordine: a.ordine }).eq('id', b.id)).error
+    if (e1 || e2) alert('Errore: ' + (e1 || e2).message)
+    setBusy(false); router.refresh()
+  }
+
   return (
     <div className="lista-editor">
       <p className="sub-intro">
         Crea e ordina le categorie, e scegli quali sono attive nella stagione <b>{stagioneNome ?? '—'}</b>.
         Solo le categorie attive compaiono nei menù a tendina (scheda portiere, allenamenti…).
       </p>
-      {categorie.map((c) => (
+      {categorie.map((c, i) => (
         <CategoriaRiga key={c.id} categoria={c} attiva={attiveSet.has(c.id)}
-          onToggle={toggleAttiva} onChanged={() => router.refresh()} />
+          onToggle={toggleAttiva} onChanged={() => router.refresh()}
+          canUp={i > 0} canDown={i < categorie.length - 1}
+          onUp={() => muovi(i, -1)} onDown={() => muovi(i, 1)} />
       ))}
       <button className="btn-ghost" onClick={aggiungi} disabled={busy} type="button">+ Aggiungi categoria</button>
     </div>
   )
 }
 
-function CategoriaRiga({ categoria, attiva, onToggle, onChanged }) {
+function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown, onUp, onDown }) {
   const [nome, setNome] = useState(categoria.nome)
   const [ordine, setOrdine] = useState(categoria.ordine)
   const [busy, setBusy] = useState(false)
@@ -84,6 +98,10 @@ function CategoriaRiga({ categoria, attiva, onToggle, onChanged }) {
 
   return (
     <div className="lista-riga">
+      <span className="ord-frecce">
+        <button className="btn-frec" onClick={onUp} disabled={!canUp} type="button" aria-label="Su">&uarr;</button>
+        <button className="btn-frec" onClick={onDown} disabled={!canDown} type="button" aria-label="Giu">&darr;</button>
+      </span>
       <input className="lista-nome" value={nome} onChange={(e) => { setNome(e.target.value); setDone(false) }} />
       <label className="lista-ord">Ordine
         <input type="number" value={ordine} onChange={(e) => { setOrdine(e.target.value); setDone(false) }} />

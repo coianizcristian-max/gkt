@@ -13,7 +13,7 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, val
       return {
         portiere_id: p.id,
         nome: `${p.nome} ${p.cognome ?? ''}`.trim(),
-        presente: v ? v.presente : true,
+        presente: v ? v.presente : false,
         voto: v?.voto ?? '',
         punti: v?.punti ?? '',
         note: v?.note ?? '',

@@ -15,7 +15,7 @@ export default function ValutazioniAllenamento({ allenamentoId, portieri, parame
       return {
         portiere_id: p.id,
         nome: `${p.nome} ${p.cognome ?? ''}`.trim(),
-        presente: v ? v.presente : true,
+        presente: v ? v.presente : false,
         voto: v?.voto ?? '',
         note: v?.note ?? '',
         punteggi: punt,

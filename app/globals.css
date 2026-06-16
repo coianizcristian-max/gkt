@@ -457,8 +457,10 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* Calendario: stato valutazione */
-.cal-ev.ev-verde { border-left: 3px solid var(--campo); }
-.cal-ev.ev-rosso { border-left: 3px solid var(--rosso); }
+.cal-ev.ev-verde { background: var(--campo); }
+.cal-ev.ev-verde:hover { background: #176b3b; }
+.cal-ev.ev-rosso { background: var(--rosso); }
+.cal-ev.ev-rosso:hover { background: #a13123; }
 .da-valutare { background: rgba(192,57,43,0.05); border: 1px solid rgba(192,57,43,0.2); border-radius: var(--r-sm); padding: 12px 14px; margin-bottom: 14px; }
 .da-valutare h3 { margin: 0 0 8px; font-size: 0.95rem; color: var(--rosso); }
 .dv-list { display: flex; flex-wrap: wrap; gap: 8px; }

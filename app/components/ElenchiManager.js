@@ -22,6 +22,7 @@ const NUMERICHE = new Set(['scala_voti', 'punti_partita'])
 export default function ElenchiManager({ gruppi }) {
   const router = useRouter()
   const chiavi = Object.keys(gruppi)
+  const [tab, setTab] = useState(chiavi[0] ?? '')
 
   async function aggiungiVoce(elenco) {
     const supabase = createClient()
@@ -34,19 +35,29 @@ export default function ElenchiManager({ gruppi }) {
     router.refresh()
   }
 
+  const attivo = chiavi.includes(tab) ? tab : (chiavi[0] ?? '')
+
   return (
     <div className="lista-editor">
       <p className="sub-intro">Gestisci i valori dei menu a tendina. Le modifiche si applicano subito ai campi del sito.</p>
-      {chiavi.map((k) => (
-        <div className="elenco-blocco" key={k}>
-          <h3>{ETICHETTE[k] ?? k}</h3>
-          {DESCRIZIONI[k] && <p className="sub-intro">{DESCRIZIONI[k]}</p>}
-          {gruppi[k].map((v) => (
-            <VoceRiga key={v.id} voce={v} numerica={NUMERICHE.has(k)} onChanged={() => router.refresh()} />
+      <div className="sub-nav">
+        {chiavi.map((k) => (
+          <button key={k} type="button"
+            className={`sub-nav-link ${attivo === k ? 'active' : ''}`}
+            onClick={() => setTab(k)}>
+            {ETICHETTE[k] ?? k}
+          </button>
+        ))}
+      </div>
+      {attivo && (
+        <div className="elenco-blocco" key={attivo}>
+          {DESCRIZIONI[attivo] && <p className="sub-intro">{DESCRIZIONI[attivo]}</p>}
+          {gruppi[attivo].map((v) => (
+            <VoceRiga key={v.id} voce={v} numerica={NUMERICHE.has(attivo)} onChanged={() => router.refresh()} />
           ))}
-          <button className="btn-ghost" onClick={() => aggiungiVoce(k)} type="button">+ Aggiungi voce</button>
+          <button className="btn-ghost" onClick={() => aggiungiVoce(attivo)} type="button">+ Aggiungi voce</button>
         </div>
-      ))}
+      )}
     </div>
   )
 }

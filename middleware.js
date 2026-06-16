@@ -1,12 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
-// Solo queste sezioni richiedono il login. Tutto il resto (/, /login, /auth)
-// e' pubblico.
+// Solo queste sezioni richiedono il login. Il resto (/, /login, /auth) e' pubblico.
 const PROTETTE = ['/portieri', '/calendario', '/partite', '/statistiche']
 
-export async function updateSession(request) {
-  let supabaseResponse = NextResponse.next({ request })
+export async function middleware(request) {
+  let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -20,9 +19,9 @@ export async function updateSession(request) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({ request })
+          response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            response.cookies.set(name, value, options)
           )
         },
       },
@@ -48,5 +47,11 @@ export async function updateSession(request) {
     return NextResponse.redirect(url)
   }
 
-  return supabaseResponse
+  return response
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

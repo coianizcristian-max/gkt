@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -6,10 +7,7 @@ export default async function PortieriPage() {
   const supabase = await createClient()
 
   const { data: stagione } = await supabase
-    .from('stagioni')
-    .select('id, nome')
-    .eq('attiva', true)
-    .maybeSingle()
+    .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
 
   let squadre = []
   let iscrizioni = []
@@ -18,8 +16,7 @@ export default async function PortieriPage() {
   if (stagione) {
     const [sq, isc, val] = await Promise.all([
       supabase.from('squadre').select('id, nome, ordine').order('ordine'),
-      supabase
-        .from('iscrizioni')
+      supabase.from('iscrizioni')
         .select('squadra_id, numero_maglia, portieri(id, nome, cognome, foto_url, attivo)')
         .eq('stagione_id', stagione.id),
       supabase.from('valutazioni').select('portiere_id, presente, voto'),
@@ -36,25 +33,20 @@ export default async function PortieriPage() {
     if (v.presente) s.presenze += 1
     if (v.presente && v.voto != null) { s.somma += Number(v.voto); s.conta += 1 }
   }
-  const media = (id) => {
-    const s = stats[id]
-    return s && s.conta ? (s.somma / s.conta).toFixed(2) : '—'
-  }
-  const presenzePct = (id) => {
-    const s = stats[id]
-    return s && s.tot ? Math.round((s.presenze / s.tot) * 100) + '%' : '—'
-  }
+  const media = (id) => { const s = stats[id]; return s && s.conta ? (s.somma / s.conta).toFixed(2) : '—' }
+  const presenzePct = (id) => { const s = stats[id]; return s && s.tot ? Math.round((s.presenze / s.tot) * 100) + '%' : '—' }
 
-  const perCategoria = (sqId) =>
-    iscrizioni.filter((i) => i.squadra_id === sqId && i.portieri?.attivo)
-
+  const perCategoria = (sqId) => iscrizioni.filter((i) => i.squadra_id === sqId && i.portieri?.attivo)
   const totale = iscrizioni.filter((i) => i.portieri?.attivo).length
 
   return (
     <>
-      <div className="topbar">
-        <div className="eyebrow">Stagione {stagione?.nome ?? '—'}</div>
-        <h1>Portieri</h1>
+      <div className="topbar topbar-row">
+        <div>
+          <div className="eyebrow">Stagione {stagione?.nome ?? '—'}</div>
+          <h1>Portieri</h1>
+        </div>
+        <Link href="/portieri/nuovo" className="btn-azione">+ Nuovo portiere</Link>
       </div>
       <div className="content">
         {squadre.map((sq) => {
@@ -70,12 +62,21 @@ export default async function PortieriPage() {
                 {lista.map((i) => {
                   const p = i.portieri
                   return (
-                    <div className="card-portiere" key={p.id}>
-                      <div className="nome">
-                        {p.nome} {p.cognome ?? ''}
-                        {i.numero_maglia ? <span className="maglia">#{i.numero_maglia}</span> : null}
+                    <Link className="card-portiere" key={p.id} href={`/portieri/${p.id}`}>
+                      <div className="card-top">
+                        <div className="avatar">
+                          {p.foto_url
+                            ? <img src={p.foto_url} alt="" />
+                            : <span>{(p.nome?.[0] ?? '') + (p.cognome?.[0] ?? '')}</span>}
+                        </div>
+                        <div>
+                          <div className="nome">
+                            {p.nome} {p.cognome ?? ''}
+                            {i.numero_maglia ? <span className="maglia">#{i.numero_maglia}</span> : null}
+                          </div>
+                          <div className="ruolo">{sq.nome}</div>
+                        </div>
                       </div>
-                      <div className="ruolo">{sq.nome}</div>
                       <div className="stat-row">
                         <div className="stat">
                           <div className="num voto">{media(p.id)}</div>
@@ -86,7 +87,7 @@ export default async function PortieriPage() {
                           <div className="lab">Presenze</div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   )
                 })}
               </div>
@@ -95,7 +96,8 @@ export default async function PortieriPage() {
         })}
         {totale === 0 && (
           <div className="empty">
-            Nessun portiere iscritto a questa stagione.
+            Nessun portiere iscritto a questa stagione.<br />
+            <Link href="/portieri/nuovo" className="link-inline">Aggiungi il primo portiere</Link>
           </div>
         )}
       </div>

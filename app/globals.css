@@ -364,3 +364,81 @@ a { color: inherit; text-decoration: none; }
 .btn-del:hover { border-color: var(--rosso); color: var(--rosso); }
 .add-sez { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 8px; font-size: 14px; color: var(--ink-soft); }
 .add-sez .btn-ghost { padding: 8px 14px; }
+
+/* ===== Calendario ===== */
+.sezione-titolo { font-size: 20px; margin: 32px 0 14px; }
+.cal { max-width: 860px; }
+.cal-bar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+.cal-nav { display: flex; align-items: center; gap: 10px; }
+.cal-nav button {
+  width: 34px; height: 34px; border: 1px solid var(--linea); background: var(--bianco);
+  border-radius: 8px; font-size: 18px; cursor: pointer; color: var(--ink);
+}
+.cal-nav button:hover { border-color: var(--azzurro); color: var(--azzurro); }
+.cal-title { font-family: var(--font-display); font-weight: 700; font-size: 18px; min-width: 150px; text-align: center; }
+.cal-bar select { padding: 9px 12px; border: 1px solid var(--linea); border-radius: var(--r-sm); font: inherit; background: var(--bianco); }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.cal-head { margin-bottom: 6px; }
+.cal-dow { text-align: center; font-size: 12px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+.cal-cell {
+  min-height: 86px; background: var(--bianco); border: 1px solid var(--linea);
+  border-radius: 10px; padding: 6px; display: flex; flex-direction: column; gap: 4px;
+}
+.cal-cell.empty { background: transparent; border: none; }
+.cal-cell.oggi { border-color: var(--azzurro); box-shadow: inset 0 0 0 1px var(--azzurro); }
+.cal-day {
+  font-size: 13px; font-weight: 600; color: var(--ink-soft); width: 26px; height: 24px;
+  display: grid; place-items: center; border-radius: 6px;
+}
+.cal-day:hover { background: var(--carta); color: var(--azzurro); }
+.cal-evs { display: flex; flex-direction: column; gap: 3px; }
+.cal-ev {
+  font-size: 11px; font-weight: 600; color: var(--bianco); background: var(--azzurro);
+  padding: 3px 6px; border-radius: 5px; line-height: 1.2; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.cal-ev:hover { background: var(--azzurro-scuro); }
+
+/* ===== Griglia valutazioni allenamento ===== */
+.val-grid { display: flex; flex-direction: column; gap: 12px; max-width: 760px; }
+.val-card { background: var(--bianco); border: 1px solid var(--linea); border-radius: var(--r); padding: 16px 18px; box-shadow: var(--ombra); }
+.val-card.assente { opacity: 0.6; }
+.val-head { display: flex; align-items: center; gap: 14px; }
+.val-pres { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+.val-nome { font-family: var(--font-display); font-weight: 600; font-size: 17px; flex: 1; }
+.val-voto { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+.val-voto input { width: 70px; padding: 8px 10px; border: 1px solid var(--linea); border-radius: var(--r-sm); font: inherit; text-align: center; }
+.val-parametri { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 14px 0; }
+.val-par { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.val-par label { font-size: 13px; color: var(--ink-soft); }
+.val-par input { width: 64px; padding: 6px 8px; border: 1px solid var(--linea); border-radius: var(--r-sm); font: inherit; text-align: center; }
+@media (max-width: 600px) { .val-parametri { grid-template-columns: 1fr; } .cal-cell { min-height: 64px; } .cal-ev { font-size: 10px; } }
+
+/* ===== Supervisore: sub-nav + editor liste ===== */
+.sub-nav { display: flex; gap: 6px; margin-bottom: 22px; border-bottom: 1px solid var(--linea); }
+.sub-nav-link {
+  padding: 9px 16px; font-size: 14px; font-weight: 600; color: var(--ink-soft);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.sub-nav-link:hover { color: var(--ink); }
+.sub-nav-link.active { color: var(--azzurro); border-bottom-color: var(--azzurro); }
+
+.lista-editor { max-width: 720px; display: flex; flex-direction: column; gap: 10px; }
+.lista-editor > .btn-ghost { align-self: flex-start; }
+.elenco-blocco { margin-bottom: 22px; }
+.elenco-blocco h3 { font-size: 16px; margin-bottom: 10px; }
+.elenco-blocco .btn-ghost { margin-top: 6px; }
+.lista-riga {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--bianco); border: 1px solid var(--linea); border-radius: var(--r-sm);
+  padding: 10px 14px; box-shadow: var(--ombra); margin-bottom: 8px;
+}
+.lista-nome { flex: 1; min-width: 140px; padding: 8px 10px; border: 1px solid var(--linea); border-radius: var(--r-sm); font: inherit; }
+.lista-ord { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
+.lista-ord input { width: 60px; padding: 6px 8px; border: 1px solid var(--linea); border-radius: var(--r-sm); font: inherit; }
+.lista-attiva { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+.btn-mini { padding: 7px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--bianco); background: var(--azzurro); border: none; border-radius: var(--r-sm); }
+.btn-mini:hover { background: var(--azzurro-scuro); }
+.btn-mini.btn-del { background: none; color: var(--rosso); border: 1px solid rgba(192,57,43,0.3); }
+.btn-mini.btn-del:hover { border-color: var(--rosso); background: rgba(192,57,43,0.06); }

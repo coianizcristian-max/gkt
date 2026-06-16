@@ -6,6 +6,10 @@ export const dynamic = 'force-dynamic'
 
 export default async function NuovoPortierePage() {
   const supabase = await createClient()
+
+  const { data: piediVoci } = await supabase
+    .from('elenco_voci').select('valore').eq('elenco', 'piede').eq('attivo', true).order('ordine')
+  const piedi = (piediVoci ?? []).map((v) => v.valore)
   const { data: stagione } = await supabase
     .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
 
@@ -27,7 +31,7 @@ export default async function NuovoPortierePage() {
       </div>
       <div className="content">
         {stagione && categorie.length > 0 ? (
-          <PortiereForm categorie={categorie} stagioneId={stagione.id} />
+          <PortiereForm categorie={categorie} stagioneId={stagione.id} piedi={piedi} />
         ) : (
           <div className="empty">Imposta prima una stagione attiva e almeno una categoria.</div>
         )}

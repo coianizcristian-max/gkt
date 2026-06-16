@@ -4,9 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-const PIEDI = ['Destro', 'Sinistro', 'Ambidestro']
-
-export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId }) {
+export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId, piedi = [] }) {
   const router = useRouter()
   const isEdit = !!portiere
   const [f, setF] = useState({
@@ -148,7 +146,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         <div className="field"><label>Piede preferito</label>
           <select value={f.piede} onChange={upd('piede')}>
             <option value="">—</option>
-            {PIEDI.map((p) => <option key={p} value={p}>{p}</option>)}
+            {piedi.map((p) => <option key={p} value={p}>{p}</option>)}
           </select></div>
         <div className="field"><label>Squadra di provenienza</label>
           <input value={f.squadra_provenienza} onChange={upd('squadra_provenienza')} /></div>

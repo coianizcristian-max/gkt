@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import SitoEditor from '@/app/components/SitoEditor'
+import SupervisoreNav from '@/app/components/SupervisoreNav'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,6 +25,7 @@ export default async function SupervisorePage() {
         <h1>Supervisore · Sito</h1>
       </div>
       <div className="content">
+        <SupervisoreNav />
         <p className="sub-intro">
           Gestisci le sezioni della home pubblica: testi, immagini, ordine e visibilità.
           Le modifiche compaiono subito sul sito.

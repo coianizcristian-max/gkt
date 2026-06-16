@@ -9,6 +9,10 @@ export default async function SchedaPortierePage({ params }) {
   const { id } = await params
   const supabase = await createClient()
 
+  const { data: piediVoci } = await supabase
+    .from('elenco_voci').select('valore').eq('elenco', 'piede').eq('attivo', true).order('ordine')
+  const piedi = (piediVoci ?? []).map((v) => v.valore)
+
   const { data: stagione } = await supabase
     .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
 
@@ -41,6 +45,7 @@ export default async function SchedaPortierePage({ params }) {
             iscrizione={iscrizione}
             categorie={categorie}
             stagioneId={stagione.id}
+            piedi={piedi}
           />
         ) : (
           <div className="empty">Imposta prima una stagione attiva e almeno una categoria.</div>

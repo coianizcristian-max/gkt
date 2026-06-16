@@ -5,26 +5,42 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function LoginPage() {
+export default function RegistratiPage() {
   const router = useRouter()
+  const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleLogin(e) {
+  async function handleSignup(e) {
     e.preventDefault()
     setError('')
+    setMsg('')
+    if (password.length < 6) {
+      setError('La password deve avere almeno 6 caratteri.')
+      return
+    }
     setLoading(true)
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { nome_completo: nome } },
+    })
     if (error) {
-      setError('Email o password non corretti.')
+      setError(error.message)
       setLoading(false)
       return
     }
-    router.push('/portieri')
-    router.refresh()
+    if (data.session) {
+      router.push('/')
+      router.refresh()
+    } else {
+      setMsg('Account creato. Controlla la tua email per confermare, poi accedi.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -37,8 +53,14 @@ export default function LoginPage() {
             <span>Gestione portieri</span>
           </div>
         </div>
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleSignup}>
           {error && <div className="err">{error}</div>}
+          {msg && <div className="ok-msg">{msg}</div>}
+          <div className="field">
+            <label htmlFor="nome">Nome e cognome</label>
+            <input id="nome" type="text" value={nome}
+              onChange={(e) => setNome(e.target.value)} required />
+          </div>
           <div className="field">
             <label htmlFor="email">Email</label>
             <input id="email" type="email" value={email}
@@ -47,16 +69,15 @@ export default function LoginPage() {
           <div className="field">
             <label htmlFor="password">Password</label>
             <input id="password" type="password" value={password}
-              onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+              onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" />
           </div>
           <button className="btn" type="submit" disabled={loading}>
-            {loading ? 'Accesso…' : 'Entra'}
+            {loading ? 'Creazione…' : 'Crea account'}
           </button>
         </form>
         <p className="login-alt">
-          Non hai un account? <Link href="/registrati">Registrati</Link>
+          Hai già un account? <Link href="/login">Accedi</Link>
         </p>
-        <p className="login-back"><Link href="/">&larr; Torna al sito</Link></p>
       </div>
     </div>
   )

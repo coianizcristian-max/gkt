@@ -6,10 +6,9 @@ export const dynamic = 'force-dynamic'
 export default async function Home() {
   const supabase = await createClient()
 
-  const [{ data: sezioni }, { data: { user } }, { data: stagione }] = await Promise.all([
+  const [{ data: sezioni }, { data: { user } }] = await Promise.all([
     supabase.from('sito_sezioni').select('*').eq('visibile', true).order('ordine'),
     supabase.auth.getUser(),
-    supabase.from('stagioni').select('societa_nome, logo_url').eq('attiva', true).maybeSingle(),
   ])
 
   const lista = sezioni ?? []
@@ -17,18 +16,15 @@ export default async function Home() {
   const vantaggi = lista.filter((s) => s.tipo === 'vantaggio')
   const contenuti = lista.filter((s) => s.tipo === 'contenuto')
   const loggedIn = !!user
-  const societa = stagione?.societa_nome ?? 'Azzurra Sandrigo'
 
   return (
     <div className="landing">
       <header className="landing-top">
         <div className="brand">
-          {stagione?.logo_url
-            ? <img className="brand-logo" src={stagione.logo_url} alt="" />
-            : <div className="glove">GK</div>}
+          <div className="glove">GK</div>
           <div>
             <b>GKT</b>
-            <span>{societa}</span>
+            <span>Gestione portieri</span>
           </div>
         </div>
         <nav className="landing-nav">
@@ -83,9 +79,7 @@ export default async function Home() {
         </section>
       ))}
 
-      <footer className="landing-foot">
-        GKT · {societa}
-      </footer>
+      <footer className="landing-foot">GKT · Gestione portieri</footer>
     </div>
   )
 }

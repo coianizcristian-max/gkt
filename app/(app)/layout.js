@@ -8,15 +8,17 @@ export default async function AppLayout({ children }) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let isStaff = false
+  let isSupervisore = false
   let societa = null
   let logo = null
   let stagioneNome = null
   if (user) {
     const [{ data: profilo }, { data: stagione }] = await Promise.all([
-      supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle(),
+      supabase.from('profili').select('ruolo, supervisore').eq('id', user.id).maybeSingle(),
       supabase.from('stagioni').select('nome, societa_nome, logo_url').eq('attiva', true).maybeSingle(),
     ])
     isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
+    isSupervisore = profilo?.supervisore === true
     societa = stagione?.societa_nome ?? null
     logo = stagione?.logo_url ?? null
     stagioneNome = stagione?.nome ?? null
@@ -43,7 +45,7 @@ export default async function AppLayout({ children }) {
         {isStaff && <NavLink href="/inviti">Inviti</NavLink>}
         <NavLink href="/archivio">Archivio</NavLink>
         <NavLink href="/suggerimenti">Suggerimenti</NavLink>
-        {isStaff && <NavLink href="/supervisore">Supervisore</NavLink>}
+        {isSupervisore && <NavLink href="/supervisore">Supervisore</NavLink>}
         <div className="sidebar-foot">
           <Link href="/" className="nav-link nav-sito">↗ Vai al sito</Link>
           <SignOutButton />

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import CercaAllenatoriBox from '@/app/components/CercaAllenatoriBox'
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -79,11 +80,9 @@ export default async function Home() {
         </section>
       ))}
 
-      <footer className="landing-foot">GKT · Gestione portieri        <div style={{ marginTop: 18, padding: 20, textAlign: 'center', background: 'var(--carta)', borderRadius: 12 }}>
-          <p style={{ margin: '0 0 10px', fontWeight: 700, color: 'var(--ink)' }}>Sei una societa e cerchi un allenatore dei portieri?</p>
-          <Link href="/cerca-allenatori" className="btn">Cerca allenatori nella tua zona</Link>
-        </div>
-      </footer>
+      <CercaAllenatoriBox />
+
+      <footer className="landing-foot">GKT · Gestione portieri</footer>
     </div>
   )
 }

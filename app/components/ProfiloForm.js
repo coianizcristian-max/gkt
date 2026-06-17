@@ -42,6 +42,14 @@ export default function ProfiloForm({ profilo, userId }) {
         if (upErr) throw upErr
         foto_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
       }
+      let lat = null, lng = null
+      if (f.citta) {
+        try {
+          const g = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(f.citta + ', Italia'))
+          const gj = await g.json()
+          if (gj && gj[0]) { lat = parseFloat(gj[0].lat); lng = parseFloat(gj[0].lon) }
+        } catch (e) {}
+      }
       const { error } = await supabase.from('profili').update({
         nome_completo: f.nome_completo || null,
         telefono: f.telefono || null,
@@ -49,6 +57,7 @@ export default function ProfiloForm({ profilo, userId }) {
         via: f.via || null,
         citta: f.citta || null,
         cap: f.cap || null,
+        lat, lng,
         range_ricerca: f.range_ricerca === '' ? null : Number(f.range_ricerca),
         disponibile: !!f.disponibile,
         esperienze: esperienze.filter((x) => x && x.trim()),

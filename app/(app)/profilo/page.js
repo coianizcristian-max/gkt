@@ -9,7 +9,7 @@ export default async function ProfiloPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
   const { data: profilo } = await supabase.from('profili')
-    .select('id, ruolo, nome_completo, telefono, bio, foto_url, esperienze, certificati')
+    .select('id, ruolo, nome_completo, telefono, bio, foto_url, esperienze, certificati, via, citta, cap, range_ricerca, disponibile')
     .eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 

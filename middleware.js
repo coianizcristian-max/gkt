@@ -41,7 +41,7 @@ export async function middleware(request) {
     return NextResponse.redirect(url)
   }
 
-  if (user && path.startsWith('/login')) {
+  if (user && (path.startsWith('/login') || path.startsWith('/cerca-allenatori'))) {
     const url = request.nextUrl.clone()
     url.pathname = '/portieri'
     return NextResponse.redirect(url)

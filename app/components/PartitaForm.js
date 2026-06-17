@@ -15,6 +15,7 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
     gol_fatti: partita?.gol_fatti ?? '',
     gol_subiti: partita?.gol_subiti ?? '',
     note: partita?.note ?? '',
+    tipo: partita?.tipo ?? 'campionato',
   })
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
@@ -31,7 +32,7 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
     const avv = f.avversario?.trim() || null
     const payload = {
       data: f.data, squadra_id: f.squadra_id, avversario: avv, casa: !!f.casa,
-      gol_fatti: num(f.gol_fatti), gol_subiti: num(f.gol_subiti), note: f.note || null,
+      gol_fatti: num(f.gol_fatti), gol_subiti: num(f.gol_subiti), note: f.note || null, tipo: f.tipo,
     }
     try {
       if (avv && !avversari.includes(avv)) {
@@ -69,6 +70,13 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
           <select value={f.casa ? '1' : '0'} onChange={(e) => { setF((s) => ({ ...s, casa: e.target.value === '1' })); setDone(false) }}>
             <option value="1">Casa</option>
             <option value="0">Trasferta</option>
+          </select></div>
+        <div className="field"><label>Competizione</label>
+          <select value={f.tipo} onChange={upd('tipo')}>
+            <option value="campionato">Campionato</option>
+            <option value="coppa">Coppa</option>
+            <option value="torneo">Torneo</option>
+            <option value="amichevole">Amichevole</option>
           </select></div>
         <div className="field"><label>Gol fatti</label>
           <input type="number" min="0" value={f.gol_fatti} onChange={upd('gol_fatti')} /></div>

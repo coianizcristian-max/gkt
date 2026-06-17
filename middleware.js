@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
-// Solo queste sezioni richiedono il login. Il resto (/, /login, /auth) e' pubblico.
+// Solo queste sezioni richiedono il login. Il resto (/, /login, /auth, /cerca-allenatori) e' pubblico.
 const PROTETTE = ['/portieri', '/calendario', '/partite', '/statistiche', '/supervisore']
 
 export async function middleware(request) {
@@ -41,7 +41,7 @@ export async function middleware(request) {
     return NextResponse.redirect(url)
   }
 
-  if (user && (path.startsWith('/login') || path.startsWith('/cerca-allenatori'))) {
+  if (user && path.startsWith('/login')) {
     const url = request.nextUrl.clone()
     url.pathname = '/portieri'
     return NextResponse.redirect(url)

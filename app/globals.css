@@ -538,3 +538,7 @@ button.sub-nav-link { background: none; border: none; border-bottom: 2px solid t
 .obiettivo-card.stato-raggiunto { border-left-color: var(--campo); }
 .obiettivo-card.stato-sospeso { border-left-color: var(--giallo); }
 .obiettivo-card.stato-aperto { border-left-color: var(--azzurro); }
+
+/* Brand cliccabile + stagione */
+a.brand { text-decoration: none; color: inherit; }
+.brand-stagione { display: block; font-size: 0.72rem; color: var(--ink-soft); }

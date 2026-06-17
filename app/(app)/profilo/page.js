@@ -17,7 +17,7 @@ export default async function ProfiloPage() {
     <>
       <div className="topbar">
         <div className="eyebrow">Area riservata</div>
-        <h1>Il mio profilo</h1>
+        <h1>Profilo allenatore</h1>
       </div>
       <div className="content">
         <ProfiloForm profilo={profilo} userId={user.id} />

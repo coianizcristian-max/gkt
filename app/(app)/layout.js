@@ -10,33 +10,36 @@ export default async function AppLayout({ children }) {
   let isStaff = false
   let societa = null
   let logo = null
+  let stagioneNome = null
   if (user) {
     const [{ data: profilo }, { data: stagione }] = await Promise.all([
       supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle(),
-      supabase.from('stagioni').select('societa_nome, logo_url').eq('attiva', true).maybeSingle(),
+      supabase.from('stagioni').select('nome, societa_nome, logo_url').eq('attiva', true).maybeSingle(),
     ])
     isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
     societa = stagione?.societa_nome ?? null
     logo = stagione?.logo_url ?? null
+    stagioneNome = stagione?.nome ?? null
   }
 
   return (
     <div className="shell">
       <aside className="sidebar">
-        <div className="brand">
+        <Link href="/portieri" className="brand">
           {logo ? <img className="brand-logo" src={logo} alt="" /> : <div className="glove">GK</div>}
           <div>
             <b>GKT</b>
             {societa && <span>{societa}</span>}
+            {stagioneNome && <span className="brand-stagione">Stagione {stagioneNome}</span>}
           </div>
-        </div>
+        </Link>
         <NavLink href="/portieri">Portieri</NavLink>
         <NavLink href="/calendario">Calendario</NavLink>
         {isStaff && <NavLink href="/ricorrenze">Ricorrenze</NavLink>}
         <NavLink href="/partite">Partite</NavLink>
         <NavLink href="/statistiche">Statistiche</NavLink>
         {isStaff && <NavLink href="/esercizi">Esercizi</NavLink>}
-        {isStaff && <NavLink href="/profilo">Profilo</NavLink>}
+        {isStaff && <NavLink href="/profilo">Profilo allenatore</NavLink>}
         <NavLink href="/archivio">Archivio</NavLink>
         <NavLink href="/suggerimenti">Suggerimenti</NavLink>
         {isStaff && <NavLink href="/supervisore">Supervisore</NavLink>}

@@ -10,7 +10,9 @@ export default function ProfiloForm({ profilo, userId }) {
     nome_completo: profilo?.nome_completo ?? '',
     telefono: profilo?.telefono ?? '',
     bio: profilo?.bio ?? '',
-    indirizzo: profilo?.indirizzo ?? '',
+    via: profilo?.via ?? '',
+    citta: profilo?.citta ?? '',
+    cap: profilo?.cap ?? '',
     range_ricerca: profilo?.range_ricerca == null ? '' : String(profilo.range_ricerca),
     disponibile: profilo?.disponibile ?? true,
   })
@@ -44,7 +46,9 @@ export default function ProfiloForm({ profilo, userId }) {
         nome_completo: f.nome_completo || null,
         telefono: f.telefono || null,
         bio: f.bio || null,
-        indirizzo: f.indirizzo || null,
+        via: f.via || null,
+        citta: f.citta || null,
+        cap: f.cap || null,
         range_ricerca: f.range_ricerca === '' ? null : Number(f.range_ricerca),
         disponibile: !!f.disponibile,
         esperienze: esperienze.filter((x) => x && x.trim()),
@@ -66,24 +70,31 @@ export default function ProfiloForm({ profilo, userId }) {
       <div className="form-grid">
         <div className="field"><label>Nome completo</label><input value={f.nome_completo} onChange={upd('nome_completo')} /></div>
         <div className="field"><label>Telefono</label><input value={f.telefono} onChange={upd('telefono')} /></div>
-        <div className="field field-full"><label>Indirizzo di abitazione</label><input value={f.indirizzo} onChange={upd('indirizzo')} placeholder="Via, citta" /></div>
-        <div className="field"><label>Range di ricerca</label>
-          <select value={f.range_ricerca} onChange={upd('range_ricerca')}>
-            <option value="5">5 km</option>
-            <option value="10">10 km</option>
-            <option value="20">20 km</option>
-            <option value="30">30 km</option>
-            <option value="50">50 km</option>
-            <option value="70">70 km</option>
-            <option value="100">100 km</option>
-            <option value="200">200 km</option>
-            <option value="">Nessun limite</option>
-          </select></div>
+        <div className="field"><label>Via</label><input value={f.via} onChange={upd('via')} /></div>
+        <div className="field"><label>Citta</label><input value={f.citta} onChange={upd('citta')} placeholder="usata per la ricerca" /></div>
+        <div className="field"><label>CAP</label><input value={f.cap} onChange={upd('cap')} /></div>
         <div className="field field-full">
-          <label className="val-nessuno">
-            <input type="checkbox" checked={f.disponibile} onChange={(e) => { setF((s) => ({ ...s, disponibile: e.target.checked })); setDone(false) }} />
-            Disponibile (ricercabile dalle societa). Togli la spunta se hai gia trovato accordo con una squadra.
-          </label>
+          <div style={{ background: 'var(--carta)', border: '1px solid var(--linea)', borderRadius: 10, padding: 12, display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'center' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, margin: 0 }}>
+              <input type="checkbox" checked={f.disponibile} onChange={(e) => { setF((s) => ({ ...s, disponibile: e.target.checked })); setDone(false) }} />
+              Disponibile per ricerca
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+              Range di ricerca
+              <select value={f.range_ricerca} onChange={upd('range_ricerca')}>
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="20">20 km</option>
+                <option value="30">30 km</option>
+                <option value="50">50 km</option>
+                <option value="70">70 km</option>
+                <option value="100">100 km</option>
+                <option value="200">200 km</option>
+                <option value="">Nessun limite</option>
+              </select>
+            </label>
+            <span style={{ color: 'var(--ink-soft)', fontSize: '0.85rem', flexBasis: '100%' }}>Se "Disponibile" e attivo, le societa entro il tuo range (calcolato dalla tua citta) possono trovarti.</span>
+          </div>
         </div>
         <div className="field field-full"><label>Bio</label><textarea rows="3" value={f.bio} onChange={upd('bio')} /></div>
       </div>

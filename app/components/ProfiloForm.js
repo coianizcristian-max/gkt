@@ -42,28 +42,29 @@ export default function ProfiloForm({ profilo, userId }) {
         if (upErr) throw upErr
         foto_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
       }
-      let lat = null, lng = null
-      if (f.citta) {
-        try {
-          const g = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(f.citta + ', Italia'))
-          const gj = await g.json()
-          if (gj && gj[0]) { lat = parseFloat(gj[0].lat); lng = parseFloat(gj[0].lon) }
-        } catch (e) {}
-      }
-      const { error } = await supabase.from('profili').update({
+      const payload = {
         nome_completo: f.nome_completo || null,
         telefono: f.telefono || null,
         bio: f.bio || null,
         via: f.via || null,
         citta: f.citta || null,
         cap: f.cap || null,
-        lat, lng,
         range_ricerca: f.range_ricerca === '' ? null : Number(f.range_ricerca),
         disponibile: !!f.disponibile,
         esperienze: esperienze.filter((x) => x && x.trim()),
         certificati: certificati.filter((x) => x && x.trim()),
         foto_url,
-      }).eq('id', userId)
+      }
+      // Geocodifica la citta solo per AGGIORNARE lat/lng quando riesce.
+      // Se fallisce (o Nominatim blocca), NON tocchiamo le coordinate gia salvate.
+      if (f.citta) {
+        try {
+          const g = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(f.citta + ', Italia'))
+          const gj = await g.json()
+          if (gj && gj[0]) { payload.lat = parseFloat(gj[0].lat); payload.lng = parseFloat(gj[0].lon) }
+        } catch (e) {}
+      }
+      const { error } = await supabase.from('profili').update(payload).eq('id', userId)
       if (error) throw error
       setDone(true); setBusy(false); router.refresh()
     } catch (err) { setError(err.message); setBusy(false) }

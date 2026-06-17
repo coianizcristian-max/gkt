@@ -12,7 +12,7 @@ export default async function EserciziPage() {
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
   const [{ data: esercizi }, { data: tip }] = await Promise.all([
-    supabase.from('esercizi').select('*').order('created_at', { ascending: false }),
+    supabase.from('esercizi').select('*').eq('allenatore_id', user.id).order('created_at', { ascending: false }),
     supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('attivo', true).order('ordine'),
   ])
   const tipologie = (tip ?? []).map((t) => t.valore)

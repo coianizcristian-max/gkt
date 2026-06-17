@@ -38,6 +38,7 @@ function EsercizioCard({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
     descrizione_breve: esercizio?.descrizione_breve ?? '',
     descrizione: esercizio?.descrizione ?? '',
     note: esercizio?.note ?? '',
+    pubblico: esercizio?.pubblico ?? false,
   })
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(esercizio?.immagine_url ?? '')
@@ -81,7 +82,7 @@ function EsercizioCard({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
       const payload = {
         allenatore_id: allenatoreId, titolo: f.titolo.trim(), tipologia: f.tipologia || null,
         descrizione_breve: f.descrizione_breve || null, descrizione: f.descrizione || null,
-        note: f.note || null, immagine_url,
+        note: f.note || null, immagine_url, pubblico: !!f.pubblico,
       }
       if (isEdit) {
         const { error } = await supabase.from('esercizi').update(payload).eq('id', esercizio.id)
@@ -116,6 +117,12 @@ function EsercizioCard({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
         <div className="field field-full"><label>Descrizione breve</label><input value={f.descrizione_breve} onChange={upd('descrizione_breve')} /></div>
         <div className="field field-full"><label>Descrizione dettagliata</label><textarea rows="3" value={f.descrizione} onChange={upd('descrizione')} /></div>
         <div className="field field-full"><label>Note</label><textarea rows="2" value={f.note} onChange={upd('note')} /></div>
+        <div className="field field-full">
+          <label className="val-nessuno">
+            <input type="checkbox" checked={f.pubblico} onChange={(e) => { setF((s) => ({ ...s, pubblico: e.target.checked })); setDone(false) }} />
+            Pubblico (visibile e selezionabile dagli altri allenatori)
+          </label>
+        </div>
       </div>
       {preview && <div className="esercizio-img"><img src={preview} alt="" /></div>}
       <div className="form-actions">

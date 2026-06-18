@@ -16,8 +16,6 @@ export default function RegistratiClient({ token, datiInvito }) {
 
   const nomeBloccato = !!datiInvito?.nomeCompleto
   const emailBloccata = !!datiInvito?.email
-
-  // Se il token non è valido (assente o non trovato), mostriamo avviso
   const tokenInvalido = token && !datiInvito
 
   async function handleSignup(e) {
@@ -34,6 +32,7 @@ export default function RegistratiClient({ token, datiInvito }) {
     }
     setLoading(true)
     const supabase = createClient()
+
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -41,10 +40,11 @@ export default function RegistratiClient({ token, datiInvito }) {
     })
 
     if (signUpError) {
-      // Messaggi più chiari per gli errori comuni
-      if (signUpError.message?.toLowerCase().includes('already registered') ||
-          signUpError.message?.toLowerCase().includes('already been registered') ||
-          signUpError.message?.toLowerCase().includes('email address is already')) {
+      if (
+        signUpError.message?.toLowerCase().includes('already registered') ||
+        signUpError.message?.toLowerCase().includes('already been registered') ||
+        signUpError.message?.toLowerCase().includes('email address is already')
+      ) {
         setError('Questa email è già registrata. Vai alla pagina di accesso.')
       } else {
         setError(signUpError.message)
@@ -53,11 +53,31 @@ export default function RegistratiClient({ token, datiInvito }) {
       return
     }
 
+    // Se c'è un token invito valido, consumalo subito (collegamento portiere/collaboratore)
+    if (token && datiInvito && data.user) {
+      try {
+        const res = await fetch('/api/consuma-invito', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        })
+        if (!res.ok) {
+          const body = await res.json()
+          console.warn('consuma-invito:', body.error)
+          // Non blocchiamo la registrazione per questo — l'utente è già creato
+        }
+      } catch (err) {
+        console.warn('consuma-invito fetch error:', err)
+      }
+    }
+
     if (data.session) {
-      router.push('/')
+      // Sessione immediata (email confirm disabilitata): vai all'app
+      router.push('/portieri')
       router.refresh()
     } else {
-      setMsg('Account creato! Controlla la tua email per confermare l\'indirizzo, poi accedi.')
+      // Email di conferma richiesta
+      setMsg("Account creato! Controlla la tua email per confermare l'indirizzo, poi accedi.")
       setLoading(false)
     }
   }
@@ -75,13 +95,14 @@ export default function RegistratiClient({ token, datiInvito }) {
 
         {tokenInvalido && (
           <div className="err" style={{ marginBottom: 16 }}>
-            Il link d&apos;invito non è valido o è già stato utilizzato. Contatta il tuo allenatore per riceverne uno nuovo.
+            Il link d&apos;invito non è valido o è già stato utilizzato.
+            Contatta il tuo allenatore per riceverne uno nuovo.
           </div>
         )}
 
         {datiInvito && (
           <div className="ok-msg" style={{ marginBottom: 16 }}>
-            Stai completando la registrazione come <b>{datiInvito.tipo === 'portiere' ? 'portiere' : 'collaboratore'}</b>.
+            Registrazione come <b>{datiInvito.tipo === 'portiere' ? 'portiere' : 'collaboratore'}</b>.
             {nomeBloccato ? ' Il nome è pre-compilato e non modificabile.' : ''}
           </div>
         )}

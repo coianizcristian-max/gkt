@@ -44,13 +44,17 @@ export default function CalendarioMese({ allenamenti, categorie, vista = 'staff'
   const fmt = (day) => `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   const isOggi = (day) => year === oggi.getFullYear() && month === oggi.getMonth() && day === oggi.getDate()
 
-  // Colori portiere: colori scuri con testo bianco leggibile
-  // blu scuro = non era presente, verde scuro = presente e ha votato, rosso scuro = presente senza voto
+  // Colori portiere: scuri con testo bianco leggibile
   const stylePortiere = (a) => {
     if (!a.presente) return { background: '#3a6ea5', borderLeft: '3px solid #1d4a78' }
     if (a.ha_voto) return { background: '#2e9e5b', borderLeft: '3px solid #1a6b3a' }
     return { background: '#c0392b', borderLeft: '3px solid #8b1a10' }
   }
+
+  // Cornice gialla per allenamenti accorpati (staff)
+  const styleAccorpato = (a) => a.accorpata_con
+    ? { outline: '2px solid var(--giallo)', outlineOffset: '-2px' }
+    : {}
 
   return (
     <div className="cal">
@@ -95,12 +99,22 @@ export default function CalendarioMese({ allenamenti, categorie, vista = 'staff'
                 {evs.map((a) => {
                   if (isPortiere) {
                     return (
-                      <Link key={a.id} href={`/calendario/${a.id}`} className="cal-ev" style={stylePortiere(a)}>{a.squadra_nome}</Link>
+                      <Link key={a.id} href={`/calendario/${a.id}`} className="cal-ev" style={stylePortiere(a)}>
+                        {a.squadra_nome}
+                      </Link>
                     )
                   }
                   const cls = a.valutato ? 'ev-verde' : (a.data < oggiStr ? 'ev-rosso' : '')
                   return (
-                    <Link key={a.id} href={`/calendario/${a.id}`} className={`cal-ev ${cls}`}>{a.squadra_nome}</Link>
+                    <Link
+                      key={a.id}
+                      href={`/calendario/${a.id}`}
+                      className={`cal-ev ${cls}`}
+                      style={styleAccorpato(a)}
+                      title={a.accorpata_con ? `Accorpato con ${a.accorpata_nome ?? ''}` : undefined}
+                    >
+                      {a.squadra_nome}
+                    </Link>
                   )
                 })}
               </div>

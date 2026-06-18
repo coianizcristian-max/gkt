@@ -542,3 +542,82 @@ button.sub-nav-link { background: none; border: none; border-bottom: 2px solid t
 /* Brand cliccabile + stagione */
 a.brand { text-decoration: none; color: inherit; }
 .brand-stagione { display: block; font-size: 0.72rem; color: var(--ink-soft); }
+
+/* ===== Esercizi: tile grid (P10) ===== */
+.es-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.es-tile {
+  position: relative;
+  border: 2px solid var(--linea);
+  border-radius: var(--r);
+  background: var(--bianco);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.es-tile:hover { border-color: var(--azzurro); box-shadow: var(--ombra); }
+.es-tile.selezionato { border-color: var(--azzurro); background: rgba(10,126,194,0.06); }
+.es-tile-img { width: 100%; height: 100px; overflow: hidden; }
+.es-tile-img img { width: 100%; height: 100%; object-fit: cover; }
+.es-tile-body { padding: 8px 10px; }
+.es-tile-titolo { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+.es-tile-autore { font-size: 11px; color: var(--azzurro); margin-top: 2px; }
+.es-tile-desc { font-size: 11px; color: var(--ink-soft); margin-top: 3px; line-height: 1.3; }
+.es-tile-check {
+  position: absolute; top: 6px; right: 6px;
+  background: var(--azzurro); color: #fff;
+  border-radius: 50%; width: 20px; height: 20px;
+  font-size: 11px; display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+}
+
+/* ===== Drag & drop ordine esercizi (P9) ===== */
+.drag-list { display: flex; flex-direction: column; gap: 6px; }
+.drag-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bianco); border: 1px solid var(--linea);
+  border-radius: var(--r-sm); padding: 8px 12px;
+  cursor: grab; user-select: none;
+}
+.drag-item:active { cursor: grabbing; box-shadow: var(--ombra); }
+.drag-handle { font-size: 18px; color: var(--ink-soft); flex-shrink: 0; }
+.drag-info { flex: 1; font-size: 14px; display: flex; flex-direction: column; gap: 2px; }
+.drag-thumb { width: 44px; height: 44px; border-radius: var(--r-sm); object-fit: cover; flex-shrink: 0; }
+
+/* ===== Vista portiere: esercizi seduta riquadri (P10 portiere) ===== */
+.es-seduta-grid { display: flex; flex-direction: column; gap: 8px; }
+.es-seduta-card {
+  border: 1px solid var(--linea); border-radius: var(--r);
+  background: var(--bianco); overflow: hidden;
+}
+.es-seduta-card summary {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; cursor: pointer; list-style: none;
+  font-weight: 600; font-size: 14px;
+}
+.es-seduta-card summary::-webkit-details-marker { display: none; }
+.es-seduta-card[open] summary { border-bottom: 1px solid var(--linea); }
+.es-seduta-thumb { width: 48px; height: 48px; border-radius: var(--r-sm); object-fit: cover; flex-shrink: 0; }
+.es-seduta-titolo { font-weight: 600; font-size: 14px; }
+.es-seduta-body { padding: 12px 14px; font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+.es-seduta-body p { margin: 0 0 6px; }
+
+/* ===== Feedback allenamento (P13) ===== */
+.feedback-riga {
+  border-bottom: 1px solid var(--linea);
+  padding: 12px 0;
+}
+.feedback-riga:last-child { border-bottom: none; }
+.feedback-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.feedback-nome { font-weight: 600; font-size: 14px; }
+.feedback-voto { font-size: 13px; color: var(--ink-soft); }
+.feedback-assente { font-size: 12px; color: var(--rosso); background: rgba(192,57,43,0.1); border-radius: 4px; padding: 2px 6px; }
+.feedback-testo { font-size: 14px; color: var(--ink); margin-bottom: 4px; }
+.feedback-nota { font-size: 13px; color: var(--ink-soft); }
+

@@ -19,20 +19,31 @@ export default async function CalendarioPage() {
   if (stagione) {
     const [al, cat] = await Promise.all([
       supabase.from('allenamenti')
-        .select('id, data, squadra_id, nessuna_valutazione, squadre(nome)')
+        .select('id, data, squadra_id, accorpata_con, nessuna_valutazione, squadre(nome)')
         .eq('stagione_id', stagione.id).order('data'),
       supabase.from('stagione_categorie')
         .select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
     ])
+
+    // Mappa id → nome per le categorie (per tooltip accorpamento)
+    const catMap = {}
+    for (const r of cat.data ?? []) {
+      if (r.squadre) catMap[r.squadre.id] = r.squadre.nome
+    }
+
     allenamenti = (al.data ?? []).map((a) => ({
-      id: a.id, data: a.data, squadra_id: a.squadra_id, squadra_nome: a.squadre?.nome ?? '',
+      id: a.id,
+      data: a.data,
+      squadra_id: a.squadra_id,
+      squadra_nome: a.squadre?.nome ?? '',
+      accorpata_con: a.accorpata_con ?? null,
+      accorpata_nome: a.accorpata_con ? (catMap[a.accorpata_con] ?? '') : null,
       nessuna_valutazione: a.nessuna_valutazione,
     }))
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
 
     const allIds = allenamenti.map((a) => a.id)
     if (isPortiere) {
-      // Per il portiere: stato presenza + se ha gia' lasciato il voto, per allenamento
       let mie = []
       if (allIds.length && profilo?.portiere_id) {
         const { data } = await supabase.from('valutazioni')
@@ -48,7 +59,6 @@ export default async function CalendarioPage() {
         ha_voto: byAll[a.id]?.voto_portiere != null,
       }))
     } else {
-      // Staff: "valutato" = almeno un voto reale, oppure allenamento segnato "Nessuno"
       let valutati = new Set()
       if (allIds.length) {
         const { data: vrows } = await supabase.from('valutazioni')

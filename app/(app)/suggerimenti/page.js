@@ -14,10 +14,26 @@ export default async function SuggerimentiPage() {
   const isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
 
   let iniziali = []
+  let miei = []
+
   if (isStaff) {
-    const { data } = await supabase.from('suggerimenti')
-      .select('id, testo, stato, created_at').order('created_at', { ascending: false })
-    iniziali = data ?? []
+    // Staff: tutti i suggerimenti, con nome mittente
+    const { data } = await supabase
+      .from('suggerimenti')
+      .select('id, testo, stato, esito, created_at, utente_id, profili(nome_visualizzato)')
+      .order('created_at', { ascending: false })
+    iniziali = (data ?? []).map((s) => ({
+      ...s,
+      mittente: s.profili?.nome_visualizzato ?? null,
+    }))
+  } else {
+    // Portiere: solo i propri
+    const { data } = await supabase
+      .from('suggerimenti')
+      .select('id, testo, stato, esito, created_at')
+      .eq('utente_id', user.id)
+      .order('created_at', { ascending: false })
+    miei = data ?? []
   }
 
   return (
@@ -27,7 +43,7 @@ export default async function SuggerimentiPage() {
         <h1>Suggerimenti e migliorie</h1>
       </div>
       <div className="content">
-        <Suggerimenti isStaff={isStaff} iniziali={iniziali} />
+        <Suggerimenti isStaff={isStaff} iniziali={iniziali} miei={miei} />
       </div>
     </>
   )

@@ -5,6 +5,7 @@ import AllenamentoForm from '@/app/components/AllenamentoForm'
 import ValutazioniAllenamento from '@/app/components/ValutazioniAllenamento'
 import AllenamentoEsercizi from '@/app/components/AllenamentoEsercizi'
 import ValutazionePortiere from '@/app/components/ValutazionePortiere'
+import FeedbackAllenamento from '@/app/components/FeedbackAllenamento'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,16 +24,18 @@ export default async function AllenamentoPage({ params }) {
   const dataLabel = new Date(allenamento.data + 'T00:00:00')
     .toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
-  // ----- VISTA PORTIERE: sola lettura + valutazione personale -----
+  // ── VISTA PORTIERE ────────────────────────────────────────────────────────
   if (profilo?.ruolo === 'portiere') {
     const [{ data: mia }, { data: aeRows }] = await Promise.all([
       supabase.from('valutazioni')
         .select('presente, voto_portiere, feedback_portiere, nota_portiere')
         .eq('allenamento_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
       supabase.from('allenamento_esercizi')
-        .select('esercizi(id, titolo, tipologia, descrizione_breve)').eq('allenamento_id', id),
+        .select('ordine, esercizi(id, titolo, tipologia, descrizione_breve, descrizione, immagine_url)')
+        .eq('allenamento_id', id).order('ordine'),
     ])
-    const esercizi = (aeRows ?? []).map((r) => r.esercizi).filter(Boolean)
+    const esercizi = (aeRows ?? [])
+      .map((r) => r.esercizi).filter(Boolean)
 
     return (
       <>
@@ -43,13 +46,23 @@ export default async function AllenamentoPage({ params }) {
         <div className="content">
           <h2 className="sezione-titolo">Esercizi della seduta</h2>
           {esercizi.length > 0 ? (
-            <div className="scheda">
+            <div className="es-seduta-grid">
               {esercizi.map((e) => (
-                <div key={e.id} className="lista-riga" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-                  <b>{e.titolo}</b>
-                  {e.tipologia && <span className="stat-cat">{e.tipologia}</span>}
-                  {e.descrizione_breve && <span style={{ color: 'var(--ink-soft)' }}>{e.descrizione_breve}</span>}
-                </div>
+                <details key={e.id} className="es-seduta-card">
+                  <summary>
+                    {e.immagine_url && <img src={e.immagine_url} className="es-seduta-thumb" alt="" />}
+                    <div>
+                      <div className="es-seduta-titolo">{e.titolo}</div>
+                      {e.tipologia && <span className="stat-cat">{e.tipologia}</span>}
+                    </div>
+                  </summary>
+                  {(e.descrizione_breve || e.descrizione) && (
+                    <div className="es-seduta-body">
+                      {e.descrizione_breve && <p><em>{e.descrizione_breve}</em></p>}
+                      {e.descrizione && <p>{e.descrizione}</p>}
+                    </div>
+                  )}
+                </details>
               ))}
             </div>
           ) : (
@@ -70,23 +83,52 @@ export default async function AllenamentoPage({ params }) {
     )
   }
 
-  // ----- VISTA STAFF/ALLENATORE: invariata -----
-  const [{ data: catRows }, { data: iscr }, { data: parametri }, { data: vals }, { data: scalaRows }, { data: libRows }, { data: aeRows }] = await Promise.all([
+  // ── VISTA STAFF/ALLENATORE ────────────────────────────────────────────────
+  const [
+    { data: catRows },
+    { data: iscr },
+    { data: parametri },
+    { data: vals },
+    { data: scalaRows },
+    { data: libRows },
+    { data: aeRows },
+    { data: feedbackRows },
+  ] = await Promise.all([
     supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
     supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
       .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
     supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
     supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
     supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
-    supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, pubblico, allenatore_id').order('titolo'),
-    supabase.from('allenamento_esercizi').select('esercizio_id').eq('allenamento_id', id),
+    supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id, profili(ruolo)').order('titolo'),
+    supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', id).order('ordine'),
+    supabase.from('valutazioni')
+      .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
+      .eq('allenamento_id', id)
+      .not('feedback_portiere', 'is', null)
+      .order('created_at', { ascending: false }),
   ])
-  const tutti = libRows ?? []
+
+  // Carica nomi allenatori per gli esercizi (per mostrare autore)
+  const allenatoreIds = [...new Set((libRows ?? []).map((e) => e.allenatore_id).filter(Boolean))]
+  let nomiAllenatori = {}
+  if (allenatoreIds.length) {
+    const { data: profRows } = await supabase
+      .from('profili').select('id, nome_visualizzato').in('id', allenatoreIds)
+    for (const p of profRows ?? []) nomiAllenatori[p.id] = p.nome_visualizzato
+  }
+
+  const tutti = (libRows ?? []).map((e) => ({
+    ...e,
+    autore_nome: e.allenatore_id === user?.id ? null : (nomiAllenatori[e.allenatore_id] ?? null),
+  }))
   const libreriaMia = tutti.filter((e) => e.allenatore_id === user?.id)
   const libreriaPubblica = tutti.filter((e) => e.pubblico && e.allenatore_id !== user?.id)
-  const eserciziSelezionati = (aeRows ?? []).map((r) => r.esercizio_id)
-  const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
 
+  // Ordine esercizi dell'allenamento (per selezionatiIniziali)
+  const eserciziOrdinati = (aeRows ?? []).sort((a, b) => a.ordine - b.ordine).map((r) => r.esercizio_id)
+
+  const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
   const portieri = (iscr ?? []).map((r) => r.portieri).filter(Boolean)
     .sort((a, b) => `${a.nome}`.localeCompare(`${b.nome}`))
@@ -101,6 +143,15 @@ export default async function AllenamentoPage({ params }) {
     for (const x of pp ?? []) (punteggiIniziali[x.valutazione_id] ??= {})[x.parametro_id] = x.punteggio
   }
 
+  const feedback = (feedbackRows ?? []).map((r) => ({
+    portiere_id: r.portiere_id,
+    nome: r.portieri ? `${r.portieri.nome} ${r.portieri.cognome ?? ''}`.trim() : '—',
+    testo: r.feedback_portiere,
+    nota: r.nota_portiere,
+    voto: r.voto_portiere,
+    presente: r.presente,
+  }))
+
   return (
     <>
       <div className="topbar">
@@ -109,6 +160,7 @@ export default async function AllenamentoPage({ params }) {
       </div>
       <div className="content">
         <AllenamentoForm allenamento={allenamento} categorie={categorie} stagioneId={allenamento.stagione_id} />
+
         <h2 className="sezione-titolo">Valutazioni</h2>
         {portieri.length > 0 ? (
           <ValutazioniAllenamento
@@ -123,8 +175,21 @@ export default async function AllenamentoPage({ params }) {
         ) : (
           <div className="empty">Nessun portiere iscritto a questa categoria per la stagione.</div>
         )}
+
         <h2 className="sezione-titolo">Esercizi della seduta</h2>
-        <AllenamentoEsercizi allenamentoId={id} libreriaMia={libreriaMia} libreriaPubblica={libreriaPubblica} selezionatiIniziali={eserciziSelezionati} />
+        <AllenamentoEsercizi
+          allenamentoId={id}
+          libreriaMia={libreriaMia}
+          libreriaPubblica={libreriaPubblica}
+          selezionatiIniziali={eserciziOrdinati}
+        />
+
+        {feedback.length > 0 && (
+          <>
+            <h2 className="sezione-titolo">Feedback portieri</h2>
+            <FeedbackAllenamento feedback={feedback} />
+          </>
+        )}
       </div>
     </>
   )

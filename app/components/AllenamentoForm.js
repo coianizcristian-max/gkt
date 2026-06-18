@@ -10,6 +10,7 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
   const [f, setF] = useState({
     data: allenamento?.data ?? defaultData ?? '',
     squadra_id: allenamento?.squadra_id ?? (categorie[0]?.id ?? ''),
+    accorpata_con: allenamento?.accorpata_con ?? '',
     obiettivi: allenamento?.obiettivi ?? '',
     consuntivo: allenamento?.consuntivo ?? '',
     note: allenamento?.note ?? '',
@@ -27,8 +28,12 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
     setSaving(true)
     const supabase = createClient()
     const payload = {
-      data: f.data, squadra_id: f.squadra_id,
-      obiettivi: f.obiettivi || null, consuntivo: f.consuntivo || null, note: f.note || null,
+      data: f.data,
+      squadra_id: f.squadra_id,
+      accorpata_con: f.accorpata_con || null,
+      obiettivi: f.obiettivi || null,
+      consuntivo: f.consuntivo || null,
+      note: f.note || null,
     }
     try {
       if (isEdit) {
@@ -44,6 +49,9 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
     } catch (err) { setError(err.message); setSaving(false) }
   }
 
+  // Categorie "ospiti" = tutte tranne quella principale
+  const altreCategorie = categorie.filter((c) => c.id !== f.squadra_id)
+
   return (
     <form className="scheda" onSubmit={save}>
       {error && <div className="err">{error}</div>}
@@ -54,6 +62,13 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
           <select value={f.squadra_id} onChange={upd('squadra_id')} disabled={isEdit} required>
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></div>
+        <div className="field">
+          <label>Accorpata con (opzionale)</label>
+          <select value={f.accorpata_con} onChange={upd('accorpata_con')}>
+            <option value="">— Nessuna —</option>
+            {altreCategorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+          </select>
+        </div>
         <div className="field field-full"><label>Obiettivi (cosa si dovrebbe fare)</label>
           <textarea rows="3" value={f.obiettivi} onChange={upd('obiettivi')} /></div>
         <div className="field field-full"><label>Consuntivo (cosa si è fatto)</label>
@@ -61,6 +76,11 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
         <div className="field field-full"><label>Note</label>
           <textarea rows="2" value={f.note} onChange={upd('note')} /></div>
       </div>
+      {f.accorpata_con && (
+        <p className="sub-intro" style={{ marginTop: 0, color: 'var(--giallo)' }}>
+          ⚠ Allenamento accorpato: nel calendario apparirà con cornice gialla. I portieri della categoria ospite vedranno la scheda di questa seduta.
+        </p>
+      )}
       <div className="form-actions">
         {!isEdit && <button type="button" className="btn-ghost" onClick={() => router.push('/calendario')}>Annulla</button>}
         <button type="submit" className="btn" disabled={saving}>

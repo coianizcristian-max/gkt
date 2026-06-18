@@ -44,11 +44,12 @@ export default function CalendarioMese({ allenamenti, categorie, vista = 'staff'
   const fmt = (day) => `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   const isOggi = (day) => year === oggi.getFullYear() && month === oggi.getMonth() && day === oggi.getDate()
 
-  // Colori lato portiere: verde = ha votato, rosso = presente senza voto, blu = non era presente
+  // Colori portiere: colori scuri con testo bianco leggibile
+  // blu scuro = non era presente, verde scuro = presente e ha votato, rosso scuro = presente senza voto
   const stylePortiere = (a) => {
-    if (!a.presente) return { background: '#e8f0fb', borderLeft: '3px solid #3a6ea5' }
-    if (a.ha_voto) return { background: '#e7f6ec', borderLeft: '3px solid #2e9e5b' }
-    return { background: '#fdeaea', borderLeft: '3px solid #c0392b' }
+    if (!a.presente) return { background: '#3a6ea5', borderLeft: '3px solid #1d4a78' }
+    if (a.ha_voto) return { background: '#2e9e5b', borderLeft: '3px solid #1a6b3a' }
+    return { background: '#c0392b', borderLeft: '3px solid #8b1a10' }
   }
 
   return (

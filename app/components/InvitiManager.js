@@ -14,6 +14,7 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
   const router = useRouter()
   const [tipo, setTipo] = useState('portiere')
   const [portiereId, setPortiereId] = useState(portieri[0]?.id ?? '')
+  const [emailInvitato, setEmailInvitato] = useState('')
   const [perm, setPerm] = useState({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -21,15 +22,38 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
   async function crea() {
     setBusy(true); setError('')
     const supabase = createClient()
-    const token = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now()).replace(/-/g, '')
+
+    // Controlla se esiste già un invito attivo per questo portiere
+    if (tipo === 'portiere' && portiereId) {
+      const esistente = inviti.find(
+        (inv) => inv.stato === 'attivo' && inv.tipo === 'portiere' && inv.portiere_id === portiereId
+      )
+      if (esistente) {
+        setError('Esiste già un invito attivo per questo portiere. Revocalo prima di crearne uno nuovo.')
+        setBusy(false)
+        return
+      }
+    }
+
+    const token = (typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2) + Date.now()
+    ).replace(/-/g, '')
+
     const row = {
-      token, tipo, stagione_id: stagioneId, stato: 'attivo',
+      token,
+      tipo,
+      stagione_id: stagioneId,
+      stato: 'attivo',
       portiere_id: tipo === 'portiere' ? (portiereId || null) : null,
+      email_invitato: emailInvitato.trim() || null,
       permessi: tipo === 'collaboratore' ? perm : {},
     }
     const { error } = await supabase.from('inviti').insert(row)
     if (error) setError(error.message)
-    setBusy(false); router.refresh()
+    else setEmailInvitato('')
+    setBusy(false)
+    router.refresh()
   }
 
   async function revoca(id) {
@@ -48,14 +72,22 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
     return `${origin}/registrati?invito=${token}`
   }
   async function copia(token) {
-    try { await navigator.clipboard.writeText(linkOf(token)); alert('Link copiato negli appunti.') } catch { window.prompt('Copia il link:', linkOf(token)) }
+    try { await navigator.clipboard.writeText(linkOf(token)); alert('Link copiato negli appunti.') }
+    catch { window.prompt('Copia il link:', linkOf(token)) }
   }
 
-  const nomePortiere = (id) => { const p = portieri.find((x) => x.id === id); return p ? `${p.nome} ${p.cognome ?? ''}`.trim() : '' }
+  const nomePortiere = (id) => {
+    const p = portieri.find((x) => x.id === id)
+    return p ? `${p.nome} ${p.cognome ?? ''}`.trim() : ''
+  }
 
   return (
     <div className="lista-editor">
-      <p className="sub-intro">Crea un link d'invito da inviare. Chi lo apre si registra e l'account viene collegato (portiere o collaboratore) per la stagione corrente. Nota: il collegamento automatico alla registrazione sara attivato in un secondo momento.</p>
+      <p className="sub-intro">
+        Crea un link d&apos;invito da inviare al portiere o collaboratore. Chi lo apre si registra e l&apos;account
+        viene collegato automaticamente per la stagione corrente. Se inserisci l&apos;email, verrà pre-compilata
+        nel modulo di registrazione (non modificabile).
+      </p>
       <div className="scheda">
         {error && <div className="err">{error}</div>}
         <div className="form-grid">
@@ -70,6 +102,14 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
                 {portieri.map((p) => <option key={p.id} value={p.id}>{p.nome} {p.cognome ?? ''}</option>)}
               </select></div>
           )}
+          <div className="field"><label>Email invitato (opzionale)</label>
+            <input
+              type="email"
+              value={emailInvitato}
+              onChange={(e) => setEmailInvitato(e.target.value)}
+              placeholder="es. mario.rossi@email.com"
+            />
+          </div>
         </div>
         {tipo === 'collaboratore' && (
           <div className="elenco-blocco">
@@ -83,7 +123,9 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
           </div>
         )}
         <div className="form-actions">
-          <button className="btn" onClick={crea} disabled={busy || (tipo === 'portiere' && !portiereId)} type="button">{busy ? 'Creazione...' : 'Crea invito'}</button>
+          <button className="btn" onClick={crea} disabled={busy || (tipo === 'portiere' && !portiereId)} type="button">
+            {busy ? 'Creazione...' : 'Crea invito'}
+          </button>
         </div>
       </div>
 
@@ -93,11 +135,22 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
         {inviti.map((inv) => (
           <div className={`lista-riga ${inv.stato !== 'attivo' ? 'assente' : ''}`} key={inv.id}>
             <div style={{ flex: 1 }}>
-              <div><b>{inv.tipo === 'portiere' ? 'Portiere' : 'Collaboratore'}</b>{inv.portiere_id ? ` \u00b7 ${nomePortiere(inv.portiere_id)}` : ''}</div>
-              <small>{inv.stato}{inv.consumato_da ? ' \u00b7 usato' : ''}</small>
+              <div>
+                <b>{inv.tipo === 'portiere' ? 'Portiere' : 'Collaboratore'}</b>
+                {inv.portiere_id ? ` \u00b7 ${nomePortiere(inv.portiere_id)}` : ''}
+                {inv.email_invitato ? <span style={{ color: '#6b7e8e', marginLeft: 6, fontSize: 12 }}>{inv.email_invitato}</span> : null}
+              </div>
+              <small>
+                {inv.stato}
+                {inv.consumato_da ? ' \u00b7 usato' : ''}
+              </small>
             </div>
-            {inv.stato === 'attivo' && <button className="btn-mini" onClick={() => copia(inv.token)} type="button">Copia link</button>}
-            {inv.stato === 'attivo' && <button className="btn-mini" onClick={() => revoca(inv.id)} type="button">Revoca</button>}
+            {inv.stato === 'attivo' && (
+              <button className="btn-mini" onClick={() => copia(inv.token)} type="button">Copia link</button>
+            )}
+            {inv.stato === 'attivo' && (
+              <button className="btn-mini" onClick={() => revoca(inv.id)} type="button">Revoca</button>
+            )}
             <button className="btn-mini btn-del" onClick={() => elimina(inv.id)} type="button">Elimina</button>
           </div>
         ))}

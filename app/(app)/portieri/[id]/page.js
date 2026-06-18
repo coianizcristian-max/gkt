@@ -8,6 +8,10 @@ export const dynamic = 'force-dynamic'
 export default async function SchedaPortierePage({ params }) {
   const { id } = await params
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profiloViewer } = await supabase
+    .from('profili').select('ruolo').eq('id', user?.id).maybeSingle()
+  const soloPortiere = profiloViewer?.ruolo === 'portiere'
 
   const { data: piediVoci } = await supabase
     .from('elenco_voci').select('valore').eq('elenco', 'piede').eq('attivo', true).order('ordine')
@@ -35,7 +39,7 @@ export default async function SchedaPortierePage({ params }) {
   return (
     <>
       <div className="topbar">
-        <div className="eyebrow"><Link href="/portieri">Portieri</Link> · Stagione {stagione?.nome ?? '—'}</div>
+        <div className="eyebrow">{soloPortiere ? 'La mia scheda' : <Link href="/portieri">Portieri</Link>} · Stagione {stagione?.nome ?? '—'}</div>
         <h1>{portiere.nome} {portiere.cognome ?? ''}</h1>
       </div>
       <div className="content">
@@ -50,6 +54,7 @@ export default async function SchedaPortierePage({ params }) {
             categorie={categorie}
             stagioneId={stagione.id}
             piedi={piedi}
+            soloPortiere={soloPortiere}
           />
         ) : (
           <div className="empty">Imposta prima una stagione attiva e almeno una categoria.</div>

@@ -6,6 +6,11 @@ export const dynamic = 'force-dynamic'
 
 export default async function CalendarioPage() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profilo } = await supabase
+    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
+  const isPortiere = profilo?.ruolo === 'portiere'
+
   const { data: stagione } = await supabase
     .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
 
@@ -25,16 +30,33 @@ export default async function CalendarioPage() {
     }))
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
 
-    // Stato "valutato": un allenamento e' valutato se ha almeno una riga in valutazioni
-    // Valutato = c'e' almeno un voto reale, OPPURE l'allenamento e' segnato "Nessuno"
     const allIds = allenamenti.map((a) => a.id)
-    let valutati = new Set()
-    if (allIds.length) {
-      const { data: vrows } = await supabase.from('valutazioni')
-        .select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allIds)
-      valutati = new Set((vrows ?? []).map((r) => r.allenamento_id))
+    if (isPortiere) {
+      // Per il portiere: stato presenza + se ha gia' lasciato il voto, per allenamento
+      let mie = []
+      if (allIds.length && profilo?.portiere_id) {
+        const { data } = await supabase.from('valutazioni')
+          .select('allenamento_id, presente, voto_portiere')
+          .eq('portiere_id', profilo.portiere_id).in('allenamento_id', allIds)
+        mie = data ?? []
+      }
+      const byAll = {}
+      for (const v of mie) byAll[v.allenamento_id] = v
+      allenamenti = allenamenti.map((a) => ({
+        ...a,
+        presente: byAll[a.id]?.presente ?? false,
+        ha_voto: byAll[a.id]?.voto_portiere != null,
+      }))
+    } else {
+      // Staff: "valutato" = almeno un voto reale, oppure allenamento segnato "Nessuno"
+      let valutati = new Set()
+      if (allIds.length) {
+        const { data: vrows } = await supabase.from('valutazioni')
+          .select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allIds)
+        valutati = new Set((vrows ?? []).map((r) => r.allenamento_id))
+      }
+      allenamenti = allenamenti.map((a) => ({ ...a, valutato: valutati.has(a.id) || a.nessuna_valutazione }))
     }
-    allenamenti = allenamenti.map((a) => ({ ...a, valutato: valutati.has(a.id) || a.nessuna_valutazione }))
   }
 
   return (
@@ -44,11 +66,11 @@ export default async function CalendarioPage() {
           <div className="eyebrow">Stagione {stagione?.nome ?? '—'}</div>
           <h1>Calendario</h1>
         </div>
-        <Link href="/calendario/nuovo" className="btn-azione">+ Nuovo allenamento</Link>
+        {!isPortiere && <Link href="/calendario/nuovo" className="btn-azione">+ Nuovo allenamento</Link>}
       </div>
       <div className="content">
         {stagione
-          ? <CalendarioMese allenamenti={allenamenti} categorie={categorie} />
+          ? <CalendarioMese allenamenti={allenamenti} categorie={categorie} vista={isPortiere ? 'portiere' : 'staff'} />
           : <div className="empty">Nessuna stagione attiva.</div>}
       </div>
     </>

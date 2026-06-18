@@ -19,6 +19,9 @@ export default async function FunzionalitaPage() {
   const tuttoFree = configMap['__tutto_free'] ?? false
 
   // Costruisce lista con valori correnti
+  const feeRow = (rows ?? []).find((r) => r.chiave === 'fee_contatto_importo')
+  const feeContatto = feeRow?.label ?? '2.90'
+
   const funzionalita = Object.entries(FUNZIONALITA).map(([k, def]) => ({
     chiave: k,
     label: def.label,
@@ -33,7 +36,7 @@ export default async function FunzionalitaPage() {
       </div>
       <div className="content">
         <SupervisoreNav />
-        <GatingManager funzionalita={funzionalita} tuttoFree={tuttoFree} />
+        <GatingManager funzionalita={funzionalita} tuttoFree={tuttoFree} feeContatto={feeContatto} />
       </div>
     </>
   )

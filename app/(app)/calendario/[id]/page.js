@@ -6,6 +6,8 @@ import ValutazioniAllenamento from '@/app/components/ValutazioniAllenamento'
 import AllenamentoEsercizi from '@/app/components/AllenamentoEsercizi'
 import ValutazionePortiere from '@/app/components/ValutazionePortiere'
 import FeedbackAllenamento from '@/app/components/FeedbackAllenamento'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
 
@@ -84,6 +86,14 @@ export default async function AllenamentoPage({ params }) {
   }
 
   // ── VISTA STAFF/ALLENATORE ────────────────────────────────────────────────
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user?.id),
+  ])
+  const canValutare = isUnlocked('valutazioni_allenamento', gatingCfg, abbAttivo)
+  const canEsercizi = isUnlocked('esercizi_allenamento', gatingCfg, abbAttivo)
+  const canFeedback = isUnlocked('feedback_allenatore', gatingCfg, abbAttivo)
+
   const [
     { data: catRows },
     { data: iscr },
@@ -162,7 +172,15 @@ export default async function AllenamentoPage({ params }) {
         <AllenamentoForm allenamento={allenamento} categorie={categorie} stagioneId={allenamento.stagione_id} />
 
         <h2 className="sezione-titolo">Valutazioni</h2>
-        {portieri.length > 0 ? (
+        {!canValutare ? (
+          <PaywallBanner label="Valutazioni allenamento" wrap>
+            <ValutazioniAllenamento
+              allenamentoId={id} portieri={portieri} parametri={parametri ?? []}
+              valIniziali={valIniziali} punteggiIniziali={punteggiIniziali}
+              scalaVoti={scalaVoti} allenamentoNessuno={allenamento.nessuna_valutazione ?? false}
+            />
+          </PaywallBanner>
+        ) : portieri.length > 0 ? (
           <ValutazioniAllenamento
             allenamentoId={id}
             portieri={portieri}
@@ -177,14 +195,14 @@ export default async function AllenamentoPage({ params }) {
         )}
 
         <h2 className="sezione-titolo">Esercizi della seduta</h2>
-        <AllenamentoEsercizi
+        {canEsercizi ? <AllenamentoEsercizi
           allenamentoId={id}
           libreriaMia={libreriaMia}
           libreriaPubblica={libreriaPubblica}
           selezionatiIniziali={eserciziOrdinati}
-        />
+        /> : <PaywallBanner label="Esercizi negli allenamenti" />}
 
-        {feedback.length > 0 && (
+        {canFeedback && feedback.length > 0 && (
           <>
             <h2 className="sezione-titolo">Feedback portieri</h2>
             <FeedbackAllenamento feedback={feedback} />

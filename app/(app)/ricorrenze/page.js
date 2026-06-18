@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Guida from '@/app/components/Guida'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import RicorrenzeManager from '@/app/components/RicorrenzeManager'
 
 export const dynamic = 'force-dynamic'
@@ -26,6 +28,12 @@ export default async function RicorrenzePage() {
     ricorrenze = ric.data ?? []
   }
 
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user.id),
+  ])
+  const canRicorrenze = isUnlocked('ricorrenze_genera', gatingCfg, abbAttivo)
+
   return (
     <>
       <div className="topbar">
@@ -40,7 +48,9 @@ export default async function RicorrenzePage() {
           Ricorda di impostare prima le date di inizio e fine stagione in Supervisore → Stagioni.
         </Guida>
         {stagione
-          ? <RicorrenzeManager stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} />
+          ? (canRicorrenze
+              ? <RicorrenzeManager stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} />
+              : <PaywallBanner label="Generazione automatica ricorrenze" />)
           : <div className="empty">Nessuna stagione attiva.</div>}
       </div>
     </>

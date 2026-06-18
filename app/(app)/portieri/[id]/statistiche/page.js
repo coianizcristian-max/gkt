@@ -1,8 +1,10 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 const fmt = (n, dec = 2) => (n == null ? '—' : Number(n).toLocaleString('it-IT', { maximumFractionDigits: dec }))
 
@@ -23,6 +25,12 @@ export default async function StatistichePortierePage({ params }) {
   const { data: iscrizione } = stagione
     ? await supabase.from('iscrizioni').select('squadra_id, squadre(nome)').eq('stagione_id', stagione.id).eq('portiere_id', id).maybeSingle()
     : { data: null }
+
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user?.id),
+  ])
+  const canStat = isUnlocked('statistiche_dettaglio', gatingCfg, abbAttivo)
 
   // Allenamenti + valutazioni portiere
   let vAll = [], vPar = [], punteggi = [], parametri = [], partite = []
@@ -112,6 +120,25 @@ export default async function StatistichePortierePage({ params }) {
       const votiCat = (vCat ?? []).filter((v) => v.presente && v.voto != null).map((v) => Number(v.voto))
       mediaCat = votiCat.length ? votiCat.reduce((s, x) => s + x, 0) / votiCat.length : null
     }
+  }
+
+  if (!canStat) {
+    return (
+      <>
+        <div className="topbar">
+          <div className="eyebrow">{soloPortiere ? 'La mia scheda' : <a href="/portieri">Portieri</a>} · Stagione {stagione?.nome ?? '—'}</div>
+          <h1>{portiere.nome} {portiere.cognome ?? ''}</h1>
+        </div>
+        <div className="content">
+          <div className="sub-nav">
+            <a href={`/portieri/${id}`} className="sub-nav-link">Scheda</a>
+            <a href={`/portieri/${id}/obiettivi`} className="sub-nav-link">Obiettivi</a>
+            <a href={`/portieri/${id}/statistiche`} className="sub-nav-link active">Statistiche</a>
+          </div>
+          <PaywallBanner label="Statistiche dettaglio portiere" />
+        </div>
+      </>
+    )
   }
 
   return (

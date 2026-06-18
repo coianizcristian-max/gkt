@@ -676,3 +676,82 @@ a.brand { text-decoration: none; color: inherit; }
 .stat-mese-val { font-size: 12px; font-weight: 700; color: var(--ink); }
 .stat-mese-label { font-size: 11px; color: var(--ink-soft); }
 
+
+/* ===== Paywall banner e overlay (P21) ===== */
+.paywall-banner {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--carta); border: 1px solid var(--linea);
+  border-left: 4px solid var(--giallo); border-radius: var(--r);
+  padding: 16px 20px; margin: 8px 0;
+}
+.paywall-icon { font-size: 24px; flex-shrink: 0; }
+.paywall-text { flex: 1; }
+.paywall-text b { display: block; margin-bottom: 4px; }
+.paywall-text p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.paywall-cta { flex-shrink: 0; }
+
+.paywall-wrap { position: relative; }
+.paywall-content { opacity: 0.25; pointer-events: none; user-select: none; filter: blur(1px); }
+.paywall-overlay {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.paywall-overlay .paywall-banner { width: 100%; max-width: 480px; box-shadow: var(--ombra); }
+
+/* ===== Toggle switch (P21 GatingManager) ===== */
+.toggle-switch {
+  width: 52px; height: 28px; border-radius: 14px;
+  background: var(--linea); border: none; cursor: pointer;
+  position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--azzurro); }
+.toggle-switch.sm { width: 40px; height: 22px; border-radius: 11px; }
+.toggle-thumb {
+  position: absolute; top: 3px; left: 3px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+  display: block;
+}
+.toggle-switch.on .toggle-thumb { transform: translateX(24px); }
+.toggle-switch.sm .toggle-thumb { width: 16px; height: 16px; }
+.toggle-switch.sm.on .toggle-thumb { transform: translateX(18px); }
+
+/* ===== Piani abbonamento (P22) ===== */
+.piani-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px; margin-bottom: 4px;
+}
+.piano-card {
+  border: 2px solid var(--linea); border-radius: var(--r);
+  background: var(--bianco); padding: 24px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  position: relative; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.piano-card.highlight {
+  border-color: var(--azzurro);
+  box-shadow: 0 0 0 4px rgba(10,126,194,0.1);
+}
+.piano-badge {
+  position: absolute; top: -1px; right: 16px;
+  background: var(--azzurro); color: #fff;
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 0 0 8px 8px; letter-spacing: 0.5px;
+}
+.piano-nome { font-weight: 700; font-size: 16px; color: var(--ink); }
+.piano-prezzo { display: flex; align-items: baseline; gap: 3px; }
+.piano-eur { font-size: 18px; font-weight: 700; color: var(--ink); }
+.piano-num { font-size: 38px; font-weight: 800; line-height: 1; color: var(--ink); }
+.piano-periodo { font-size: 13px; color: var(--ink-soft); margin-left: 2px; }
+.piano-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.5; flex: 1; }
+.piano-cta { margin-top: auto; }
+
+/* Abbonamento attivo */
+.abbonamento-attivo { display: flex; align-items: center; gap: 20px; }
+.abb-icon { font-size: 36px; flex-shrink: 0; }
+
+/* Nav abbonati highlight */
+.nav-abbonati { color: var(--giallo) !important; font-weight: 700; }
+

@@ -9,6 +9,8 @@ const VOCI = [
   { href: '/supervisore/categorie', label: 'Categorie' },
   { href: '/supervisore/elenchi', label: 'Elenchi' },
   { href: '/supervisore/inviti', label: 'Inviti' },
+  { href: '/supervisore/funzionalita', label: 'Funzionalità' },
+  { href: '/supervisore/abbonamenti', label: 'Abbonamenti' },
 ]
 
 export default function SupervisoreNav() {

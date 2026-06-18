@@ -1,10 +1,19 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
 export default async function PortieriPage() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Un portiere non vede la lista: viene mandato alla propria scheda
+  const { data: profilo } = await supabase
+    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
+  if (profilo?.ruolo === 'portiere' && profilo.portiere_id) {
+    redirect(`/portieri/${profilo.portiere_id}`)
+  }
 
   const { data: stagione } = await supabase
     .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()

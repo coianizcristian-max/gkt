@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId, piedi = [] }) {
+export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId, piedi = [], soloPortiere = false }) {
   const router = useRouter()
   const isEdit = !!portiere
   const [f, setF] = useState({
@@ -29,6 +29,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
   const [error, setError] = useState('')
 
   const upd = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }))
+  const tornaIndietro = () => router.push(soloPortiere && portiere ? `/portieri/${portiere.id}` : '/portieri')
 
   function onFoto(e) {
     const file = e.target.files?.[0]
@@ -42,14 +43,13 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
   async function save(e) {
     e.preventDefault()
     setError('')
-    if (!f.nome.trim()) { setError('Il nome è obbligatorio.'); return }
-    if (!f.squadra_id) { setError('Seleziona una categoria.'); return }
+    if (!soloPortiere && !f.nome.trim()) { setError('Il nome è obbligatorio.'); return }
+    if (!soloPortiere && !f.squadra_id) { setError('Seleziona una categoria.'); return }
     setSaving(true)
     const supabase = createClient()
 
+    // Campi anagrafici modificabili. Per il portiere NON includiamo nome/cognome (bloccati).
     const anagrafica = {
-      nome: f.nome.trim(),
-      cognome: f.cognome.trim() || null,
       data_nascita: f.data_nascita || null,
       luogo_nascita: f.luogo_nascita || null,
       indirizzo: f.indirizzo || null,
@@ -60,6 +60,10 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
       piede: f.piede || null,
       squadra_provenienza: f.squadra_provenienza || null,
       note: f.note || null,
+    }
+    if (!soloPortiere) {
+      anagrafica.nome = f.nome.trim()
+      anagrafica.cognome = f.cognome.trim() || null
     }
 
     try {
@@ -84,20 +88,22 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         await supabase.from('portieri').update({ foto_url: pub.publicUrl }).eq('id', portiereId)
       }
 
-      // Iscrizione alla stagione (categoria + numero maglia)
-      const iscr = {
-        portiere_id: portiereId,
-        stagione_id: stagioneId,
-        squadra_id: f.squadra_id,
-        numero_maglia: num(f.numero_maglia),
+      // Iscrizione (categoria + maglia): solo staff. Il portiere non puo' cambiarla.
+      if (!soloPortiere) {
+        const iscr = {
+          portiere_id: portiereId,
+          stagione_id: stagioneId,
+          squadra_id: f.squadra_id,
+          numero_maglia: num(f.numero_maglia),
+        }
+        const { error: iErr } = await supabase
+          .from('iscrizioni')
+          .upsert(iscr, { onConflict: 'portiere_id,stagione_id' })
+        if (iErr) throw iErr
       }
-      const { error: iErr } = await supabase
-        .from('iscrizioni')
-        .upsert(iscr, { onConflict: 'portiere_id,stagione_id' })
-      if (iErr) throw iErr
 
-      router.push('/portieri')
-      router.refresh()
+      if (soloPortiere) { router.push(`/portieri/${portiereId}`); router.refresh() }
+      else { router.push('/portieri'); router.refresh() }
     } catch (err) {
       setError(err.message || 'Errore durante il salvataggio.')
       setSaving(false)
@@ -107,6 +113,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
   return (
     <form className="scheda" onSubmit={save}>
       {error && <div className="err">{error}</div>}
+      {soloPortiere && <p className="sub-intro">Puoi aggiornare i tuoi dati (recapiti, misure, foto…). Nome, cognome e categoria sono gestiti dallo staff.</p>}
 
       <div className="scheda-foto">
         <div className="foto-box">
@@ -122,16 +129,16 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
 
       <div className="form-grid">
         <div className="field"><label>Nome *</label>
-          <input value={f.nome} onChange={upd('nome')} required /></div>
+          <input value={f.nome} onChange={upd('nome')} required disabled={soloPortiere} /></div>
         <div className="field"><label>Cognome</label>
-          <input value={f.cognome} onChange={upd('cognome')} /></div>
+          <input value={f.cognome} onChange={upd('cognome')} disabled={soloPortiere} /></div>
 
         <div className="field"><label>Categoria *</label>
-          <select value={f.squadra_id} onChange={upd('squadra_id')} required>
+          <select value={f.squadra_id} onChange={upd('squadra_id')} required disabled={soloPortiere}>
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></div>
         <div className="field"><label>Numero di maglia</label>
-          <input type="number" value={f.numero_maglia} onChange={upd('numero_maglia')} /></div>
+          <input type="number" value={f.numero_maglia} onChange={upd('numero_maglia')} disabled={soloPortiere} /></div>
 
         <div className="field"><label>Data di nascita</label>
           <input type="date" value={f.data_nascita} onChange={upd('data_nascita')} /></div>
@@ -163,7 +170,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
       </div>
 
       <div className="form-actions">
-        <button type="button" className="btn-ghost" onClick={() => router.push('/portieri')}>Annulla</button>
+        <button type="button" className="btn-ghost" onClick={tornaIndietro}>Annulla</button>
         <button type="submit" className="btn" disabled={saving}>
           {saving ? 'Salvataggio…' : (isEdit ? 'Salva modifiche' : 'Crea portiere')}
         </button>

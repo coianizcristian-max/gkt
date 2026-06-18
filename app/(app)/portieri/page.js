@@ -1,14 +1,23 @@
 import Link from 'next/link'
+import Guida from '@/app/components/Guida'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
+function calcEta(dataNascita) {
+  if (!dataNascita) return null
+  const oggi = new Date()
+  const n = new Date(dataNascita + 'T00:00:00')
+  let eta = oggi.getFullYear() - n.getFullYear()
+  if (oggi.getMonth() < n.getMonth() || (oggi.getMonth() === n.getMonth() && oggi.getDate() < n.getDate())) eta--
+  return eta
+}
+
 export default async function PortieriPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Un portiere non vede la lista: viene mandato alla propria scheda
   const { data: profilo } = await supabase
     .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
   if (profilo?.ruolo === 'portiere' && profilo.portiere_id) {
@@ -26,7 +35,7 @@ export default async function PortieriPage() {
     const [sq, isc, val] = await Promise.all([
       supabase.from('squadre').select('id, nome, ordine').order('ordine'),
       supabase.from('iscrizioni')
-        .select('squadra_id, numero_maglia, portieri(id, nome, cognome, foto_url, attivo)')
+        .select('squadra_id, numero_maglia, portieri(id, nome, cognome, foto_url, attivo, data_nascita)')
         .eq('stagione_id', stagione.id),
       supabase.from('valutazioni').select('portiere_id, presente, voto'),
     ])
@@ -58,6 +67,11 @@ export default async function PortieriPage() {
         <Link href="/portieri/nuovo" className="btn-azione">+ Nuovo portiere</Link>
       </div>
       <div className="content">
+        <Guida titolo="Come gestire i portieri">
+          Aggiungi i portieri con &ldquo;+ Nuovo portiere&rdquo; e iscrivili a una categoria (squadra) della stagione attiva.
+          Dalla scheda di ogni portiere puoi modificare dati anagrafici, impostare obiettivi e vedere le statistiche di stagione.
+          Per mandare l&apos;accesso al portiere, usa la sezione <a href="/inviti" className="link-inline">Inviti</a>.
+        </Guida>
         {squadre.map((sq) => {
           const lista = perCategoria(sq.id)
           if (lista.length === 0) return null
@@ -70,6 +84,7 @@ export default async function PortieriPage() {
               <div className="grid">
                 {lista.map((i) => {
                   const p = i.portieri
+                  const eta = calcEta(p.data_nascita)
                   return (
                     <Link className="card-portiere" key={p.id} href={`/portieri/${p.id}`}>
                       <div className="card-top">
@@ -83,7 +98,10 @@ export default async function PortieriPage() {
                             {p.nome} {p.cognome ?? ''}
                             {i.numero_maglia ? <span className="maglia">#{i.numero_maglia}</span> : null}
                           </div>
-                          <div className="ruolo">{sq.nome}</div>
+                          <div className="ruolo">
+                            {sq.nome}
+                            {eta != null && <span className="eta-badge">{eta} anni</span>}
+                          </div>
                         </div>
                       </div>
                       <div className="stat-row">

@@ -1,11 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
+import StatisticheClient from './StatisticheClient'
 
 export const dynamic = 'force-dynamic'
 
-const fmt = (n) => (n == null ? '\u2014' : Number(n).toLocaleString('it-IT', { maximumFractionDigits: 2 }))
-
 export default async function StatistichePage() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profilo } = await supabase
+    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
+  const isPortiere = profilo?.ruolo === 'portiere'
+
   const { data: stagione } = await supabase
     .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
 
@@ -24,17 +28,25 @@ export default async function StatistichePage() {
       .eq('stagione_id', stagione.id),
     supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
     supabase.from('allenamenti').select('id, squadra_id').eq('stagione_id', stagione.id),
-    supabase.from('partite').select('id, squadra_id, gol_subiti').eq('stagione_id', stagione.id),
+    supabase.from('partite').select('id, squadra_id, gol_subiti, tipo').eq('stagione_id', stagione.id),
   ])
 
   const allenIds = (allen ?? []).map((a) => a.id)
   const partIds = (part ?? []).map((p) => p.id)
-  const [{ data: vAll }, { data: vPar }] = await Promise.all([
+
+  const [{ data: vAll }, { data: vPar }, { data: feedbackRows }] = await Promise.all([
     allenIds.length
-      ? supabase.from('valutazioni').select('portiere_id, presente, voto').in('allenamento_id', allenIds)
+      ? supabase.from('valutazioni').select('portiere_id, presente, voto, allenamento_id').in('allenamento_id', allenIds)
       : Promise.resolve({ data: [] }),
     partIds.length
       ? supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, partita_id').in('partita_id', partIds)
+      : Promise.resolve({ data: [] }),
+    allenIds.length
+      ? supabase.from('valutazioni')
+        .select('portiere_id, feedback_portiere, voto_portiere, allenamento_id, portieri(nome, cognome), allenamenti(data, squadre(nome))')
+        .in('allenamento_id', allenIds)
+        .not('feedback_portiere', 'is', null)
+        .order('allenamento_id')
       : Promise.resolve({ data: [] }),
   ])
 
@@ -43,7 +55,8 @@ export default async function StatistichePage() {
   const totAllenByCat = {}
   for (const a of allen ?? []) totAllenByCat[a.squadra_id] = (totAllenByCat[a.squadra_id] ?? 0) + 1
   const golSubitiByPartita = {}
-  for (const p of part ?? []) golSubitiByPartita[p.id] = p.gol_subiti
+  const tipoPartita = {}
+  for (const p of part ?? []) { golSubitiByPartita[p.id] = p.gol_subiti; tipoPartita[p.id] = p.tipo }
 
   const vAllBy = {}
   for (const v of vAll ?? []) (vAllBy[v.portiere_id] ??= []).push(v)
@@ -61,13 +74,28 @@ export default async function StatistichePage() {
     const votiA = va.filter((x) => x.voto != null).map((x) => Number(x.voto))
     const mediaA = votiA.length ? votiA.reduce((s, x) => s + x, 0) / votiA.length : null
     const vp = vParBy[p.id] ?? []
-    const vpPresent = vp.filter((x) => x.presente)
-    const votiP = vpPresent.filter((x) => x.voto != null).map((x) => Number(x.voto))
+    // Media partite solo campionato (esclude amichevoli)
+    const vpCamp = vp.filter((x) => x.presente && tipoPartita[x.partita_id] !== 'amichevole')
+    const votiP = vpCamp.filter((x) => x.voto != null).map((x) => Number(x.voto))
     const mediaP = votiP.length ? votiP.reduce((s, x) => s + x, 0) / votiP.length : null
-    const cleanSheet = vpPresent.filter((x) => golSubitiByPartita[x.partita_id] === 0).length
+    const cleanSheet = vpCamp.filter((x) => golSubitiByPartita[x.partita_id] === 0).length
     const punti = vp.reduce((s, x) => s + (x.punti != null ? Number(x.punti) : 0), 0)
-    return { p, totAllen: totAllenByCat[p.squadra_id] ?? 0, presenze, mediaA, mediaP, nPartite: vpPresent.length, cleanSheet, punti }
+    const nPartite = vpCamp.length
+    return { p, totAllen: totAllenByCat[p.squadra_id] ?? 0, presenze, mediaA, mediaP, nPartite, cleanSheet, punti }
   })
+
+  // Statistiche feedback (P14)
+  const feedbackStats = {
+    totFeedback: (feedbackRows ?? []).length,
+    conVoto: (feedbackRows ?? []).filter((f) => f.voto_portiere != null).length,
+    mediaVotoPortiere: (() => {
+      const arr = (feedbackRows ?? []).filter((f) => f.voto_portiere != null).map((f) => Number(f.voto_portiere))
+      return arr.length ? arr.reduce((s, x) => s + x, 0) / arr.length : null
+    })(),
+    // Allenamenti valutati = allenamenti con almeno una valutazione presente
+    allenValutati: new Set((vAll ?? []).filter((v) => v.voto != null).map((v) => v.allenamento_id)).size,
+    totAllenamenti: allenIds.length,
+  }
 
   const categorieOrd = (cats ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
   const byCat = {}
@@ -79,51 +107,15 @@ export default async function StatistichePage() {
         <div><div className="eyebrow">Stagione {stagione.nome}</div><h1>Statistiche</h1></div>
       </div>
       <div className="content">
-        {stats.length === 0 ? (
-          <div className="empty">Nessun portiere iscritto alla stagione.</div>
-        ) : (
-          categorieOrd.map((cat) => {
-            const lista = byCat[cat.id] ?? []
-            if (lista.length === 0) return null
-            return (
-              <section key={cat.id}>
-                <div className="squadra-head">
-                  <h2>{cat.nome}</h2>
-                  <span className="conta">{lista.length} portieri</span>
-                </div>
-                <div className="stat-grid">
-                  {lista.map((s) => (
-                    <div className="stat-card" key={s.p.id}>
-                      <div className="stat-head">
-                        <div className="stat-foto">
-                          {s.p.foto_url ? <img src={s.p.foto_url} alt="" /> : <span>{(s.p.nome || '?').charAt(0)}</span>}
-                        </div>
-                        <div>
-                          <div className="stat-nome">{s.p.nome} {s.p.cognome ?? ''}</div>
-                          {s.p.numero_maglia ? <div className="stat-cat">#{s.p.numero_maglia}</div> : null}
-                        </div>
-                      </div>
-                      <div className="stat-rows">
-                        <div className="stat-block">
-                          <h4>Allenamenti</h4>
-                          <div className="stat-line"><span>Presenze</span><b>{s.presenze}/{s.totAllen}</b></div>
-                          <div className="stat-line"><span>Media voto</span><b>{fmt(s.mediaA)}</b></div>
-                        </div>
-                        <div className="stat-block">
-                          <h4>Partite</h4>
-                          <div className="stat-line"><span>Giocate</span><b>{s.nPartite}</b></div>
-                          <div className="stat-line"><span>Media voto</span><b>{fmt(s.mediaP)}</b></div>
-                          <div className="stat-line"><span>Clean sheet</span><b>{s.cleanSheet}</b></div>
-                          <div className="stat-line"><span>Punti</span><b>{fmt(s.punti)}</b></div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )
-          })
-        )}
+        <StatisticheClient
+          stats={stats}
+          categorieOrd={categorieOrd}
+          byCat={byCat}
+          feedbackStats={feedbackStats}
+          feedback={feedbackRows ?? []}
+          isPortiere={isPortiere}
+          myPortiereId={profilo?.portiere_id ?? null}
+        />
       </div>
     </>
   )

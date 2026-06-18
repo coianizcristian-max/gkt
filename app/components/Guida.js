@@ -2,15 +2,15 @@
 
 import { useState } from 'react'
 
-export default function Guida({ titolo = 'Come funziona', children }) {
-  const [open, setOpen] = useState(false)
+export default function Guida({ titolo = 'Come funziona', children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
-    <div style={{ border: '1px solid var(--linea)', borderRadius: 10, background: 'var(--carta)', margin: '0 0 16px' }}>
-      <button type="button" onClick={() => setOpen((o) => !o)} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: '10px 14px', fontWeight: 700, color: 'var(--ink)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.95rem' }}>
-        <span>{titolo}</span>
-        <span style={{ color: 'var(--ink-soft)' }}>{open ? '\u2212' : '+'}</span>
+    <div className="guida-box">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="guida-toggle">
+        <span>💡 {titolo}</span>
+        <span className="guida-chevron">{open ? '−' : '+'}</span>
       </button>
-      {open && <div style={{ padding: '0 14px 12px', color: 'var(--ink-soft)', lineHeight: 1.55 }}>{children}</div>}
+      {open && <div className="guida-body">{children}</div>}
     </div>
   )
 }

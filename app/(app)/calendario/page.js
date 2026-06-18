@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import CalendarioMese from '@/app/components/CalendarioMese'
+import Guida from '@/app/components/Guida'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,6 +80,13 @@ export default async function CalendarioPage() {
         {!isPortiere && <Link href="/calendario/nuovo" className="btn-azione">+ Nuovo allenamento</Link>}
       </div>
       <div className="content">
+        {!isPortiere && (
+          <Guida titolo="Come usare il calendario">
+            Clicca su un numero del giorno per creare un allenamento in quella data. Clicca su un allenamento per aprirlo e inserire presenze e valutazioni.
+            Gli allenamenti con cornice gialla sono accorpati con un&apos;altra categoria. Usa il filtro in alto a destra per vedere una sola categoria.
+            La sezione &ldquo;Da valutare&rdquo; mostra gli allenamenti passati senza valutazioni inserite.
+          </Guida>
+        )}
         {stagione
           ? <CalendarioMese allenamenti={allenamenti} categorie={categorie} vista={isPortiere ? 'portiere' : 'staff'} />
           : <div className="empty">Nessuna stagione attiva.</div>}

@@ -46,6 +46,7 @@ export default async function SchedaPortierePage({ params }) {
         <div className="sub-nav">
           <Link href={`/portieri/${id}`} className="sub-nav-link active">Scheda</Link>
           <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">Obiettivi</Link>
+          <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">Statistiche</Link>
         </div>
         {stagione && categorie.length > 0 ? (
           <PortiereForm

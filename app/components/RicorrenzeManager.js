@@ -22,9 +22,9 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
   }
 
   async function genera() {
-    if (!haRange) { alert('Imposta prima data inizio e fine della stagione (tab Stagioni).'); return }
+    if (!haRange) { alert('Imposta prima data inizio e fine della stagione (Supervisore > Stagioni).'); return }
     if (!ricorrenze.length) { alert('Aggiungi almeno una ricorrenza.'); return }
-    if (!confirm('Generare gli allenamenti per tutta la stagione dalle ricorrenze? Le date gia presenti non verranno duplicate.')) return
+    if (!confirm('Generare gli allenamenti per tutta la stagione dalle ricorrenze? Le date già presenti non verranno duplicate.')) return
     setGen('working')
     const supabase = createClient()
     try {
@@ -43,7 +43,7 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
           }
         }
       }
-      if (!toInsert.length) { setGen('Nessun nuovo allenamento da creare (gia tutti presenti).'); return }
+      if (!toInsert.length) { setGen('Nessun nuovo allenamento da creare (già tutti presenti).'); return }
       for (let i = 0; i < toInsert.length; i += 200) {
         const { error } = await supabase.from('allenamenti').insert(toInsert.slice(i, i + 200))
         if (error) throw error
@@ -56,21 +56,47 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
 
   return (
     <div className="lista-editor">
-      <p className="sub-intro">Imposta i giorni e orari fissi di allenamento per ogni categoria, poi genera gli allenamenti per tutta la stagione <b>{stagione?.nome ?? '\u2014'}</b>. Le date gia inserite non vengono duplicate.</p>
-      {!haRange && <div className="err">Imposta data inizio e fine della stagione nella tab Stagioni per poter generare.</div>}
-      {categorie.map((c) => (
-        <div className="elenco-blocco" key={c.id}>
-          <h3>{c.nome}</h3>
-          {perCat(c.id).map((r) => <RicorrenzaRiga key={r.id} ricorrenza={r} onChanged={() => router.refresh()} />)}
-          <button className="btn-ghost" onClick={() => aggiungi(c.id)} type="button">+ Aggiungi giorno</button>
+      <p className="sub-intro">
+        Imposta i giorni e orari fissi di allenamento <b>per ogni categoria</b>, poi genera gli allenamenti per tutta la stagione <b>{stagione?.nome ?? '—'}</b>.
+        Le date già inserite non vengono duplicate.
+      </p>
+
+      {/* Avviso date stagione — compare solo se mancano */}
+      {!haRange && (
+        <div className="err" style={{ marginBottom: 16 }}>
+          ⚠ Imposta <b>data inizio e fine</b> della stagione in <a href="/supervisore/stagioni" className="link-inline">Supervisore → Stagioni</a> per poter generare gli allenamenti.
         </div>
-      ))}
+      )}
+
+      {haRange && (
+        <div className="ok-msg" style={{ marginBottom: 16 }}>
+          Stagione: {new Date(stagione.data_inizio + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })} →{' '}
+          {new Date(stagione.data_fine + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </div>
+      )}
+
+      {categorie.map((c) => {
+        const righe = perCat(c.id)
+        return (
+          <div className="elenco-blocco" key={c.id}>
+            <h3>{c.nome}</h3>
+            {righe.length === 0 && (
+              <p className="sub-intro" style={{ color: 'var(--rosso)', margin: '0 0 8px' }}>
+                Nessuna ricorrenza impostata per questa categoria. Clicca &quot;+ Aggiungi giorno&quot; per impostarla qui.
+              </p>
+            )}
+            {righe.map((r) => <RicorrenzaRiga key={r.id} ricorrenza={r} onChanged={() => router.refresh()} />)}
+            <button className="btn-ghost" onClick={() => aggiungi(c.id)} type="button">+ Aggiungi giorno</button>
+          </div>
+        )
+      })}
+
       <div className="form-actions">
         <button className="btn" onClick={genera} disabled={gen === 'working' || !haRange} type="button">
           {gen === 'working' ? 'Generazione...' : 'Genera allenamenti stagione'}
         </button>
       </div>
-      {gen && gen !== 'working' && <p className="sub-intro">{gen}</p>}
+      {gen && gen !== 'working' && <p className="sub-intro" style={{ marginTop: 8 }}>{gen}</p>}
     </div>
   )
 }
@@ -104,7 +130,7 @@ function RicorrenzaRiga({ ricorrenza, onChanged }) {
       </select>
       <label className="lista-ord">Inizio<input type="time" value={oi} onChange={(e) => { setOi(e.target.value); setDone(false) }} /></label>
       <label className="lista-ord">Fine<input type="time" value={ofine} onChange={(e) => { setOfine(e.target.value); setDone(false) }} /></label>
-      <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '\u2713' : 'Salva'}</button>
+      <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '✓' : 'Salva'}</button>
       <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>
     </div>
   )

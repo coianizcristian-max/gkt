@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import Guida from '@/app/components/Guida'
 import RicorrenzeManager from '@/app/components/RicorrenzeManager'
 
 export const dynamic = 'force-dynamic'
@@ -32,6 +33,12 @@ export default async function RicorrenzePage() {
         <h1>Ricorrenze allenamenti</h1>
       </div>
       <div className="content">
+        <Guida titolo="Come funzionano le ricorrenze">
+          Imposta per ogni categoria il giorno e l&apos;orario fisso di allenamento settimanale.
+          Quando hai configurato tutti i giorni, clicca &ldquo;Genera allenamenti stagione&rdquo; per creare automaticamente tutte le date nel calendario.
+          Le date già presenti non vengono duplicate: puoi rigenerare senza problemi dopo modifiche.
+          Ricorda di impostare prima le date di inizio e fine stagione in Supervisore → Stagioni.
+        </Guida>
         {stagione
           ? <RicorrenzeManager stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} />
           : <div className="empty">Nessuna stagione attiva.</div>}

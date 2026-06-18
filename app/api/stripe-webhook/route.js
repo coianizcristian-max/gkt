@@ -36,26 +36,42 @@ export async function POST(request) {
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object
-      const userId = session.metadata?.user_id
-      const piano = session.metadata?.piano
-      if (!userId || !piano) return NextResponse.json({ ok: true })
+      const tipo = session.metadata?.tipo
 
-      let subscription = null
-      let subscriptionId = null
-      if (session.subscription) {
-        subscription = await stripe.subscriptions.retrieve(session.subscription)
-        subscriptionId = subscription.id
+      // ── Abbonamento allenatore ──
+      if (tipo !== 'contatto_allenatore') {
+        const userId = session.metadata?.user_id
+        const piano = session.metadata?.piano
+        if (!userId || !piano) return NextResponse.json({ ok: true })
+
+        let subscription = null
+        let subscriptionId = null
+        if (session.subscription) {
+          subscription = await stripe.subscriptions.retrieve(session.subscription)
+          subscriptionId = subscription.id
+        }
+        await admin.from('abbonamenti').upsert({
+          allenatore_id: userId,
+          piano,
+          stato: 'attivo',
+          scadenza: scadenzaDa(piano, subscription),
+          stripe_subscription_id: subscriptionId,
+          stripe_customer_id: session.customer,
+        }, { onConflict: 'allenatore_id' })
       }
 
-      // Crea o aggiorna il record abbonamento
-      await admin.from('abbonamenti').upsert({
-        allenatore_id: userId,
-        piano,
-        stato: 'attivo',
-        scadenza: scadenzaDa(piano, subscription),
-        stripe_subscription_id: subscriptionId,
-        stripe_customer_id: session.customer,
-      }, { onConflict: 'allenatore_id' })
+      // ── Sblocco contatto allenatore ──
+      if (tipo === 'contatto_allenatore') {
+        const acquirenteId = session.metadata?.acquirente_id
+        const allenatoreId = session.metadata?.allenatore_id
+        if (acquirenteId && allenatoreId) {
+          await admin.from('accessi_contatto').upsert({
+            acquirente_id: acquirenteId,
+            allenatore_id: allenatoreId,
+            stripe_payment_intent: session.payment_intent,
+          }, { onConflict: 'acquirente_id,allenatore_id' })
+        }
+      }
     }
 
     if (event.type === 'invoice.payment_succeeded') {
@@ -64,7 +80,6 @@ export async function POST(request) {
       const subscription = await stripe.subscriptions.retrieve(invoice.subscription)
       const userId = subscription.metadata?.user_id
       if (!userId) return NextResponse.json({ ok: true })
-
       await admin.from('abbonamenti').update({
         stato: 'attivo',
         scadenza: new Date(subscription.current_period_end * 1000).toISOString(),
@@ -74,8 +89,7 @@ export async function POST(request) {
     if (event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object
       const userId = subscription.metadata?.user_id
-      if (!userId) return NextResponse.json({ ok: true })
-      await admin.from('abbonamenti').update({ stato: 'cancellato' }).eq('allenatore_id', userId)
+      if (userId) await admin.from('abbonamenti').update({ stato: 'cancellato' }).eq('allenatore_id', userId)
     }
 
     if (event.type === 'invoice.payment_failed') {
@@ -83,9 +97,7 @@ export async function POST(request) {
       if (!invoice.subscription) return NextResponse.json({ ok: true })
       const subscription = await stripe.subscriptions.retrieve(invoice.subscription)
       const userId = subscription.metadata?.user_id
-      if (userId) {
-        await admin.from('abbonamenti').update({ stato: 'scaduto' }).eq('allenatore_id', userId)
-      }
+      if (userId) await admin.from('abbonamenti').update({ stato: 'scaduto' }).eq('allenatore_id', userId)
     }
   } catch (err) {
     console.error('Webhook handler error:', err)

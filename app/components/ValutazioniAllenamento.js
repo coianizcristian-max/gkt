@@ -53,7 +53,9 @@ export default function ValutazioniAllenamento({ allenamentoId, portieri, parame
           if (e2) throw e2
         }
       }
-      setDone(true); router.refresh()
+      setDone(true)
+      router.refresh()
+      setTimeout(() => router.push('/calendario'), 900)
     } catch (err) { setError(err.message) }
     setSaving(false)
   }

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeIniziale }) {
+export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeIniziale, feeContatto: feeIniziale }) {
   const router = useRouter()
   const [tuttoFree, setTuttoFree] = useState(tuttoFreeIniziale)
   const [stato, setStato] = useState(() => {
@@ -12,6 +12,7 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
     for (const f of funzionalita) m[f.chiave] = f.free
     return m
   })
+  const [fee, setFee] = useState(feeIniziale ?? '2.90')
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -19,18 +20,13 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
     setSaving(true); setDone(false)
     const supabase = createClient()
 
-    // Upsert interruttore globale
-    await supabase.from('funzionalita_config').upsert(
+    const rows = [
       { chiave: '__tutto_free', label: 'Tutto free', free: tuttoFree },
-      { onConflict: 'chiave' }
-    )
-
-    // Upsert ogni funzionalità
-    const rows = funzionalita.map((f) => ({
-      chiave: f.chiave,
-      label: f.label,
-      free: stato[f.chiave] ?? f.free,
-    }))
+      { chiave: 'fee_contatto_importo', label: fee, free: false },
+      ...funzionalita.map((f) => ({
+        chiave: f.chiave, label: f.label, free: stato[f.chiave] ?? f.free,
+      })),
+    ]
     const { error } = await supabase.from('funzionalita_config').upsert(rows, { onConflict: 'chiave' })
     if (error) { alert('Errore: ' + error.message); setSaving(false); return }
     setDone(true); setSaving(false); router.refresh()
@@ -45,7 +41,7 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
     <div className="lista-editor">
       <p className="sub-intro">
         Controlla quali funzionalità sono disponibili gratuitamente e quali richiedono un abbonamento.
-        L&apos;interruttore <b>TUTTO FREE</b> sblocca temporaneamente tutto per tutti, ignorando le impostazioni singole.
+        <b> TUTTO FREE</b> sblocca tutto per tutti temporaneamente.
       </p>
 
       {/* Interruttore globale */}
@@ -53,28 +49,41 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
         <div>
           <div style={{ fontWeight: 700, fontSize: 15 }}>🌐 TUTTO FREE</div>
           <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 3 }}>
-            Attivando questo interruttore tutti gli allenatori accedono a tutte le funzionalità senza abbonamento.
-            Utile per periodi di prova o manutenzione.
+            Tutti gli allenatori accedono a tutto senza abbonamento. Utile per periodi di prova.
           </div>
         </div>
-        <button
-          type="button"
-          className={`toggle-switch ${tuttoFree ? 'on' : ''}`}
+        <button type="button" className={`toggle-switch ${tuttoFree ? 'on' : ''}`}
           onClick={() => { setTuttoFree((v) => !v); setDone(false) }}
-          aria-checked={tuttoFree}
-          role="switch"
-        >
+          role="switch" aria-checked={tuttoFree}>
           <span className="toggle-thumb" />
         </button>
       </div>
 
-      {/* Tabella funzionalità */}
-      <div className="elenco-blocco">
-        <h3>Funzionalità singole</h3>
-        <p className="sub-intro">
-          Queste impostazioni si applicano solo quando &ldquo;TUTTO FREE&rdquo; è disattivato.
-          <b> FREE</b> = disponibile a tutti · <b>A pagamento</b> = richiede abbonamento attivo.
+      {/* Fee contatto allenatore */}
+      <div className="scheda" style={{ marginBottom: 20 }}>
+        <h3 style={{ margin: '0 0 10px' }}>💳 Fee sblocco contatti allenatore</h3>
+        <p className="sub-intro" style={{ margin: '0 0 12px' }}>
+          Chi cerca un allenatore dalla home pubblica vede bio, esperienze e certificati gratuitamente.
+          Per vedere telefono ed email paga questa fee una tantum (in euro).
         </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontWeight: 600 }}>€</span>
+          <input
+            type="number"
+            min="0.50"
+            step="0.10"
+            value={fee}
+            onChange={(e) => { setFee(e.target.value); setDone(false) }}
+            style={{ width: 90, padding: '8px 10px', border: '1px solid var(--linea)', borderRadius: 'var(--r-sm)', fontSize: 16 }}
+          />
+          <span style={{ color: 'var(--ink-soft)', fontSize: 13 }}>pagamento una tantum per allenatore</span>
+        </div>
+      </div>
+
+      {/* Funzionalità singole */}
+      <div className="elenco-blocco">
+        <h3>Funzionalità app</h3>
+        <p className="sub-intro">Attive solo quando TUTTO FREE è disattivato.</p>
         {funzionalita.map((f) => (
           <div key={f.chiave} className="lista-riga" style={{ gap: 12 }}>
             <div style={{ flex: 1 }}>
@@ -83,14 +92,10 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
                 {stato[f.chiave] ? '✓ FREE — tutti possono usarla' : '🔒 A pagamento — richiede abbonamento'}
               </div>
             </div>
-            <button
-              type="button"
+            <button type="button"
               className={`toggle-switch sm ${stato[f.chiave] ? 'on' : ''}`}
               onClick={() => toggle(f.chiave)}
-              role="switch"
-              aria-checked={stato[f.chiave]}
-              title={stato[f.chiave] ? 'Rendi a pagamento' : 'Rendi gratuita'}
-            >
+              role="switch" aria-checked={stato[f.chiave]}>
               <span className="toggle-thumb" />
             </button>
           </div>

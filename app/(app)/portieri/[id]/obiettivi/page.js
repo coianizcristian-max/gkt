@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ObiettiviManager from '@/app/components/ObiettiviManager'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,6 +27,14 @@ export default async function ObiettiviPortierePage({ params }) {
     for (const so of sotto ?? []) (sottoByObiettivo[so.obiettivo_id] ??= []).push(so)
   }
 
+  const supabase2 = await createClient()
+  const { data: { user: user2 } } = await supabase2.auth.getUser()
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user2?.id),
+  ])
+  const canObiettivi = isUnlocked('obiettivi_portieri', gatingCfg, abbAttivo)
+
   return (
     <>
       <div className="topbar">
@@ -36,12 +46,12 @@ export default async function ObiettiviPortierePage({ params }) {
           <Link href={`/portieri/${id}`} className="sub-nav-link">Scheda</Link>
           <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link active">Obiettivi</Link>
         </div>
-        <ObiettiviManager
+        {canObiettivi ? <ObiettiviManager
           portiereId={id}
           stagioneId={stagione?.id ?? null}
           obiettivi={obiettivi ?? []}
           sottoByObiettivo={sottoByObiettivo}
-        />
+        /> : <PaywallBanner label="Obiettivi portieri" />}
       </div>
     </>
   )

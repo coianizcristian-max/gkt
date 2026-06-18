@@ -2,6 +2,7 @@ import Link from 'next/link'
 import NavLink from '@/app/components/NavLink'
 import SignOutButton from '@/app/components/SignOutButton'
 import { createClient } from '@/lib/supabase/server'
+import { getGatingConfig, hasAbbonamento } from '@/lib/gating'
 
 export default async function AppLayout({ children }) {
   const supabase = await createClient()
@@ -14,6 +15,9 @@ export default async function AppLayout({ children }) {
   let societa = null
   let logo = null
   let stagioneNome = null
+  let mostraAbbonati = false
+  let abbonamentoAttivo = false
+
   if (user) {
     const [{ data: profilo }, { data: stagione }] = await Promise.all([
       supabase.from('profili').select('ruolo, supervisore, portiere_id').eq('id', user.id).maybeSingle(),
@@ -26,6 +30,13 @@ export default async function AppLayout({ children }) {
     societa = stagione?.societa_nome ?? null
     logo = stagione?.logo_url ?? null
     stagioneNome = stagione?.nome ?? null
+
+    if (isStaff) {
+      const { tuttoFree } = await getGatingConfig(supabase)
+      abbonamentoAttivo = await hasAbbonamento(supabase, user.id)
+      // Mostra "Abbonati" solo se TUTTO FREE è off e l'allenatore non ha già abbonamento attivo
+      mostraAbbonati = !tuttoFree && !abbonamentoAttivo
+    }
   }
 
   const schedaHref = isPortiere && portiereId ? `/portieri/${portiereId}` : '/portieri'
@@ -55,6 +66,9 @@ export default async function AppLayout({ children }) {
         <NavLink href="/archivio">Archivio</NavLink>
         <NavLink href="/suggerimenti">Suggerimenti</NavLink>
         {isSupervisore && <NavLink href="/supervisore">Supervisore</NavLink>}
+        {mostraAbbonati && (
+          <NavLink href="/abbonati" className="nav-abbonati">🔓 Abbonati</NavLink>
+        )}
         <div className="sidebar-foot">
           <Link href="/" className="nav-link nav-sito">↗ Vai al sito</Link>
           <SignOutButton />

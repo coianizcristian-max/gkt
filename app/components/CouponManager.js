@@ -1,7 +1,6 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 
 export default function CouponManager({ coupon, utilizziPerCoupon }) {
   const router = useRouter()
@@ -13,20 +12,23 @@ export default function CouponManager({ coupon, utilizziPerCoupon }) {
   async function crea() {
     if (!codice.trim()) { setErr('Inserisci un codice'); return }
     setBusy(true); setErr('')
-    const supabase = createClient()
-    const { error } = await supabase.from('coupon').insert({
-      codice: codice.trim().toUpperCase(),
-      durata_gg: Number(durata),
-      attivo: true,
+    const res = await fetch('/api/coupon-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codice, durata_gg: durata }),
     })
-    if (error) setErr(error.message)
+    const body = await res.json()
+    if (!res.ok) setErr(body.error)
     else { setCodice(''); router.refresh() }
     setBusy(false)
   }
 
   async function toggle(id, attivo) {
-    const supabase = createClient()
-    await supabase.from('coupon').update({ attivo: !attivo }).eq('id', id)
+    await fetch('/api/coupon-admin', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, attivo: !attivo }),
+    })
     router.refresh()
   }
 

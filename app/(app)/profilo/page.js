@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProfiloForm from '@/app/components/ProfiloForm'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +14,12 @@ export default async function ProfiloPage() {
     .select('id, ruolo, nome_completo, telefono, bio, foto_url, esperienze, certificati, via, citta, cap, range_ricerca, disponibile')
     .eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
+
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user.id),
+  ])
+  const canProfilo = isUnlocked('profilo_ricerca', gatingCfg, abbAttivo)
 
   return (
     <>

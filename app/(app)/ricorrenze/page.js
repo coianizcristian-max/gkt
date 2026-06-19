@@ -50,7 +50,7 @@ export default async function RicorrenzePage() {
         {stagione
           ? (canRicorrenze
               ? <RicorrenzeManager stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} />
-              : <PaywallBanner label="Generazione automatica ricorrenze" />)
+              : <PaywallBanner chiave="ricorrenze_genera" label="Generazione automatica ricorrenze" />)
           : <div className="empty">Nessuna stagione attiva.</div>}
       </div>
     </>

@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import InvitiManager from '@/app/components/InvitiManager'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,6 +12,12 @@ export default async function InvitiPage() {
   if (!user) redirect('/login')
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
+
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user.id),
+  ])
+  const canInviti = isUnlocked('inviti_creazione', gatingCfg, abbAttivo)
 
   const { data: stagione } = await supabase.from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
   let inviti = []
@@ -26,13 +34,15 @@ export default async function InvitiPage() {
   return (
     <>
       <div className="topbar">
-        <div className="eyebrow">Stagione {stagione?.nome ?? '\u2014'}</div>
+        <div className="eyebrow">Stagione {stagione?.nome ?? '—'}</div>
         <h1>Inviti</h1>
       </div>
       <div className="content">
-        {stagione
-          ? <InvitiManager inviti={inviti} portieri={portieri} stagioneId={stagione.id} />
-          : <div className="empty">Nessuna stagione attiva.</div>}
+        {!canInviti
+          ? <PaywallBanner chiave="inviti_creazione" label="Creazione link di invito" />
+          : stagione
+            ? <InvitiManager inviti={inviti} portieri={portieri} stagioneId={stagione.id} />
+            : <div className="empty">Nessuna stagione attiva.</div>}
       </div>
     </>
   )

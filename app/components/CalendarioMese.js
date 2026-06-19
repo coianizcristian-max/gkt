@@ -54,12 +54,16 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     return { background: '#c0392b', borderLeft: '3px solid #8b1a10' }
   }
 
-  // Stile partita: viola pieno (passata) o viola chiaro (futura)
+  // Stile partita:
+  // passata + valutata → viola pieno
+  // passata + NON valutata → viola con cornice rossa (da fare)
+  // futura → viola chiaro
   const stylePartita = (p) => {
     const passata = p.data < oggiStr
-    return passata
-      ? { background: '#7c3aed', color: '#fff', borderLeft: '3px solid #5b21b6' }
-      : { background: '#c4b5fd', color: '#4c1d95', borderLeft: '3px solid #8b5cf6' }
+    if (!passata) return { background: '#c4b5fd', color: '#4c1d95', borderLeft: '3px solid #8b5cf6' }
+    if (p.ha_valutazioni) return { background: '#7c3aed', color: '#fff', borderLeft: '3px solid #5b21b6' }
+    // passata senza valutazione: cornice rossa
+    return { background: '#7c3aed', color: '#fff', outline: '2px solid #c0392b', outlineOffset: '-2px' }
   }
 
   // Label partita compatta

@@ -62,7 +62,7 @@ function LinkModal({ url, onClose }) {
 
 export default function InvitiManager({ inviti, portieri, stagioneId }) {
   const router = useRouter()
-  const [tipo, setTipo] = useState('portiere')
+  const [tipo, setTipo] = useState('')
   const [portiereId, setPortiereId] = useState(portieri[0]?.id ?? '')
   const [emailInvitato, setEmailInvitato] = useState('')
   const [perm, setPerm] = useState({})
@@ -148,11 +148,26 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
       <div className="scheda">
         {error && <div className="err">{error}</div>}
         <div className="form-grid">
-          <div className="field"><label>Tipo</label>
-            <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
+          <div className="field" style={{
+            border: tipo ? 'none' : '2px solid var(--azzurro)',
+            borderRadius: tipo ? 0 : 'var(--r)',
+            padding: tipo ? 0 : '10px 12px',
+            background: tipo ? 'transparent' : 'rgba(10,126,194,0.04)',
+            transition: 'all 0.2s',
+          }}>
+            {!tipo && (
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--azzurro)', marginBottom: 6 }}>
+                👆 Seleziona chi stai invitando per continuare
+              </div>
+            )}
+            <label>Tipo <span style={{ color: 'var(--rosso)' }}>*</span></label>
+            <select value={tipo} onChange={(e) => setTipo(e.target.value)}
+              style={{ border: tipo ? '' : '1px solid var(--azzurro)', fontWeight: tipo ? 'normal' : '600' }}>
+              <option value="" disabled>— Seleziona tipo —</option>
               <option value="portiere">Portiere</option>
               <option value="collaboratore">Staff / Collaboratore</option>
-            </select></div>
+            </select>
+          </div>
           {tipo === 'portiere' && (
             <div className="field"><label>Portiere</label>
               <select value={portiereId} onChange={(e) => setPortiereId(e.target.value)}>
@@ -177,7 +192,7 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
           </div>
         )}
         <div className="form-actions">
-          <button className="btn" onClick={crea} disabled={busy || (tipo === 'portiere' && !portiereId)} type="button">
+          <button className="btn" onClick={crea} disabled={busy || !tipo || (tipo === 'portiere' && !portiereId)} type="button">
             {busy ? 'Creazione...' : 'Crea invito e copia link'}
           </button>
         </div>

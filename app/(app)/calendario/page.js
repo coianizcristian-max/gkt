@@ -20,7 +20,7 @@ export default async function CalendarioPage() {
   let categorie = []
 
   if (stagione) {
-    const [al, cat, par] = await Promise.all([
+    const [al, cat, par, valPar] = await Promise.all([
       supabase.from('allenamenti')
         .select('id, data, squadra_id, accorpata_con, nessuna_valutazione, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id).order('data'),
@@ -29,12 +29,15 @@ export default async function CalendarioPage() {
       supabase.from('partite')
         .select('id, data, squadra_id, avversario, casa, gol_fatti, gol_subiti, tipo, squadre(nome)')
         .eq('stagione_id', stagione.id).order('data'),
+      supabase.from('valutazioni_partita').select('partita_id').eq('presente', true),
     ])
 
     const catMap = {}
     for (const r of cat.data ?? []) {
       if (r.squadre) catMap[r.squadre.id] = r.squadre.nome
     }
+
+    const partiteConVal = new Set((valPar.data ?? []).map((v) => v.partita_id))
 
     partite = (par.data ?? []).map((p) => ({
       id: p.id,
@@ -47,6 +50,7 @@ export default async function CalendarioPage() {
       gol_fatti: p.gol_fatti,
       gol_subiti: p.gol_subiti,
       _tipo: 'partita',
+      ha_valutazioni: partiteConVal.has(p.id),
     }))
 
     allenamenti = (al.data ?? []).map((a) => ({

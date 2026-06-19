@@ -12,6 +12,7 @@ export default function RegistratiClient({ token, datiInvito }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [msg, setMsg] = useState('')
+  const [iscriviNewsletter, setIscriviNewsletter] = useState(true)
   const [loading, setLoading] = useState(false)
 
   const nomeBloccato = !!datiInvito?.nomeCompleto
@@ -51,6 +52,16 @@ export default function RegistratiClient({ token, datiInvito }) {
       }
       setLoading(false)
       return
+    }
+
+    // Iscrizione newsletter
+    if (iscriviNewsletter && data.user) {
+      const { createClient: cc } = await import('@/lib/supabase/client')
+      const sb = cc()
+      await sb.from('newsletter_iscritti').upsert(
+        { email: email.trim(), utente_id: data.user.id, attivo: true },
+        { onConflict: 'email' }
+      )
     }
 
     // Se c'è un token invito valido, consumalo subito (collegamento portiere/collaboratore)
@@ -146,6 +157,10 @@ export default function RegistratiClient({ token, datiInvito }) {
               autoComplete="new-password"
             />
           </div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--ink-soft)', marginBottom: 12 }}>
+            <input type="checkbox" checked={iscriviNewsletter} onChange={(e) => setIscriviNewsletter(e.target.checked)} />
+            Iscrivimi alla newsletter GKT (puoi disiscriverti in qualsiasi momento)
+          </label>
           <button className="btn" type="submit" disabled={loading || tokenInvalido}>
             {loading ? 'Creazione…' : 'Crea account'}
           </button>

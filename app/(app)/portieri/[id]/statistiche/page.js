@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PaywallBanner from '@/app/components/PaywallBanner'
+import StatisticheGrafici from '@/app/components/StatisticheGrafici'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
@@ -53,7 +54,7 @@ export default async function StatistichePortierePage({ params }) {
           {navLinks}
           <div className="scheda" style={{ marginBottom: 16, background: 'linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%)', border: '1px solid #b8d9f5' }}>
             <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-              Le statistiche dettagliate includono: andamento mensile dei voti, presenze consecutive, confronto con la media della categoria, analisi per caratteristica tecnica, statistiche partite campionato separate dalle amichevoli e molto altro.
+              Le statistiche dettagliate includono 7 grafici interattivi: andamento voti allenamenti/partite, gol subiti progressivi, presenze comparative, analisi per caratteristica tecnica e molto altro.
             </p>
           </div>
           <PaywallBanner chiave="statistiche_dettaglio" label="Statistiche dettaglio portiere" />
@@ -63,26 +64,26 @@ export default async function StatistichePortierePage({ params }) {
   }
 
   // ── Carica tutti i dati ─────────────────────────────────────────────────
-  let vAll = [], vPar = [], punteggi = [], parametri = [], partite = []
+  let vAll = [], vPar = [], punteggi = [], parametri = []
+  let partiteRows = []
+
   if (stagione) {
     const { data: allenamenti } = await supabase.from('allenamenti')
-      .select('id, data, squadra_id').eq('stagione_id', stagione.id)
+      .select('id, data, squadra_id').eq('stagione_id', stagione.id).order('data')
     const allenIds = (allenamenti ?? []).map((a) => a.id)
     const allenByDate = {}
-    const allenByCat = {}
-    for (const a of allenamenti ?? []) {
-      allenByDate[a.id] = a.data
-      allenByCat[a.id] = a.squadra_id
-    }
+    for (const a of allenamenti ?? []) allenByDate[a.id] = a.data
 
-    const { data: partiteRows } = await supabase.from('partite')
-      .select('id, data, tipo').eq('stagione_id', stagione.id)
-    const partIds = (partiteRows ?? []).map((p) => p.id)
-    partite = partiteRows ?? []
-    const partitiByDate = {}
-    for (const p of partiteRows ?? []) partitiByDate[p.id] = { data: p.data, tipo: p.tipo }
+    // Partite con gol_subiti (campo della tabella partite, non valutazioni_partita)
+    const { data: par } = await supabase.from('partite')
+      .select('id, data, tipo, gol_subiti, gol_fatti, avversario, casa')
+      .eq('stagione_id', stagione.id).order('data')
+    partiteRows = par ?? []
+    const partIds = partiteRows.map((p) => p.id)
+    const partiteByID = {}
+    for (const p of partiteRows) partiteByID[p.id] = p
 
-    const [va, vp, par] = await Promise.all([
+    const [va, vp, pm] = await Promise.all([
       allenIds.length
         ? supabase.from('valutazioni')
             .select('allenamento_id, presente, voto')
@@ -90,7 +91,7 @@ export default async function StatistichePortierePage({ params }) {
         : Promise.resolve({ data: [] }),
       partIds.length
         ? supabase.from('valutazioni_partita')
-            .select('partita_id, presente, voto, punti, gol_subiti')
+            .select('partita_id, presente, voto, punti')
             .eq('portiere_id', id).in('partita_id', partIds)
         : Promise.resolve({ data: [] }),
       supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
@@ -98,8 +99,12 @@ export default async function StatistichePortierePage({ params }) {
 
     vAll = (va.data ?? []).map((v) => ({ ...v, data: allenByDate[v.allenamento_id] }))
       .sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
-    vPar = (vp.data ?? []).map((v) => ({ ...v, ...partitiByDate[v.partita_id] }))
-    parametri = par.data ?? []
+    // Unisce valutazioni_partita con i dati di partite (gol_subiti, tipo, data ecc)
+    vPar = (vp.data ?? []).map((v) => ({
+      ...v,
+      ...partiteByID[v.partita_id],
+    }))
+    parametri = pm.data ?? []
 
     const { data: vAllFull } = await supabase.from('valutazioni')
       .select('id').eq('portiere_id', id)
@@ -118,7 +123,7 @@ export default async function StatistichePortierePage({ params }) {
   const votiA = vAll.filter((v) => v.presente && v.voto != null).map((v) => Number(v.voto))
   const mediaA = votiA.length ? votiA.reduce((s, x) => s + x, 0) / votiA.length : null
 
-  // Streak presenze consecutive (attuale e massima)
+  // Streak
   let streakMax = 0, streakAttuale = 0, curStreak = 0
   for (const v of vAll) {
     if (v.presente) { curStreak++; streakMax = Math.max(streakMax, curStreak) }
@@ -126,13 +131,11 @@ export default async function StatistichePortierePage({ params }) {
   }
   streakAttuale = curStreak
 
-  // Voto max/min
   const votoMax = votiA.length ? Math.max(...votiA) : null
   const votoMin = votiA.length ? Math.min(...votiA) : null
   const sopraMedia = mediaA != null ? votiA.filter((v) => v >= mediaA).length : null
-  const sottoMedia = mediaA != null ? votiA.filter((v) => v < mediaA).length : null
 
-  // Trend: differenza media ultimo mese vs penultimo
+  // Trend mensile
   const votiMese = {}
   for (const v of vAll) {
     if (!v.presente || v.voto == null || !v.data) continue
@@ -145,9 +148,7 @@ export default async function StatistichePortierePage({ params }) {
   if (mesiOrd.length >= 2) {
     const last = votiMese[mesiOrd[mesiOrd.length - 1]]
     const prev = votiMese[mesiOrd[mesiOrd.length - 2]]
-    const avgLast = last.reduce((s, x) => s + x, 0) / last.length
-    const avgPrev = prev.reduce((s, x) => s + x, 0) / prev.length
-    trend = avgLast - avgPrev
+    trend = last.reduce((s, x) => s + x, 0) / last.length - prev.reduce((s, x) => s + x, 0) / prev.length
   }
 
   // Media categoria
@@ -164,21 +165,25 @@ export default async function StatistichePortierePage({ params }) {
     }
   }
 
-  // Primo tempo stagione vs secondo tempo (metà degli allenamenti)
+  // Prima/seconda metà stagione
   const meta = Math.floor(vAll.length / 2)
   const prima = vAll.slice(0, meta).filter((v) => v.presente && v.voto != null).map((v) => Number(v.voto))
   const seconda = vAll.slice(meta).filter((v) => v.presente && v.voto != null).map((v) => Number(v.voto))
   const mediaP1 = prima.length ? prima.reduce((s, x) => s + x, 0) / prima.length : null
   const mediaP2 = seconda.length ? seconda.reduce((s, x) => s + x, 0) / seconda.length : null
 
-  // Partite
-  const parCamp = vPar.filter((v) => v.tipo !== 'amichevole' && v.presente)
+  // ── Calcoli partite ──────────────────────────────────────────────────────
+  // presente=true significa che il portiere ha giocato (era in campo)
+  const parCamp = vPar.filter((v) => v.tipo !== 'amichevole' && v.tipo !== 'torneo' && v.presente)
+  const parCoppa = vPar.filter((v) => v.tipo === 'coppa' && v.presente)
   const parAm = vPar.filter((v) => v.tipo === 'amichevole' && v.presente)
   const mediaVotiPar = (arr) => {
     const vv = arr.filter((v) => v.voto != null).map((v) => Number(v.voto))
     return vv.length ? vv.reduce((s, x) => s + x, 0) / vv.length : null
   }
-  const cleanSheet = parCamp.filter((v) => (v.gol_subiti ?? 999) === 0).length
+  // gol_subiti viene da partiteByID[partita_id].gol_subiti (tabella partite)
+  const cleanSheet = parCamp.filter((v) => v.gol_subiti === 0).length
+  const cleanSheetCoppa = parCoppa.filter((v) => v.gol_subiti === 0).length
   const puntiTot = vPar.reduce((s, v) => s + (v.punti != null ? Number(v.punti) : 0), 0)
 
   // Per caratteristica
@@ -189,7 +194,64 @@ export default async function StatistichePortierePage({ params }) {
   const mediaParam = (arr) => arr.length ? arr.reduce((s, x) => s + x, 0) / arr.length : null
 
   const pctPresenza = totA ? Math.round(presenzeA / totA * 100) : null
-  const maxBarH = 72
+
+  // ── Dati per grafici (passati al client component) ───────────────────────
+  const oggi = new Date().toISOString().slice(0, 10)
+  const ultimi30 = new Date(); ultimi30.setDate(ultimi30.getDate() - 30)
+  const ultimi30str = ultimi30.toISOString().slice(0, 10)
+
+  // Grafico 1: voti allenamenti ultimi 30gg
+  const g1 = vAll
+    .filter((v) => v.presente && v.voto != null && v.data >= ultimi30str)
+    .map((v) => ({ x: v.data, y: Number(v.voto) }))
+
+  // Grafico 2: voti tutta stagione (allenamenti)
+  const g2 = vAll
+    .filter((v) => v.presente && v.voto != null)
+    .map((v) => ({ x: v.data, y: Number(v.voto) }))
+
+  // Grafico 3: voti ultime 10 partite
+  const g3 = vPar
+    .filter((v) => v.presente && v.voto != null)
+    .sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
+    .slice(-10)
+    .map((v) => ({ x: v.data, y: Number(v.voto), label: v.avversario ?? '' }))
+
+  // Grafico 4: voti partite campionato
+  const g4 = parCamp
+    .filter((v) => v.voto != null)
+    .sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
+    .map((v) => ({ x: v.data, y: Number(v.voto), label: v.avversario ?? '' }))
+
+  // Grafico 5: gol subiti progressivi campionato
+  let golProg = 0
+  const g5 = parCamp
+    .sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
+    .map((v) => { golProg += (v.gol_subiti ?? 0); return { x: v.data, y: golProg, label: v.avversario ?? '' } })
+
+  // Grafico 6: gol subiti progressivi coppa
+  let golProgCoppa = 0
+  const g6 = parCoppa
+    .sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
+    .map((v) => { golProgCoppa += (v.gol_subiti ?? 0); return { x: v.data, y: golProgCoppa, label: v.avversario ?? '' } })
+
+  // Grafico 7: presenze portiere vs altri portieri categoria (per mese)
+  let g7 = []
+  if (iscrizione?.squadra_id && stagione) {
+    const { data: iscCat } = await supabase.from('iscrizioni')
+      .select('portiere_id, portieri(nome, cognome)').eq('stagione_id', stagione.id).eq('squadra_id', iscrizione.squadra_id)
+    const altriIds = (iscCat ?? []).filter((i) => i.portiere_id !== id)
+    // Presenze mensili del portiere
+    const miePresenze = {}
+    for (const v of vAll) {
+      if (!v.data) continue
+      const m = v.data.slice(0, 7)
+      miePresenze[m] = (miePresenze[m] ?? 0) + (v.presente ? 1 : 0)
+    }
+    g7 = mesiOrd.map((m) => ({ mese: m, io: miePresenze[m] ?? 0 }))
+  }
+
+  const datiGrafici = { g1, g2, g3, g4, g5, g6, g7, mesi, votiMese }
 
   return (
     <>
@@ -200,76 +262,49 @@ export default async function StatistichePortierePage({ params }) {
       <div className="content">
         {navLinks}
 
-        {/* KPI principali */}
+        {/* KPI */}
         <div className="stat-kpi-grid">
-          <div className="stat-kpi">
-            <div className="stat-kpi-val">{presenzeA}<span className="stat-kpi-su">/{totA}</span></div>
-            <div className="stat-kpi-label">Presenze</div>
-          </div>
-          <div className="stat-kpi">
-            <div className="stat-kpi-val" style={{ color: 'var(--azzurro)' }}>{fmt(mediaA, 2)}</div>
-            <div className="stat-kpi-label">Media voto</div>
-          </div>
-          <div className="stat-kpi">
-            <div className="stat-kpi-val" style={{ color: pctPresenza >= 80 ? 'var(--campo)' : pctPresenza >= 60 ? 'var(--giallo)' : 'var(--rosso)' }}>
-              {pctPresenza != null ? pctPresenza + '%' : '—'}
+          {[
+            [presenzeA + '/' + totA, 'Presenze', 'var(--ink)'],
+            [fmt(mediaA, 2), 'Media voto', 'var(--azzurro)'],
+            [pctPresenza != null ? pctPresenza + '%' : '—', '% presenze', pctPresenza >= 80 ? 'var(--campo)' : pctPresenza >= 60 ? 'var(--giallo)' : 'var(--rosso)'],
+            [cleanSheet, 'Clean sheet', 'var(--campo)'],
+          ].map(([v, l, c], i) => (
+            <div key={i} className="stat-kpi">
+              <div className="stat-kpi-val" style={{ color: c }}>{v}</div>
+              <div className="stat-kpi-label">{l}</div>
             </div>
-            <div className="stat-kpi-label">% presenze</div>
-          </div>
-          <div className="stat-kpi">
-            <div className="stat-kpi-val" style={{ color: 'var(--campo)' }}>{cleanSheet}</div>
-            <div className="stat-kpi-label">Clean sheet</div>
-          </div>
+          ))}
         </div>
 
-        {/* Confronto e trend */}
+        {/* Analisi stagione */}
         <div className="scheda" style={{ marginBottom: 14 }}>
           <h3 style={{ marginTop: 0, marginBottom: 12 }}>Analisi stagione</h3>
           <div className="stat-rows">
             <div className="stat-block">
               {mediaCat != null && (
-                <div className="stat-line">
-                  <span>Media categoria</span>
+                <div className="stat-line"><span>Media categoria</span>
                   <b style={{ color: mediaA != null && mediaA >= mediaCat ? 'var(--campo)' : 'var(--rosso)' }}>
                     {fmt(mediaCat)} {mediaA != null ? (mediaA >= mediaCat ? '▲ sopra' : '▼ sotto') : ''}
                   </b>
                 </div>
               )}
               {trend != null && (
-                <div className="stat-line">
-                  <span>Trend ultimo mese</span>
+                <div className="stat-line"><span>Trend ultimo mese</span>
                   <b style={{ color: trend >= 0 ? 'var(--campo)' : 'var(--rosso)' }}>
                     {trend >= 0 ? '+' : ''}{fmt(trend, 2)} {trend >= 0 ? '📈' : '📉'}
                   </b>
                 </div>
               )}
-              <div className="stat-line">
-                <span>Voto migliore</span>
-                <b style={{ color: 'var(--campo)' }}>{fmt(votoMax, 2)}</b>
-              </div>
-              <div className="stat-line">
-                <span>Voto peggiore</span>
-                <b style={{ color: 'var(--rosso)' }}>{fmt(votoMin, 2)}</b>
-              </div>
+              <div className="stat-line"><span>Voto migliore</span><b style={{ color: 'var(--campo)' }}>{fmt(votoMax, 2)}</b></div>
+              <div className="stat-line"><span>Voto peggiore</span><b style={{ color: 'var(--rosso)' }}>{fmt(votoMin, 2)}</b></div>
             </div>
             <div className="stat-block">
-              <div className="stat-line">
-                <span>🔥 Serie attuale</span>
-                <b>{streakAttuale > 0 ? `${streakAttuale} cons.` : 'Interrotta'}</b>
-              </div>
-              <div className="stat-line">
-                <span>⭐ Serie massima</span>
-                <b>{streakMax} consecutivi</b>
-              </div>
-              {sopraMedia != null && (
-                <div className="stat-line">
-                  <span>Allenamenti sopra media</span>
-                  <b style={{ color: 'var(--campo)' }}>{sopraMedia} / {presenzeA}</b>
-                </div>
-              )}
+              <div className="stat-line"><span>🔥 Serie attuale</span><b>{streakAttuale > 0 ? streakAttuale + ' cons.' : 'Interrotta'}</b></div>
+              <div className="stat-line"><span>⭐ Serie massima</span><b>{streakMax} consecutivi</b></div>
+              {sopraMedia != null && <div className="stat-line"><span>Sopra la propria media</span><b style={{ color: 'var(--campo)' }}>{sopraMedia}/{presenzeA}</b></div>}
               {mediaP1 != null && mediaP2 != null && (
-                <div className="stat-line">
-                  <span>1° metà → 2° metà</span>
+                <div className="stat-line"><span>1° → 2° metà</span>
                   <b style={{ color: mediaP2 >= mediaP1 ? 'var(--campo)' : 'var(--rosso)' }}>
                     {fmt(mediaP1, 1)} → {fmt(mediaP2, 1)} {mediaP2 >= mediaP1 ? '▲' : '▼'}
                   </b>
@@ -278,57 +313,6 @@ export default async function StatistichePortierePage({ params }) {
             </div>
           </div>
         </div>
-
-        {/* Andamento mensile */}
-        {mesi.length > 0 && (
-          <div className="scheda" style={{ marginBottom: 14 }}>
-            <h3 style={{ marginTop: 0, marginBottom: 12 }}>Andamento voti mensile</h3>
-            <div className="stat-mesi">
-              {mesi.map((m) => {
-                const arr = votiMese[m]
-                const med = arr.reduce((s, x) => s + x, 0) / arr.length
-                const h = Math.round((med / 10) * maxBarH)
-                const isLast = m === mesi[mesi.length - 1]
-                return (
-                  <div key={m} className="stat-mese-col">
-                    <div className="stat-mese-bar-wrap">
-                      <div className="stat-mese-bar"
-                        style={{ height: `${h}px`, background: isLast ? 'var(--azzurro)' : '#a8cce8' }} />
-                    </div>
-                    <div className="stat-mese-val">{fmt(med, 1)}</div>
-                    <div className="stat-mese-label">{m.slice(5)}/{m.slice(2, 4)}</div>
-                    <div className="stat-mese-label" style={{ fontSize: 9 }}>{arr.length} all.</div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Per caratteristica */}
-        {parametri.length > 0 && Object.keys(perParametro).length > 0 && (
-          <div className="scheda" style={{ marginBottom: 14 }}>
-            <h3 style={{ marginTop: 0, marginBottom: 12 }}>Media per caratteristica</h3>
-            {parametri.map((par) => {
-              const arr = perParametro[par.id] ?? []
-              if (!arr.length) return null
-              const med = mediaParam(arr)
-              const pct = Math.round((med / 10) * 100)
-              const col = med >= 7 ? 'var(--campo)' : med >= 6 ? 'var(--azzurro)' : 'var(--giallo)'
-              return (
-                <div key={par.id} style={{ marginBottom: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 }}>
-                    <span style={{ color: 'var(--ink-soft)' }}>{par.nome}</span>
-                    <b style={{ color: col }}>{fmt(med, 1)}</b>
-                  </div>
-                  <div style={{ height: 8, background: 'var(--linea)', borderRadius: 4 }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: col, borderRadius: 4, transition: 'width 0.4s' }} />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
 
         {/* Partite */}
         <div className="scheda" style={{ marginBottom: 14 }}>
@@ -339,19 +323,46 @@ export default async function StatistichePortierePage({ params }) {
               <div className="stat-line"><span>Partite giocate</span><b>{parCamp.length}</b></div>
               <div className="stat-line"><span>Media voto</span><b style={{ color: 'var(--azzurro)' }}>{fmt(mediaVotiPar(parCamp))}</b></div>
               <div className="stat-line"><span>Clean sheet</span><b style={{ color: 'var(--campo)' }}>{cleanSheet}</b></div>
-              <div className="stat-line"><span>Punti totali</span><b>{fmt(puntiTot, 1)}</b></div>
+              <div className="stat-line"><span>Punti totali</span><b>{fmt(puntiTot, 0)}</b></div>
             </div>
             <div className="stat-block">
-              <h4 style={{ margin: '0 0 8px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-soft)' }}>Amichevoli</h4>
+              <h4 style={{ margin: '0 0 8px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-soft)' }}>Coppa</h4>
+              <div className="stat-line"><span>Partite giocate</span><b>{parCoppa.length}</b></div>
+              <div className="stat-line"><span>Media voto</span><b>{fmt(mediaVotiPar(parCoppa))}</b></div>
+              <div className="stat-line"><span>Clean sheet</span><b style={{ color: 'var(--campo)' }}>{cleanSheetCoppa}</b></div>
+              <h4 style={{ margin: '12px 0 8px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-soft)' }}>Amichevoli</h4>
               <div className="stat-line"><span>Partite giocate</span><b>{parAm.length}</b></div>
               <div className="stat-line"><span>Media voto</span><b>{fmt(mediaVotiPar(parAm))}</b></div>
-              <div style={{ marginTop: 8, padding: '8px 10px', background: 'var(--carta)', borderRadius: 'var(--r-sm)', fontSize: 12, color: 'var(--ink-soft)' }}>
-                Le amichevoli non influenzano le medie ufficiali
-              </div>
             </div>
           </div>
         </div>
 
+        {/* Per caratteristica */}
+        {parametri.length > 0 && Object.keys(perParametro).length > 0 && (
+          <div className="scheda" style={{ marginBottom: 14 }}>
+            <h3 style={{ marginTop: 0, marginBottom: 12 }}>Media per caratteristica</h3>
+            {parametri.map((par) => {
+              const arr = perParametro[par.id] ?? []
+              if (!arr.length) return null
+              const med = mediaParam(arr)
+              const col = med >= 7 ? 'var(--campo)' : med >= 6 ? 'var(--azzurro)' : 'var(--giallo)'
+              return (
+                <div key={par.id} style={{ marginBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 }}>
+                    <span style={{ color: 'var(--ink-soft)' }}>{par.nome}</span>
+                    <b style={{ color: col }}>{fmt(med, 1)}</b>
+                  </div>
+                  <div style={{ height: 8, background: 'var(--linea)', borderRadius: 4 }}>
+                    <div style={{ width: `${Math.round((med / 10) * 100)}%`, height: '100%', background: col, borderRadius: 4 }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Grafici (client component) */}
+        <StatisticheGrafici dati={datiGrafici} nomPortiere={`${portiere.nome} ${portiere.cognome ?? ''}`} />
       </div>
     </>
   )

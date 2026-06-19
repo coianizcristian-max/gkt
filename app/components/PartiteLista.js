@@ -66,11 +66,23 @@ export default function PartiteLista({ partite, categorie, isPortiere = false })
           <h3 style={{ margin: 0 }}>📅 Prossime partite</h3>
           <div style={{ display: 'flex', gap: 6 }}>
             <button type="button"
-              className={`btn-mini ${range === 7 ? '' : 'btn-ghost'}`}
-              onClick={() => setRange(7)} style={{ padding: '4px 10px' }}>7 giorni</button>
+              onClick={() => setRange(7)}
+              style={{ padding: '4px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 'var(--r-sm)', border: 'none',
+                background: range === 7 ? '#0a7ec2' : 'var(--carta)',
+                color: range === 7 ? '#fff' : 'var(--ink-soft)',
+                boxShadow: range === 7 ? '0 2px 6px rgba(10,126,194,0.3)' : 'none',
+                transition: 'all 0.15s' }}>
+              7 giorni
+            </button>
             <button type="button"
-              className={`btn-mini ${range === 31 ? '' : 'btn-ghost'}`}
-              onClick={() => setRange(31)} style={{ padding: '4px 10px' }}>31 giorni</button>
+              onClick={() => setRange(31)}
+              style={{ padding: '4px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 'var(--r-sm)', border: 'none',
+                background: range === 31 ? '#7c3aed' : 'var(--carta)',
+                color: range === 31 ? '#fff' : 'var(--ink-soft)',
+                boxShadow: range === 31 ? '0 2px 6px rgba(124,58,237,0.3)' : 'none',
+                transition: 'all 0.15s' }}>
+              31 giorni
+            </button>
           </div>
         </div>
         {prossime.length === 0

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ArchivioSelect from '@/app/components/ArchivioSelect'
+import ExportButtons from '@/app/components/ExportButtons'
 
 export const dynamic = 'force-dynamic'
 const fmt = (n) => (n == null ? '\u2014' : Number(n).toLocaleString('it-IT', { maximumFractionDigits: 2 }))
@@ -77,6 +78,7 @@ export default async function ArchivioPage({ searchParams }) {
       </div>
       <div className="content">
         <ArchivioSelect stagioni={stagioni} selectedId={stagione.id} />
+        <ExportButtons stagioneId={stagione.id} />
         {!stagione.attiva && <p className="sub-intro">Stai consultando una stagione archiviata: i dati sono di sola lettura.</p>}
 
         <h2 className="sezione-titolo">Statistiche</h2>

@@ -5,12 +5,62 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const PERMESSI = [
-  { k: 'vede_valutazioni', label: 'Puo vedere le valutazioni' },
-  { k: 'modifica_valutazioni', label: 'Puo inserire/modificare valutazioni' },
-  { k: 'vede_statistiche', label: 'Puo vedere le statistiche' },
+  { k: 'vede_valutazioni', label: 'Può vedere le valutazioni' },
+  { k: 'modifica_valutazioni', label: 'Può inserire/modificare valutazioni' },
+  { k: 'vede_statistiche', label: 'Può vedere le statistiche' },
 ]
 
-export default function InvitiManager({ inviti, portieri, squadre, stagioneId }) {
+// Modal per copiare il link su mobile
+function LinkModal({ url, onClose }) {
+  const [copiato, setCopiato] = useState(false)
+
+  async function copia() {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiato(true)
+      setTimeout(() => setCopiato(false), 2000)
+    } catch {
+      // fallback: seleziona l'input
+      const el = document.getElementById('link-invito-input')
+      if (el) { el.select(); el.setSelectionRange(0, 99999) }
+    }
+  }
+
+  return (
+    <div className="popup-overlay" onClick={onClose}>
+      <div className="popup-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
+        <button className="popup-close" onClick={onClose} type="button">✕</button>
+        <h2 style={{ margin: '0 0 12px', fontSize: 17 }}>Link di invito</h2>
+        <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: 12 }}>
+          Copia questo link e invialo al portiere. Chi lo apre potrà registrarsi e verrà collegato automaticamente.
+        </p>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input
+            id="link-invito-input"
+            readOnly
+            value={url}
+            onClick={(e) => e.target.select()}
+            style={{
+              flex: 1, padding: '10px 12px', border: '1px solid var(--linea)',
+              borderRadius: 'var(--r-sm)', fontSize: 13, background: 'var(--carta)',
+              fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}
+          />
+          <button className="btn" onClick={copia} type="button" style={{ width: 'auto', padding: '10px 16px', flexShrink: 0 }}>
+            {copiato ? '✓ Copiato' : 'Copia'}
+          </button>
+        </div>
+        {copiato && (
+          <p style={{ marginTop: 10, fontSize: 13, color: 'var(--campo)', fontWeight: 600 }}>
+            ✓ Link copiato negli appunti!
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function InvitiManager({ inviti, portieri, stagioneId }) {
   const router = useRouter()
   const [tipo, setTipo] = useState('portiere')
   const [portiereId, setPortiereId] = useState(portieri[0]?.id ?? '')
@@ -18,12 +68,12 @@ export default function InvitiManager({ inviti, portieri, squadre, stagioneId })
   const [perm, setPerm] = useState({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [modalUrl, setModalUrl] = useState(null)
 
   async function crea() {
     setBusy(true); setError('')
     const supabase = createClient()
 
-    // Controlla duplicato: invito attivo già esistente per questo portiere in questa stagione
     if (tipo === 'portiere' && portiereId) {
       const esistente = inviti.find(
         (inv) => inv.stato === 'attivo' && inv.tipo === 'portiere' && inv.portiere_id === portiereId
@@ -50,10 +100,15 @@ export default function InvitiManager({ inviti, portieri, squadre, stagioneId })
       permessi: tipo === 'collaboratore' ? perm : {},
     }
     const { error: insertErr } = await supabase.from('inviti').insert(row)
-    if (insertErr) setError(insertErr.message)
-    else setEmailInvitato('')
+    if (insertErr) { setError(insertErr.message); setBusy(false); return }
+
+    setEmailInvitato('')
     setBusy(false)
     router.refresh()
+
+    // Apri direttamente il modal con il link appena creato
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    setModalUrl(`${origin}/registrati?invito=${token}`)
   }
 
   async function revoca(id) {
@@ -64,9 +119,8 @@ export default function InvitiManager({ inviti, portieri, squadre, stagioneId })
 
   async function elimina(id) {
     const inv = inviti.find((i) => i.id === id)
-    const consumato = inv?.consumato_da
-    const msg = consumato
-      ? 'Questo invito è già stato usato. Eliminarlo rimuove solo il record dall\'elenco, ma NON revoca l\'accesso al portiere già registrato. Continuare?'
+    const msg = inv?.consumato_da
+      ? 'Questo invito è già stato usato. Eliminarlo rimuove solo il record ma NON revoca l\'accesso. Continuare?'
       : 'Eliminare questo invito?'
     if (!confirm(msg)) return
     const supabase = createClient()
@@ -78,10 +132,6 @@ export default function InvitiManager({ inviti, portieri, squadre, stagioneId })
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
     return `${origin}/registrati?invito=${token}`
   }
-  async function copia(token) {
-    try { await navigator.clipboard.writeText(linkOf(token)); alert('Link copiato negli appunti.') }
-    catch { window.prompt('Copia il link:', linkOf(token)) }
-  }
 
   const nomePortiere = (id) => {
     const p = portieri.find((x) => x.id === id)
@@ -90,11 +140,11 @@ export default function InvitiManager({ inviti, portieri, squadre, stagioneId })
 
   return (
     <div className="lista-editor">
+      {modalUrl && <LinkModal url={modalUrl} onClose={() => setModalUrl(null)} />}
+
       <p className="sub-intro">
-        Crea un link d&apos;invito da inviare al portiere o collaboratore. Chi lo apre si registra e l&apos;account
-        viene collegato automaticamente. Per revocare l&apos;accesso a un portiere già registrato, usa
-        &quot;Revoca&quot; sull&apos;invito consumato — questo non cancella i dati ma impedisce futuri accessi
-        finché non viene riattivato.
+        Crea un link d&apos;invito da inviare al portiere o collaboratore. Chi lo apre si registra e
+        viene collegato automaticamente per la stagione corrente.
       </p>
       <div className="scheda">
         {error && <div className="err">{error}</div>}
@@ -103,24 +153,16 @@ export default function InvitiManager({ inviti, portieri, squadre, stagioneId })
             <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
               <option value="portiere">Portiere</option>
               <option value="collaboratore">Collaboratore</option>
-            </select>
-          </div>
+            </select></div>
           {tipo === 'portiere' && (
             <div className="field"><label>Portiere</label>
               <select value={portiereId} onChange={(e) => setPortiereId(e.target.value)}>
-                {portieri.map((p) => (
-                  <option key={p.id} value={p.id}>{p.nome} {p.cognome ?? ''}</option>
-                ))}
-              </select>
-            </div>
+                {portieri.map((p) => <option key={p.id} value={p.id}>{p.nome} {p.cognome ?? ''}</option>)}
+              </select></div>
           )}
           <div className="field"><label>Email invitato (opzionale)</label>
-            <input
-              type="email"
-              value={emailInvitato}
-              onChange={(e) => setEmailInvitato(e.target.value)}
-              placeholder="es. mario.rossi@email.com"
-            />
+            <input type="email" value={emailInvitato} onChange={(e) => setEmailInvitato(e.target.value)}
+              placeholder="es. mario.rossi@email.com" />
           </div>
         </div>
         {tipo === 'collaboratore' && (
@@ -128,24 +170,16 @@ export default function InvitiManager({ inviti, portieri, squadre, stagioneId })
             <h3>Permessi</h3>
             {PERMESSI.map((pm) => (
               <label className="es-pick" key={pm.k}>
-                <input
-                  type="checkbox"
-                  checked={!!perm[pm.k]}
-                  onChange={(e) => setPerm((s) => ({ ...s, [pm.k]: e.target.checked }))}
-                />
+                <input type="checkbox" checked={!!perm[pm.k]}
+                  onChange={(e) => setPerm((s) => ({ ...s, [pm.k]: e.target.checked }))} />
                 <span>{pm.label}</span>
               </label>
             ))}
           </div>
         )}
         <div className="form-actions">
-          <button
-            className="btn"
-            onClick={crea}
-            disabled={busy || (tipo === 'portiere' && !portiereId)}
-            type="button"
-          >
-            {busy ? 'Creazione...' : 'Crea invito'}
+          <button className="btn" onClick={crea} disabled={busy || (tipo === 'portiere' && !portiereId)} type="button">
+            {busy ? 'Creazione...' : 'Crea invito e copia link'}
           </button>
         </div>
       </div>
@@ -155,21 +189,23 @@ export default function InvitiManager({ inviti, portieri, squadre, stagioneId })
         {inviti.length === 0 && <p className="sub-intro">Nessun invito.</p>}
         {inviti.map((inv) => (
           <div className={`lista-riga ${inv.stato === 'attivo' ? '' : 'assente'}`} key={inv.id}>
-            <div style={{ flex: 1 }}>
-              <div>
-                <b>{inv.tipo === 'portiere' ? 'Portiere' : 'Collaboratore'}</b>
-                {inv.portiere_id ? ` \u00b7 ${nomePortiere(inv.portiere_id)}` : ''}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>
+                {inv.tipo === 'portiere' ? 'Portiere' : 'Collaboratore'}
+                {inv.portiere_id ? ` · ${nomePortiere(inv.portiere_id)}` : ''}
                 {inv.email_invitato
-                  ? <span style={{ color: '#6b7e8e', marginLeft: 6, fontSize: 12 }}>{inv.email_invitato}</span>
+                  ? <span style={{ color: 'var(--ink-soft)', marginLeft: 6, fontSize: 12 }}>{inv.email_invitato}</span>
                   : null}
               </div>
               <small>
                 {inv.stato === 'attivo' ? '🟢 attivo' : inv.stato === 'consumato' ? '✅ usato' : '⛔ revocato'}
-                {inv.consumato_da ? ' \u00b7 collegato' : ''}
+                {inv.consumato_da ? ' · collegato' : ''}
               </small>
             </div>
             {inv.stato === 'attivo' && (
-              <button className="btn-mini" onClick={() => copia(inv.token)} type="button">Copia link</button>
+              <button className="btn-mini" onClick={() => setModalUrl(linkOf(inv.token))} type="button">
+                📋 Link
+              </button>
             )}
             {inv.stato === 'attivo' && (
               <button className="btn-mini" onClick={() => revoca(inv.id)} type="button">Revoca</button>

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 
 // Solo queste sezioni richiedono il login. Il resto (/, /login, /auth, /cerca-allenatori) e' pubblico.
 const PROTETTE = ['/portieri', '/calendario', '/partite', '/statistiche', '/supervisore']
+const PUBBLICHE = ['/', '/login', '/auth', '/cerca-allenatori', '/allenatori', '/registrati']
 
 export async function middleware(request) {
   let response = NextResponse.next({ request })

@@ -45,7 +45,7 @@ export default async function ComeIniziarePage() {
             ? 'Ecco le sezioni principali di GKT e come usarle come portiere.'
             : 'Segui questi passaggi in ordine per configurare GKT e iniziare a usarlo con la tua squadra.'}
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="guida-step-grid">
           {passi.map((p, i) => (
             <div key={i} className="guida-step">
               <div className="guida-step-n">{i + 1}</div>

@@ -43,7 +43,7 @@ export default async function StatistichePage() {
       : Promise.resolve({ data: [] }),
     allenIds.length
       ? supabase.from('valutazioni')
-        .select('portiere_id, feedback_portiere, voto_portiere, allenamento_id, portieri(nome, cognome), allenamenti(data, squadre(nome))')
+        .select('portiere_id, feedback_portiere, voto_portiere, allenamento_id, portieri(nome, cognome), allenamenti(data, squadra:squadre!allenamenti_squadra_id_fkey(nome))')
         .in('allenamento_id', allenIds)
         .not('feedback_portiere', 'is', null)
         .order('allenamento_id')

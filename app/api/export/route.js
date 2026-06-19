@@ -70,10 +70,10 @@ export async function GET(request) {
 
   else if (tipo === 'valutazioni') {
     const { data: allen } = await supabase
-      .from('allenamenti').select('id, data, squadre(nome)').eq('stagione_id', stagioneId)
+      .from('allenamenti').select('id, data, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('stagione_id', stagioneId)
     const allenIds = (allen ?? []).map((a) => a.id)
     const allenMap = {}
-    for (const a of allen ?? []) allenMap[a.id] = { data: a.data, squadra: a.squadre?.nome ?? '' }
+    for (const a of allen ?? []) allenMap[a.id] = { data: a.data, squadra: a.squadra?.nome ?? '' }
 
     const { data: vals } = allenIds.length
       ? await supabase.from('valutazioni')

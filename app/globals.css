@@ -1208,3 +1208,22 @@ a.brand { text-decoration: none; color: inherit; }
 }
 .demo-cta p { font-size: 14px; color: var(--ink-soft); margin: 0; }
 
+
+/* ===== Calendario: legenda ===== */
+.cal-legenda {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 11px; color: var(--ink-soft); margin-bottom: 8px;
+}
+.cal-leg-dot {
+  display: inline-block; width: 10px; height: 10px;
+  border-radius: 3px; flex-shrink: 0;
+}
+.cal-ev-partita { font-size: 9px !important; }
+
+/* ===== Partite: badge-cs compatto ===== */
+.badge-cs {
+  font-size: 9px; font-weight: 700; color: var(--campo);
+  background: rgba(31,138,76,0.12); border-radius: 3px;
+  padding: 1px 4px; flex-shrink: 0;
+}
+

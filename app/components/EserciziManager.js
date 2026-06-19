@@ -18,6 +18,12 @@ function EsercizioPopup({ esercizio, onClose }) {
         {esercizio.descrizione_breve && <p style={{ fontStyle: 'italic', color: 'var(--ink-soft)', margin: '0 0 10px' }}>{esercizio.descrizione_breve}</p>}
         {esercizio.descrizione && <p style={{ margin: '0 0 10px', lineHeight: 1.65 }}>{esercizio.descrizione}</p>}
         {esercizio.note && <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: 0 }}>Note: {esercizio.note}</p>}
+        {esercizio.video_url && (
+          <a href={esercizio.video_url} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, padding: '8px 14px', background: '#ff0000', color: '#fff', borderRadius: 'var(--r-sm)', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>
+            ▶ Guarda il video
+          </a>
+        )}
       </div>
     </div>
   )
@@ -119,6 +125,7 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
     descrizione_breve: esercizio?.descrizione_breve ?? '',
     descrizione: esercizio?.descrizione ?? '',
     note: esercizio?.note ?? '',
+    video_url: esercizio?.video_url ?? '',
     pubblico: esercizio?.pubblico ?? false,
   })
   const [file, setFile] = useState(null)
@@ -163,7 +170,7 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
       const payload = {
         allenatore_id: allenatoreId, titolo: f.titolo.trim(), tipologia: f.tipologia || null,
         descrizione_breve: f.descrizione_breve || null, descrizione: f.descrizione || null,
-        note: f.note || null, immagine_url, pubblico: !!f.pubblico,
+        note: f.note || null, video_url: f.video_url || null, immagine_url, pubblico: !!f.pubblico,
       }
       if (isEdit) {
         const { error } = await supabase.from('esercizi').update(payload).eq('id', esercizio.id)
@@ -203,6 +210,10 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
         <div className="field field-full"><label>Descrizione breve</label><input value={f.descrizione_breve} onChange={upd('descrizione_breve')} /></div>
         <div className="field field-full"><label>Descrizione dettagliata</label><textarea rows="4" value={f.descrizione} onChange={upd('descrizione')} /></div>
         <div className="field field-full"><label>Note</label><textarea rows="2" value={f.note} onChange={upd('note')} /></div>
+        <div className="field field-full"><label>Link video (YouTube o altro)</label>
+          <input type="url" value={f.video_url} onChange={upd('video_url')} placeholder="https://www.youtube.com/watch?v=..." />
+          {f.video_url && <a href={f.video_url} target="_blank" rel="noopener noreferrer" style={{fontSize:12,color:'var(--azzurro)',marginTop:4,display:'inline-block'}}>▶ Anteprima link</a>}
+        </div>
         <div className="field field-full">
           <label className="val-nessuno">
             <input type="checkbox" checked={f.pubblico} onChange={(e) => { setF((s) => ({ ...s, pubblico: e.target.checked })); setDone(false) }} />

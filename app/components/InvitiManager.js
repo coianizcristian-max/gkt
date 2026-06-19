@@ -143,8 +143,7 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
       {modalUrl && <LinkModal url={modalUrl} onClose={() => setModalUrl(null)} />}
 
       <p className="sub-intro">
-        Crea un link d&apos;invito da inviare al portiere o collaboratore. Chi lo apre si registra e
-        viene collegato automaticamente per la stagione corrente.
+        Crea un link d&apos;invito da inviare a un portiere o a un membro dello staff. Lo staff condivide automaticamente le stesse funzionalità sbloccate dall&apos;abbonamento dell&apos;allenatore principale.
       </p>
       <div className="scheda">
         {error && <div className="err">{error}</div>}
@@ -152,7 +151,7 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
           <div className="field"><label>Tipo</label>
             <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
               <option value="portiere">Portiere</option>
-              <option value="collaboratore">Collaboratore</option>
+              <option value="collaboratore">Staff / Collaboratore</option>
             </select></div>
           {tipo === 'portiere' && (
             <div className="field"><label>Portiere</label>
@@ -191,7 +190,7 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
           <div className={`lista-riga ${inv.stato === 'attivo' ? '' : 'assente'}`} key={inv.id}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 600, fontSize: 14 }}>
-                {inv.tipo === 'portiere' ? 'Portiere' : 'Collaboratore'}
+                {inv.tipo === 'portiere' ? 'Portiere' : '👤 Staff'}
                 {inv.portiere_id ? ` · ${nomePortiere(inv.portiere_id)}` : ''}
                 {inv.email_invitato
                   ? <span style={{ color: 'var(--ink-soft)', marginLeft: 6, fontSize: 12 }}>{inv.email_invitato}</span>

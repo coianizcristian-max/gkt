@@ -72,13 +72,14 @@ export default function ValutazioniAllenamento({ allenamentoId, portieri, parame
           <div className="val-head">
             <label className="val-pres">
               <input type="checkbox" checked={r.presente} onChange={(e) => setRow(i, { presente: e.target.checked })} />
-              Presente
+              Pres.
             </label>
             <span className="val-nome">{r.nome}</span>
             <div className="val-voto">
               <span>Voto</span>
               {scalaVoti.length > 0 ? (
-                <select value={r.voto} disabled={!r.presente} onChange={(e) => setRow(i, { voto: e.target.value })}>
+                <select value={r.voto} disabled={!r.presente} onChange={(e) => setRow(i, { voto: e.target.value })}
+                  style={{ minWidth: 60 }}>
                   <option value="">—</option>
                   {scalaVoti.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>

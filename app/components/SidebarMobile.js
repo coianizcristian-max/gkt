@@ -28,8 +28,8 @@ export default function SidebarMobile({ voci, brand }) {
           ? <img src={brand.logo} alt="" className="brand-logo" />
           : <div className="glove">GK</div>}
         <div>
-          <b>GKT</b>
-          {brand.societa && <span>{brand.societa}</span>}
+          <b>{brand.societa || 'GKT'}</b>
+          {brand.stagioneNome && <span>{brand.stagioneNome}</span>}
         </div>
       </Link>
       <button

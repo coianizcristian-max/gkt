@@ -40,7 +40,7 @@ export default async function PartitaPage({ params }) {
     <>
       <div className="topbar">
         <div className="eyebrow"><Link href="/partite">Partite</Link></div>
-        <h1>{partita.squadre?.nome} &middot; {partita.casa ? 'Casa' : 'Trasferta'} vs {partita.avversario || '\u2014'}</h1>
+        <h1>{partita.squadre?.nome}<span className="topbar-sub"> · {partita.casa ? 'Casa' : 'Trasferta'} vs {partita.avversario || '—'}</span></h1>
       </div>
       <div className="content">
         <p className="sub-intro">{dataLabel}</p>

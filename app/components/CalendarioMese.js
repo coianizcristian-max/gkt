@@ -66,14 +66,16 @@ export default function CalendarioMese({ allenamenti, categorie, vista = 'staff'
       )}
       <div className="cal-bar">
         <div className="cal-nav">
-          <button type="button" onClick={() => setCursor(new Date(year, month - 1, 1))}>‹</button>
+          <button type="button" onClick={() => setCursor(new Date(year, month - 1, 1))} aria-label="Mese precedente">‹</button>
           <span className="cal-title">{MESI[month]} {year}</span>
-          <button type="button" onClick={() => setCursor(new Date(year, month + 1, 1))}>›</button>
+          <button type="button" onClick={() => setCursor(new Date(year, month + 1, 1))} aria-label="Mese successivo">›</button>
         </div>
-        <select value={filtro} onChange={(e) => setFiltro(e.target.value)}>
-          <option value="">Tutte le categorie</option>
-          {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
-        </select>
+        {categorie.length > 1 && (
+          <select value={filtro} onChange={(e) => setFiltro(e.target.value)} aria-label="Filtra categoria">
+            <option value="">Tutte le categorie</option>
+            {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+          </select>
+        )}
       </div>
 
       <div className="cal-grid cal-head">

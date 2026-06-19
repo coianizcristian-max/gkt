@@ -51,7 +51,7 @@ export default async function ObiettiviPortierePage({ params }) {
           stagioneId={stagione?.id ?? null}
           obiettivi={obiettivi ?? []}
           sottoByObiettivo={sottoByObiettivo}
-        /> : <PaywallBanner label="Obiettivi portieri" />}
+        /> : <PaywallBanner chiave="obiettivi_portieri" label="Obiettivi portieri" />}
       </div>
     </>
   )

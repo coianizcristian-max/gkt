@@ -173,7 +173,7 @@ export default async function AllenamentoPage({ params }) {
 
         <h2 className="sezione-titolo">Valutazioni</h2>
         {!canValutare ? (
-          <PaywallBanner label="Valutazioni allenamento" wrap>
+          <PaywallBanner chiave="valutazioni_allenamento" label="Valutazioni allenamento" wrap>
             <ValutazioniAllenamento
               allenamentoId={id} portieri={portieri} parametri={parametri ?? []}
               valIniziali={valIniziali} punteggiIniziali={punteggiIniziali}
@@ -200,7 +200,7 @@ export default async function AllenamentoPage({ params }) {
           libreriaMia={libreriaMia}
           libreriaPubblica={libreriaPubblica}
           selezionatiIniziali={eserciziOrdinati}
-        /> : <PaywallBanner label="Esercizi negli allenamenti" />}
+        /> : <PaywallBanner chiave="esercizi_allenamento" label="Esercizi negli allenamenti" />}
 
         {canFeedback && feedback.length > 0 && (
           <>

@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PartitaForm from '@/app/components/PartitaForm'
 import ValutazioniPartita from '@/app/components/ValutazioniPartita'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,6 +25,14 @@ export default async function PartitaPage({ params }) {
     supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'punti_partita').eq('attivo', true).order('ordine'),
     supabase.from('squadre_avversarie').select('nome').eq('stagione_id', partita.stagione_id),
   ])
+
+  const supabase2 = await createClient()
+  const { data: { user } } = await supabase2.auth.getUser()
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user?.id),
+  ])
+  const canValPartita = isUnlocked('valutazioni_partita', gatingCfg, abbAttivo)
 
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
   const portieri = (iscr ?? []).map((r) => r.portieri).filter(Boolean)
@@ -46,7 +56,9 @@ export default async function PartitaPage({ params }) {
         <p className="sub-intro">{dataLabel}</p>
         <PartitaForm partita={partita} categorie={categorie} stagioneId={partita.stagione_id} avversari={avversari} />
         <h2 className="sezione-titolo">Valutazioni</h2>
-        {portieri.length > 0 ? (
+        {!canValPartita
+          ? <PaywallBanner chiave="valutazioni_partita" label="Valutazioni partita" />
+          : portieri.length > 0 ? (
           <ValutazioniPartita
             partitaId={id}
             golSubiti={partita.gol_subiti}

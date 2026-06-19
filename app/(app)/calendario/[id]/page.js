@@ -166,7 +166,7 @@ export default async function AllenamentoPage({ params }) {
     <>
       <div className="topbar">
         <div className="eyebrow"><Link href="/calendario">Calendario</Link></div>
-        <h1>{allenamento.squadre?.nome} · {dataLabel}</h1>
+        <h1>{allenamento.squadre?.nome}<span className="topbar-sub"> · {dataLabel}</span></h1>
       </div>
       <div className="content">
         <AllenamentoForm allenamento={allenamento} categorie={categorie} stagioneId={allenamento.stagione_id} />

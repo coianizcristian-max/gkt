@@ -159,7 +159,100 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 720px) {
   .sidebar { display: none; }
-  .content, .topbar { padding-left: 16px; padding-right: 16px; }
+
+  /* Topbar mobile */
+  .topbar { padding: 16px 16px 0; }
+  .topbar h1 { font-size: 20px; line-height: 1.2; word-break: break-word; }
+  .topbar .eyebrow { font-size: 11px; }
+  .content { padding: 16px 16px 40px; }
+
+  /* Topbar con azione: impila verticalmente */
+  .topbar-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .topbar-row .btn-azione { align-self: flex-start; }
+
+  /* Scheda form */
+  .scheda { padding: 16px; max-width: none; }
+  .form-grid { grid-template-columns: 1fr; }
+  .field-full { grid-column: 1; }
+
+  /* Form actions: impila bottoni su mobile */
+  .form-actions { flex-direction: column-reverse; gap: 8px; }
+  .form-actions .btn,
+  .form-actions .btn-ghost { width: 100%; text-align: center; }
+
+  /* Val-card: wrapping su mobile */
+  .val-head { flex-wrap: wrap; gap: 8px; }
+  .val-nome { font-size: 15px; width: 100%; }
+  .val-voto { width: 100%; }
+  .val-voto input { width: 80px; }
+  .val-parametri { grid-template-columns: 1fr; }
+
+  /* Partite: layout compatto a 3 col su mobile */
+  .partita-row {
+    grid-template-columns: 52px 1fr auto;
+    grid-template-rows: auto auto;
+    row-gap: 4px;
+    padding: 10px;
+  }
+  .pr-match { grid-column: 1 / -1; font-size: 13px; }
+  .pr-esito-cell { grid-column: 2; }
+  .pr-cs-cell { grid-column: 3; }
+  .pr-cat { font-size: 13px; }
+
+  /* Calendario mobile */
+  .cal-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .cal-bar select { width: 100%; }
+  .cal-nav { justify-content: space-between; }
+  .cal-cell { min-height: 56px; padding: 4px; }
+  .cal-ev { font-size: 9px; padding: 2px 4px; }
+  .cal-day { font-size: 12px; width: 22px; height: 22px; }
+
+  /* Sub-nav scrollabile */
+  .sub-nav { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+  .sub-nav-link { white-space: nowrap; flex-shrink: 0; }
+
+  /* Lista editor full width */
+  .lista-editor { max-width: none; }
+  .lista-riga { padding: 10px 12px; gap: 8px; }
+
+  /* Sezione titolo più compatta */
+  .sezione-titolo { font-size: 17px; margin: 22px 0 10px; }
+
+  /* Stat grid colonna singola */
+  .stat-grid { grid-template-columns: 1fr; }
+  .stat-rows { grid-template-columns: 1fr 1fr; }
+
+  /* Piani abbonamento: colonna singola */
+  .piani-grid { grid-template-columns: 1fr; }
+  .piano-card { padding: 18px 16px; }
+  .piano-num { font-size: 30px; }
+
+  /* Paywall banner compatto */
+  .paywall-banner { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; }
+  .paywall-banner .btn { width: 100%; }
+
+  /* Griglia portieri: colonna singola sotto 480px */
+  .grid { grid-template-columns: 1fr 1fr; }
+
+  /* empty box */
+  .empty { padding: 20px 16px; font-size: 14px; }
+
+  /* Login */
+  .login-card { padding: 24px 20px; }
+
+  /* Guida step grid: sempre 1 col su mobile */
+  .guida-step-grid { grid-template-columns: 1fr; }
+
+  /* Toggle switch allineato */
+  .toggle-switch { flex-shrink: 0; }
+
+  /* Abbonamento attivo: verticale */
+  .abbonamento-attivo { flex-direction: column; gap: 10px; }
+}
+
+@media (max-width: 400px) {
+  .grid { grid-template-columns: 1fr; }
+  .topbar h1 { font-size: 18px; }
 }
 
 /* ============ LANDING (home pubblica) ============ */
@@ -912,4 +1005,76 @@ a.brand { text-decoration: none; color: inherit; }
 @media (max-width: 640px) {
   .guida-step-grid { grid-template-columns: 1fr; }
 }
+
+
+/* ===== Fix globali mobile UX ===== */
+
+/* Titolo con sotto-riga su mobile */
+.topbar-sub {
+  display: inline;
+  font-size: 0.75em;
+  font-weight: 400;
+  color: var(--ink-soft);
+  letter-spacing: 0;
+}
+@media (max-width: 720px) {
+  .topbar-sub {
+    display: block;
+    font-size: 13px;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  /* Topbar non collassa il padding-top su mobile */
+  .topbar { padding-top: 14px; }
+
+  /* Card portiere: 2 colonne sempre visibili su mobile */
+  .card-portiere { padding: 14px; }
+  .card-portiere .nome { font-size: 15px; }
+  .stat .num { font-size: 20px; }
+
+  /* Val-card select stile touch-friendly */
+  .val-voto select, .val-voto input { font-size: 16px; } /* previene zoom iOS */
+  .field input, .field select, .field textarea { font-size: 16px; } /* previene zoom iOS */
+
+  /* Esercizi seduta portiere: summary più alta per touch */
+  .es-seduta-card summary { padding: 12px 14px; min-height: 56px; }
+
+  /* Feedback riga */
+  .feedback-head { flex-wrap: wrap; }
+
+  /* Cal-bar: nav + select separati e leggibili */
+  .cal-title { font-size: 16px; min-width: 120px; }
+
+  /* Inviti: bottoni link su colonne su mobile */
+  .lista-riga .btn-mini { font-size: 12px; padding: 6px 10px; }
+
+  /* Guida box */
+  .guida-toggle { font-size: 0.88rem; padding: 10px 12px; }
+
+  /* Sub-nav più compatta su mobile */
+  .sub-nav { padding-bottom: 0; margin-bottom: 16px; }
+  .sub-nav-link { padding: 8px 12px; font-size: 13px; }
+
+  /* Sezione statistiche: card full width */
+  .stat-card { padding: 12px; }
+
+  /* Paginazione */
+  .pag-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .pag-btn { min-width: 36px; min-height: 36px; } /* touch target */
+}
+
+/* Touch target minimo 44px per tutti i bottoni interattivi */
+.btn-mini { min-height: 36px; }
+.cal-nav button { min-width: 44px; min-height: 44px; }
+.hamburger { min-width: 44px; min-height: 44px; }
+
+/* Paginazione base */
+.pag-bar { display: flex; gap: 4px; margin-top: 12px; flex-wrap: wrap; }
+.pag-btn {
+  padding: 6px 12px; border: 1px solid var(--linea); border-radius: var(--r-sm);
+  background: var(--bianco); cursor: pointer; font: inherit; font-size: 14px;
+  color: var(--ink); min-width: 36px; text-align: center;
+}
+.pag-btn.active { background: var(--azzurro); color: #fff; border-color: var(--azzurro); }
+.pag-btn:hover:not(.active) { border-color: var(--azzurro); color: var(--azzurro); }
 

@@ -52,16 +52,14 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, feedback
                   </div>
                   <div className="stat-grid">
                     {lista.map((s) => (
-                      <div className="stat-card" key={s.p.id}>
+                      <Link className="stat-card" key={s.p.id} href={`/portieri/${s.p.id}/statistiche`} style={{textDecoration:'none',display:'block',cursor:'pointer'}}>
                         <div className="stat-head">
                           <div className="stat-foto">
                             {s.p.foto_url ? <img src={s.p.foto_url} alt="" /> : <span>{(s.p.nome || '?').charAt(0)}</span>}
                           </div>
                           <div>
                             <div className="stat-nome">
-                              <Link href={`/portieri/${s.p.id}/statistiche`} className="link-inline">
-                                {s.p.nome} {s.p.cognome ?? ''}
-                              </Link>
+                              {s.p.nome} {s.p.cognome ?? ''}
                             </div>
                             {s.p.numero_maglia ? <div className="stat-cat">#{s.p.numero_maglia}</div> : null}
                           </div>
@@ -80,7 +78,7 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, feedback
                             <div className="stat-line"><span>Punti</span><b>{fmt(s.punti)}</b></div>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </section>

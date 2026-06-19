@@ -32,6 +32,19 @@ export default async function CalendarioPage() {
       if (r.squadre) catMap[r.squadre.id] = r.squadre.nome
     }
 
+    const partite = (par.data ?? []).map((p) => ({
+      id: p.id,
+      data: p.data,
+      squadra_id: p.squadra_id,
+      squadra_nome: p.squadre?.nome ?? '',
+      avversario: p.avversario ?? '',
+      casa: p.casa,
+      tipo: p.tipo ?? 'campionato',
+      gol_fatti: p.gol_fatti,
+      gol_subiti: p.gol_subiti,
+      _tipo: 'partita',
+    }))
+
     allenamenti = (al.data ?? []).map((a) => ({
       id: a.id,
       data: a.data,
@@ -88,7 +101,7 @@ export default async function CalendarioPage() {
           </Guida>
         )}
         {stagione
-          ? <CalendarioMese allenamenti={allenamenti} categorie={categorie} vista={isPortiere ? 'portiere' : 'staff'} />
+          ? <CalendarioMese allenamenti={allenamenti} partite={partite} categorie={categorie} vista={isPortiere ? 'portiere' : 'staff'} />
           : <div className="empty">Nessuna stagione attiva.</div>}
       </div>
     </>

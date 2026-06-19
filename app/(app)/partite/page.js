@@ -28,14 +28,17 @@ export default async function PartitePage() {
       if (isc?.squadra_id) query = query.eq('squadra_id', isc.squadra_id)
     }
 
-    const [pa, cat] = await Promise.all([
+    const [pa, cat, vPar] = await Promise.all([
       query,
       supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
+      supabase.from('valutazioni_partita').select('partita_id').eq('presente', true),
     ])
+    const partiteConVal = new Set((vPar.data ?? []).map((v) => v.partita_id))
     partite = (pa.data ?? []).map((p) => ({
       id: p.id, data: p.data, squadra_id: p.squadra_id, avversario: p.avversario,
       casa: p.casa, gol_fatti: p.gol_fatti, gol_subiti: p.gol_subiti,
       tipo: p.tipo ?? 'campionato', squadra_nome: p.squadre?.nome ?? '',
+      ha_valutazioni: partiteConVal.has(p.id),
     }))
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
   }

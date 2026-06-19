@@ -45,6 +45,7 @@ export default async function ObiettiviPortierePage({ params }) {
         <div className="sub-nav">
           <Link href={`/portieri/${id}`} className="sub-nav-link">Scheda</Link>
           <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link active">Obiettivi</Link>
+          <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">Statistiche</Link>
         </div>
         {canObiettivi ? <ObiettiviManager
           portiereId={id}

@@ -56,7 +56,7 @@ export default async function StatistichePortierePage({ params }) {
               Le statistiche dettagliate includono: andamento mensile dei voti, presenze consecutive, confronto con la media della categoria, analisi per caratteristica tecnica, statistiche partite campionato separate dalle amichevoli e molto altro.
             </p>
           </div>
-          <PaywallBanner label="Statistiche dettaglio portiere" mostraDemo={true} />
+          <PaywallBanner chiave="statistiche_dettaglio" label="Statistiche dettaglio portiere" />
         </div>
       </>
     )

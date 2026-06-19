@@ -9,14 +9,7 @@ const GIORNI = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom']
 export default function CalendarioMese({ allenamenti, categorie, vista = 'staff' }) {
   const isPortiere = vista === 'portiere'
   const oggi = new Date()
-  const [cursor, setCursor] = useState(() => {
-    if (allenamenti.length) {
-      const latest = allenamenti.reduce((m, a) => (a.data > m ? a.data : m), allenamenti[0].data)
-      const d = new Date(latest + 'T00:00:00')
-      return new Date(d.getFullYear(), d.getMonth(), 1)
-    }
-    return new Date(oggi.getFullYear(), oggi.getMonth(), 1)
-  })
+  const [cursor, setCursor] = useState(() => new Date(oggi.getFullYear(), oggi.getMonth(), 1))
   const [filtro, setFiltro] = useState('')
 
   const year = cursor.getFullYear()

@@ -22,6 +22,20 @@ export default async function FunzionalitaPage() {
   const feeRow = (rows ?? []).find((r) => r.chiave === 'fee_contatto_importo')
   const feeContatto = feeRow?.label ?? '2.90'
 
+  const get = (k, def) => (rows ?? []).find((r) => r.chiave === k)?.label ?? def
+  const prezziIniziali = {
+    allenatore: {
+      mensile:  get('prezzo_allenatore_mensile',  '9.90'),
+      annuale:  get('prezzo_allenatore_annuale',  '79.00'),
+      lifetime: get('prezzo_allenatore_lifetime', '199.00'),
+    },
+    portiere: {
+      mensile:  get('prezzo_portiere_mensile',  '4.90'),
+      annuale:  get('prezzo_portiere_annuale',  '39.00'),
+      lifetime: get('prezzo_portiere_lifetime', '99.00'),
+    },
+  }
+
   const funzionalita = Object.entries(FUNZIONALITA).map(([k, def]) => ({
     chiave: k,
     label: def.label,
@@ -36,7 +50,7 @@ export default async function FunzionalitaPage() {
       </div>
       <div className="content">
         <SupervisoreNav />
-        <GatingManager funzionalita={funzionalita} tuttoFree={tuttoFree} feeContatto={feeContatto} />
+        <GatingManager funzionalita={funzionalita} tuttoFree={tuttoFree} feeContatto={feeContatto} prezziIniziali={prezziIniziali} />
       </div>
     </>
   )

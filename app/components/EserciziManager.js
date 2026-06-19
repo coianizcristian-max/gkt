@@ -4,33 +4,114 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function EserciziManager({ esercizi, tipologie, allenatoreId }) {
-  const router = useRouter()
-  const [creating, setCreating] = useState(false)
-  const gruppi = {}
-  for (const e of esercizi) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
-  const chiavi = Object.keys(gruppi).sort()
-
+// Popup dettaglio esercizio
+function EsercizioPopup({ esercizio, onClose }) {
   return (
-    <div className="lista-editor">
-      <p className="sub-intro">La tua libreria di esercizi: titolo, tipologia, descrizioni, immagine e note. Potrai richiamarli quando crei un allenamento.</p>
-      {creating
-        ? <EsercizioCard tipologie={tipologie} allenatoreId={allenatoreId} onSaved={() => { setCreating(false); router.refresh() }} onCancel={() => setCreating(false)} />
-        : <button className="btn-azione" onClick={() => setCreating(true)} type="button">+ Nuovo esercizio</button>}
-      {esercizi.length === 0 && !creating && <div className="empty">Nessun esercizio in libreria.</div>}
-      {chiavi.map((k) => (
-        <div className="elenco-blocco" key={k}>
-          <h3>{k}</h3>
-          {gruppi[k].map((e) => (
-            <EsercizioCard key={e.id} esercizio={e} tipologie={tipologie} allenatoreId={allenatoreId} onSaved={() => router.refresh()} />
-          ))}
-        </div>
-      ))}
+    <div className="popup-overlay" onClick={onClose}>
+      <div className="popup-box" onClick={(e) => e.stopPropagation()}>
+        <button className="popup-close" onClick={onClose} type="button">✕</button>
+        <h2 style={{ margin: '0 0 6px' }}>{esercizio.titolo}</h2>
+        {esercizio.tipologia && <span className="stat-cat" style={{ marginBottom: 12, display: 'inline-block' }}>{esercizio.tipologia}</span>}
+        {esercizio.immagine_url && (
+          <img src={esercizio.immagine_url} alt="" style={{ width: '100%', borderRadius: 'var(--r)', marginBottom: 14, maxHeight: 280, objectFit: 'cover' }} />
+        )}
+        {esercizio.descrizione_breve && <p style={{ fontStyle: 'italic', color: 'var(--ink-soft)', margin: '0 0 10px' }}>{esercizio.descrizione_breve}</p>}
+        {esercizio.descrizione && <p style={{ margin: '0 0 10px', lineHeight: 1.65 }}>{esercizio.descrizione}</p>}
+        {esercizio.note && <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: 0 }}>Note: {esercizio.note}</p>}
+      </div>
     </div>
   )
 }
 
-function EsercizioCard({ esercizio, tipologie, allenatoreId, onSaved, onCancel }) {
+// Tile singolo esercizio nella libreria
+function EsercizioTile({ esercizio, onDetail, onEdit }) {
+  return (
+    <div className="es-lib-tile">
+      <button className="es-lib-img-wrap" type="button" onClick={() => onDetail(esercizio)} title="Vedi dettaglio">
+        {esercizio.immagine_url
+          ? <img src={esercizio.immagine_url} alt="" />
+          : <div className="es-lib-no-img">📋</div>}
+      </button>
+      <div className="es-lib-info">
+        <button className="es-lib-titolo" type="button" onClick={() => onDetail(esercizio)}>{esercizio.titolo}</button>
+        {esercizio.pubblico && <span style={{ fontSize: 10, color: 'var(--azzurro)', fontWeight: 600, marginLeft: 4 }}>PUB</span>}
+      </div>
+      <button className="btn-mini es-lib-edit" type="button" onClick={() => onEdit(esercizio)}>Modifica</button>
+    </div>
+  )
+}
+
+export default function EserciziManager({ esercizi, tipologie, allenatoreId }) {
+  const router = useRouter()
+  const [editing, setEditing] = useState(null)   // null | 'new' | esercizio
+  const [popup, setPopup] = useState(null)
+  const [tabAttivo, setTabAttivo] = useState(null) // null = prima tab
+
+  // Raggruppa per tipologia
+  const gruppi = {}
+  for (const e of esercizi) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
+  const chiavi = Object.keys(gruppi).sort()
+  const tabCorrente = tabAttivo ?? chiavi[0] ?? null
+
+  if (editing) {
+    return (
+      <div className="lista-editor">
+        <button className="btn-ghost" onClick={() => setEditing(null)} type="button" style={{ marginBottom: 12 }}>← Torna alla libreria</button>
+        <EsercizioForm
+          esercizio={editing === 'new' ? null : editing}
+          tipologie={tipologie}
+          allenatoreId={allenatoreId}
+          onSaved={() => { setEditing(null); router.refresh() }}
+          onCancel={() => setEditing(null)}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="lista-editor">
+      {popup && <EsercizioPopup esercizio={popup} onClose={() => setPopup(null)} />}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+        <button className="btn-azione" onClick={() => setEditing('new')} type="button">+ Nuovo esercizio</button>
+      </div>
+
+      {esercizi.length === 0 && (
+        <div className="empty">Nessun esercizio in libreria. Creane uno con il pulsante sopra.</div>
+      )}
+
+      {chiavi.length > 0 && (
+        <>
+          {/* Tab tipologie */}
+          <div className="sub-nav" style={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
+            {chiavi.map((k) => (
+              <button key={k} type="button"
+                className={`sub-nav-link ${tabCorrente === k ? 'active' : ''}`}
+                onClick={() => setTabAttivo(k)}>
+                {k} <span style={{ fontSize: 11, opacity: 0.7 }}>({gruppi[k].length})</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Griglia tile per la tab attiva */}
+          {tabCorrente && (
+            <div className="es-lib-grid">
+              {gruppi[tabCorrente].map((e) => (
+                <EsercizioTile
+                  key={e.id}
+                  esercizio={e}
+                  onDetail={setPopup}
+                  onEdit={setEditing}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }) {
   const isEdit = !!esercizio
   const [f, setF] = useState({
     titolo: esercizio?.titolo ?? '',
@@ -54,7 +135,7 @@ function EsercizioCard({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
   function onTip(e) {
     const v = e.target.value
     if (v === '__nuova__') {
-      const nome = prompt('Nuova tipologia (verra proposta al supervisore per approvazione):')
+      const nome = prompt('Nome della nuova tipologia:')
       if (!nome) return
       const supabase = createClient()
       supabase.from('elenco_voci').insert({
@@ -103,7 +184,8 @@ function EsercizioCard({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
   }
 
   return (
-    <div className="esercizio-card">
+    <div className="scheda">
+      <h2 style={{ margin: '0 0 16px', fontSize: 18 }}>{isEdit ? 'Modifica esercizio' : 'Nuovo esercizio'}</h2>
       {error && <div className="err">{error}</div>}
       <div className="form-grid">
         <div className="field field-full"><label>Titolo *</label><input value={f.titolo} onChange={upd('titolo')} /></div>
@@ -113,22 +195,27 @@ function EsercizioCard({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
             <option value="__nuova__">+ Proponi nuova...</option>
           </select></div>
         <div className="field"><label>Immagine</label>
-          <label className="foto-upload">{preview ? 'Cambia immagine' : 'Carica immagine'}<input type="file" accept="image/*" onChange={onFile} hidden /></label></div>
+          <label className="foto-upload">{preview ? 'Cambia immagine' : 'Carica immagine'}
+            <input type="file" accept="image/*" onChange={onFile} hidden />
+          </label>
+          {preview && <img src={preview} alt="" style={{ marginTop: 8, maxWidth: 160, borderRadius: 'var(--r-sm)' }} />}
+        </div>
         <div className="field field-full"><label>Descrizione breve</label><input value={f.descrizione_breve} onChange={upd('descrizione_breve')} /></div>
-        <div className="field field-full"><label>Descrizione dettagliata</label><textarea rows="3" value={f.descrizione} onChange={upd('descrizione')} /></div>
+        <div className="field field-full"><label>Descrizione dettagliata</label><textarea rows="4" value={f.descrizione} onChange={upd('descrizione')} /></div>
         <div className="field field-full"><label>Note</label><textarea rows="2" value={f.note} onChange={upd('note')} /></div>
         <div className="field field-full">
           <label className="val-nessuno">
             <input type="checkbox" checked={f.pubblico} onChange={(e) => { setF((s) => ({ ...s, pubblico: e.target.checked })); setDone(false) }} />
-            Pubblico (visibile e selezionabile dagli altri allenatori)
+            Pubblico (visibile agli altri allenatori)
           </label>
         </div>
       </div>
-      {preview && <div className="esercizio-img"><img src={preview} alt="" /></div>}
       <div className="form-actions">
         {onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
         {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>}
-        <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? 'Salvataggio...' : done ? 'Salvato \u2713' : 'Salva'}</button>
+        <button className="btn" onClick={salva} disabled={busy} type="button">
+          {busy ? 'Salvataggio...' : done ? 'Salvato ✓' : 'Salva'}
+        </button>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AbbonatoClient from './AbbonatoClient'
+import CouponBox from '@/app/components/CouponBox'
 import { getGatingConfig, hasAbbonamento } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
@@ -55,6 +56,7 @@ export default async function AbbonatiPage() {
       </div>
       <div className="content">
         <AbbonatoClient abbonamento={abbonamento} userId={user.id} prezzi={prezzi} ruolo={ruolo} />
+        {!abbonamento && <CouponBox />}
       </div>
     </>
   )

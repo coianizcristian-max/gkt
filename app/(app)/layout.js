@@ -12,6 +12,7 @@ export default async function AppLayout({ children }) {
   let isStaff = false, isSupervisore = false, isPortiere = false
   let portiereId = null, societa = null, logo = null, stagioneNome = null
   let mostraAbbonati = false
+  let couponGiorni = null
 
   if (user) {
     const [{ data: profilo }, { data: stagione }] = await Promise.all([
@@ -30,6 +31,18 @@ export default async function AppLayout({ children }) {
       const { tuttoFree } = await getGatingConfig(supabase)
       const abbAttivo = await hasAbbonamento(supabase, user.id)
       mostraAbbonati = !tuttoFree && !abbAttivo
+
+      // Controlla coupon attivo per mostrare banner giorni rimasti
+      if (!abbAttivo) {
+        const { data: couponAttivo } = await supabase.from('coupon_utilizzi')
+          .select('scade_il').eq('utente_id', user.id)
+          .gt('scade_il', new Date().toISOString()).limit(1).maybeSingle()
+        if (couponAttivo) {
+          const giorni = Math.ceil((new Date(couponAttivo.scade_il) - new Date()) / (1000 * 60 * 60 * 24))
+          // Salva giorni per mostrarli nel layout
+          couponGiorni = giorni
+        }
+      }
     }
   }
 
@@ -69,6 +82,11 @@ export default async function AppLayout({ children }) {
             {stagioneNome && <span className="brand-stagione">Stagione {stagioneNome}</span>}
           </div>
         </Link>
+        {couponGiorni != null && (
+          <div style={{margin:'4px 8px 8px',padding:'6px 10px',background:'rgba(232,167,44,0.15)',borderRadius:'var(--r-sm)',fontSize:12,color:'var(--giallo)',fontWeight:600,lineHeight:1.3}}>
+            🎟 Periodo gratuito: {couponGiorni} gg rimasti
+          </div>
+        )}
         {isPortiere
           ? <NavLink href={schedaHref}>La mia scheda</NavLink>
           : <NavLink href="/portieri">Portieri</NavLink>}
@@ -82,6 +100,7 @@ export default async function AppLayout({ children }) {
         <NavLink href="/come-iniziare">Come iniziare</NavLink>
         <NavLink href="/archivio">Archivio</NavLink>
         <NavLink href="/suggerimenti">Suggerimenti</NavLink>
+        <NavLink href="/newsletter">Newsletter</NavLink>
         {isSupervisore && <NavLink href="/supervisore">Supervisore</NavLink>}
         {mostraAbbonati && <NavLink href="/abbonati">🔓 Abbonati</NavLink>}
         <div className="sidebar-foot">

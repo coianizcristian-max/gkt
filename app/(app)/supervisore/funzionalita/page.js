@@ -13,7 +13,7 @@ export default async function FunzionalitaPage() {
   const { data: profilo } = await supabase.from('profili').select('ruolo, supervisore').eq('id', user.id).maybeSingle()
   if (!profilo?.supervisore) redirect('/')
 
-  const { data: rows } = await supabase.from('funzionalita_config').select('chiave, free')
+  const { data: rows } = await supabase.from('funzionalita_config').select('chiave, free, label')
   const configMap = {}
   for (const r of rows ?? []) configMap[r.chiave] = r.free
   const tuttoFree = configMap['__tutto_free'] ?? false

@@ -20,7 +20,7 @@ export default async function AllenamentoPage({ params }) {
     .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
 
   const { data: allenamento } = await supabase
-    .from('allenamenti').select('*, squadre(nome)').eq('id', id).maybeSingle()
+    .from('allenamenti').select('*, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('id', id).maybeSingle()
   if (!allenamento) notFound()
 
   const dataLabel = new Date(allenamento.data + 'T00:00:00')
@@ -43,7 +43,7 @@ export default async function AllenamentoPage({ params }) {
       <>
         <div className="topbar">
           <div className="eyebrow"><Link href="/calendario">Calendario</Link></div>
-          <h1>{allenamento.squadre?.nome} · {dataLabel}</h1>
+          <h1>{allenamento.squadra?.nome} · {dataLabel}</h1>
         </div>
         <div className="content">
           <h2 className="sezione-titolo">Esercizi della seduta</h2>
@@ -166,7 +166,7 @@ export default async function AllenamentoPage({ params }) {
     <>
       <div className="topbar">
         <div className="eyebrow"><Link href="/calendario">Calendario</Link></div>
-        <h1>{allenamento.squadre?.nome}<span className="topbar-sub"> · {dataLabel}</span></h1>
+        <h1>{allenamento.squadra?.nome}<span className="topbar-sub"> · {dataLabel}</span></h1>
       </div>
       <div className="content">
         <AllenamentoForm allenamento={allenamento} categorie={categorie} stagioneId={allenamento.stagione_id} />

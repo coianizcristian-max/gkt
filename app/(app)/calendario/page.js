@@ -20,7 +20,7 @@ export default async function CalendarioPage() {
   if (stagione) {
     const [al, cat] = await Promise.all([
       supabase.from('allenamenti')
-        .select('id, data, squadra_id, accorpata_con, nessuna_valutazione, squadre(nome)')
+        .select('id, data, squadra_id, accorpata_con, nessuna_valutazione, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id).order('data'),
       supabase.from('stagione_categorie')
         .select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
@@ -36,7 +36,7 @@ export default async function CalendarioPage() {
       id: a.id,
       data: a.data,
       squadra_id: a.squadra_id,
-      squadra_nome: a.squadre?.nome ?? '',
+      squadra_nome: a.squadra?.nome ?? '',
       accorpata_con: a.accorpata_con ?? null,
       accorpata_nome: a.accorpata_con ? (catMap[a.accorpata_con] ?? '') : null,
       nessuna_valutazione: a.nessuna_valutazione,

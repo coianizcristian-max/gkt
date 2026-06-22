@@ -42,20 +42,23 @@ function EsercizioTile({ esercizio, onDetail, onEdit }) {
         <button className="es-lib-titolo" type="button" onClick={() => onDetail(esercizio)}>{esercizio.titolo}</button>
         {esercizio.pubblico && <span style={{ fontSize: 10, color: 'var(--azzurro)', fontWeight: 600, marginLeft: 4 }}>PUB</span>}
       </div>
-      <button className="btn-mini es-lib-edit" type="button" onClick={() => onEdit(esercizio)}>Modifica</button>
+      <button className="btn-mini es-lib-edit" type="button" onClick={() => onDetail(esercizio)}>Dettaglio</button>
+      {onEdit && <button className="btn-mini es-lib-edit" type="button" onClick={() => onEdit(esercizio)}>Modifica</button>}
     </div>
   )
 }
 
-export default function EserciziManager({ esercizi, tipologie, allenatoreId }) {
+export default function EserciziManager({ esercizi, eserciziPubblici = [], tipologie, allenatoreId }) {
   const router = useRouter()
-  const [editing, setEditing] = useState(null)   // null | 'new' | esercizio
+  const [editing, setEditing] = useState(null)
   const [popup, setPopup] = useState(null)
-  const [tabAttivo, setTabAttivo] = useState(null) // null = prima tab
+  const [tabAttivo, setTabAttivo] = useState(null)
+  const [sezione, setSezione] = useState('miei') // 'miei' | 'pubblici'
 
-  // Raggruppa per tipologia
+  // Ragruppa per tipologia — sezione corrente
+  const lista = sezione === 'miei' ? esercizi : eserciziPubblici
   const gruppi = {}
-  for (const e of esercizi) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
+  for (const e of lista) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
   const chiavi = Object.keys(gruppi).sort()
   const tabCorrente = tabAttivo ?? chiavi[0] ?? null
 
@@ -77,12 +80,34 @@ export default function EserciziManager({ esercizi, tipologie, allenatoreId }) {
   return (
     <div className="lista-editor">
       {popup && <EsercizioPopup esercizio={popup} onClose={() => setPopup(null)} />}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-        <button className="btn-azione" onClick={() => setEditing('new')} type="button">+ Nuovo esercizio</button>
+
+      {/* Selettore sezione */}
+      <div className="sub-nav" style={{ marginBottom: 16 }}>
+        <button type="button"
+          className={`sub-nav-link ${sezione === 'miei' ? 'active' : ''}`}
+          onClick={() => { setSezione('miei'); setTabAttivo(null) }}>
+          I miei esercizi ({esercizi.length})
+        </button>
+        <button type="button"
+          className={`sub-nav-link ${sezione === 'pubblici' ? 'active' : ''}`}
+          onClick={() => { setSezione('pubblici'); setTabAttivo(null) }}>
+          ★ Pubblici preferiti ({eserciziPubblici.length})
+        </button>
       </div>
 
-      {esercizi.length === 0 && (
-        <div className="empty">Nessun esercizio in libreria. Creane uno con il pulsante sopra.</div>
+      {/* Azioni — solo nella sezione miei */}
+      {sezione === 'miei' && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+          <button className="btn-azione" onClick={() => setEditing('new')} type="button">+ Nuovo esercizio</button>
+        </div>
+      )}
+
+      {lista.length === 0 && (
+        <div className="empty">
+          {sezione === 'miei'
+            ? 'Nessun esercizio in libreria. Creane uno con il pulsante sopra.'
+            : 'Nessun esercizio pubblico preferito. Salva gli esercizi con ★ dalla libreria pubblica in un allenamento per trovarli qui.'}
+        </div>
       )}
 
       {chiavi.length > 0 && (
@@ -98,7 +123,7 @@ export default function EserciziManager({ esercizi, tipologie, allenatoreId }) {
             ))}
           </div>
 
-          {/* Griglia tile per la tab attiva */}
+          {/* Griglia tile */}
           {tabCorrente && (
             <div className="es-lib-grid">
               {gruppi[tabCorrente].map((e) => (
@@ -106,7 +131,7 @@ export default function EserciziManager({ esercizi, tipologie, allenatoreId }) {
                   key={e.id}
                   esercizio={e}
                   onDetail={setPopup}
-                  onEdit={setEditing}
+                  onEdit={sezione === 'miei' ? setEditing : null}
                 />
               ))}
             </div>

@@ -1,6 +1,9 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Guida from '@/app/components/Guida'
 import PartiteLista from '@/app/components/PartiteLista'
+import { puoVisualizzare } from '@/lib/permessi'
+import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,11 +11,13 @@ export default async function PartitePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
+    .from('profili').select('ruolo, portiere_id, permessi_collaboratore').eq('id', user?.id).maybeSingle()
   const isPortiere = profilo?.ruolo === 'portiere'
+  if (profilo?.ruolo === 'staff' && !puoVisualizzare({ ruolo: profilo.ruolo, permessiCollaboratore: profilo.permessi_collaboratore }, 'partite')) {
+    redirect('/dashboard')
+  }
 
-  const { data: stagione } = await supabase
-    .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user?.id)
 
   let partite = []
   let categorie = []

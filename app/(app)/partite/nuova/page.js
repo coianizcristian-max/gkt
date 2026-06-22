@@ -1,13 +1,18 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PartitaForm from '@/app/components/PartitaForm'
+import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
 export default async function NuovaPartitaPage() {
   const supabase = await createClient()
-  const { data: stagione } = await supabase
-    .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user?.id).maybeSingle()
+  if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/dashboard')
+
+  const { stagione } = await getStagioneAttiva(supabase, user?.id)
 
   let categorie = []
   let avversari = []

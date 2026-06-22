@@ -32,12 +32,21 @@ export async function POST(request) {
     if (invErr || !invito) return NextResponse.json({ error: 'Invito non trovato' }, { status: 404 })
     if (invito.stato !== 'attivo') return NextResponse.json({ error: 'Invito non più valido' }, { status: 410 })
 
+    // Risale all'allenatore proprietario della stagione collegata all'invito,
+    // così il nuovo profilo (portiere o collaboratore) eredita lo scoping corretto.
+    let allenatoreOwnerId = null
+    if (invito.stagione_id) {
+      const { data: stagioneRow } = await admin.from('stagioni').select('owner_id').eq('id', invito.stagione_id).maybeSingle()
+      allenatoreOwnerId = stagioneRow?.owner_id ?? null
+    }
+
     if (invito.tipo === 'portiere') {
-      // 1. Setta ruolo portiere e collega portiere_id nel profilo
+      // 1. Setta ruolo portiere e collega portiere_id + allenatore_id nel profilo
       await admin.from('profili').upsert({
         id: user.id,
         ruolo: 'portiere',
         portiere_id: invito.portiere_id ?? null,
+        allenatore_id: allenatoreOwnerId,
       }, { onConflict: 'id' })
 
       // 2. Marca invito come consumato
@@ -48,11 +57,12 @@ export async function POST(request) {
       }).eq('id', invito.id)
 
     } else if (invito.tipo === 'collaboratore') {
-      // Collaboratore: ruolo staff con permessi
+      // Collaboratore: ruolo staff con permessi, collegato all'allenatore proprietario
       await admin.from('profili').upsert({
         id: user.id,
         ruolo: 'staff',
         permessi_collaboratore: invito.permessi ?? {},
+        allenatore_id: allenatoreOwnerId,
       }, { onConflict: 'id' })
 
       await admin.from('inviti').update({

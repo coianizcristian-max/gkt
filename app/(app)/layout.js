@@ -4,6 +4,9 @@ import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
 import { createClient } from '@/lib/supabase/server'
 import { getGatingConfig, hasAbbonamento } from '@/lib/gating'
+import { puoVisualizzare } from '@/lib/permessi'
+import { getStagioneAttiva } from '@/lib/tenant'
+import IdentificaUtenteTracking from '@/app/components/IdentificaUtenteTracking'
 
 export default async function AppLayout({ children }) {
   const supabase = await createClient()
@@ -13,19 +16,27 @@ export default async function AppLayout({ children }) {
   let portiereId = null, societa = null, logo = null, stagioneNome = null
   let mostraAbbonati = false
   let couponGiorni = null
+  let vedePortieri = true, vedeAllenamenti = true, vedePartite = true, vedeStatistiche = true
+  let ruoloUtente = null
 
   if (user) {
-    const [{ data: profilo }, { data: stagione }] = await Promise.all([
-      supabase.from('profili').select('ruolo, supervisore, portiere_id').eq('id', user.id).maybeSingle(),
-      supabase.from('stagioni').select('nome, societa_nome, logo_url').eq('attiva', true).maybeSingle(),
-    ])
+    const { data: profilo } = await supabase
+      .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore').eq('id', user.id).maybeSingle()
+    const { stagione } = await getStagioneAttiva(supabase, user.id)
     isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
     isSupervisore = profilo?.supervisore === true
     isPortiere = profilo?.ruolo === 'portiere'
     portiereId = profilo?.portiere_id ?? null
+    ruoloUtente = profilo?.ruolo ?? null
     societa = stagione?.societa_nome ?? null
     logo = stagione?.logo_url ?? null
     stagioneNome = stagione?.nome ?? null
+
+    const ctxPermessi = { ruolo: profilo?.ruolo, permessiCollaboratore: profilo?.permessi_collaboratore }
+    vedePortieri = puoVisualizzare(ctxPermessi, 'portieri')
+    vedeAllenamenti = puoVisualizzare(ctxPermessi, 'allenamenti')
+    vedePartite = puoVisualizzare(ctxPermessi, 'partite')
+    vedeStatistiche = puoVisualizzare(ctxPermessi, 'statistiche')
 
     if (isStaff) {
       const { tuttoFree } = await getGatingConfig(supabase)
@@ -51,12 +62,12 @@ export default async function AppLayout({ children }) {
   // Costruisce array voci per SidebarMobile
   const voci = [
     ...(isStaff ? [{ href: '/dashboard', label: '🏠 Dashboard' }] : []),
-    { href: schedaHref, label: isPortiere ? 'La mia scheda' : 'Portieri' },
-    { href: '/calendario', label: 'Calendario' },
-    ...(isStaff ? [{ href: '/ricorrenze', label: 'Ricorrenze' }] : []),
-    { href: '/partite', label: 'Partite' },
-    { href: '/statistiche', label: 'Statistiche' },
-    ...(isStaff ? [{ href: '/esercizi', label: 'Esercizi' }] : []),
+    ...(isPortiere || vedePortieri ? [{ href: schedaHref, label: isPortiere ? 'La mia scheda' : 'Portieri' }] : []),
+    ...(isPortiere || vedeAllenamenti ? [{ href: '/calendario', label: 'Calendario' }] : []),
+    ...(isStaff && vedeAllenamenti ? [{ href: '/ricorrenze', label: 'Ricorrenze' }] : []),
+    ...(isPortiere || vedePartite ? [{ href: '/partite', label: 'Partite' }] : []),
+    ...(isPortiere || vedeStatistiche ? [{ href: '/statistiche', label: 'Statistiche' }] : []),
+    ...(isStaff && vedeAllenamenti ? [{ href: '/esercizi', label: 'Esercizi' }] : []),
     ...(isStaff ? [{ href: '/profilo', label: 'Profilo allenatore' }] : []),
     ...(isStaff ? [{ href: '/inviti', label: 'Inviti' }] : []),
     { href: '/come-iniziare', label: 'Come iniziare' },
@@ -73,6 +84,7 @@ export default async function AppLayout({ children }) {
 
   return (
     <div className="shell">
+      <IdentificaUtenteTracking id={user?.id ?? null} email={user?.email ?? null} ruolo={ruoloUtente} />
       {/* Sidebar desktop */}
       <aside className="sidebar">
         <Link href={schedaHref} className="brand">
@@ -89,14 +101,14 @@ export default async function AppLayout({ children }) {
           </div>
         )}
         {isStaff && <NavLink href="/dashboard">🏠 Dashboard</NavLink>}
-        {isPortiere
+        {(isPortiere || vedePortieri) && (isPortiere
           ? <NavLink href={schedaHref}>La mia scheda</NavLink>
-          : <NavLink href="/portieri">Portieri</NavLink>}
-        <NavLink href="/calendario">Calendario</NavLink>
-        {isStaff && <NavLink href="/ricorrenze">Ricorrenze</NavLink>}
-        <NavLink href="/partite">Partite</NavLink>
-        <NavLink href="/statistiche">Statistiche</NavLink>
-        {isStaff && <NavLink href="/esercizi">Esercizi</NavLink>}
+          : <NavLink href="/portieri">Portieri</NavLink>)}
+        {(isPortiere || vedeAllenamenti) && <NavLink href="/calendario">Calendario</NavLink>}
+        {isStaff && vedeAllenamenti && <NavLink href="/ricorrenze">Ricorrenze</NavLink>}
+        {(isPortiere || vedePartite) && <NavLink href="/partite">Partite</NavLink>}
+        {(isPortiere || vedeStatistiche) && <NavLink href="/statistiche">Statistiche</NavLink>}
+        {isStaff && vedeAllenamenti && <NavLink href="/esercizi">Esercizi</NavLink>}
         {isStaff && <NavLink href="/profilo">Profilo allenatore</NavLink>}
         {isStaff && <NavLink href="/inviti">Inviti</NavLink>}
         <NavLink href="/come-iniziare">Come iniziare</NavLink>

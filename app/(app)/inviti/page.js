@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import InvitiManager from '@/app/components/InvitiManager'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
+import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +20,7 @@ export default async function InvitiPage() {
   ])
   const canInviti = isUnlocked('inviti_creazione', gatingCfg, abbAttivo)
 
-  const { data: stagione } = await supabase.from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user.id)
   let inviti = []
   let portieri = []
   if (stagione) {

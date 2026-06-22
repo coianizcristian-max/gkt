@@ -64,7 +64,7 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
       {/* Avviso date stagione — compare solo se mancano */}
       {!haRange && (
         <div className="err" style={{ marginBottom: 16 }}>
-          ⚠ Imposta <b>data inizio e fine</b> della stagione in <a href="/supervisore/stagioni" className="link-inline">Supervisore → Stagioni</a> per poter generare gli allenamenti.
+          ⚠ Imposta <b>data inizio e fine</b> della stagione in <a href="/supervisore/stagioni" className="link-inline">Stagioni</a> per poter generare gli allenamenti.
         </div>
       )}
 

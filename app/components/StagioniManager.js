@@ -4,13 +4,15 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function StagioniManager({ stagioni }) {
+export default function StagioniManager({ stagioni, ownerId }) {
   const router = useRouter()
   const [creating, setCreating] = useState(false)
 
   async function rendiAttiva(id) {
     const supabase = createClient()
-    const e1 = (await supabase.from('stagioni').update({ attiva: false }).neq('id', id)).error
+    // IMPORTANTE: il reset va limitato alle stagioni del proprio owner,
+    // altrimenti disattiverebbe anche le stagioni attive di altri allenatori.
+    const e1 = (await supabase.from('stagioni').update({ attiva: false }).eq('owner_id', ownerId).neq('id', id)).error
     const e2 = (await supabase.from('stagioni').update({ attiva: true }).eq('id', id)).error
     if (e1 || e2) alert('Errore: ' + (e1 || e2).message)
     router.refresh()
@@ -21,7 +23,7 @@ export default function StagioniManager({ stagioni }) {
     if (!nome) return
     setCreating(true)
     const supabase = createClient()
-    const { error } = await supabase.from('stagioni').insert({ nome: nome.trim(), attiva: false })
+    const { error } = await supabase.from('stagioni').insert({ nome: nome.trim(), attiva: false, owner_id: ownerId })
     if (error) alert('Errore: ' + error.message)
     setCreating(false); router.refresh()
   }

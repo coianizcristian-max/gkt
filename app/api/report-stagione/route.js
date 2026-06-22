@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { renderToBuffer, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
+import { getStagioneAttiva } from '@/lib/tenant'
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'Helvetica', fontSize: 10, color: '#14202b' },
@@ -108,10 +109,15 @@ export async function GET(request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
 
+  const { data: profiloViewer } = await supabase.from('profili').select('ruolo, portiere_id').eq('id', user.id).maybeSingle()
+  if (profiloViewer?.ruolo === 'portiere' && profiloViewer.portiere_id !== portiereId) {
+    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+  }
+
   const { data: portiere } = await supabase.from('portieri').select('id, nome, cognome').eq('id', portiereId).maybeSingle()
   if (!portiere) return NextResponse.json({ error: 'Portiere non trovato' }, { status: 404 })
 
-  const { data: stagione } = await supabase.from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user.id)
   if (!stagione) return NextResponse.json({ error: 'Nessuna stagione attiva' }, { status: 400 })
 
   // ── Dati aggregati ─────────────────────────────────────────────────────

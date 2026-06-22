@@ -5,6 +5,7 @@ import PaywallBanner from '@/app/components/PaywallBanner'
 import PercorsoTimeline from '@/app/components/PercorsoTimeline'
 import ReportStagione from '@/app/components/ReportStagione'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
+import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +21,7 @@ export default async function PercorsoCrescitaPage({ params }) {
   const { data: portiere } = await supabase.from('portieri').select('id, nome, cognome').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { data: stagione } = await supabase.from('stagioni').select('id, nome, data_inizio').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user?.id)
 
   const [gatingCfg, abbAttivo] = await Promise.all([
     getGatingConfig(supabase),

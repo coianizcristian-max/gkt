@@ -9,7 +9,6 @@ const VOCI = [
   { href: '/supervisore/categorie', label: 'Categorie' },
   { href: '/supervisore/attributi', label: 'Attributi' },
   { href: '/supervisore/elenchi', label: 'Elenchi' },
-  { href: '/supervisore/inviti', label: 'Inviti' },
   { href: '/supervisore/funzionalita', label: 'Funzionalità' },
   { href: '/supervisore/abbonamenti', label: 'Abbonamenti' },
   { href: '/supervisore/coupon', label: 'Coupon' },

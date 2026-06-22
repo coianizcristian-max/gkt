@@ -6,6 +6,7 @@ import StatisticheGrafici from '@/app/components/StatisticheGrafici'
 import IndiceCrescita from '@/app/components/IndiceCrescita'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { calcolaIndiceCrescita } from '@/lib/indiceCrescita'
+import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +25,7 @@ export default async function StatistichePortierePage({ params }) {
     .select('id, nome, cognome, data_nascita').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { data: stagione } = await supabase.from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user?.id)
   const { data: iscrizione } = stagione
     ? await supabase.from('iscrizioni')
         .select('squadra_id, squadre(nome)')

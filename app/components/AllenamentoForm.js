@@ -1,12 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvento } from '@/app/components/PostHogProvider'
 
 export default function AllenamentoForm({ allenamento, categorie, stagioneId, defaultData }) {
   const router = useRouter()
   const isEdit = !!allenamento
+  const inizioRef = useRef(null)
+
+  useEffect(() => {
+    if (!isEdit) {
+      inizioRef.current = Date.now()
+      trackEvento('allenamento_creazione_avviata')
+    }
+  }, [isEdit])
+
   const [f, setF] = useState({
     data: allenamento?.data ?? defaultData ?? '',
     squadra_id: allenamento?.squadra_id ?? (categorie[0]?.id ?? ''),
@@ -44,6 +54,8 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
         const { data, error } = await supabase.from('allenamenti')
           .insert({ ...payload, stagione_id: stagioneId }).select('id').single()
         if (error) throw error
+        const durataSec = inizioRef.current ? Math.round((Date.now() - inizioRef.current) / 1000) : null
+        trackEvento('allenamento_creazione_completata', { durata_secondi: durataSec })
         router.push(`/calendario/${data.id}`); router.refresh()
       }
     } catch (err) { setError(err.message); setSaving(false) }

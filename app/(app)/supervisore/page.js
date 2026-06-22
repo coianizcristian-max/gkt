@@ -11,9 +11,8 @@ export default async function SupervisorePage() {
   if (!user) redirect('/login')
 
   const { data: profilo } = await supabase
-    .from('profili').select('ruolo').eq('id', user.id).maybeSingle()
-  const isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
-  if (!isStaff) redirect('/')
+    .from('profili').select('supervisore').eq('id', user.id).maybeSingle()
+  if (!profilo?.supervisore) redirect('/')
 
   const { data: sezioni } = await supabase
     .from('sito_sezioni').select('*').order('ordine')

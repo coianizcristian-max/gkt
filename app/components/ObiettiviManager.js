@@ -130,9 +130,9 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
   }
 
   async function elimina() {
-    if (!confirm('Eliminare questo obiettivo e i suoi sotto-obiettivi?')) return
+    if (!confirm('Archiviare questo obiettivo? Uscirà dalla lista attiva, ma resterà nello storico del Percorso di crescita e nei collegamenti con valutazioni/esercizi.')) return
     const supabase = createClient()
-    const { error } = await supabase.from('obiettivi').delete().eq('id', obiettivo.id)
+    const { error } = await supabase.from('obiettivi').update({ archiviato: true }).eq('id', obiettivo.id)
     if (error) alert('Errore: ' + error.message); else if (onSaved) onSaved()
   }
 
@@ -206,7 +206,7 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
       <div className="form-actions">
         {isEdit && <button className="btn-ghost" onClick={() => setEspanso(false)} type="button">Comprimi</button>}
         {onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
-        {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>}
+        {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Archivia</button>}
         <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? 'Salvataggio...' : done ? 'Salvato \u2713' : 'Salva obiettivo'}</button>
       </div>
 

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import ObiettiviManager from '@/app/components/ObiettiviManager'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
+import { getStagioneAttiva, getOwnerId } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,14 +12,17 @@ export default async function ObiettiviPortierePage({ params }) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const { data: profiloViewer } = await supabase
+    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
+  if (profiloViewer?.ruolo === 'portiere' && profiloViewer.portiere_id !== id) notFound()
 
   const { data: portiere } = await supabase.from('portieri').select('id, nome, cognome').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { data: stagione } = await supabase.from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user?.id)
 
   const { data: obiettivi } = await supabase.from('obiettivi')
-    .select('*').eq('portiere_id', id).order('created_at', { ascending: false })
+    .select('*').eq('portiere_id', id).eq('archiviato', false).order('created_at', { ascending: false })
 
   const obIds = (obiettivi ?? []).map((o) => o.id)
   const sottoByObiettivo = {}
@@ -41,9 +45,10 @@ export default async function ObiettiviPortierePage({ params }) {
   let trendPerObiettivo = {}
 
   if (canObiettivi && obIds.length > 0) {
+    const ownerId = await getOwnerId(supabase, user?.id)
     const [{ data: parRows }, { data: esRows }, { data: obParRows }, { data: obEsRows }] = await Promise.all([
       supabase.from('parametri_valutazione').select('id, nome').eq('attivo', true).order('ordine'),
-      supabase.from('esercizi').select('id, titolo').eq('allenatore_id', user?.id).order('titolo'),
+      supabase.from('esercizi').select('id, titolo').eq('allenatore_id', ownerId).eq('archiviato', false).order('titolo'),
       supabase.from('obiettivo_parametri').select('obiettivo_id, parametro_id, parametri_valutazione(nome)').in('obiettivo_id', obIds),
       supabase.from('obiettivo_esercizi').select('obiettivo_id, esercizio_id').in('obiettivo_id', obIds),
     ])

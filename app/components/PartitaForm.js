@@ -1,12 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvento } from '@/app/components/PostHogProvider'
 
 export default function PartitaForm({ partita, categorie, stagioneId, avversari = [], defaultData }) {
   const router = useRouter()
   const isEdit = !!partita
+  const inizioRef = useRef(null)
+
+  useEffect(() => {
+    if (!isEdit) {
+      inizioRef.current = Date.now()
+      trackEvento('partita_creazione_avviata')
+    }
+  }, [isEdit])
+
   const [f, setF] = useState({
     data: partita?.data ?? defaultData ?? '',
     squadra_id: partita?.squadra_id ?? (categorie[0]?.id ?? ''),
@@ -46,6 +56,8 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
         const { data, error } = await supabase.from('partite')
           .insert({ ...payload, stagione_id: stagioneId }).select('id').single()
         if (error) throw error
+        const durataSec = inizioRef.current ? Math.round((Date.now() - inizioRef.current) / 1000) : null
+        trackEvento('partita_creazione_completata', { durata_secondi: durataSec })
         router.push(`/partite/${data.id}`); router.refresh()
       }
     } catch (err) { setError(err.message); setSaving(false) }

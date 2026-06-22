@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function CategorieManager({ categorie, attive, stagioneId, stagioneNome }) {
+export default function CategorieManager({ categorie, attive, stagioneId, stagioneNome, ownerId }) {
   const router = useRouter()
   const attiveSet = new Set(attive)
   const [busy, setBusy] = useState(false)
@@ -37,7 +37,7 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
     setBusy(true)
     const supabase = createClient()
     const maxOrd = ordineLocale.reduce((m, c) => Math.max(m, c.ordine), 0)
-    const { error } = await supabase.from('squadre').insert({ nome: 'Nuova categoria', ordine: maxOrd + 1 })
+    const { error } = await supabase.from('squadre').insert({ nome: 'Nuova categoria', ordine: maxOrd + 1, owner_id: ownerId })
     if (error) alert('Errore: ' + error.message)
     setBusy(false); router.refresh()
   }

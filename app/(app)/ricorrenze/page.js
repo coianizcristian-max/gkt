@@ -4,6 +4,7 @@ import Guida from '@/app/components/Guida'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import RicorrenzeManager from '@/app/components/RicorrenzeManager'
+import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,8 +15,7 @@ export default async function RicorrenzePage() {
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
-  const { data: stagione } = await supabase.from('stagioni')
-    .select('id, nome, data_inizio, data_fine').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user.id)
 
   let categorie = []
   let ricorrenze = []
@@ -45,7 +45,7 @@ export default async function RicorrenzePage() {
           Imposta per ogni categoria il giorno e l&apos;orario fisso di allenamento settimanale.
           Quando hai configurato tutti i giorni, clicca &ldquo;Genera allenamenti stagione&rdquo; per creare automaticamente tutte le date nel calendario.
           Le date già presenti non vengono duplicate: puoi rigenerare senza problemi dopo modifiche.
-          Ricorda di impostare prima le date di inizio e fine stagione in Supervisore → Stagioni.
+          Ricorda di impostare prima le date di inizio e fine stagione in Stagioni.
         </Guida>
         {stagione
           ? (canRicorrenze

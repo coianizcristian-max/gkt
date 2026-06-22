@@ -5,16 +5,13 @@ export const dynamic = 'force-dynamic'
 
 export default async function NewsletterPage() {
   const supabase = await createClient()
-  const [{ data: invii }, { data: stagione }] = await Promise.all([
-    supabase.from('newsletter_invii')
-      .select('id, titolo, contenuto, inviata_il, pubblicata')
-      .eq('pubblicata', true).order('inviata_il', { ascending: false }),
-    supabase.from('stagioni').select('societa_nome').eq('attiva', true).maybeSingle(),
-  ])
+  const { data: invii } = await supabase.from('newsletter_invii')
+    .select('id, titolo, contenuto, inviata_il, pubblicata')
+    .eq('pubblicata', true).order('inviata_il', { ascending: false })
 
   const ultima = invii?.[0]
   const archivio = invii?.slice(1) ?? []
-  const societa = stagione?.societa_nome ?? 'GKT'
+  const societa = 'GKT'
 
   return (
     <>

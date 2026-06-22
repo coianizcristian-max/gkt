@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ArchivioSelect from '@/app/components/ArchivioSelect'
 import ExportButtons from '@/app/components/ExportButtons'
+import { getOwnerId } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 const fmt = (n) => (n == null ? '\u2014' : Number(n).toLocaleString('it-IT', { maximumFractionDigits: 2 }))
@@ -12,9 +13,12 @@ export default async function ArchivioPage({ searchParams }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
+  if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/dashboard')
 
+  const ownerId = await getOwnerId(supabase, user.id)
   const { data: stagioni } = await supabase.from('stagioni')
-    .select('id, nome, attiva').order('data_inizio', { ascending: false, nullsFirst: false })
+    .select('id, nome, attiva').eq('owner_id', ownerId).order('data_inizio', { ascending: false, nullsFirst: false })
 
   if (!stagioni || stagioni.length === 0) {
     return (

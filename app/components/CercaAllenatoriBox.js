@@ -4,20 +4,38 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ProfiloModal from '@/app/cerca-allenatori/ProfiloModal'
 
+function buildQuery(citta, cap, provincia) {
+  // Costruisce la query più precisa possibile per Nominatim.
+  // CAP è il dato più disambiguante: "36030 Italia" trova Montecchio Precalcino
+  // senza ambiguità, mentre "Montecchio Italia" potrebbe trovare Montecchio Emilia (RE).
+  const parts = []
+  if (cap.trim()) parts.push(cap.trim())
+  if (citta.trim()) parts.push(citta.trim())
+  if (provincia.trim()) parts.push(provincia.trim())
+  parts.push('Italia')
+  return parts.join(', ')
+}
+
 export default function CercaAllenatoriBox() {
   const [citta, setCitta] = useState('')
+  const [cap, setCap] = useState('')
+  const [provincia, setProvincia] = useState('')
   const [risultati, setRisultati] = useState(null)
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
   const [selezionato, setSelezionato] = useState(null)
 
   async function cerca() {
-    if (!citta.trim()) return
+    if (!citta.trim() && !cap.trim()) { setMsg('Inserisci almeno la città o il CAP.'); return }
     setLoading(true); setMsg(''); setRisultati(null)
     try {
-      const g = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(citta + ', Italia'))
+      const query = buildQuery(citta, cap, provincia)
+      const g = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&q=' + encodeURIComponent(query))
       const gj = await g.json()
-      if (!gj || !gj[0]) { setMsg('Città non trovata. Prova a scriverla in modo diverso.'); setLoading(false); return }
+      if (!gj || !gj[0]) {
+        setMsg('Città non trovata. Prova ad aggiungere CAP o provincia per essere più preciso.')
+        setLoading(false); return
+      }
       const lat = parseFloat(gj[0].lat), lng = parseFloat(gj[0].lon)
       const supabase = createClient()
       const { data, error } = await supabase.rpc('cerca_allenatori', { p_lat: lat, p_lng: lng })
@@ -27,25 +45,54 @@ export default function CercaAllenatoriBox() {
     setLoading(false)
   }
 
+  const onKey = (e) => { if (e.key === 'Enter') cerca() }
+
   return (
     <section style={{ background: 'var(--carta)', borderTop: '1px solid var(--linea)', borderBottom: '1px solid var(--linea)', padding: '40px 20px' }}>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
         <h2 style={{ margin: '0 0 6px' }}>Cerchi un allenatore dei portieri?</h2>
         <p style={{ color: 'var(--ink-soft)', margin: '0 0 16px' }}>
-          Inserisci la città della tua squadra: trovi gli allenatori disponibili che operano nella tua zona, ciascuno entro il raggio che ha impostato.
+          Inserisci la città della tua squadra. Aggiungi CAP e/o provincia per trovare la città giusta quando esistono omonimie.
         </p>
-        <div style={{ display: 'flex', gap: 8 }}>
+
+        {/* Prima riga: Città (campo principale) */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
           <input
             value={citta}
             onChange={(e) => setCitta(e.target.value)}
-            placeholder="Es. Vicenza"
-            onKeyDown={(e) => { if (e.key === 'Enter') cerca() }}
-            style={{ flex: 1, padding: '12px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: '1rem' }}
+            onKeyDown={onKey}
+            placeholder="Città  (es. Vicenza)"
+            style={{ flex: 1, padding: '11px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: '1rem' }}
           />
-          <button className="btn" onClick={cerca} disabled={loading} type="button">
+        </div>
+
+        {/* Seconda riga: CAP + Provincia + Cerca */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            value={cap}
+            onChange={(e) => setCap(e.target.value)}
+            onKeyDown={onKey}
+            placeholder="CAP  (es. 36100)"
+            maxLength={5}
+            style={{ width: 110, padding: '11px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: '1rem', flexShrink: 0 }}
+          />
+          <input
+            value={provincia}
+            onChange={(e) => setProvincia(e.target.value)}
+            onKeyDown={onKey}
+            placeholder="Provincia  (es. VI)"
+            maxLength={30}
+            style={{ width: 140, padding: '11px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: '1rem', flexShrink: 0 }}
+          />
+          <button className="btn" onClick={cerca} disabled={loading} type="button" style={{ flex: 1 }}>
             {loading ? 'Cerco...' : 'Cerca'}
           </button>
         </div>
+
+        <p style={{ fontSize: 12, color: 'var(--ink-soft)', margin: '6px 0 0' }}>
+          💡 CAP e provincia sono facoltativi ma aiutano a trovare la città giusta quando il nome è comune a più zone d'Italia.
+        </p>
+
         {msg && <p style={{ color: 'var(--rosso, #c0392b)', marginTop: 12 }}>{msg}</p>}
         {risultati && risultati.length === 0 && (
           <p style={{ marginTop: 12, color: 'var(--ink-soft)' }}>Nessun allenatore disponibile trovato per questa zona.</p>

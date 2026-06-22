@@ -16,7 +16,9 @@
   --ombra: 0 1px 2px rgba(20, 32, 43, 0.06), 0 4px 16px rgba(20, 32, 43, 0.05);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: var(--font-body), system-ui, sans-serif;
@@ -24,7 +26,12 @@ body {
   color: var(--ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: contain;
 }
+
+a, button { touch-action: manipulation; }
+
+img { max-width: 100%; height: auto; }
 
 h1, h2, h3 {
   font-family: var(--font-display), system-ui, sans-serif;
@@ -1225,5 +1232,100 @@ a.brand { text-decoration: none; color: inherit; }
   font-size: 9px; font-weight: 700; color: var(--campo);
   background: rgba(31,138,76,0.12); border-radius: 3px;
   padding: 1px 4px; flex-shrink: 0;
+}
+
+
+/* ===== Supervisore: prezzi abbonamento — fix overflow mobile ===== */
+.prezzi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  min-width: 0; /* permette al grid item di restringersi sotto il contenuto */
+}
+.prezzo-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  min-width: 0;
+}
+.prezzo-field-label {
+  font-size: 13px;
+  color: var(--ink-soft);
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prezzo-field-input {
+  width: 64px;
+  min-width: 0;
+  padding: 5px 6px;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 520px) {
+  .prezzi-grid { grid-template-columns: 1fr; gap: 16px; }
+  .prezzo-field-input { width: 70px; }
+}
+
+
+/* ===== Landing page: mobile responsive ===== */
+@media (max-width: 720px) {
+  .landing { padding: 0 16px; }
+  .landing-top { padding: 16px 0; }
+  .hero { padding: 32px 0 28px; }
+  .hero-title { font-size: 30px; }
+  .hero-lead { font-size: 16px; }
+  .cta-card { flex-direction: column; align-items: flex-start; gap: 14px; padding: 20px; margin-top: 24px; }
+  .cta-arrow { align-self: flex-end; }
+  .cta-guest { flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 24px; }
+  .btn-hero { width: 100%; text-align: center; box-sizing: border-box; }
+  .features { grid-template-columns: 1fr; gap: 12px; padding: 24px 0 40px; }
+  .feature { padding: 18px; }
+  .link-accedi { padding: 8px 14px; font-size: 14px; }
+}
+
+@media (max-width: 400px) {
+  .hero-title { font-size: 26px; }
+}
+
+
+/* ===== Categorie: drag and drop ===== */
+.cat-riga {
+  cursor: grab;
+  transition: background 0.15s, transform 0.1s;
+}
+.cat-riga:active { cursor: grabbing; }
+.cat-riga.drag-over {
+  background: rgba(10,126,194,0.08);
+  border-color: var(--azzurro);
+}
+.drag-handle {
+  cursor: grab;
+  color: var(--ink-soft);
+  font-size: 16px;
+  flex-shrink: 0;
+  user-select: none;
+  padding: 0 2px;
+}
+@media (max-width: 720px) {
+  .drag-handle { display: none; } /* drag nativo HTML5 non funziona bene su touch, si usano le frecce */
+}
+
+
+/* ===== Dashboard ===== */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 720px) {
+  .dash-grid { grid-template-columns: 1fr; }
 }
 

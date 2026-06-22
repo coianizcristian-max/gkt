@@ -3,31 +3,93 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { SelettoreCollegamenti, TrendObiettivo } from '@/app/components/ObiettivoCollegamenti'
 
 const STATI = ['aperto', 'raggiunto', 'sospeso']
 
-export default function ObiettiviManager({ portiereId, stagioneId, obiettivi, sottoByObiettivo }) {
+const CATEGORIE = [
+  { v: 'tecnico', label: 'Tecnico', emoji: '🧤' },
+  { v: 'tattico', label: 'Tattico', emoji: '🧠' },
+  { v: 'mentale', label: 'Mentale', emoji: '💪' },
+  { v: 'fisico', label: 'Fisico', emoji: '🏃' },
+  { v: 'comportamentale', label: 'Comportamentale', emoji: '🤝' },
+]
+const catInfo = (v) => CATEGORIE.find((c) => c.v === v) ?? CATEGORIE[0]
+
+const PRIORITA = [
+  { v: 'alta', label: 'Alta', colore: '#c0392b' },
+  { v: 'media', label: 'Media', colore: '#e8a72c' },
+  { v: 'bassa', label: 'Bassa', colore: '#4a5b68' },
+]
+const prioInfo = (v) => PRIORITA.find((p) => p.v === v) ?? PRIORITA[1]
+
+const LIVELLI = [
+  { v: 'stagionale', label: 'Stagionale', desc: 'Intera stagione' },
+  { v: 'mensile', label: 'Mensile', desc: '30 giorni' },
+  { v: 'micro', label: 'Micro-obiettivo', desc: '1 settimana' },
+]
+const livInfo = (v) => LIVELLI.find((l) => l.v === v) ?? LIVELLI[0]
+
+function PercentualeBar({ value }) {
+  const col = value >= 100 ? '#1f8a4c' : value >= 50 ? '#0a7ec2' : value >= 25 ? '#e8a72c' : '#4a5b68'
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ flex: 1, height: 8, background: 'var(--linea)', borderRadius: 4 }}>
+        <div style={{ width: `${value}%`, height: '100%', background: col, borderRadius: 4, transition: 'width 0.3s' }} />
+      </div>
+      <span style={{ fontSize: 12, fontWeight: 700, color: col, minWidth: 32, textAlign: 'right' }}>{value}%</span>
+    </div>
+  )
+}
+
+export default function ObiettiviManager({ portiereId, stagioneId, obiettivi, sottoByObiettivo, parametriTutti = [], eserciziTutti = [], collegamentiPerObiettivo = {}, trendPerObiettivo = {} }) {
   const router = useRouter()
   const [creating, setCreating] = useState(false)
+  const [filtroLivello, setFiltroLivello] = useState('tutti')
+
+  const lista = filtroLivello === 'tutti' ? obiettivi : obiettivi.filter((o) => (o.livello ?? 'stagionale') === filtroLivello)
+
   return (
     <div className="lista-editor">
       <p className="sub-intro">Obiettivi in stile PNL: definiscili in modo &ldquo;ben formato&rdquo; (in positivo, misurabili, contestualizzati), con scadenze, note e sotto-obiettivi da monitorare.</p>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+        <div className="sub-nav" style={{ marginBottom: 0 }}>
+          <button type="button" className={`sub-nav-link ${filtroLivello === 'tutti' ? 'active' : ''}`} onClick={() => setFiltroLivello('tutti')}>Tutti</button>
+          {LIVELLI.map((l) => (
+            <button key={l.v} type="button" className={`sub-nav-link ${filtroLivello === l.v ? 'active' : ''}`} onClick={() => setFiltroLivello(l.v)}>
+              {l.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {creating
         ? <ObiettivoCard portiereId={portiereId} stagioneId={stagioneId} onSaved={() => { setCreating(false); router.refresh() }} onCancel={() => setCreating(false)} />
         : <button className="btn-azione" onClick={() => setCreating(true)} type="button">+ Nuovo obiettivo</button>}
-      {obiettivi.length === 0 && !creating && <div className="empty">Nessun obiettivo impostato.</div>}
-      {obiettivi.map((o) => (
+
+      {lista.length === 0 && !creating && <div className="empty">Nessun obiettivo {filtroLivello !== 'tutti' ? `di tipo "${livInfo(filtroLivello).label}"` : ''}.</div>}
+      {lista.map((o) => (
         <ObiettivoCard key={o.id} obiettivo={o} sotto={sottoByObiettivo[o.id] ?? []}
-          portiereId={portiereId} stagioneId={stagioneId} onSaved={() => router.refresh()} />
+          portiereId={portiereId} stagioneId={stagioneId} onSaved={() => router.refresh()}
+          parametriTutti={parametriTutti} eserciziTutti={eserciziTutti}
+          collegamenti={collegamentiPerObiettivo[o.id] ?? { parametri: [], esercizi: [] }}
+          trend={trendPerObiettivo[o.id] ?? {}}
+        />
       ))}
     </div>
   )
 }
 
-function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved, onCancel }) {
+function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved, onCancel, parametriTutti = [], eserciziTutti = [], collegamenti = { parametri: [], esercizi: [] }, trend = {} }) {
   const isEdit = !!obiettivo
+  const [espanso, setEspanso] = useState(!isEdit)
   const [f, setF] = useState({
     titolo: obiettivo?.titolo ?? '',
+    categoria: obiettivo?.categoria ?? 'tecnico',
+    priorita: obiettivo?.priorita ?? 'media',
+    livello: obiettivo?.livello ?? 'stagionale',
+    percentuale: obiettivo?.percentuale ?? 0,
     evidenza: obiettivo?.evidenza ?? '',
     contesto: obiettivo?.contesto ?? '',
     risorse: obiettivo?.risorse ?? '',
@@ -48,9 +110,12 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
     const supabase = createClient()
     const payload = {
       portiere_id: portiereId, stagione_id: stagioneId ?? null,
-      titolo: f.titolo.trim(), evidenza: f.evidenza || null, contesto: f.contesto || null,
+      titolo: f.titolo.trim(), categoria: f.categoria, priorita: f.priorita,
+      livello: f.livello, percentuale: Number(f.percentuale) || 0,
+      evidenza: f.evidenza || null, contesto: f.contesto || null,
       risorse: f.risorse || null, ostacoli: f.ostacoli || null, motivazione: f.motivazione || null,
-      scadenza: f.scadenza || null, note: f.note || null, stato: f.stato,
+      scadenza: f.scadenza || null, note: f.note || null,
+      stato: Number(f.percentuale) >= 100 ? 'raggiunto' : f.stato,
     }
     try {
       if (isEdit) {
@@ -71,12 +136,57 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
     if (error) alert('Errore: ' + error.message); else if (onSaved) onSaved()
   }
 
+  // Vista compatta (chiusa) per obiettivi già salvati
+  if (isEdit && !espanso) {
+    const cat = catInfo(f.categoria)
+    const prio = prioInfo(f.priorita)
+    const liv = livInfo(f.livello)
+    return (
+      <div className={`obiettivo-card stato-${f.stato}`} style={{ cursor: 'pointer' }} onClick={() => setEspanso(true)}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, background: 'var(--carta)', padding: '2px 8px', borderRadius: 4 }}>{cat.emoji} {cat.label}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: prio.colore }}>● {prio.label}</span>
+              <span style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{liv.label}</span>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>{f.titolo}</div>
+          </div>
+        </div>
+        <PercentualeBar value={Number(f.percentuale) || 0} />
+      </div>
+    )
+  }
+
   return (
     <div className={`obiettivo-card stato-${f.stato}`}>
       {error && <div className="err">{error}</div>}
       <div className="form-grid">
         <div className="field field-full"><label>Obiettivo (in positivo): cosa vuoi ottenere? *</label>
           <input value={f.titolo} onChange={upd('titolo')} /></div>
+
+        <div className="field"><label>Categoria</label>
+          <select value={f.categoria} onChange={upd('categoria')}>
+            {CATEGORIE.map((c) => <option key={c.v} value={c.v}>{c.emoji} {c.label}</option>)}
+          </select></div>
+        <div className="field"><label>Priorità</label>
+          <select value={f.priorita} onChange={upd('priorita')}>
+            {PRIORITA.map((p) => <option key={p.v} value={p.v}>{p.label}</option>)}
+          </select></div>
+
+        <div className="field"><label>Livello</label>
+          <select value={f.livello} onChange={upd('livello')}>
+            {LIVELLI.map((l) => <option key={l.v} value={l.v}>{l.label} — {l.desc}</option>)}
+          </select></div>
+        <div className="field"><label>Scadenza</label>
+          <input type="date" value={f.scadenza} onChange={upd('scadenza')} /></div>
+
+        <div className="field field-full">
+          <label>Avanzamento: {f.percentuale}%</label>
+          <input type="range" min="0" max="100" step="5" value={f.percentuale} onChange={upd('percentuale')} style={{ width: '100%' }} />
+          <PercentualeBar value={Number(f.percentuale) || 0} />
+        </div>
+
         <div className="field field-full"><label>Come saprai di averlo raggiunto? (evidenze concrete)</label>
           <textarea rows="2" value={f.evidenza} onChange={upd('evidenza')} /></div>
         <div className="field field-full"><label>Dove, quando e con chi? (contesto)</label>
@@ -87,8 +197,6 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
           <textarea rows="2" value={f.ostacoli} onChange={upd('ostacoli')} /></div>
         <div className="field field-full"><label>Perche e importante? (motivazione)</label>
           <textarea rows="2" value={f.motivazione} onChange={upd('motivazione')} /></div>
-        <div className="field"><label>Scadenza</label>
-          <input type="date" value={f.scadenza} onChange={upd('scadenza')} /></div>
         <div className="field"><label>Stato</label>
           <select value={f.stato} onChange={upd('stato')}>{STATI.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
         <div className="field field-full"><label>Note</label>
@@ -96,11 +204,22 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
       </div>
 
       <div className="form-actions">
+        {isEdit && <button className="btn-ghost" onClick={() => setEspanso(false)} type="button">Comprimi</button>}
         {onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
         {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>}
         <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? 'Salvataggio...' : done ? 'Salvato \u2713' : 'Salva obiettivo'}</button>
       </div>
 
+      {isEdit && <TrendObiettivo trendPerParametro={trend} />}
+      {isEdit && (
+        <SelettoreCollegamenti
+          obiettivoId={obiettivo.id}
+          parametriTutti={parametriTutti}
+          parametriSelezionati={collegamenti.parametri}
+          eserciziTutti={eserciziTutti}
+          eserciziSelezionati={collegamenti.esercizi}
+        />
+      )}
       {isEdit && <SottoObiettivi obiettivoId={obiettivo.id} sotto={sotto} onChanged={onSaved} />}
       {!isEdit && <p className="sub-intro">Salva l&rsquo;obiettivo per aggiungere i sotto-obiettivi.</p>}
     </div>

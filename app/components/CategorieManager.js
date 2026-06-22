@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -8,6 +8,14 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
   const router = useRouter()
   const attiveSet = new Set(attive)
   const [busy, setBusy] = useState(false)
+  const [ordineLocale, setOrdineLocale] = useState(categorie)
+  const dragIndex = useRef(null)
+  const [dragOver, setDragOver] = useState(null)
+
+  // Tieni sincronizzato lo stato locale quando arrivano nuovi dati dal server
+  if (categorie.length !== ordineLocale.length || categorie.some((c, i) => c.id !== ordineLocale[i]?.id)) {
+    if (!busy) setOrdineLocale(categorie)
+  }
 
   async function toggleAttiva(squadraId, on) {
     if (!stagioneId) { alert('Nessuna stagione attiva.'); return }
@@ -28,22 +36,50 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
   async function aggiungi() {
     setBusy(true)
     const supabase = createClient()
-    const maxOrd = categorie.reduce((m, c) => Math.max(m, c.ordine), 0)
+    const maxOrd = ordineLocale.reduce((m, c) => Math.max(m, c.ordine), 0)
     const { error } = await supabase.from('squadre').insert({ nome: 'Nuova categoria', ordine: maxOrd + 1 })
     if (error) alert('Errore: ' + error.message)
     setBusy(false); router.refresh()
   }
 
-  async function muovi(index, dir) {
-    const a = categorie[index]
-    const b = categorie[index + dir]
-    if (!a || !b) return
+  // Salva il nuovo ordine sul DB dopo un riordino (sia da frecce che da drag)
+  async function persistiOrdine(nuovoOrdine) {
     setBusy(true)
     const supabase = createClient()
-    const e1 = (await supabase.from('squadre').update({ ordine: b.ordine }).eq('id', a.id)).error
-    const e2 = (await supabase.from('squadre').update({ ordine: a.ordine }).eq('id', b.id)).error
-    if (e1 || e2) alert('Errore: ' + (e1 || e2).message)
+    const updates = nuovoOrdine.map((c, i) => ({ id: c.id, ordine: i + 1 }))
+    const errors = []
+    for (const u of updates) {
+      const { error } = await supabase.from('squadre').update({ ordine: u.ordine }).eq('id', u.id)
+      if (error) errors.push(error.message)
+    }
+    if (errors.length) alert('Errore: ' + errors.join(', '))
     setBusy(false); router.refresh()
+  }
+
+  async function muovi(index, dir) {
+    const nuovo = [...ordineLocale]
+    const tmp = nuovo[index]
+    nuovo[index] = nuovo[index + dir]
+    nuovo[index + dir] = tmp
+    setOrdineLocale(nuovo)
+    await persistiOrdine(nuovo)
+  }
+
+  // ── Drag and drop (desktop) ──────────────────────────────────────────────
+  function onDragStart(i) { dragIndex.current = i }
+  function onDragOver(e, i) { e.preventDefault(); setDragOver(i) }
+  function onDragEnd() { setDragOver(null); dragIndex.current = null }
+  async function onDrop(e, i) {
+    e.preventDefault()
+    const from = dragIndex.current
+    setDragOver(null)
+    if (from == null || from === i) return
+    const nuovo = [...ordineLocale]
+    const [moved] = nuovo.splice(from, 1)
+    nuovo.splice(i, 0, moved)
+    setOrdineLocale(nuovo)
+    dragIndex.current = null
+    await persistiOrdine(nuovo)
   }
 
   return (
@@ -51,21 +87,28 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
       <p className="sub-intro">
         Crea e ordina le categorie, e scegli quali sono attive nella stagione <b>{stagioneNome ?? '—'}</b>.
         Solo le categorie attive compaiono nei menù a tendina (scheda portiere, allenamenti…).
+        Su desktop trascina <span style={{ fontWeight: 700 }}>⠿</span> per riordinare, su mobile usa le frecce.
       </p>
-      {categorie.map((c, i) => (
+      {ordineLocale.map((c, i) => (
         <CategoriaRiga key={c.id} categoria={c} attiva={attiveSet.has(c.id)}
           onToggle={toggleAttiva} onChanged={() => router.refresh()}
-          canUp={i > 0} canDown={i < categorie.length - 1}
-          onUp={() => muovi(i, -1)} onDown={() => muovi(i, 1)} />
+          canUp={i > 0} canDown={i < ordineLocale.length - 1}
+          onUp={() => muovi(i, -1)} onDown={() => muovi(i, 1)}
+          index={i}
+          isDragOver={dragOver === i}
+          onDragStart={() => onDragStart(i)}
+          onDragOver={(e) => onDragOver(e, i)}
+          onDragEnd={onDragEnd}
+          onDrop={(e) => onDrop(e, i)}
+        />
       ))}
       <button className="btn-ghost" onClick={aggiungi} disabled={busy} type="button">+ Aggiungi categoria</button>
     </div>
   )
 }
 
-function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown, onUp, onDown }) {
+function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown, onUp, onDown, isDragOver, onDragStart, onDragOver, onDragEnd, onDrop }) {
   const [nome, setNome] = useState(categoria.nome)
-  const [ordine, setOrdine] = useState(categoria.ordine)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -73,7 +116,7 @@ function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown,
     setBusy(true)
     const supabase = createClient()
     const { error } = await supabase.from('squadre')
-      .update({ nome, ordine: Number(ordine) || 0 }).eq('id', categoria.id)
+      .update({ nome }).eq('id', categoria.id)
     if (error) alert('Errore: ' + error.message); else setDone(true)
     setBusy(false); onChanged()
   }
@@ -97,15 +140,20 @@ function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown,
   }
 
   return (
-    <div className="lista-riga">
+    <div
+      className={`lista-riga cat-riga ${isDragOver ? 'drag-over' : ''}`}
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
+      onDrop={onDrop}
+    >
+      <span className="drag-handle" title="Trascina per riordinare" aria-hidden="true">⠿</span>
       <span className="ord-frecce">
         <button className="btn-frec" onClick={onUp} disabled={!canUp} type="button" aria-label="Su">&uarr;</button>
         <button className="btn-frec" onClick={onDown} disabled={!canDown} type="button" aria-label="Giu">&darr;</button>
       </span>
       <input className="lista-nome" value={nome} onChange={(e) => { setNome(e.target.value); setDone(false) }} />
-      <label className="lista-ord">Ordine
-        <input type="number" value={ordine} onChange={(e) => { setOrdine(e.target.value); setDone(false) }} />
-      </label>
       <label className="lista-attiva">
         <input type="checkbox" checked={attiva} onChange={(e) => onToggle(categoria.id, e.target.checked)} />
         Attiva in stagione

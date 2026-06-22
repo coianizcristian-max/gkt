@@ -38,7 +38,7 @@ export default function CercaAllenatori() {
           onChange={(e) => setCitta(e.target.value)}
           placeholder="Es. Padova"
           onKeyDown={(e) => { if (e.key === 'Enter') cerca() }}
-          style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--linea)', borderRadius: 8 }}
+          style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: 16 }}
         />
         <button className="btn" onClick={cerca} disabled={loading} type="button">
           {loading ? 'Cerco...' : 'Cerca'}

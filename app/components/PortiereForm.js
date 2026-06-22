@@ -4,9 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId, piedi = [], soloPortiere = false }) {
+export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId, piedi = [], soloPortiere = false, attributiDef = [], attributiValori = {} }) {
   const router = useRouter()
   const isEdit = !!portiere
+  const [attrVal, setAttrVal] = useState(() => {
+    const init = {}
+    for (const a of attributiDef) init[a.id] = attributiValori[a.id] ?? ''
+    return init
+  })
   const [f, setF] = useState({
     nome: portiere?.nome ?? '',
     cognome: portiere?.cognome ?? '',
@@ -102,6 +107,24 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         if (iErr) throw iErr
       }
 
+      // Attributi dinamici (definiti dal Supervisore)
+      if (attributiDef.length > 0) {
+        const rows = attributiDef
+          .filter((a) => attrVal[a.id] !== '' && attrVal[a.id] != null)
+          .map((a) => ({
+            portiere_id: portiereId,
+            attributo_id: a.id,
+            valore_testo: a.tipo === 'testo' ? String(attrVal[a.id]) : null,
+            valore_num: a.tipo !== 'testo' ? Number(attrVal[a.id]) : null,
+          }))
+        if (rows.length) {
+          const { error: attrErr } = await supabase
+            .from('portiere_attributi')
+            .upsert(rows, { onConflict: 'portiere_id,attributo_id' })
+          if (attrErr) throw attrErr
+        }
+      }
+
       if (soloPortiere) { router.push(`/portieri/${portiereId}`); router.refresh() }
       else { router.push('/portieri'); router.refresh() }
     } catch (err) {
@@ -168,6 +191,25 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         <div className="field field-full"><label>Note</label>
           <textarea rows="3" value={f.note} onChange={upd('note')} /></div>
       </div>
+
+      {attributiDef.length > 0 && (
+        <div className="form-grid" style={{ marginTop: 4 }}>
+          <div className="field-full" style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 8 }}>
+            Caratteristiche
+          </div>
+          {attributiDef.map((a) => (
+            <div className="field" key={a.id}>
+              <label>{a.nome}{a.tipo === 'scala' ? ` (${a.scala_min}–${a.scala_max})` : ''}</label>
+              {a.tipo === 'testo' ? (
+                <input value={attrVal[a.id] ?? ''} onChange={(e) => setAttrVal((s) => ({ ...s, [a.id]: e.target.value }))} />
+              ) : (
+                <input type="number" min={a.tipo === 'scala' ? a.scala_min : undefined} max={a.tipo === 'scala' ? a.scala_max : undefined}
+                  value={attrVal[a.id] ?? ''} onChange={(e) => setAttrVal((s) => ({ ...s, [a.id]: e.target.value }))} />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="form-actions">
         <button type="button" className="btn-ghost" onClick={tornaIndietro}>Annulla</button>

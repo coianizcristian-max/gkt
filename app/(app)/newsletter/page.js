@@ -1,31 +1,25 @@
 import { createClient } from '@/lib/supabase/server'
+import { NewsletterRender } from '@/app/components/NewsletterManager'
 
 export const dynamic = 'force-dynamic'
 
-function RenderContenuto({ sezioni }) {
-  return (sezioni ?? []).map((s, i) => (
-    <div key={i} style={{ marginBottom: 20 }}>
-      {s.tipo === 'foto' && s.foto_url && (
-        <img src={s.foto_url} alt={s.testo ?? ''} style={{ width: '100%', borderRadius: 'var(--r)', marginBottom: s.testo ? 8 : 0, maxHeight: 320, objectFit: 'cover' }} />
-      )}
-      {s.testo && <p style={{ margin: 0, lineHeight: 1.7, fontSize: 15, whiteSpace: 'pre-wrap' }}>{s.testo}</p>}
-    </div>
-  ))
-}
-
 export default async function NewsletterPage() {
   const supabase = await createClient()
-  const { data: invii } = await supabase.from('newsletter_invii')
-    .select('id, titolo, contenuto, inviata_il, pubblicata')
-    .eq('pubblicata', true).order('inviata_il', { ascending: false })
+  const [{ data: invii }, { data: stagione }] = await Promise.all([
+    supabase.from('newsletter_invii')
+      .select('id, titolo, contenuto, inviata_il, pubblicata')
+      .eq('pubblicata', true).order('inviata_il', { ascending: false }),
+    supabase.from('stagioni').select('societa_nome').eq('attiva', true).maybeSingle(),
+  ])
 
   const ultima = invii?.[0]
   const archivio = invii?.slice(1) ?? []
+  const societa = stagione?.societa_nome ?? 'GKT'
 
   return (
     <>
       <div className="topbar">
-        <div className="eyebrow">GKT</div>
+        <div className="eyebrow">{societa}</div>
         <h1>Newsletter</h1>
       </div>
       <div className="content">
@@ -33,23 +27,22 @@ export default async function NewsletterPage() {
           <div className="empty">Nessuna newsletter pubblicata.</div>
         ) : (
           <>
-            <div className="scheda" style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginBottom: 6 }}>
-                {new Date(ultima.inviata_il).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </div>
-              <h2 style={{ margin: '0 0 16px', fontSize: 20 }}>{ultima.titolo}</h2>
-              <RenderContenuto sezioni={ultima.contenuto} />
-            </div>
+            <NewsletterRender
+              titolo={ultima.titolo}
+              sezioni={ultima.contenuto}
+              dataStr={new Date(ultima.inviata_il).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+              societa={societa}
+            />
 
             {archivio.length > 0 && (
-              <div className="elenco-blocco">
-                <h3>Archivio newsletter</h3>
+              <div className="elenco-blocco" style={{ marginTop: 28, maxWidth: 580, marginLeft: 'auto', marginRight: 'auto' }}>
+                <h3>Newsletter precedenti</h3>
                 {archivio.map((n) => (
                   <div key={n.id} className="lista-riga" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <div style={{ fontWeight: 600 }}>{n.titolo}</div>
-                    <small style={{ color: 'var(--ink-soft)' }}>
-                      {new Date(n.inviata_il).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </small>
+                    <div style={{ fontWeight: 600 }}>
+                      Newsletter del {new Date(n.inviata_il).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </div>
+                    <small style={{ color: 'var(--ink-soft)' }}>{n.titolo}</small>
                   </div>
                 ))}
               </div>

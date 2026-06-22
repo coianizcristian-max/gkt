@@ -28,6 +28,11 @@ export default async function ProfiloPage() {
         <h1>Profilo allenatore</h1>
       </div>
       <div className="content">
+        <div style={{ marginBottom: 16 }}>
+          <a href="/parametri-valutazione" className="link-inline" style={{ fontSize: 13 }}>
+            ⚙ Personalizza i parametri di valutazione →
+          </a>
+        </div>
         <ProfiloForm profilo={profilo} userId={user.id} />
       </div>
     </>

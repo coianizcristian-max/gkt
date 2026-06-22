@@ -4,26 +4,95 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-// Per il portiere: mostra il proprio storico con esito visibile
-function SuggerimentiPortiere({ miei }) {
+const CATEGORIE = ['Bug / Problema', 'Nuova funzionalità', 'Miglioria UX', 'Altro']
+
+const STATI = [
+  { v: 'nuovo', label: 'Nuovo', colore: '#4a5b68' },
+  { v: 'in_valutazione', label: 'In valutazione', colore: '#e8a72c' },
+  { v: 'accettato', label: 'Accettato', colore: '#0a7ec2' },
+  { v: 'implementato', label: 'Implementato', colore: '#1f8a4c' },
+  { v: 'rifiutato', label: 'Non accolto', colore: '#c0392b' },
+]
+const statoInfo = (v) => STATI.find((s) => s.v === v) ?? STATI[0]
+
+function Badge({ stato }) {
+  const s = statoInfo(stato)
+  return (
+    <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: s.colore, padding: '2px 9px', borderRadius: 999, whiteSpace: 'nowrap' }}>
+      {s.label}
+    </span>
+  )
+}
+
+// ── Vista pubblica/portiere: form + proprio storico ──────────────────────────
+function VistaUtente({ isLoggedIn, miei }) {
   return (
     <div className="elenco-blocco" style={{ marginTop: 24 }}>
       <h3>I tuoi suggerimenti</h3>
-      {miei.length === 0 && <p className="sub-intro">Non hai ancora inviato suggerimenti.</p>}
+      {!isLoggedIn && <p className="sub-intro">Accedi per vedere lo storico dei tuoi suggerimenti precedenti.</p>}
+      {isLoggedIn && miei.length === 0 && <p className="sub-intro">Non hai ancora inviato suggerimenti.</p>}
       {miei.map((s) => (
-        <div key={s.id} className="lista-riga" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+        <div key={s.id} className="lista-riga" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Badge stato={s.stato} />
+            {s.categoria && <span style={{ fontSize: 11, color: 'var(--ink-soft)', background: 'var(--carta)', padding: '2px 8px', borderRadius: 4 }}>{s.categoria}</span>}
+          </div>
           <div>{s.testo}</div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <small style={{ color: 'var(--ink-soft)' }}>{new Date(s.created_at).toLocaleDateString('it-IT')}</small>
-            {s.esito === 'accettata' && (
-              <span style={{ fontSize: 13, color: 'var(--campo)', fontWeight: 600 }}>✓ Accettata</span>
-            )}
-            {s.esito === 'rifiutata' && (
-              <span style={{ fontSize: 13, color: 'var(--rosso)', fontWeight: 600 }}>✗ Non accettata</span>
-            )}
-            {(!s.esito || s.esito === 'nuovo') && (
-              <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>In attesa di risposta</span>
-            )}
+          <small style={{ color: 'var(--ink-soft)' }}>{new Date(s.created_at).toLocaleDateString('it-IT')}</small>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Vista staff: gestione workflow completo ──────────────────────────────────
+function VistaStaff({ iniziali, onChanged }) {
+  const [filtro, setFiltro] = useState('tutti')
+  const lista = filtro === 'tutti' ? iniziali : iniziali.filter((s) => s.stato === filtro)
+
+  async function cambiaStato(id, stato) {
+    const supabase = createClient()
+    const { error } = await supabase.from('suggerimenti').update({ stato }).eq('id', id)
+    if (error) alert('Errore: ' + error.message)
+    else onChanged()
+  }
+
+  return (
+    <div className="elenco-blocco">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 4 }}>
+        <h3 style={{ margin: 0 }}>Ricevuti ({iniziali.length})</h3>
+        <select value={filtro} onChange={(e) => setFiltro(e.target.value)} style={{ fontSize: 13 }}>
+          <option value="tutti">Tutti gli stati</option>
+          {STATI.map((s) => <option key={s.v} value={s.v}>{s.label}</option>)}
+        </select>
+      </div>
+      {lista.length === 0 && <p className="sub-intro">Nessun suggerimento in questo stato.</p>}
+      {lista.map((s) => (
+        <div className="lista-riga" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }} key={s.id}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
+            <Badge stato={s.stato} />
+            {s.categoria && <span style={{ fontSize: 11, color: 'var(--ink-soft)', background: 'var(--carta)', padding: '2px 8px', borderRadius: 4 }}>{s.categoria}</span>}
+            <small style={{ color: 'var(--ink-soft)', marginLeft: 'auto' }}>
+              {new Date(s.created_at).toLocaleDateString('it-IT')} · {s.mittente ?? s.nome ?? 'anonimo'}
+            </small>
+          </div>
+          <div>{s.testo}</div>
+          {(s.email && !s.mittente) && <small style={{ color: 'var(--ink-soft)' }}>{s.email}</small>}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {STATI.map((st) => (
+              <button key={st.v} type="button"
+                disabled={s.stato === st.v}
+                onClick={() => cambiaStato(s.id, st.v)}
+                className="btn-mini"
+                style={{
+                  opacity: s.stato === st.v ? 0.4 : 1,
+                  background: s.stato === st.v ? undefined : 'transparent',
+                  border: `1px solid ${st.colore}`,
+                  color: s.stato === st.v ? undefined : st.colore,
+                }}>
+                {st.label}
+              </button>
+            ))}
           </div>
         </div>
       ))}
@@ -31,9 +100,12 @@ function SuggerimentiPortiere({ miei }) {
   )
 }
 
-export default function Suggerimenti({ isStaff, iniziali = [], miei = [] }) {
+export default function Suggerimenti({ isStaff, isLoggedIn = true, iniziali = [], miei = [] }) {
   const router = useRouter()
   const [testo, setTesto] = useState('')
+  const [categoria, setCategoria] = useState(CATEGORIE[0])
+  const [nome, setNome] = useState('')
+  const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
@@ -43,73 +115,53 @@ export default function Suggerimenti({ isStaff, iniziali = [], miei = [] }) {
     setBusy(true); setError(''); setDone(false)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    const { error } = await supabase.from('suggerimenti')
-      .insert({ testo: testo.trim(), utente_id: user?.id ?? null, stato: 'nuovo', esito: null })
+    const payload = {
+      testo: testo.trim(), categoria, stato: 'nuovo',
+      utente_id: user?.id ?? null,
+    }
+    if (!user) {
+      payload.nome = nome.trim() || null
+      payload.email = email.trim() || null
+    }
+    const { error } = await supabase.from('suggerimenti').insert(payload)
     if (error) setError(error.message)
-    else { setTesto(''); setDone(true); router.refresh() }
+    else { setTesto(''); setNome(''); setEmail(''); setDone(true); router.refresh() }
     setBusy(false)
-  }
-
-  async function segna(id, esito) {
-    const supabase = createClient()
-    const { error } = await supabase.from('suggerimenti')
-      .update({ stato: 'gestito', esito }).eq('id', id)
-    if (error) alert('Errore: ' + error.message)
-    else router.refresh()
-  }
-
-  async function riapri(id) {
-    const supabase = createClient()
-    await supabase.from('suggerimenti').update({ stato: 'nuovo', esito: null }).eq('id', id)
-    router.refresh()
   }
 
   return (
     <div className="lista-editor">
-      <p className="sub-intro">Hai un&apos;idea per migliorare GKT o hai trovato un problema? Scrivilo qui.</p>
+      <p className="sub-intro">Hai un&apos;idea per migliorare GKT o hai trovato un problema? Scrivilo qui — lo leggiamo tutti.</p>
+
+      <div className="field">
+        <label>Categoria</label>
+        <select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+          {CATEGORIE.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+
+      {!isLoggedIn && (
+        <div className="form-grid">
+          <div className="field"><label>Nome (facoltativo)</label>
+            <input value={nome} onChange={(e) => setNome(e.target.value)} /></div>
+          <div className="field"><label>Email (facoltativa)</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="per ricontattarti se serve" /></div>
+        </div>
+      )}
+
       <div className="field">
         <label>Il tuo suggerimento</label>
         <textarea rows="4" value={testo} onChange={(e) => { setTesto(e.target.value); setDone(false) }} />
       </div>
       {error && <div className="err">{error}</div>}
       <div className="form-actions">
-        <button className="btn" onClick={invia} disabled={busy} type="button">
+        <button className="btn" onClick={invia} disabled={busy || !testo.trim()} type="button">
           {busy ? 'Invio...' : done ? 'Inviato ✓' : 'Invia'}
         </button>
       </div>
 
-      {/* Portiere: vede il proprio storico con esito */}
-      {!isStaff && <SuggerimentiPortiere miei={miei} />}
-
-      {/* Staff: gestisce tutti i suggerimenti con accetta/rifiuta */}
-      {isStaff && (
-        <div className="elenco-blocco">
-          <h3>Ricevuti</h3>
-          {iniziali.length === 0 && <p className="sub-intro">Nessun suggerimento ricevuto.</p>}
-          {iniziali.map((s) => (
-            <div className={`lista-riga ${s.stato === 'gestito' ? 'assente' : ''}`} key={s.id}>
-              <div style={{ flex: 1 }}>
-                <div>{s.testo}</div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 3 }}>
-                  <small style={{ color: 'var(--ink-soft)' }}>
-                    {new Date(s.created_at).toLocaleDateString('it-IT')} · {s.mittente ?? 'anonimo'}
-                  </small>
-                  {s.esito === 'accettata' && <span style={{ fontSize: 12, color: 'var(--campo)', fontWeight: 600 }}>✓ Accettata</span>}
-                  {s.esito === 'rifiutata' && <span style={{ fontSize: 12, color: 'var(--rosso)', fontWeight: 600 }}>✗ Rifiutata</span>}
-                </div>
-              </div>
-              {s.stato !== 'gestito' ? (
-                <>
-                  <button className="btn-mini" style={{ background: 'var(--campo)', color: '#fff' }} onClick={() => segna(s.id, 'accettata')} type="button">✓ Accetta</button>
-                  <button className="btn-mini btn-del" onClick={() => segna(s.id, 'rifiutata')} type="button">✗ Rifiuta</button>
-                </>
-              ) : (
-                <button className="btn-mini" onClick={() => riapri(s.id)} type="button">Riapri</button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+      {!isStaff && <VistaUtente isLoggedIn={isLoggedIn} miei={miei} />}
+      {isStaff && <VistaStaff iniziali={iniziali} onChanged={() => router.refresh()} />}
     </div>
   )
 }

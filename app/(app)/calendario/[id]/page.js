@@ -121,7 +121,7 @@ export default async function AllenamentoPage({ params, searchParams }) {
   const canEsercizi = isUnlocked('esercizi_allenamento', gatingCfg, abbAttivo)
   const canFeedback = isUnlocked('feedback_allenatore', gatingCfg, abbAttivo)
 
-  const [{ data: catRows }, { data: iscr }, { data: parametri }, { data: vals }, { data: scalaRows }, { data: libRows }, { data: aeRows }, { data: feedbackRows }] = await Promise.all([
+  const [{ data: catRows }, { data: iscr }, { data: parametriRaw }, { data: vals }, { data: scalaRows }, { data: libRows }, { data: aeRows }, { data: feedbackRows }, { data: selParametri }] = await Promise.all([
     supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
     supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
       .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
@@ -133,7 +133,16 @@ export default async function AllenamentoPage({ params, searchParams }) {
     supabase.from('valutazioni')
       .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
       .eq('allenamento_id', id).not('feedback_portiere', 'is', null).order('created_at', { ascending: false }),
+    supabase.from('allenatore_parametri').select('parametro_id, attivo').eq('allenatore_id', user?.id),
   ])
+
+  // Filtra i parametri in base alla selezione personale dell'allenatore.
+  // Se non ha mai selezionato nulla, vede tutti i parametri (comportamento di default).
+  let parametri = parametriRaw ?? []
+  if ((selParametri ?? []).length > 0) {
+    const attiviSet = new Set(selParametri.filter((s) => s.attivo).map((s) => s.parametro_id))
+    parametri = parametri.filter((p) => attiviSet.has(p.id))
+  }
 
   // Se accorpata_con, aggiungi anche portieri della seconda categoria
   let portieriExtra = []

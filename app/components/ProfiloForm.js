@@ -55,11 +55,13 @@ export default function ProfiloForm({ profilo, userId }) {
         certificati: certificati.filter((x) => x && x.trim()),
         foto_url,
       }
-      // Geocodifica la citta solo per AGGIORNARE lat/lng quando riesce.
-      // Se fallisce (o Nominatim blocca), NON tocchiamo le coordinate gia salvate.
+      // Geocodifica usando CAP + città per evitare omonimie (es. "Montecchio" è ambiguo,
+      // "36030 Montecchio Precalcino" è univoco). Se manca il CAP, usa solo la città.
+      // countrycodes=it limita la ricerca all'Italia.
       if (f.citta) {
         try {
-          const g = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(f.citta + ', Italia'))
+          const query = f.cap ? `${f.cap} ${f.citta}, Italia` : `${f.citta}, Italia`
+          const g = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&q=' + encodeURIComponent(query))
           const gj = await g.json()
           if (gj && gj[0]) { payload.lat = parseFloat(gj[0].lat); payload.lng = parseFloat(gj[0].lon) }
         } catch (e) {}

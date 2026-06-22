@@ -184,9 +184,9 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
   }
 
   async function elimina() {
-    if (!confirm('Eliminare questo esercizio?')) return
+    if (!confirm('Archiviare questo esercizio? Non comparirà più nella libreria, ma resterà collegato agli allenamenti e obiettivi passati che lo usano.')) return
     const supabase = createClient()
-    const { error } = await supabase.from('esercizi').delete().eq('id', esercizio.id)
+    const { error } = await supabase.from('esercizi').update({ archiviato: true }).eq('id', esercizio.id)
     if (error) alert('Errore: ' + error.message); else if (onSaved) onSaved()
   }
 
@@ -223,7 +223,7 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
       </div>
       <div className="form-actions">
         {onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
-        {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>}
+        {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Archivia</button>}
         <button className="btn" onClick={salva} disabled={busy} type="button">
           {busy ? 'Salvataggio...' : done ? 'Salvato ✓' : 'Salva'}
         </button>

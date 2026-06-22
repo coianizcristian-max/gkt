@@ -3,12 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-
-const PERMESSI = [
-  { k: 'vede_valutazioni', label: 'Può vedere le valutazioni' },
-  { k: 'modifica_valutazioni', label: 'Può inserire/modificare valutazioni' },
-  { k: 'vede_statistiche', label: 'Può vedere le statistiche' },
-]
+import { MODULI_PERMESSI, LIVELLI, permessiDiDefault } from '@/lib/permessi'
 
 // Modal per copiare il link su mobile
 function LinkModal({ url, onClose }) {
@@ -65,7 +60,7 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
   const [tipo, setTipo] = useState('')
   const [portiereId, setPortiereId] = useState(portieri[0]?.id ?? '')
   const [emailInvitato, setEmailInvitato] = useState('')
-  const [perm, setPerm] = useState({})
+  const [perm, setPerm] = useState(permessiDiDefault())
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [modalUrl, setModalUrl] = useState(null)
@@ -181,13 +176,17 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
         </div>
         {tipo === 'collaboratore' && (
           <div className="elenco-blocco">
-            <h3>Permessi</h3>
-            {PERMESSI.map((pm) => (
-              <label className="es-pick" key={pm.k}>
-                <input type="checkbox" checked={!!perm[pm.k]}
-                  onChange={(e) => setPerm((s) => ({ ...s, [pm.k]: e.target.checked }))} />
-                <span>{pm.label}</span>
-              </label>
+            <h3>Permessi per modulo</h3>
+            <p className="sub-intro" style={{ marginTop: -6 }}>
+              Scegli cosa può vedere e modificare questo collaboratore in ogni sezione.
+            </p>
+            {Object.entries(MODULI_PERMESSI).map(([k, info]) => (
+              <div key={k} className="lista-riga" style={{ flexWrap: 'wrap', gap: 10 }}>
+                <span style={{ flex: '1 1 140px', fontWeight: 600, fontSize: 13 }}>{info.label}</span>
+                <select value={perm[k] ?? 'modifica'} onChange={(e) => setPerm((s) => ({ ...s, [k]: e.target.value }))}>
+                  {LIVELLI.map((l) => <option key={l.v} value={l.v}>{l.label}</option>)}
+                </select>
+              </div>
             ))}
           </div>
         )}

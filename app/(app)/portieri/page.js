@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PortieriSearch from '@/app/components/PortieriSearch'
 import OnboardingChecklist from '@/app/components/OnboardingChecklist'
+import { puoVisualizzare } from '@/lib/permessi'
+import { getStagioneAttiva, getOwnerId } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,13 +14,16 @@ export default async function PortieriPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
+    .from('profili').select('ruolo, portiere_id, permessi_collaboratore').eq('id', user?.id).maybeSingle()
   if (profilo?.ruolo === 'portiere' && profilo.portiere_id) {
     redirect(`/portieri/${profilo.portiere_id}`)
   }
+  if (profilo?.ruolo === 'staff' && !puoVisualizzare({ ruolo: profilo.ruolo, permessiCollaboratore: profilo.permessi_collaboratore }, 'portieri')) {
+    redirect('/dashboard')
+  }
 
-  const { data: stagione } = await supabase
-    .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const ownerId = await getOwnerId(supabase, user?.id)
+  const { stagione } = await getStagioneAttiva(supabase, user?.id)
 
   let squadre = []
   let iscrizioni = []
@@ -28,21 +33,24 @@ export default async function PortieriPage() {
   let haPortieri = false
   let haAllenamenti = false
   if (stagione) {
-    const [sq, isc, val, cat, allen] = await Promise.all([
-      supabase.from('squadre').select('id, nome, ordine').order('ordine'),
+    const [sq, isc, allen, cat] = await Promise.all([
+      supabase.from('squadre').select('id, nome, ordine').eq('owner_id', ownerId).order('ordine'),
       supabase.from('iscrizioni')
         .select('squadra_id, numero_maglia, portieri(id, nome, cognome, foto_url, attivo, data_nascita)')
         .eq('stagione_id', stagione.id),
-      supabase.from('valutazioni').select('portiere_id, presente, voto'),
+      supabase.from('allenamenti').select('id').eq('stagione_id', stagione.id),
       supabase.from('stagione_categorie').select('id').eq('stagione_id', stagione.id).limit(1),
-      supabase.from('allenamenti').select('id').eq('stagione_id', stagione.id).limit(1),
     ])
     squadre = sq.data ?? []
     iscrizioni = isc.data ?? []
-    valutazioni = val.data ?? []
+    const allenIds = (allen.data ?? []).map((a) => a.id)
+    if (allenIds.length) {
+      const { data: val } = await supabase.from('valutazioni').select('portiere_id, presente, voto').in('allenamento_id', allenIds)
+      valutazioni = val ?? []
+    }
     haCategorie = (cat.data ?? []).length > 0
     haPortieri = iscrizioni.filter((i) => i.portieri?.attivo).length > 0
-    haAllenamenti = (allen.data ?? []).length > 0
+    haAllenamenti = allenIds.length > 0
   }
 
   // Tag portiere (per badge nella card)

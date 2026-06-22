@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PortiereForm from '@/app/components/PortiereForm'
 import TagManager from '@/app/components/TagManager'
+import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,15 +12,15 @@ export default async function SchedaPortierePage({ params }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profiloViewer } = await supabase
-    .from('profili').select('ruolo').eq('id', user?.id).maybeSingle()
+    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
+  if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
   const { data: piediVoci } = await supabase
     .from('elenco_voci').select('valore').eq('elenco', 'piede').eq('attivo', true).order('ordine')
   const piedi = (piediVoci ?? []).map((v) => v.valore)
 
-  const { data: stagione } = await supabase
-    .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user?.id)
 
   const { data: portiere } = await supabase
     .from('portieri').select('*').eq('id', id).maybeSingle()

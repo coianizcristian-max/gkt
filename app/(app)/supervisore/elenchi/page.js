@@ -9,8 +9,8 @@ export default async function ElenchiSupPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
-  if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
+  const { data: profilo } = await supabase.from('profili').select('supervisore').eq('id', user.id).maybeSingle()
+  if (!profilo?.supervisore) redirect('/')
 
   const { data: voci } = await supabase.from('elenco_voci').select('*').order('elenco').order('ordine')
   const gruppi = {}

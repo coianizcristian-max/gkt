@@ -8,6 +8,7 @@ import ValutazionePortiere from '@/app/components/ValutazionePortiere'
 import FeedbackAllenamento from '@/app/components/FeedbackAllenamento'
 import AllenamentoTabNav from '@/app/components/AllenamentoTabNav'
 import PaywallBanner from '@/app/components/PaywallBanner'
+import { getOwnerId } from '@/lib/tenant'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
@@ -21,6 +22,7 @@ export default async function AllenamentoPage({ params, searchParams }) {
 
   const { data: profilo } = await supabase
     .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
+  const ownerId = await getOwnerId(supabase, user?.id)
 
   const { data: allenamento } = await supabase
     .from('allenamenti')
@@ -128,7 +130,7 @@ export default async function AllenamentoPage({ params, searchParams }) {
     supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
     supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
     supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
-    supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, immagine_url, video_url, pubblico, allenatore_id').order('titolo'),
+    supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, immagine_url, video_url, pubblico, allenatore_id').eq('archiviato', false).order('titolo'),
     supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', id).order('ordine'),
     supabase.from('valutazioni')
       .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
@@ -156,8 +158,8 @@ export default async function AllenamentoPage({ params, searchParams }) {
     })).filter(Boolean)
   }
 
-  const libreriaMia = (libRows ?? []).filter((e) => e.allenatore_id === user?.id)
-  const libreriaPubblica = (libRows ?? []).filter((e) => e.pubblico && e.allenatore_id !== user?.id)
+  const libreriaMia = (libRows ?? []).filter((e) => e.allenatore_id === ownerId)
+  const libreriaPubblica = (libRows ?? []).filter((e) => e.pubblico && e.allenatore_id !== ownerId)
   const eserciziOrdinati = (aeRows ?? []).sort((a, b) => a.ordine - b.ordine).map((r) => r.esercizio_id)
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)

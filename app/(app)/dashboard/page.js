@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,8 +24,7 @@ export default async function DashboardPage() {
   }
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
-  const { data: stagione } = await supabase
-    .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user.id)
 
   const oggi = new Date()
   const oggiStr = oggi.toISOString().slice(0, 10)
@@ -38,22 +38,29 @@ export default async function DashboardPage() {
   let coupon = null
 
   if (stagione) {
-    const [allRows, valRows, parRows, valParRows, couponRow] = await Promise.all([
+    const [allRows, parRows, couponRow] = await Promise.all([
       supabase.from('allenamenti')
         .select('id, data, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id).order('data'),
-      supabase.from('valutazioni').select('allenamento_id'),
       supabase.from('partite')
         .select('id, data, avversario, casa, tipo, squadre(nome)')
         .eq('stagione_id', stagione.id).order('data'),
-      supabase.from('valutazioni_partita').select('partita_id').eq('presente', true),
       supabase.from('coupon_utilizzi').select('scade_il').eq('utente_id', user.id)
         .gt('scade_il', new Date().toISOString()).order('scade_il', { ascending: false }).limit(1).maybeSingle(),
     ])
 
     const allenamenti = allRows.data ?? []
+    const partiteRows = parRows.data ?? []
+    const allenIds = allenamenti.map((a) => a.id)
+    const partitaIds = partiteRows.map((p) => p.id)
+
+    const [valRows, valParRows] = await Promise.all([
+      allenIds.length ? supabase.from('valutazioni').select('allenamento_id').in('allenamento_id', allenIds) : Promise.resolve({ data: [] }),
+      partitaIds.length ? supabase.from('valutazioni_partita').select('partita_id').eq('presente', true).in('partita_id', partitaIds) : Promise.resolve({ data: [] }),
+    ])
+
     const valutatiSet = new Set((valRows.data ?? []).map((v) => v.allenamento_id))
-    const partite = parRows.data ?? []
+    const partite = partiteRows
     const partiteValutateSet = new Set((valParRows.data ?? []).map((v) => v.partita_id))
 
     // Allenamenti passati senza valutazione
@@ -77,6 +84,71 @@ export default async function DashboardPage() {
       .slice(0, 5)
 
     coupon = couponRow.data
+  }
+
+  // ── Portieri da attenzionare: assenze ripetute, calo rendimento, obiettivi in ritardo ──
+  let portieriAttenzione = []
+  if (stagione) {
+    const { data: iscrRows } = await supabase.from('iscrizioni')
+      .select('portiere_id, portieri(id, nome, cognome)').eq('stagione_id', stagione.id)
+    const portieriList = (iscrRows ?? []).map((r) => r.portieri).filter(Boolean)
+    const portiereIds = portieriList.map((p) => p.id)
+
+    if (portiereIds.length) {
+      const allenIds = (await supabase.from('allenamenti').select('id, data').eq('stagione_id', stagione.id)).data ?? []
+      const dataByAllen = {}
+      for (const a of allenIds) dataByAllen[a.id] = a.data
+
+      const { data: valRows } = await supabase.from('valutazioni')
+        .select('portiere_id, allenamento_id, presente, voto')
+        .in('portiere_id', portiereIds).in('allenamento_id', allenIds.map((a) => a.id))
+
+      const { data: obRows } = await supabase.from('obiettivi')
+        .select('portiere_id, scadenza, stato').in('portiere_id', portiereIds)
+
+      const motiviPerPortiere = {}
+      const aggiungiMotivo = (pid, motivo) => (motiviPerPortiere[pid] ??= []).push(motivo)
+
+      // Raggruppa valutazioni per portiere, ordinate per data allenamento
+      const valByPortiere = {}
+      for (const v of valRows ?? []) {
+        const data = dataByAllen[v.allenamento_id]
+        if (!data) continue
+        ;(valByPortiere[v.portiere_id] ??= []).push({ ...v, data })
+      }
+      for (const pid of Object.keys(valByPortiere)) {
+        const serie = valByPortiere[pid].sort((a, b) => b.data.localeCompare(a.data))
+
+        // Assenze ripetute: 2+ assenze nelle ultime 3 convocazioni
+        const ultime3 = serie.slice(0, 3)
+        const assenze = ultime3.filter((v) => !v.presente).length
+        if (ultime3.length >= 2 && assenze >= 2) aggiungiMotivo(pid, `${assenze} assenze nelle ultime ${ultime3.length} convocazioni`)
+
+        // Calo rendimento: media ultime 3 presenti vs media 3 precedenti
+        const presentiConVoto = serie.filter((v) => v.presente && v.voto != null)
+        if (presentiConVoto.length >= 4) {
+          const recenti = presentiConVoto.slice(0, 3).map((v) => Number(v.voto))
+          const precedenti = presentiConVoto.slice(3, 6).map((v) => Number(v.voto))
+          if (precedenti.length >= 2) {
+            const mediaRecente = recenti.reduce((s, x) => s + x, 0) / recenti.length
+            const mediaPrecedente = precedenti.reduce((s, x) => s + x, 0) / precedenti.length
+            const calo = mediaRecente - mediaPrecedente
+            if (calo <= -1.5) aggiungiMotivo(pid, `Calo voto: ${mediaPrecedente.toFixed(1)} → ${mediaRecente.toFixed(1)}`)
+          }
+        }
+      }
+
+      // Obiettivi in ritardo: scadenza superata e non raggiunto
+      for (const o of obRows ?? []) {
+        if (o.scadenza && o.scadenza < oggiStr && o.stato !== 'raggiunto') {
+          aggiungiMotivo(o.portiere_id, 'Obiettivo in ritardo')
+        }
+      }
+
+      portieriAttenzione = portieriList
+        .filter((p) => motiviPerPortiere[p.id]?.length > 0)
+        .map((p) => ({ ...p, motivi: motiviPerPortiere[p.id] }))
+    }
   }
 
   const totDaValutare = daValutareAllenamenti.length + daValutarePartite.length
@@ -120,6 +192,28 @@ export default async function DashboardPage() {
         {totDaValutare === 0 && (
           <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--campo)' }}>
             <p style={{ margin: 0, color: 'var(--campo)', fontWeight: 600 }}>✓ Tutto valutato, sei in pari!</p>
+          </div>
+        )}
+
+        {portieriAttenzione.length > 0 && (
+          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--giallo)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--giallo)' }}>
+              👁 {portieriAttenzione.length} {portieriAttenzione.length === 1 ? 'portiere da attenzionare' : 'portieri da attenzionare'}
+            </h3>
+            {portieriAttenzione.map((p) => (
+              <Link key={p.id} href={`/portieri/${p.id}`} className="dv-item" style={{ display: 'block' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 600 }}>{p.nome} {p.cognome ?? ''}</span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                  {p.motivi.map((m, i) => (
+                    <span key={i} style={{ fontSize: 11, color: 'var(--giallo)', background: 'rgba(232,167,44,0.12)', padding: '2px 8px', borderRadius: 999 }}>
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </Link>
+            ))}
           </div>
         )}
 

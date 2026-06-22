@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvento } from '@/app/components/PostHogProvider'
 
 const MAX_RETRY = 3
 const RETRY_DELAY_MS = 1200
@@ -24,6 +25,12 @@ export default function ValutazioniAllenamento({
   scalaVoti = [], allenamentoNessuno = false,
 }) {
   const router = useRouter()
+  const inizioRef = useRef(null)
+
+  useEffect(() => {
+    inizioRef.current = Date.now()
+    trackEvento('valutazione_allenamento_avviata', { numero_portieri: portieri.length })
+  }, [])
   const [rows, setRows] = useState(() =>
     portieri.map((p) => {
       const v = valIniziali[p.id]
@@ -81,6 +88,8 @@ export default function ValutazioniAllenamento({
       })
 
       setDone(true)
+      const durataSec = inizioRef.current ? Math.round((Date.now() - inizioRef.current) / 1000) : null
+      trackEvento('valutazione_allenamento_completata', { durata_secondi: durataSec, numero_portieri: rows.length, retry_necessari: retryCount })
       router.refresh()
       setTimeout(() => router.push('/calendario'), 900)
     } catch (err) {

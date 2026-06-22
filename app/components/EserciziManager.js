@@ -152,6 +152,8 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
     note: esercizio?.note ?? '',
     video_url: esercizio?.video_url ?? '',
     pubblico: esercizio?.pubblico ?? false,
+    durata_minuti: esercizio?.durata_minuti ?? '',
+    recupero_minuti: esercizio?.recupero_minuti ?? '',
   })
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(esercizio?.immagine_url ?? '')
@@ -196,6 +198,8 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
         allenatore_id: allenatoreId, titolo: f.titolo.trim(), tipologia: f.tipologia || null,
         descrizione_breve: f.descrizione_breve || null, descrizione: f.descrizione || null,
         note: f.note || null, video_url: f.video_url || null, immagine_url, pubblico: !!f.pubblico,
+        durata_minuti: f.durata_minuti !== '' ? parseFloat(f.durata_minuti) : null,
+        recupero_minuti: f.recupero_minuti !== '' ? parseFloat(f.recupero_minuti) : null,
       }
       if (isEdit) {
         const { error } = await supabase.from('esercizi').update(payload).eq('id', esercizio.id)
@@ -238,6 +242,26 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
         <div className="field field-full"><label>Link video (YouTube o altro)</label>
           <input type="url" value={f.video_url} onChange={upd('video_url')} placeholder="https://www.youtube.com/watch?v=..." />
           {f.video_url && <a href={f.video_url} target="_blank" rel="noopener noreferrer" style={{fontSize:12,color:'var(--azzurro)',marginTop:4,display:'inline-block'}}>▶ Anteprima link</a>}
+        </div>
+        <div className="field">
+          <label>Durata esercizio <span style={{ fontWeight: 400, color: 'var(--ink-soft)', fontSize: 12 }}>(minuti, facoltativo)</span></label>
+          <input
+            type="number" min="0" step="0.5"
+            value={f.durata_minuti}
+            onChange={upd('durata_minuti')}
+            placeholder="es. 10"
+            style={{ maxWidth: 120 }}
+          />
+        </div>
+        <div className="field">
+          <label>Recupero <span style={{ fontWeight: 400, color: 'var(--ink-soft)', fontSize: 12 }}>(minuti, facoltativo)</span></label>
+          <input
+            type="number" min="0" step="0.5"
+            value={f.recupero_minuti}
+            onChange={upd('recupero_minuti')}
+            placeholder="es. 2"
+            style={{ maxWidth: 120 }}
+          />
         </div>
         <div className="field field-full">
           <label className="val-nessuno">

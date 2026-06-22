@@ -16,21 +16,38 @@ export default async function CalendarioPage() {
     .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
 
   let allenamenti = []
+  let partite = []
   let categorie = []
+
   if (stagione) {
-    const [al, cat] = await Promise.all([
+    const [al, cat, par] = await Promise.all([
       supabase.from('allenamenti')
         .select('id, data, squadra_id, accorpata_con, nessuna_valutazione, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id).order('data'),
       supabase.from('stagione_categorie')
         .select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
+      supabase.from('partite')
+        .select('id, data, squadra_id, avversario, casa, gol_fatti, gol_subiti, tipo, squadre(nome)')
+        .eq('stagione_id', stagione.id).order('data'),
     ])
 
-    // Mappa id → nome per le categorie (per tooltip accorpamento)
     const catMap = {}
     for (const r of cat.data ?? []) {
       if (r.squadre) catMap[r.squadre.id] = r.squadre.nome
     }
+
+    partite = (par.data ?? []).map((p) => ({
+      id: p.id,
+      data: p.data,
+      squadra_id: p.squadra_id,
+      squadra_nome: p.squadre?.nome ?? '',
+      avversario: p.avversario ?? '',
+      casa: p.casa,
+      tipo: p.tipo ?? 'campionato',
+      gol_fatti: p.gol_fatti,
+      gol_subiti: p.gol_subiti,
+      _tipo: 'partita',
+    }))
 
     allenamenti = (al.data ?? []).map((a) => ({
       id: a.id,
@@ -82,13 +99,12 @@ export default async function CalendarioPage() {
       <div className="content">
         {!isPortiere && (
           <Guida titolo="Come usare il calendario">
-            Clicca su un numero del giorno per creare un allenamento in quella data. Clicca su un allenamento per aprirlo e inserire presenze e valutazioni.
-            Gli allenamenti con cornice gialla sono accorpati con un&apos;altra categoria. Usa il filtro in alto a destra per vedere una sola categoria.
-            La sezione &ldquo;Da valutare&rdquo; mostra gli allenamenti passati senza valutazioni inserite.
+            Clicca su un numero del giorno per creare un allenamento. Gli allenamenti in <b style={{color:'#2e9e5b'}}>verde</b> sono valutati, in <b style={{color:'#c0392b'}}>rosso</b> da valutare.
+            Le partite appaiono in <b style={{color:'#7c3aed'}}>viola</b>: scuro se passate, chiaro se future. Cliccaci sopra per aprirle.
           </Guida>
         )}
         {stagione
-          ? <CalendarioMese allenamenti={allenamenti} categorie={categorie} vista={isPortiere ? 'portiere' : 'staff'} />
+          ? <CalendarioMese allenamenti={allenamenti} partite={partite} categorie={categorie} vista={isPortiere ? 'portiere' : 'staff'} />
           : <div className="empty">Nessuna stagione attiva.</div>}
       </div>
     </>

@@ -44,7 +44,7 @@ export default function ProfiloModal({ allenatoreId, onClose }) {
 
   const esperienze = Array.isArray(profilo?.esperienze) ? profilo.esperienze.filter(Boolean) : []
   const certificati = Array.isArray(profilo?.certificati) ? profilo.certificati.filter(Boolean) : []
-  const contattoGratuito = gating?.free !== false  // free=true o non configurato → gratuito
+  const contattoGratuito = gating?.free !== false || parseFloat(gating?.importo) === 0
 
   return (
     <>
@@ -204,12 +204,12 @@ function ProfiloVista({ profilo, esperienze, certificati, contattoGratuito, impo
         borderRadius: 10, border: '1px solid var(--linea)',
       }}>
         <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 14 }}>
-          {contattoGratuito ? 'Contatta questo allenatore' : `Contatta questo allenatore — € ${importo}`}
+          {contattoGratuito ? 'Contatta questo allenatore' : `Contatta questo allenatore — contributo € ${importo}`}
         </p>
         <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--ink-soft)' }}>
           {contattoGratuito
-            ? 'Invia una richiesta direttamente all\'allenatore. I tuoi dati di contatto non vengono condivisi pubblicamente.'
-            : `Invio la tua richiesta direttamente all'allenatore. Contributo una tantum di € ${importo}.`}
+            ? "Invia una richiesta direttamente all'allenatore. I tuoi dati di contatto non vengono condivisi pubblicamente."
+            : `Invia la tua richiesta all'allenatore con un contributo una tantum di € ${importo}.`}
         </p>
         <button className="btn" onClick={onContatta} type="button" style={{ width: '100%' }}>
           {contattoGratuito ? 'Scrivi una richiesta →' : `Invia richiesta (€ ${importo}) →`}
@@ -248,7 +248,7 @@ function ContattoVista({ allenatoreId, nomeAllenatore, contattoGratuito, importo
       <h2 style={{ margin: '0 0 4px', fontSize: 18 }}>Scrivi a {nomeAllenatore}</h2>
       <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--ink-soft)' }}>
         La tua richiesta verrà recapitata direttamente all'allenatore. Non vengono condivisi dati di contatto pubblici.
-        {!contattoGratuito && <><br /><b>Nota: contributo di € {importo} richiesto per l'invio.</b></>}
+        {!contattoGratuito && <><br /><b>Contributo richiesto per l'invio: € {importo}.</b></>}
       </p>
       {err && <div className="err" style={{ marginBottom: 12 }}>{err}</div>}
       <form onSubmit={invia}>

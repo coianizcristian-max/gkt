@@ -10,11 +10,33 @@ const TIPI = [
   { v: 'contenuto', l: 'Contenuto (blocco testo + foto)' },
 ]
 
+// Converte **testo** in <strong> e mantiene a capo → <br>
+// Formato semplice: **parola** = grassetto, nuova riga = a capo
+function renderTesto(testo) {
+  if (!testo) return null
+  return testo.split('\n').map((riga, ri) => {
+    const parti = []
+    const regex = /\*\*(.+?)\*\*/g
+    let last = 0, m
+    while ((m = regex.exec(riga)) !== null) {
+      if (m.index > last) parti.push(riga.slice(last, m.index))
+      parti.push(<strong key={m.index}>{m[1]}</strong>)
+      last = m.index + m[0].length
+    }
+    if (last < riga.length) parti.push(riga.slice(last))
+    return <span key={ri}>{parti}{ri < testo.split('\n').length - 1 && <br />}</span>
+  })
+}
+
+// Esporto renderTesto per usarlo anche in app/page.js
+export { renderTesto }
+
 function SezioneCard({ sezione, onChanged }) {
   const router = useRouter()
   const [s, setS] = useState(sezione)
+  // Teniamo il file separato dall'URL — così se non si ricarica la foto il vecchio URL resta intatto
   const [file, setFile] = useState(null)
-  const [preview, setPreview] = useState(sezione.immagine_url)
+  const [preview, setPreview] = useState(sezione.immagine_url || '')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const upd = (k) => (e) => {
@@ -30,13 +52,17 @@ function SezioneCard({ sezione, onChanged }) {
     setBusy(true)
     const supabase = createClient()
     try {
-      let immagine_url = s.immagine_url
+      // BUG FIX: immagine_url parte sempre dal valore DB (s.immagine_url),
+      // e viene sovrascritto SOLO se l'utente ha scelto un nuovo file.
+      // Questo evita che salva senza file azzeri l'URL già salvato.
+      let immagine_url = s.immagine_url ?? null
       if (file) {
         const ext = file.name.split('.').pop()
-        const path = `${s.id}/${Date.now()}.${ext}`
+        const path = `sez/${s.id}/${Date.now()}.${ext}`
         const { error: e1 } = await supabase.storage.from('sito').upload(path, file, { upsert: true })
         if (e1) throw e1
         immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
+        setS((p) => ({ ...p, immagine_url })) // aggiorna stato locale con nuovo URL
       }
       const { error } = await supabase.from('sito_sezioni').update({
         tipo: s.tipo, ordine: Number(s.ordine) || 0, visibile: s.visibile,
@@ -56,6 +82,8 @@ function SezioneCard({ sezione, onChanged }) {
     onChanged()
   }
 
+  const dimConsigliate = s.tipo === 'hero' ? '1400×600 px' : s.tipo === 'contenuto' ? '800×600 px' : '400×300 px'
+
   return (
     <div className="sez-card">
       <div className="sez-head">
@@ -70,14 +98,30 @@ function SezioneCard({ sezione, onChanged }) {
         </label>
       </div>
       <div className="field"><label>Titolo</label>
-        <input value={s.titolo ?? ''} onChange={upd('titolo')} /></div>
-      <div className="field"><label>Testo</label>
-        <textarea rows="3" value={s.testo ?? ''} onChange={upd('testo')} /></div>
+        <input value={s.titolo ?? ''} onChange={upd('titolo')} />
+      </div>
+      <div className="field">
+        <label>
+          Testo
+          <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--ink-soft)', marginLeft: 8 }}>
+            Usa **parola** per il <strong>grassetto</strong> · Invio = a capo nel testo pubblicato
+          </span>
+        </label>
+        <textarea rows="5" value={s.testo ?? ''} onChange={upd('testo')} style={{ fontFamily: 'monospace', fontSize: 13 }} />
+      </div>
       <div className="sez-img">
         <div className="sez-thumb">
           {preview ? <img src={preview} alt="" /> : <span>nessuna immagine</span>}
         </div>
-        <label className="foto-upload">Immagine<input type="file" accept="image/*" onChange={onFile} hidden /></label>
+        <div>
+          <label className="foto-upload">
+            {preview ? 'Cambia immagine' : 'Carica immagine'}
+            <input type="file" accept="image/*" onChange={onFile} hidden />
+          </label>
+          <p style={{ fontSize: 11, color: 'var(--ink-soft)', margin: '6px 0 0' }}>
+            Dimensioni consigliate: <b>{dimConsigliate}</b>
+          </p>
+        </div>
       </div>
       <div className="sez-actions">
         <button className="btn-ghost btn-del" onClick={elimina} type="button">Elimina</button>

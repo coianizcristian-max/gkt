@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import CercaAllenatoriBox from '@/app/components/CercaAllenatoriBox'
 import { createClient } from '@/lib/supabase/server'
+import { renderTesto } from '@/app/components/SitoEditor'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +40,7 @@ export default async function Home() {
         <section className="hero" style={hero.immagine_url ? { backgroundImage: `linear-gradient(rgba(8,18,28,.55),rgba(8,18,28,.55)), url(${hero.immagine_url})` } : undefined} data-img={hero.immagine_url ? '1' : '0'}>
           <p className="hero-eyebrow">Gestione portieri</p>
           {hero.titolo && <h1 className="hero-title">{hero.titolo}</h1>}
-          {hero.testo && <p className="hero-lead">{hero.testo}</p>}
+          {hero.testo && <p className="hero-lead">{renderTesto(hero.testo)}</p>}
           {loggedIn ? (
             <Link href="/portieri" className="cta-card">
               <span className="cta-text">
@@ -64,7 +65,7 @@ export default async function Home() {
             <div className="feature" key={v.id}>
               {v.immagine_url && <img className="feature-img" src={v.immagine_url} alt="" />}
               {v.titolo && <h3>{v.titolo}</h3>}
-              {v.testo && <p>{v.testo}</p>}
+              {v.testo && <p>{renderTesto(v.testo)}</p>}
             </div>
           ))}
         </section>
@@ -75,7 +76,7 @@ export default async function Home() {
           {c.immagine_url && <div className="blocco-img"><img src={c.immagine_url} alt="" /></div>}
           <div className="blocco-testo">
             {c.titolo && <h2>{c.titolo}</h2>}
-            {c.testo && <p>{c.testo}</p>}
+            {c.testo && <p>{renderTesto(c.testo)}</p>}
           </div>
         </section>
       ))}

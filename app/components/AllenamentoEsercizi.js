@@ -1,13 +1,47 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 // ─── Vista libreria: selezione esercizi per l'allenamento ────────────────────
 function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
   const [fonte, setFonte] = useState('mia')
-  const lista = fonte === 'mia' ? libreriaMia : libreriaPubblica
+  const [soloPref, setSoloPref] = useState(false)
+  const [preferiti, setPreferiti] = useState(new Set())
+
+  // Carica preferiti dal DB al mount
+  useEffect(() => {
+    async function carica() {
+      const supabase = createClient()
+      const { data } = await supabase.from('esercizi_preferiti').select('esercizio_id')
+      if (data) setPreferiti(new Set(data.map((r) => r.esercizio_id)))
+    }
+    carica()
+  }, [])
+
+  async function togglePreferito(e, esercizioId) {
+    e.stopPropagation() // non selezionare l'esercizio
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const isPreferito = preferiti.has(esercizioId)
+    if (isPreferito) {
+      await supabase.from('esercizi_preferiti')
+        .delete().eq('esercizio_id', esercizioId).eq('allenatore_id', user.id)
+      setPreferiti((s) => { const n = new Set(s); n.delete(esercizioId); return n })
+    } else {
+      await supabase.from('esercizi_preferiti')
+        .insert({ esercizio_id: esercizioId, allenatore_id: user.id })
+      setPreferiti((s) => new Set(s).add(esercizioId))
+    }
+  }
+
+  const listaPubblica = soloPref
+    ? libreriaPubblica.filter((e) => preferiti.has(e.id))
+    : libreriaPubblica
+
+  const lista = fonte === 'mia' ? libreriaMia : listaPubblica
   const gruppi = {}
   for (const e of lista) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
   const chiavi = Object.keys(gruppi).sort()
@@ -15,19 +49,49 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
   return (
     <>
       <div className="sub-nav">
-        <button type="button" className={`sub-nav-link ${fonte === 'mia' ? 'active' : ''}`} onClick={() => setFonte('mia')}>
+        <button type="button" className={`sub-nav-link ${fonte === 'mia' ? 'active' : ''}`}
+          onClick={() => { setFonte('mia'); setSoloPref(false) }}>
           La mia libreria ({libreriaMia.length})
         </button>
-        <button type="button" className={`sub-nav-link ${fonte === 'pubblica' ? 'active' : ''}`} onClick={() => setFonte('pubblica')}>
+        <button type="button" className={`sub-nav-link ${fonte === 'pubblica' ? 'active' : ''}`}
+          onClick={() => setFonte('pubblica')}>
           Libreria pubblica ({libreriaPubblica.length})
         </button>
       </div>
+
+      {/* Filtro preferiti — solo nella tab pubblica */}
+      {fonte === 'pubblica' && (
+        <div style={{ display: 'flex', gap: 8, margin: '8px 0 4px', alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={() => setSoloPref((v) => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: soloPref ? '#fff8e6' : 'var(--carta)',
+              border: soloPref ? '1.5px solid var(--giallo, #e8a72c)' : '1.5px solid var(--linea)',
+              borderRadius: 20, padding: '4px 12px', cursor: 'pointer',
+              fontSize: 13, fontWeight: soloPref ? 700 : 400,
+              color: soloPref ? 'var(--giallo, #e8a72c)' : 'var(--ink-soft)',
+            }}
+          >
+            <span>★</span>
+            {soloPref ? `Solo preferiti (${preferiti.size})` : `Preferiti (${preferiti.size})`}
+          </button>
+          {soloPref && preferiti.size === 0 && (
+            <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+              Clicca ★ su un esercizio per aggiungerlo ai preferiti
+            </span>
+          )}
+        </div>
+      )}
+
       {lista.length === 0 ? (
         <div className="empty">
           {fonte === 'mia'
-            ? <></>
-            : 'Nessun esercizio pubblico disponibile.'}
-          {fonte === 'mia' && <>Nessun esercizio in libreria. Creane in <a href="/esercizi" className="link-inline">Esercizi</a>.</>}
+            ? <a href="/esercizi" className="link-inline">Vai alla libreria esercizi per crearne</a>
+            : soloPref
+              ? 'Nessun esercizio preferito. Clicca ★ su un esercizio per salvarlo.'
+              : 'Nessun esercizio pubblico disponibile.'}
         </div>
       ) : (
         chiavi.map((k) => (
@@ -51,6 +115,24 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
                     {e.autore_nome && <div className="es-tile-autore">{e.autore_nome}</div>}
                     {e.descrizione_breve && <div className="es-tile-desc">{e.descrizione_breve}</div>}
                   </div>
+                  {/* Stella preferito — solo nella libreria pubblica */}
+                  {fonte === 'pubblica' && (
+                    <button
+                      type="button"
+                      onClick={(ev) => togglePreferito(ev, e.id)}
+                      title={preferiti.has(e.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                      style={{
+                        position: 'absolute', top: 6, right: 6,
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        fontSize: 18, lineHeight: 1,
+                        color: preferiti.has(e.id) ? 'var(--giallo, #e8a72c)' : '#ccc',
+                        filter: preferiti.has(e.id) ? 'none' : 'opacity(0.5)',
+                        padding: 2,
+                      }}
+                    >
+                      {preferiti.has(e.id) ? '★' : '☆'}
+                    </button>
+                  )}
                   {sel.has(e.id) && <div className="es-tile-check">✓</div>}
                 </button>
               ))}

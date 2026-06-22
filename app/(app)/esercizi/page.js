@@ -14,26 +14,32 @@ export default async function EserciziPage() {
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
   const ownerId = await getOwnerId(supabase, user.id)
-  const [{ data: esercizi }, { data: tip }, { data: prefRows }] = await Promise.all([
+  const [{ data: esercizi }, { data: tip }] = await Promise.all([
     supabase.from('esercizi').select('*').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
     supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('attivo', true).order('ordine'),
-    supabase.from('esercizi_preferiti').select('esercizio_id').eq('allenatore_id', user.id),
   ])
   const tipologie = (tip ?? []).map((t) => t.valore)
-  const prefIds = new Set((prefRows ?? []).map((r) => r.esercizio_id))
 
-  // Esercizi pubblici preferiti (non miei, pubblici, marcati come preferiti)
+  // Esercizi pubblici preferiti — query separata con gestione errore
+  // (la tabella esercizi_preferiti potrebbe non esistere se il SQL non è ancora stato eseguito)
   let eserciziPubbliciPreferiti = []
-  if (prefIds.size > 0) {
-    const { data: pubPref } = await supabase
-      .from('esercizi')
-      .select('*')
-      .eq('pubblico', true)
-      .eq('archiviato', false)
-      .neq('allenatore_id', ownerId)
-      .in('id', [...prefIds])
-      .order('titolo')
-    eserciziPubbliciPreferiti = pubPref ?? []
+  try {
+    const { data: prefRows, error: prefErr } = await supabase
+      .from('esercizi_preferiti').select('esercizio_id').eq('allenatore_id', user.id)
+    if (!prefErr && prefRows && prefRows.length > 0) {
+      const prefIds = prefRows.map((r) => r.esercizio_id)
+      const { data: pubPref } = await supabase
+        .from('esercizi')
+        .select('*')
+        .eq('pubblico', true)
+        .eq('archiviato', false)
+        .neq('allenatore_id', ownerId)
+        .in('id', prefIds)
+        .order('titolo')
+      eserciziPubbliciPreferiti = pubPref ?? []
+    }
+  } catch (_) {
+    // Tabella non ancora creata — funziona comunque senza preferiti pubblici
   }
 
   return (

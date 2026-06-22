@@ -70,6 +70,7 @@ export default async function AppLayout({ children }) {
     ...(isStaff && vedeAllenamenti ? [{ href: '/esercizi', label: 'Esercizi' }] : []),
     ...(isStaff ? [{ href: '/profilo', label: 'Profilo allenatore' }] : []),
     ...(isStaff ? [{ href: '/inviti', label: 'Inviti' }] : []),
+    ...(isStaff ? [{ href: '/contatti', label: 'Contatti ricevuti' }] : []),
     { href: '/come-iniziare', label: 'Come iniziare' },
     { href: '/archivio', label: 'Archivio' },
     { href: '/suggerimenti', label: 'Suggerimenti' },
@@ -111,6 +112,7 @@ export default async function AppLayout({ children }) {
         {isStaff && vedeAllenamenti && <NavLink href="/esercizi">Esercizi</NavLink>}
         {isStaff && <NavLink href="/profilo">Profilo allenatore</NavLink>}
         {isStaff && <NavLink href="/inviti">Inviti</NavLink>}
+        {isStaff && <NavLink href="/contatti">Contatti ricevuti</NavLink>}
         <NavLink href="/come-iniziare">Come iniziare</NavLink>
         <NavLink href="/archivio">Archivio</NavLink>
         <NavLink href="/suggerimenti">Suggerimenti</NavLink>

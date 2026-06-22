@@ -1,14 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import ProfiloModal from './ProfiloModal'
 
 export default function CercaAllenatori() {
   const [citta, setCitta] = useState('')
   const [risultati, setRisultati] = useState(null)
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
+  const [selezionato, setSelezionato] = useState(null) // allenatore aperto nel modal
 
   async function cerca() {
     if (!citta.trim()) return
@@ -28,9 +29,9 @@ export default function CercaAllenatori() {
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: '32px 20px' }}>
-      <h1>Cerca allenatori dei portieri</h1>
+      <h1>Cerchi un allenatore dei portieri?</h1>
       <p style={{ color: 'var(--ink-soft)' }}>
-        Inserisci la città della tua squadra: troverai gli allenatori disponibili che operano nella tua zona.
+        Inserisci la città della tua squadra: trovi gli allenatori disponibili che operano nella tua zona, ciascuno entro il raggio che ha impostato.
       </p>
       <div style={{ display: 'flex', gap: 8, margin: '16px 0' }}>
         <input
@@ -52,7 +53,13 @@ export default function CercaAllenatori() {
         <p style={{ color: 'var(--ink-soft)', marginBottom: 12 }}>{risultati.length} allenatori trovati:</p>
       )}
       {risultati && risultati.map((a) => (
-        <Link key={a.id} href={`/allenatori/${a.id}`} className="allenatore-card" style={{ textDecoration: 'none' }}>
+        <button
+          key={a.id}
+          type="button"
+          onClick={() => setSelezionato(a)}
+          className="allenatore-card"
+          style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', padding: 0 }}
+        >
           <div className="stat-head">
             <div className="stat-foto">
               {a.foto_url
@@ -62,8 +69,8 @@ export default function CercaAllenatori() {
             <div style={{ flex: 1 }}>
               <div className="stat-nome">{a.nome || 'Allenatore'}</div>
               <div className="stat-cat">
-                {a.citta || ''}
-                {a.distanza_km != null ? ' · ' + Math.round(a.distanza_km) + ' km' : ''}
+                {a.citta ? a.citta.toUpperCase() : ''}
+                {a.distanza_km != null ? ' – ' + Math.round(a.distanza_km) + ' km' : ''}
               </div>
             </div>
             <span style={{ fontSize: 13, color: 'var(--azzurro)', fontWeight: 600 }}>Vedi profilo →</span>
@@ -74,8 +81,16 @@ export default function CercaAllenatori() {
               {a.bio}
             </p>
           )}
-        </Link>
+        </button>
       ))}
+
+      {/* Modal profilo completo + form contatto */}
+      {selezionato && (
+        <ProfiloModal
+          allenatoreId={selezionato.id}
+          onClose={() => setSelezionato(null)}
+        />
+      )}
     </div>
   )
 }

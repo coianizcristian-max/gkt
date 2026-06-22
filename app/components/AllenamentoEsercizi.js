@@ -114,6 +114,12 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
                     <div className="es-tile-titolo">{e.titolo}</div>
                     {e.autore_nome && <div className="es-tile-autore">{e.autore_nome}</div>}
                     {e.descrizione_breve && <div className="es-tile-desc">{e.descrizione_breve}</div>}
+                    {(e.durata_minuti || e.recupero_minuti) && (
+                      <div style={{ marginTop: 4, fontSize: 11, color: 'var(--ink-soft)', display: 'flex', gap: 6 }}>
+                        {e.durata_minuti && <span>⏱ {e.durata_minuti}min</span>}
+                        {e.recupero_minuti && <span>↩ {e.recupero_minuti}min</span>}
+                      </div>
+                    )}
                   </div>
                   {/* Stella preferito — solo nella libreria pubblica */}
                   {fonte === 'pubblica' && (
@@ -163,33 +169,73 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange }) {
     onOrdineChange(newOrd)
   }
 
+  // Calcola stima tempo totale
+  const stimaMinuti = ordine.reduce((tot, eid) => {
+    const e = byId[eid]
+    if (!e) return tot
+    return tot + (parseFloat(e.durata_minuti) || 0) + (parseFloat(e.recupero_minuti) || 0)
+  }, 0)
+  const stimaLabel = stimaMinuti > 0
+    ? stimaMinuti >= 60
+      ? `${Math.floor(stimaMinuti / 60)}h ${Math.round(stimaMinuti % 60)}min`
+      : `${Math.round(stimaMinuti)} min`
+    : null
+
   if (ordine.length === 0) {
     return <div className="empty">Nessun esercizio selezionato. Vai in &ldquo;Libreria&rdquo; per aggiungerne.</div>
   }
 
   return (
-    <div className="drag-list">
-      {ordine.map((eid, i) => {
-        const e = byId[eid]
-        if (!e) return null
-        return (
-          <div
-            key={eid}
-            className="drag-item"
-            draggable
-            onDragStart={() => onDragStart(i)}
-            onDragOver={(ev) => onDragOver(ev, i)}
-            onDrop={onDrop}
-          >
-            <span className="drag-handle">⠿</span>
-            <div className="drag-info">
-              <b>{e.titolo}</b>
-              {e.tipologia && <span className="stat-cat">{e.tipologia}</span>}
+    <div>
+      <div className="drag-list">
+        {ordine.map((eid, i) => {
+          const e = byId[eid]
+          if (!e) return null
+          return (
+            <div
+              key={eid}
+              className="drag-item"
+              draggable
+              onDragStart={() => onDragStart(i)}
+              onDragOver={(ev) => onDragOver(ev, i)}
+              onDrop={onDrop}
+            >
+              <span className="drag-handle">⠿</span>
+              <div className="drag-info">
+                <b>{e.titolo}</b>
+                {e.tipologia && <span className="stat-cat">{e.tipologia}</span>}
+                {(e.durata_minuti || e.recupero_minuti) && (
+                  <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 6 }}>
+                    {e.durata_minuti ? `⏱ ${e.durata_minuti}min` : ''}
+                    {e.durata_minuti && e.recupero_minuti ? ' · ' : ''}
+                    {e.recupero_minuti ? `↩ ${e.recupero_minuti}min rec.` : ''}
+                  </span>
+                )}
+              </div>
+              {e.immagine_url && <img src={e.immagine_url} className="drag-thumb" alt="" />}
             </div>
-            {e.immagine_url && <img src={e.immagine_url} className="drag-thumb" alt="" />}
+          )
+        })}
+      </div>
+      {stimaLabel && (
+        <div style={{
+          marginTop: 14, padding: '10px 16px',
+          background: 'var(--carta)', borderRadius: 'var(--r)',
+          border: '1px solid var(--linea)',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <span style={{ fontSize: 20 }}>⏱</span>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>Stima tempo: {stimaLabel}</div>
+            <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+              Somma di durata + recupero degli esercizi con tempi impostati
+              {ordine.some((eid) => byId[eid] && !byId[eid]?.durata_minuti && !byId[eid]?.recupero_minuti)
+                ? ' · alcuni esercizi non hanno durata impostata'
+                : ''}
+            </div>
           </div>
-        )
-      })}
+        </div>
+      )}
     </div>
   )
 }

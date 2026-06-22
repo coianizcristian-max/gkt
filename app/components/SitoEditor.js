@@ -3,33 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { renderTesto } from '@/lib/renderTesto'
 
 const TIPI = [
   { v: 'hero', l: 'Hero (testata grande)' },
   { v: 'vantaggio', l: 'Vantaggio (riquadro)' },
   { v: 'contenuto', l: 'Contenuto (blocco testo + foto)' },
 ]
-
-// Converte **testo** in <strong> e mantiene a capo → <br>
-// Formato semplice: **parola** = grassetto, nuova riga = a capo
-function renderTesto(testo) {
-  if (!testo) return null
-  return testo.split('\n').map((riga, ri) => {
-    const parti = []
-    const regex = /\*\*(.+?)\*\*/g
-    let last = 0, m
-    while ((m = regex.exec(riga)) !== null) {
-      if (m.index > last) parti.push(riga.slice(last, m.index))
-      parti.push(<strong key={m.index}>{m[1]}</strong>)
-      last = m.index + m[0].length
-    }
-    if (last < riga.length) parti.push(riga.slice(last))
-    return <span key={ri}>{parti}{ri < testo.split('\n').length - 1 && <br />}</span>
-  })
-}
-
-// Esporto renderTesto per usarlo anche in app/page.js
-export { renderTesto }
 
 function SezioneCard({ sezione, onChanged }) {
   const router = useRouter()

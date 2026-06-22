@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import CercaAllenatoriBox from '@/app/components/CercaAllenatoriBox'
 import { createClient } from '@/lib/supabase/server'
-import { renderTesto } from '@/app/components/SitoEditor'
+import { renderTesto } from '@/lib/renderTesto'
 
 export const dynamic = 'force-dynamic'
 

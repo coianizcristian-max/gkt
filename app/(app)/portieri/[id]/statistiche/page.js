@@ -3,7 +3,9 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import StatisticheGrafici from '@/app/components/StatisticheGrafici'
+import IndiceCrescita from '@/app/components/IndiceCrescita'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
+import { calcolaIndiceCrescita } from '@/lib/indiceCrescita'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,6 +42,7 @@ export default async function StatistichePortierePage({ params }) {
       <Link href={`/portieri/${id}`} className="sub-nav-link">Scheda</Link>
       <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">Obiettivi</Link>
       <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link active">Statistiche</Link>
+      <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">Percorso</Link>
     </div>
   )
 
@@ -195,6 +198,24 @@ export default async function StatistichePortierePage({ params }) {
 
   const pctPresenza = totA ? Math.round(presenzeA / totA * 100) : null
 
+  // Trend partite: confronto prima metà / seconda metà delle partite di campionato con voto
+  let trendPartite = null
+  const parCampConVoto = parCamp.filter((v) => v.voto != null).sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
+  if (parCampConVoto.length >= 4) {
+    const metaP = Math.floor(parCampConVoto.length / 2)
+    const primaP = parCampConVoto.slice(0, metaP).map((v) => Number(v.voto))
+    const secondaP = parCampConVoto.slice(metaP).map((v) => Number(v.voto))
+    trendPartite = secondaP.reduce((s, x) => s + x, 0) / secondaP.length - primaP.reduce((s, x) => s + x, 0) / primaP.length
+  }
+
+  // Obiettivi: percentuale completati (stato = 'raggiunto')
+  const { data: obiettiviRows } = await supabase.from('obiettivi').select('stato').eq('portiere_id', id)
+  let pctObiettivi = null
+  if (obiettiviRows && obiettiviRows.length > 0) {
+    const completati = obiettiviRows.filter((o) => o.stato === 'raggiunto').length
+    pctObiettivi = Math.round((completati / obiettiviRows.length) * 100)
+  }
+
   // ── Dati per grafici (passati al client component) ───────────────────────
   const oggi = new Date().toISOString().slice(0, 10)
   const ultimi30 = new Date(); ultimi30.setDate(ultimi30.getDate() - 30)
@@ -276,6 +297,21 @@ export default async function StatistichePortierePage({ params }) {
             </div>
           ))}
         </div>
+
+        <IndiceCrescita
+          score={calcolaIndiceCrescita({
+            pctObiettiviCompletati: pctObiettivi,
+            trendAllenamenti: trend,
+            trendPartite: trendPartite,
+            pctPresenze: pctPresenza,
+          })}
+          dettagli={[
+            { label: 'Obiettivi completati', peso: 40, valore: pctObiettivi, display: pctObiettivi != null ? pctObiettivi + '%' : null },
+            { label: 'Trend allenamenti', peso: 25, valore: trend, display: trend != null ? (trend >= 0 ? '+' : '') + fmt(trend, 2) : null },
+            { label: 'Trend partite', peso: 20, valore: trendPartite, display: trendPartite != null ? (trendPartite >= 0 ? '+' : '') + fmt(trendPartite, 2) : null },
+            { label: 'Presenze', peso: 15, valore: pctPresenza, display: pctPresenza != null ? pctPresenza + '%' : null },
+          ]}
+        />
 
         {/* Analisi stagione */}
         <div className="scheda" style={{ marginBottom: 14 }}>

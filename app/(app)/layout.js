@@ -50,6 +50,7 @@ export default async function AppLayout({ children }) {
 
   // Costruisce array voci per SidebarMobile
   const voci = [
+    ...(isStaff ? [{ href: '/dashboard', label: '🏠 Dashboard' }] : []),
     { href: schedaHref, label: isPortiere ? 'La mia scheda' : 'Portieri' },
     { href: '/calendario', label: 'Calendario' },
     ...(isStaff ? [{ href: '/ricorrenze', label: 'Ricorrenze' }] : []),
@@ -87,6 +88,7 @@ export default async function AppLayout({ children }) {
             🎟 Periodo gratuito: {couponGiorni} gg rimasti
           </div>
         )}
+        {isStaff && <NavLink href="/dashboard">🏠 Dashboard</NavLink>}
         {isPortiere
           ? <NavLink href={schedaHref}>La mia scheda</NavLink>
           : <NavLink href="/portieri">Portieri</NavLink>}

@@ -61,13 +61,13 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
   function toggle(chiave) { setStato((s) => ({ ...s, [chiave]: !s[chiave] })); setDone(false) }
 
   const PrezzoField = ({ ruolo, piano, label }) => (
-    <div className="stat-line">
-      <span>{label}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontWeight: 600 }}>€</span>
+    <div className="prezzo-field-row">
+      <span className="prezzo-field-label">{label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+        <span style={{ fontWeight: 600, fontSize: 13 }}>€</span>
         <input type="number" min="0.50" step="0.10" value={prezzi[ruolo][piano]}
           onChange={updPrezzo(ruolo, piano)}
-          style={{ width: 80, padding: '5px 8px', border: '1px solid var(--linea)', borderRadius: 6, fontSize: 14 }} />
+          className="prezzo-field-input" />
       </div>
     </div>
   )
@@ -91,7 +91,7 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
       {/* Prezzi abbonamento */}
       <div className="scheda" style={{ marginBottom: 16 }}>
         <h3 style={{ margin: '0 0 12px' }}>💰 Prezzi abbonamento</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="prezzi-grid">
           <div>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Allenatore / Staff</div>
             <PrezzoField ruolo="allenatore" piano="mensile"  label="Mensile" />

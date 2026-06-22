@@ -45,6 +45,14 @@ export default async function PortieriPage() {
     haAllenamenti = (allen.data ?? []).length > 0
   }
 
+  // Tag portiere (per badge nella card)
+  const portiereIds = iscrizioni.map((i) => i.portieri?.id).filter(Boolean)
+  let tagPerPortiere = {}
+  if (portiereIds.length) {
+    const { data: tagRows } = await supabase.from('portiere_tag').select('portiere_id, tag').in('portiere_id', portiereIds)
+    for (const r of tagRows ?? []) (tagPerPortiere[r.portiere_id] ??= []).push(r.tag)
+  }
+
   const stats = {}
   for (const v of valutazioni) {
     const s = (stats[v.portiere_id] ??= { tot: 0, presenze: 0, somma: 0, conta: 0 })
@@ -97,7 +105,7 @@ export default async function PortieriPage() {
         )}
         {!stagione
           ? <div className="empty">Nessuna stagione attiva. <Link href="/supervisore/stagioni" className="link-inline">Crea una stagione</Link></div>
-          : <PortieriSearch squadre={squadre} iscrizioni={iscrizioni} stats={stats} />}
+          : <PortieriSearch squadre={squadre} iscrizioni={iscrizioni} stats={stats} tagPerPortiere={tagPerPortiere} />}
       </div>
     </>
   )

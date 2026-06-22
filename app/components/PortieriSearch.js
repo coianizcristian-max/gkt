@@ -12,7 +12,7 @@ function calcEta(dataNascita) {
   return eta
 }
 
-export default function PortieriSearch({ squadre, iscrizioni, stats }) {
+export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPortiere = {} }) {
   const [q, setQ] = useState('')
 
   const filtrati = useMemo(() => {
@@ -86,6 +86,15 @@ export default function PortieriSearch({ squadre, iscrizioni, stats }) {
                           {sq.nome}
                           {eta != null && <span className="eta-badge">{eta} anni</span>}
                         </div>
+                        {(tagPerPortiere[p.id] ?? []).length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                            {tagPerPortiere[p.id].map((tag) => (
+                              <span key={tag} style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 999, background: 'rgba(10,126,194,0.12)', color: 'var(--azzurro)' }}>
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="stat-row">

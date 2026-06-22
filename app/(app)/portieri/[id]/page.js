@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PortiereForm from '@/app/components/PortiereForm'
+import TagManager from '@/app/components/TagManager'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +37,18 @@ export default async function SchedaPortierePage({ params }) {
     iscrizione = isc.data
   }
 
+  // Attributi dinamici (definiti dal Supervisore) + valori salvati per questo portiere
+  const [{ data: attributiDef }, { data: attributiRows }, { data: tagRows }, { data: tagVoci }] = await Promise.all([
+    supabase.from('attributi_definizioni').select('*').eq('attivo', true).order('ordine'),
+    supabase.from('portiere_attributi').select('attributo_id, valore_testo, valore_num').eq('portiere_id', id),
+    supabase.from('portiere_tag').select('tag').eq('portiere_id', id),
+    supabase.from('elenco_voci').select('valore').eq('elenco', 'tag_portiere').eq('attivo', true).order('ordine'),
+  ])
+  const attributiValori = {}
+  for (const r of attributiRows ?? []) attributiValori[r.attributo_id] = r.valore_testo ?? r.valore_num
+  const tagAttivi = (tagRows ?? []).map((r) => r.tag)
+  const tagDisponibili = (tagVoci ?? []).map((v) => v.valore)
+
   return (
     <>
       <div className="topbar">
@@ -47,7 +60,11 @@ export default async function SchedaPortierePage({ params }) {
           <Link href={`/portieri/${id}`} className="sub-nav-link active">Scheda</Link>
           <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">Obiettivi</Link>
           <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">Statistiche</Link>
+          <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">Percorso</Link>
         </div>
+        {!soloPortiere && tagDisponibili.length > 0 && (
+          <TagManager portiereId={id} tagAttivi={tagAttivi} tagDisponibili={tagDisponibili} />
+        )}
         {stagione && categorie.length > 0 ? (
           <PortiereForm
             portiere={portiere}
@@ -56,6 +73,8 @@ export default async function SchedaPortierePage({ params }) {
             stagioneId={stagione.id}
             piedi={piedi}
             soloPortiere={soloPortiere}
+            attributiDef={attributiDef ?? []}
+            attributiValori={attributiValori}
           />
         ) : (
           <div className="empty">Imposta prima una stagione attiva e almeno una categoria.</div>

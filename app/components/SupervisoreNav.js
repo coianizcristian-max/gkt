@@ -7,6 +7,7 @@ const VOCI = [
   { href: '/supervisore', label: 'Sito' },
   { href: '/supervisore/stagioni', label: 'Stagioni' },
   { href: '/supervisore/categorie', label: 'Categorie' },
+  { href: '/supervisore/attributi', label: 'Attributi' },
   { href: '/supervisore/elenchi', label: 'Elenchi' },
   { href: '/supervisore/inviti', label: 'Inviti' },
   { href: '/supervisore/funzionalita', label: 'Funzionalità' },

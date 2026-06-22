@@ -23,6 +23,9 @@ export default async function NuovoPortierePage() {
       .sort((a, b) => a.ordine - b.ordine)
   }
 
+  const { data: attributiDef } = await supabase
+    .from('attributi_definizioni').select('*').eq('attivo', true).order('ordine')
+
   return (
     <>
       <div className="topbar">
@@ -31,7 +34,7 @@ export default async function NuovoPortierePage() {
       </div>
       <div className="content">
         {stagione && categorie.length > 0 ? (
-          <PortiereForm categorie={categorie} stagioneId={stagione.id} piedi={piedi} />
+          <PortiereForm categorie={categorie} stagioneId={stagione.id} piedi={piedi} attributiDef={attributiDef ?? []} />
         ) : (
           <div className="empty">Imposta prima una stagione attiva e almeno una categoria.</div>
         )}

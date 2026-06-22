@@ -4,6 +4,33 @@ import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
+export async function generateMetadata({ params }) {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: profilo } = await supabase
+    .from('profili')
+    .select('nome_completo, bio, citta, foto_url')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (!profilo) return { title: 'Allenatore non trovato' }
+
+  const nome = profilo.nome_completo || 'Allenatore'
+  const desc = profilo.bio
+    ? profilo.bio.slice(0, 155)
+    : `Preparatore portieri${profilo.citta ? ' a ' + profilo.citta : ''}. Scopri esperienze e certificazioni su GKT.`
+
+  return {
+    title: `${nome}${profilo.citta ? ' — ' + profilo.citta : ''}`,
+    description: desc,
+    openGraph: {
+      title: `${nome} | Preparatore portieri`,
+      description: desc,
+      images: profilo.foto_url ? [profilo.foto_url] : undefined,
+    },
+  }
+}
+
 export default async function ProfiloAllenatorePublicPage({ params }) {
   const { id } = await params
   const supabase = await createClient()
@@ -14,8 +41,10 @@ export default async function ProfiloAllenatorePublicPage({ params }) {
     .eq('id', id)
     .maybeSingle()
 
+  // Nota: il filtro "disponibile" è già applicato dalla RPC cerca_allenatori che genera i risultati.
+  // Qui controlliamo solo che il profilo esista e sia di tipo corretto, per evitare falsi 404
+  // quando il campo disponibile non è stato impostato esplicitamente nel DB.
   if (!profilo || (profilo.ruolo !== 'allenatore' && profilo.ruolo !== 'staff')) notFound()
-  if (!profilo.disponibile) notFound()
 
   // Fee contatto dal config supervisore
   const { data: feeRow } = await supabase
@@ -35,8 +64,19 @@ export default async function ProfiloAllenatorePublicPage({ params }) {
   const esperienze = Array.isArray(profilo.esperienze) ? profilo.esperienze.filter(Boolean) : []
   const certificati = Array.isArray(profilo.certificati) ? profilo.certificati.filter(Boolean) : []
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: profilo.nome_completo || 'Allenatore',
+    jobTitle: 'Preparatore portieri',
+    address: profilo.citta ? { '@type': 'PostalAddress', addressLocality: profilo.citta, addressCountry: 'IT' } : undefined,
+    description: profilo.bio || undefined,
+    image: profilo.foto_url || undefined,
+  }
+
   return (
     <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 20px' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Link href="/cerca-allenatori" className="link-inline" style={{ fontSize: 13 }}>← Torna alla ricerca</Link>
 
       {/* Header */}

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvento } from '@/app/components/PostHogProvider'
 
 export default function RegistratiClient({ token, datiInvito }) {
   const router = useRouter()
@@ -51,6 +52,7 @@ export default function RegistratiClient({ token, datiInvito }) {
         setError(signUpError.message)
       }
       setLoading(false)
+      trackEvento('registrazione_fallita', { tipo_invito: datiInvito?.tipo ?? null })
       return
     }
 
@@ -84,10 +86,12 @@ export default function RegistratiClient({ token, datiInvito }) {
 
     if (data.session) {
       // Sessione immediata (email confirm disabilitata): vai all'app
+      trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: false })
       router.push('/portieri')
       router.refresh()
     } else {
       // Email di conferma richiesta
+      trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: true })
       setMsg("Account creato! Controlla la tua email per confermare l'indirizzo, poi accedi.")
       setLoading(false)
     }

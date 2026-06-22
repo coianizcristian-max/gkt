@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvento } from '@/app/components/PostHogProvider'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,8 +22,10 @@ export default function LoginPage() {
     if (error) {
       setError('Email o password non corretti.')
       setLoading(false)
+      trackEvento('login_fallito')
       return
     }
+    trackEvento('login_riuscito')
     router.push('/portieri')
     router.refresh()
   }

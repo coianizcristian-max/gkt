@@ -71,8 +71,8 @@ export default async function Home() {
         </section>
       )}
 
-      {contenuti.map((c, idx) => (
-        <section className={`blocco ${idx % 2 ? 'blocco-rev' : ''}`} key={c.id}>
+      {contenuti.map((c) => (
+        <section className={`blocco ${c.foto_posizione === 'destra' ? 'blocco-rev' : ''}`} key={c.id}>
           {c.immagine_url && <div className="blocco-img"><img src={c.immagine_url} alt="" /></div>}
           <div className="blocco-testo">
             {c.titolo && <h2>{c.titolo}</h2>}

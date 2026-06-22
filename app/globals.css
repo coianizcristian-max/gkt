@@ -424,7 +424,7 @@ a { color: inherit; text-decoration: none; }
 
 .feature-img { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
 
-.blocco { display: flex; gap: 32px; align-items: center; padding: 36px 0; }
+.blocco { display: flex; gap: 32px; align-items: flex-start; padding: 36px 0; }
 .blocco-rev { flex-direction: row-reverse; }
 .blocco-img { flex: 1; min-width: 0; }
 .blocco-img img { width: 100%; border-radius: var(--r); display: block; }

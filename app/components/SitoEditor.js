@@ -14,6 +14,8 @@ const TIPI = [
 function SezioneCard({ sezione, onChanged }) {
   const router = useRouter()
   const [s, setS] = useState(sezione)
+  // foto_posizione default 'sinistra' per retrocompatibilità
+  const [fotoPos, setFotoPos] = useState(sezione.foto_posizione ?? 'sinistra')
   // Teniamo il file separato dall'URL — così se non si ricarica la foto il vecchio URL resta intatto
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(sezione.immagine_url || '')
@@ -47,6 +49,7 @@ function SezioneCard({ sezione, onChanged }) {
       const { error } = await supabase.from('sito_sezioni').update({
         tipo: s.tipo, ordine: Number(s.ordine) || 0, visibile: s.visibile,
         titolo: s.titolo || null, testo: s.testo || null, immagine_url,
+        foto_posizione: fotoPos,
       }).eq('id', s.id)
       if (error) throw error
       setFile(null); setDone(true); router.refresh()
@@ -101,6 +104,31 @@ function SezioneCard({ sezione, onChanged }) {
           <p style={{ fontSize: 11, color: 'var(--ink-soft)', margin: '6px 0 0' }}>
             Dimensioni consigliate: <b>{dimConsigliate}</b>
           </p>
+          {s.tipo === 'contenuto' && (
+            <div style={{ marginTop: 10 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                Posizione foto
+              </label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {['sinistra', 'destra'].map((pos) => (
+                  <button
+                    key={pos}
+                    type="button"
+                    onClick={() => { setFotoPos(pos); setDone(false) }}
+                    style={{
+                      padding: '5px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer',
+                      border: fotoPos === pos ? '2px solid var(--azzurro)' : '2px solid var(--linea)',
+                      background: fotoPos === pos ? 'rgba(10,126,194,0.08)' : 'var(--carta)',
+                      fontWeight: fotoPos === pos ? 700 : 400,
+                      color: fotoPos === pos ? 'var(--azzurro)' : 'var(--ink)',
+                    }}
+                  >
+                    {pos === 'sinistra' ? '◀ Sinistra' : 'Destra ▶'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <div className="sez-actions">

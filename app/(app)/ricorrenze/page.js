@@ -37,20 +37,37 @@ export default async function RicorrenzePage() {
   return (
     <>
       <div className="topbar">
-        <div className="eyebrow">Stagione {stagione?.nome ?? '\u2014'}</div>
+        <div className="eyebrow">Stagione {stagione?.nome ?? '—'}</div>
         <h1>Ricorrenze allenamenti</h1>
       </div>
       <div className="content">
         <Guida titolo="Come funzionano le ricorrenze">
-          Imposta per ogni categoria il giorno e l&apos;orario fisso di allenamento settimanale.
-          Quando hai configurato tutti i giorni, clicca &ldquo;Genera allenamenti stagione&rdquo; per creare automaticamente tutte le date nel calendario.
-          Le date già presenti non vengono duplicate: puoi rigenerare senza problemi dopo modifiche.
-          Ricorda di impostare prima le date di inizio e fine stagione in Stagioni.
+          <p>
+            Imposta per ogni categoria il giorno e l&apos;orario fisso di allenamento settimanale.
+            Quando hai configurato tutti i giorni, clicca &ldquo;Genera allenamenti stagione&rdquo; per creare
+            automaticamente tutte le date nel calendario. Le date già presenti non vengono duplicate:
+            puoi rigenerare senza problemi dopo modifiche. Ricorda di impostare prima le date di inizio
+            e fine stagione in Stagioni.
+          </p>
+          <p style={{ marginTop: 10 }}>
+            Per ogni categoria puoi aggiungere più ricorrenze (es. martedì + giovedì), modificare
+            giorno e orario in qualsiasi momento, oppure eliminare una singola ricorrenza con il
+            pulsante <strong>Elimina</strong> sulla riga corrispondente. Le ricorrenze si riferiscono
+            solo alla pianificazione futura: eliminare una ricorrenza non cancella gli allenamenti già
+            generati nel calendario.
+          </p>
+          <p style={{ marginTop: 10 }}>
+            Nella sezione <strong>🗑 Eliminazione massiva</strong> in fondo alla pagina puoi cancellare
+            in blocco allenamenti o partite in un intervallo di date. Puoi filtrare per categoria,
+            scegliere se eliminare solo quelli <em>senza valutazioni</em> (tipicamente inseriti per
+            errore), solo quelli <em>con valutazioni</em>, oppure tutti indistintamente.
+            L&apos;operazione è irreversibile: viene sempre richiesta una conferma prima di procedere.
+          </p>
         </Guida>
         {stagione
           ? (canRicorrenze
-              ? <RicorrenzeManager stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} />
-              : <PaywallBanner chiave="ricorrenze_genera" label="Generazione automatica ricorrenze" />)
+            ? <RicorrenzeManager stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} />
+            : <PaywallBanner chiave="ricorrenze_genera" label="Generazione automatica ricorrenze" />)
           : <div className="empty">Nessuna stagione attiva.</div>}
       </div>
     </>

@@ -43,7 +43,7 @@ export async function POST(request) {
       // Filtro valutazioni: cerco quali allenamenti hanno almeno una valutazione
       if (filtroVal === 'senza' || filtroVal === 'con') {
         const { data: valRows, error: valErr } = await supabase
-          .from('valutazioni_allenamento')
+          .from('valutazioni')
           .select('allenamento_id')
           .in('allenamento_id', ids)
         if (valErr) throw valErr

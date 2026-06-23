@@ -67,7 +67,7 @@ function SezioneCard({ sezione, onChanged }) {
     onChanged()
   }
 
-  const dimConsigliate = s.tipo === 'hero' ? '1400×600 px' : s.tipo === 'contenuto' ? '800×600 px' : s.tipo === 'banner' ? 'larghezza libera' : '400×300 px'
+  const dimConsigliate = s.tipo === 'hero' ? '1400×600 px' : s.tipo === 'contenuto' ? '800×600 px' : s.tipo === 'banner' ? '1400 px di larghezza (tutta la larghezza del sito) × altezza scelta sotto' : '400×300 px'
 
   return (
     <div className="sez-card">
@@ -110,8 +110,14 @@ function SezioneCard({ sezione, onChanged }) {
       {s.tipo === 'banner' && (
         <div className="field">
           <label>Altezza banner</label>
+          <p style={{ fontSize: 12, color: 'var(--ink-soft)', margin: '0 0 8px', lineHeight: 1.5 }}>
+            💡 Il banner occupa sempre <b>tutta la larghezza del sito</b>, sia su desktop che su mobile.
+            La larghezza si adatta automaticamente allo schermo.
+            Scegli solo l&apos;altezza in base a quanto spazio vuoi dare al contenuto:
+            200px per un banner sottile con solo testo, 400-600px se ha anche un&apos;immagine di sfondo.
+          </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {[200, 300, 400, 600].map((h) => (
+            {[{ h: 200, label: '200 px — sottile' }, { h: 300, label: '300 px — standard' }, { h: 400, label: '400 px — medio' }, { h: 600, label: '600 px — grande' }].map(({ h, label }) => (
               <button key={h} type="button"
                 onClick={() => { setS((p) => ({ ...p, altezza_px: h })); setDone(false) }}
                 style={{
@@ -122,7 +128,7 @@ function SezioneCard({ sezione, onChanged }) {
                   color: (s.altezza_px ?? 300) === h ? 'var(--azzurro)' : 'var(--ink)',
                 }}
               >
-                {h}px
+                {label}
               </button>
             ))}
           </div>

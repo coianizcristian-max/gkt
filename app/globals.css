@@ -356,8 +356,9 @@ a { color: inherit; text-decoration: none; }
 /* ── Sezione contenuto (testo + foto) ── */
 .landing-blocco {
   padding: 72px 32px;
+  background: #fff;
 }
-.landing-blocco:nth-child(even) { background: var(--landing-bg-alt); }
+.landing-blocco.bg-alt { background: var(--landing-bg-alt); }
 .blocco { display: flex; gap: 56px; align-items: flex-start; padding: 0; }
 .blocco-rev { flex-direction: row-reverse; }
 .blocco-img { flex: 1; min-width: 0; }

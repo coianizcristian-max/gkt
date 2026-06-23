@@ -105,7 +105,7 @@ export default async function Home() {
 
         } else if (tipo === 'contenuto') {
           return sezs.map((c, ci) => (
-            <div key={c.id} className="landing-blocco">
+            <div key={c.id} className={`landing-blocco${ci % 2 === 1 ? ' bg-alt' : ''}`}>
               <div className="landing-inner">
                 <div className={`blocco ${c.foto_posizione === 'destra' ? 'blocco-rev' : ''}`}>
                   {c.immagine_url && <div className="blocco-img"><img src={c.immagine_url} alt="" /></div>}

@@ -1329,3 +1329,29 @@ a.brand { text-decoration: none; color: inherit; }
   .dash-grid { grid-template-columns: 1fr; }
 }
 
+
+/* ===== Pagine legali (privacy, cookie, termini) ===== */
+.legal-page { min-height: 100vh; background: var(--carta); padding: 40px 20px 80px; }
+.legal-content { max-width: 760px; margin: 0 auto; }
+.legal-content h1 { font-size: 28px; margin-bottom: 4px; }
+.legal-updated { color: var(--ink-soft); font-size: 13px; margin: 0 0 32px; }
+.legal-content section { margin-bottom: 28px; }
+.legal-content h2 { font-size: 18px; margin: 0 0 10px; color: var(--ink); border-bottom: 1px solid var(--linea); padding-bottom: 6px; }
+.legal-content h3 { font-size: 15px; margin: 14px 0 6px; }
+.legal-content p { color: var(--ink-soft); line-height: 1.7; margin: 0 0 10px; }
+.legal-content ul { color: var(--ink-soft); line-height: 1.8; padding-left: 1.4rem; margin: 0 0 10px; }
+.legal-content a { color: var(--azzurro); }
+.legal-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+.legal-table th { background: var(--carta); padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--linea); }
+.legal-table td { padding: 8px 10px; border-bottom: 1px solid var(--linea); color: var(--ink-soft); vertical-align: top; }
+
+/* Footer home con link legali */
+.landing-foot { text-align: center; padding: 20px; font-size: 12px; color: var(--ink-soft); display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; }
+.landing-foot a { color: var(--ink-soft); text-decoration: none; }
+.landing-foot a:hover { color: var(--azzurro); }
+.landing-foot-sep { opacity: 0.4; }
+
+/* Footer area riservata */
+.app-foot { grid-column: 2; padding: 12px 24px; border-top: 1px solid var(--linea); font-size: 11px; color: var(--ink-soft); display: flex; gap: 10px; align-items: center; }
+.app-foot a { color: var(--ink-soft); text-decoration: none; }
+.app-foot a:hover { color: var(--azzurro); }

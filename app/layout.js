@@ -1,6 +1,7 @@
 import { Barlow, Inter } from 'next/font/google'
 import './globals.css'
 import PostHogProvider from '@/app/components/PostHogProvider'
+import CookieBanner from '@/app/components/CookieBanner'
 
 const barlow = Barlow({
   subsets: ['latin'],
@@ -56,7 +57,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="it" className={`${barlow.variable} ${inter.variable}`}>
-      <body><PostHogProvider>{children}</PostHogProvider></body>
+      <body><PostHogProvider>{children}</PostHogProvider><CookieBanner /></body>
     </html>
   )
 }

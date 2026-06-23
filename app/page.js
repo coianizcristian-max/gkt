@@ -146,7 +146,15 @@ export default async function Home() {
 
       <CercaAllenatoriBox />
 
-      <footer className="landing-foot">GKT · Gestione portieri</footer>
+      <footer className="landing-foot">
+        GKT · Gestione portieri
+        <span className="landing-foot-sep">·</span>
+        <a href="/privacy-policy">Privacy Policy</a>
+        <span className="landing-foot-sep">·</span>
+        <a href="/cookie-policy">Cookie Policy</a>
+        <span className="landing-foot-sep">·</span>
+        <a href="/termini-di-servizio">Termini di Servizio</a>
+      </footer>
     </div>
   )
 }

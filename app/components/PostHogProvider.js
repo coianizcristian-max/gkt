@@ -9,6 +9,9 @@ let ph = null // istanza posthog, caricata lazy solo lato client
 async function getPosthog() {
   if (ph) return ph
   if (typeof window === 'undefined') return null
+  // Rispetta il consenso cookie GDPR — non caricare se non accettato
+  const consenso = localStorage.getItem('gkt-cookie-consent')
+  if (consenso !== 'accepted') return null
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
   if (!key) return null
   try {

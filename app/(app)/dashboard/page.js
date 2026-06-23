@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Guida from '@/app/components/Guida'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
@@ -167,6 +168,18 @@ export default async function DashboardPage() {
             🎟 Periodo gratuito: {couponGiorni} giorni rimasti
           </div>
         )}
+
+        <Guida titolo="Come leggere la dashboard">
+          <p>
+            La dashboard è il punto di partenza: mostra subito gli <strong>allenamenti e le partite passate ancora da valutare</strong>
+            (in rosso), il <strong>prossimo allenamento</strong> in programma e le <strong>partite nei prossimi 7 giorni</strong>.
+          </p>
+          <p style={{marginTop:10}}>
+            Il riquadro giallo <strong>&ldquo;Portieri da attenzionare&rdquo;</strong> segnala automaticamente i portieri
+            con almeno 2 assenze nelle ultime 3 convocazioni, un calo di rendimento significativo (−1.5 punti di media)
+            o un obiettivo con scadenza superata non ancora raggiunto.
+          </p>
+        </Guida>
 
         {/* Widget principale: cosa devo fare oggi */}
         {totDaValutare > 0 && (

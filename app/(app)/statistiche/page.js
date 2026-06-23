@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import Guida from '@/app/components/Guida'
 import StatisticheClient from './StatisticheClient'
 
 export const dynamic = 'force-dynamic'
@@ -107,6 +108,22 @@ export default async function StatistichePage() {
         <div><div className="eyebrow">Stagione {stagione.nome}</div><h1>Statistiche</h1></div>
       </div>
       <div className="content">
+        <Guida titolo="Come leggere le statistiche">
+          <p>
+            Le statistiche mostrano per ogni portiere: <strong>presenze</strong> sugli allenamenti totali della categoria,
+            <strong> media voto</strong> degli allenamenti e delle partite di campionato (le amichevoli sono escluse dalle medie),
+            <strong> clean sheet</strong> (partite giocate senza gol subiti) e <strong>punti</strong> totali accumulati nelle partite.
+          </p>
+          <p style={{marginTop:10}}>
+            Il tab <strong>Feedback</strong> raccoglie tutti i commenti scritti dai portieri nelle loro auto-valutazioni,
+            con il voto che ogni portiere ha dato alla propria seduta. È utile per confrontare la percezione del portiere
+            con il voto che hai assegnato tu come staff.
+          </p>
+          <p style={{marginTop:10}}>
+            Le statistiche si riferiscono sempre alla <strong>stagione attiva</strong>. Per consultare stagioni precedenti
+            usa la sezione <a href="/archivio" className="link-inline">Archivio</a>.
+          </p>
+        </Guida>
         <StatisticheClient
           stats={stats}
           categorieOrd={categorieOrd}

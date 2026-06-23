@@ -50,9 +50,20 @@ export default async function EserciziPage() {
       </div>
       <div className="content">
         <Guida titolo="Come usare la libreria esercizi">
-          Qui trovi i tuoi esercizi privati. Se spunti &ldquo;Pubblico&rdquo; su un esercizio lo rendi visibile agli altri allenatori.
-          Nella sezione &ldquo;Pubblici preferiti&rdquo; trovi gli esercizi di altri allenatori che hai salvato con ★ dalla libreria pubblica.
-          Le tipologie vengono gestite da Supervisore → Elenchi.
+          <p>
+            Qui trovi i tuoi <strong>esercizi privati</strong>. Crea un esercizio con titolo, descrizione, tipologia e immagine:
+            potrai poi aggiungerlo a qualsiasi allenamento direttamente dall&apos;interno della seduta (tab Esercizi nell&apos;allenamento).
+          </p>
+          <p style={{marginTop:10}}>
+            Se spunti <strong>&ldquo;Pubblico&rdquo;</strong> su un esercizio lo rendi visibile agli altri allenatori GKT
+            nella libreria condivisa. Nella sezione <strong>&ldquo;Pubblici preferiti&rdquo;</strong> trovi gli esercizi
+            di altri allenatori che hai salvato con ★ dalla libreria pubblica: puoi usarli nei tuoi allenamenti senza doverli ricreare.
+          </p>
+          <p style={{marginTop:10}}>
+            Le <strong>tipologie</strong> degli esercizi (es. tecnica, tattica, atletica…) vengono gestite da
+            <a href="/supervisore/elenchi" className="link-inline"> Supervisore → Elenchi</a>.
+            Gli esercizi archiviati non appaiono nell&apos;elenco principale ma restano collegati agli allenamenti dove erano stati inseriti.
+          </p>
         </Guida>
         <EserciziManager
           esercizi={esercizi ?? []}

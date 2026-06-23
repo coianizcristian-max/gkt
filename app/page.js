@@ -121,16 +121,26 @@ export default async function Home() {
         } else if (tipo === 'banner') {
           return sezs.map((b) => {
             const altezza = b.altezza_px ?? 300
+            // background-size: contain mostra l'intera immagine senza tagliarla
+            // background-color serve come sfondo per le aree vuote attorno all'immagine
             const bgStyle = b.immagine_url
-              ? { backgroundImage: `url(${b.immagine_url})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#0a5a8a' }
+              ? {
+                  backgroundImage: `url(${b.immagine_url})`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundColor: '#0d2137',
+                }
               : { backgroundColor: '#0a5a8a' }
             const contenuto = (
-              <div key={b.id} className="landing-banner" style={{ height: altezza, ...bgStyle }}>
-                {b.immagine_url && <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,33,55,.55)' }} />}
-                <div className="landing-inner" style={{ height: '100%' }}>
-                  {b.titolo && <h2>{b.titolo}</h2>}
-                  {b.testo && <p>{renderTesto(b.testo)}</p>}
-                </div>
+              <div key={b.id} className="landing-banner" style={{ minHeight: altezza, ...bgStyle }}>
+                {/* Nessun overlay — l'immagine deve vedersi come caricata */}
+                {(b.titolo || b.testo) && (
+                  <div className="landing-banner-inner">
+                    {b.titolo && <h2>{b.titolo}</h2>}
+                    {b.testo && <p>{renderTesto(b.testo)}</p>}
+                  </div>
+                )}
               </div>
             )
             return b.link_url

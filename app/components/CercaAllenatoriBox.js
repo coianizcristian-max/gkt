@@ -115,34 +115,39 @@ export default function CercaAllenatoriBox() {
                     cursor: 'pointer',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                  {/* Riga 1: avatar + nome + città */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{
-                      width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+                      width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
                       overflow: 'hidden', background: 'var(--azzurro)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       {a.foto_url
                         ? <img src={a.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span style={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>{(a.nome || '?').charAt(0)}</span>}
+                        : <span style={{ color: '#fff', fontWeight: 700, fontSize: 17 }}>{(a.nome || '?').charAt(0)}</span>}
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nome || 'Allenatore'}</div>
-                      <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.nome || 'Allenatore'}</div>
+                      <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 1 }}>
                         {a.citta ? a.citta.toUpperCase() : ''}{kmLabel}
                       </div>
                     </div>
-                    <span style={{ fontSize: 13, color: 'var(--azzurro)', fontWeight: 600, flexShrink: 0, marginLeft: 'auto' }}>
-                      Vedi profilo →
-                    </span>
                   </div>
+                  {/* Riga 2: bio (se presente) */}
                   {a.bio && (
                     <p style={{
-                      margin: '10px 0 0', color: 'var(--ink-soft)', fontSize: 13, lineHeight: 1.5,
+                      margin: '8px 0 6px', color: 'var(--ink-soft)', fontSize: 13, lineHeight: 1.5,
                       display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
                     }}>
                       {a.bio}
                     </p>
                   )}
+                  {/* Riga 3: Vedi profilo sempre su riga propria */}
+                  <div style={{ marginTop: 8, textAlign: 'right' }}>
+                    <span style={{ fontSize: 13, color: 'var(--azzurro)', fontWeight: 600 }}>
+                      Vedi profilo →
+                    </span>
+                  </div>
                 </button>
               )
             })}

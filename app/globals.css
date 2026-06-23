@@ -368,8 +368,14 @@ a { color: inherit; text-decoration: none; }
 .blocco-testo p { color: #4a6070; font-size: 17px; line-height: 1.7; }
 
 /* ── Banner ── */
-.landing-banner { position: relative; overflow: hidden; }
-.landing-banner .landing-inner { position: relative; z-index: 1; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding-top: 0; padding-bottom: 0; }
+.landing-banner {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.landing-banner-inner { position: relative; z-index: 1; text-align: center; padding: 32px 20px; max-width: 700px; }
 .landing-banner h2 { color: #fff; font-size: 30px; margin: 0 0 10px; }
 .landing-banner p { color: rgba(255,255,255,.88); font-size: 17px; max-width: 640px; margin: 0; }
 
@@ -418,7 +424,10 @@ a { color: inherit; text-decoration: none; }
 
 /* ── Responsive ── */
 @media (max-width: 860px) {
-  .landing-top { padding: 0 20px; }
+  .landing-top { padding: 0 16px; }
+  .landing-top .brand b { font-size: 15px; }
+  .landing-top .brand span { font-size: 11px; }
+  .link-accedi { padding: 7px 14px; font-size: 13px; }
   .landing-hero { padding: 52px 20px 48px; }
   .landing-features { padding: 48px 20px; }
   .landing-blocco { padding: 52px 20px; background: #fff; }
@@ -430,12 +439,15 @@ a { color: inherit; text-decoration: none; }
   .landing-blocco.bg-alt + .landing-features { border-top: 6px solid #dce8f0; }
 }
 @media (max-width: 600px) {
+  .landing-top { padding: 0 14px; height: 54px; }
   .features { grid-template-columns: 1fr; }
   .blocco, .blocco-rev { flex-direction: column; }
   .hero-title { font-size: 30px; }
-  .landing-foot { padding: 20px; }
+  .landing-foot { padding: 20px 16px; }
   /* Su mobile il bottone Cerca va a capo e occupa tutta la larghezza */
   .landing-cerca .btn { width: 100%; }
+  /* Banner mobile: contain per non tagliare immagini portrait */
+  .landing-banner { background-size: contain !important; background-color: #0d2137 !important; }
 }
 
 .card-portiere .nome .maglia {

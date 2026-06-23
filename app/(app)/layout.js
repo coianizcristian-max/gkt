@@ -118,6 +118,7 @@ export default async function AppLayout({ children }) {
         <NavLink href="/archivio">Archivio</NavLink>
         <NavLink href="/suggerimenti">Suggerimenti</NavLink>
         <NavLink href="/newsletter">Newsletter</NavLink>
+        <NavLink href="/account">👤 Account</NavLink>
         {isSupervisore && <NavLink href="/supervisore">Supervisore</NavLink>}
         {mostraAbbonati && <NavLink href="/abbonati">🔓 Abbonati</NavLink>}
         <div className="sidebar-foot">

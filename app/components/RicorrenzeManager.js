@@ -142,30 +142,37 @@ function RicorrenzaRiga({ ricorrenza, onChanged }) {
 // ─── Eliminazione massiva allenamenti / partite ───────────────────────────────
 function EliminazioneRapida({ stagione, categorie }) {
   const router = useRouter()
-  const [tipo, setTipo] = useState('allenamenti')       // 'allenamenti' | 'partite'
+  const [tipo, setTipo] = useState('allenamenti') // 'allenamenti' | 'partite'
   const [dal, setDal] = useState('')
   const [al, setAl] = useState('')
   const [categoriaId, setCategoriaId] = useState('tutte')
+  const [filtroVal, setFiltroVal] = useState('tutti') // 'tutti' | 'senza' | 'con'
   const [busy, setBusy] = useState(false)
   const [risultato, setRisultato] = useState(null)
   const [errore, setErrore] = useState('')
 
   const tipoLabel = tipo === 'allenamenti' ? 'allenamenti' : 'partite'
 
+  const filtroValLabel = {
+    tutti: 'tutti',
+    senza: 'solo quelli senza valutazioni',
+    con: 'solo quelli con valutazioni',
+  }[filtroVal]
+
   async function elimina() {
     if (!dal || !al) { setErrore('Seleziona entrambe le date.'); return }
     if (dal > al) { setErrore('La data "dal" deve essere precedente alla data "al".'); return }
 
-    // Costruisce il messaggio del popup di conferma
     const catLabel = categoriaId === 'tutte'
       ? 'tutte le categorie'
       : `la categoria "${categorie.find(c => c.id === categoriaId)?.nome ?? categoriaId}"`
 
     const dalLabel = new Date(dal + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
-    const alLabel  = new Date(al  + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+    const alLabel = new Date(al + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
 
     const confermato = window.confirm(
-      `⚠️ Sei sicuro di voler eliminare i ${tipoLabel} dal ${dalLabel} al ${alLabel} per ${catLabel}?\n\n` +
+      `⚠️ Sei sicuro di voler eliminare i ${tipoLabel} dal ${dalLabel} al ${alLabel} per ${catLabel}?\n` +
+      `Filtro: ${filtroValLabel}.\n\n` +
       `Questa operazione è irreversibile e non può essere annullata.`
     )
     if (!confermato) return
@@ -175,7 +182,7 @@ function EliminazioneRapida({ stagione, categorie }) {
       const res = await fetch('/api/elimina-massiva', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo, dal, al, categoriaId, stagioneId: stagione.id }),
+        body: JSON.stringify({ tipo, dal, al, categoriaId, stagioneId: stagione.id, filtroVal }),
       })
       const body = await res.json()
       if (!res.ok) { setErrore(body.error ?? 'Errore.'); setBusy(false); return }
@@ -190,6 +197,8 @@ function EliminazioneRapida({ stagione, categorie }) {
       <h3 style={{ marginTop: 0, marginBottom: 4 }}>🗑 Eliminazione massiva</h3>
       <p className="sub-intro" style={{ marginBottom: 16 }}>
         Elimina in blocco allenamenti o partite in un intervallo di date, per tutte le categorie o una sola.
+        Puoi scegliere di eliminare solo quelli <strong>senza valutazioni</strong> (utile se hai inserito per errore date sbagliate)
+        oppure solo quelli <strong>con valutazioni</strong>.
       </p>
 
       {errore && <div className="err" style={{ marginBottom: 12 }}>{errore}</div>}
@@ -199,8 +208,8 @@ function EliminazioneRapida({ stagione, categorie }) {
         </div>
       )}
 
-      {/* Tipo */}
       <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
+        {/* Tipo */}
         <div className="field" style={{ margin: 0 }}>
           <label>Tipo</label>
           <select value={tipo} onChange={(e) => { setTipo(e.target.value); setRisultato(null) }}>
@@ -217,6 +226,16 @@ function EliminazioneRapida({ stagione, categorie }) {
             {categorie.map((c) => (
               <option key={c.id} value={c.id}>{c.nome}</option>
             ))}
+          </select>
+        </div>
+
+        {/* Filtro valutazioni */}
+        <div className="field" style={{ margin: 0 }}>
+          <label>Valutazioni</label>
+          <select value={filtroVal} onChange={(e) => { setFiltroVal(e.target.value); setRisultato(null) }}>
+            <option value="tutti">Tutti</option>
+            <option value="senza">Solo senza valutazioni</option>
+            <option value="con">Solo con valutazioni</option>
           </select>
         </div>
 

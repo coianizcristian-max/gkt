@@ -2,6 +2,7 @@ import { Barlow, Inter } from 'next/font/google'
 import './globals.css'
 import PostHogProvider from '@/app/components/PostHogProvider'
 import CookieBanner from '@/app/components/CookieBanner'
+import PwaInstaller from '@/app/components/PwaInstaller'
 
 const barlow = Barlow({
   subsets: ['latin'],
@@ -24,6 +25,12 @@ export const metadata = {
   authors: [{ name: 'GKT' }],
   applicationName: 'GKT',
   formatDetection: { telephone: false },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'GKT',
+  },
   openGraph: {
     type: 'website',
     locale: 'it_IT',
@@ -57,7 +64,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="it" className={`${barlow.variable} ${inter.variable}`}>
-      <body><PostHogProvider>{children}</PostHogProvider><CookieBanner /></body>
+      <body><PostHogProvider>{children}</PostHogProvider><CookieBanner /><PwaInstaller /></body>
     </html>
   )
 }

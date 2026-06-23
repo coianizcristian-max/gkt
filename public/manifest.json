@@ -1,0 +1,53 @@
+{
+  "name": "GKT — Gestionale Allenamento Portieri",
+  "short_name": "GKT",
+  "description": "Il gestionale professionale per allenatori dei portieri. Gestisci allenamenti, valutazioni, statistiche e partite.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0a7ec2",
+  "theme_color": "#0a7ec2",
+  "orientation": "portrait-primary",
+  "lang": "it",
+  "scope": "/",
+  "categories": ["sports", "productivity"],
+  "icons": [
+    { "src": "/icons/icon-72x72.svg",   "sizes": "72x72",   "type": "image/svg+xml" },
+    { "src": "/icons/icon-96x96.svg",   "sizes": "96x96",   "type": "image/svg+xml" },
+    { "src": "/icons/icon-128x128.svg", "sizes": "128x128", "type": "image/svg+xml" },
+    { "src": "/icons/icon-144x144.svg", "sizes": "144x144", "type": "image/svg+xml" },
+    { "src": "/icons/icon-152x152.svg", "sizes": "152x152", "type": "image/svg+xml" },
+    { "src": "/icons/icon-192x192.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "/icons/icon-384x384.svg", "sizes": "384x384", "type": "image/svg+xml" },
+    { "src": "/icons/icon-512x512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/icon-192x192-maskable.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "maskable" },
+    { "src": "/icons/icon-512x512-maskable.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/screen-dashboard.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard allenatore"
+    },
+    {
+      "src": "/screenshots/screen-portieri.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Gestione portieri"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nuovo allenamento",
+      "url": "/calendario/nuovo",
+      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "I miei portieri",
+      "url": "/portieri",
+      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <!-- Sfondo -->
+  <rect width="1080" height="1920" fill="#0d2137"/>
+  <!-- Cerchi decorativi -->
+  <circle cx="900" cy="150" r="280" fill="white" opacity="0.03"/>
+  <circle cx="180" cy="1770" r="220" fill="white" opacity="0.03"/>
+
+  <!-- Logo GKT in cima -->
+  <rect x="60" y="72" width="56" height="56" rx="12" fill="#0a7ec2"/>
+  <text x="88" y="109" fill="white" font-size="22" font-weight="700" font-family="Arial, sans-serif" text-anchor="middle">GK</text>
+  <text x="132" y="97" fill="white" font-size="26" font-weight="700" font-family="Arial, sans-serif">GKT</text>
+  <text x="132" y="120" fill="white" font-size="17" opacity="0.6" font-family="Arial, sans-serif">Gestionale Allenamento Portieri</text>
+
+  <!-- Cornice telefono -->
+  <rect x="120" y="175" width="840" height="1380" rx="52" fill="#1a2a3a" opacity="0.6"/>
+  <rect x="132" y="187" width="816" height="1356" rx="44" fill="#f5f6f7"/>
+  <!-- Notch -->
+  <rect x="390" y="187" width="300" height="36" rx="0" fill="#f5f6f7"/>
+  <rect x="440" y="192" width="200" height="26" rx="13" fill="#1a2a3a" opacity="0.15"/>
+
+  <!-- Contenuto UI reale -->
+  <clipPath id="screen">
+    <rect x="132" y="223" width="816" height="1308" rx="8"/>
+  </clipPath>
+  <g clip-path="url(#screen)">
+    
+  <!-- Barra app -->
+  <rect x="132" y="223" width="816" height="72" fill="#14202b"/>
+  <rect x="132" y="223" width="6" height="72" fill="#0a7ec2"/>
+  <text x="160" y="252" fill="white" font-size="15" opacity="0.6" font-family="Arial">STAGIONE 2025-26</text>
+  <text x="160" y="278" fill="white" font-size="26" font-weight="700" font-family="Arial">Ciao 👋</text>
+
+  <!-- Sfondo contenuto -->
+  <rect x="132" y="295" width="816" height="1236" fill="#f0f2f5"/>
+
+  <!-- Card "da valutare" -->
+  <rect x="152" y="315" width="776" height="54" rx="10" fill="#fff3f0"/>
+  <text x="175" y="350" fill="#c0392b" font-size="22" font-weight="700" font-family="Arial">⚠ 10 cose da valutare</text>
+
+  <!-- Lista allenamenti -->
+  <rect x="152" y="379" width="776" height="50" rx="8" fill="white"/>
+  <text x="175" y="410" fill="#333" font-size="19" font-family="Arial">🏃 Allenamento — Prima Squadra</text>
+  <text x="895" y="410" fill="#999" font-size="17" font-family="Arial" text-anchor="end">lun 22 giu</text>
+  <line x1="175" y1="429" x2="906" y2="429" stroke="#eee" stroke-width="1"/>
+
+  <rect x="152" y="430" width="776" height="50" rx="0" fill="white"/>
+  <text x="175" y="461" fill="#333" font-size="19" font-family="Arial">🏃 Allenamento — Prima Squadra</text>
+  <text x="895" y="461" fill="#999" font-size="17" font-family="Arial" text-anchor="end">mer 27 mag</text>
+  <line x1="175" y1="479" x2="906" y2="479" stroke="#eee" stroke-width="1"/>
+
+  <rect x="152" y="480" width="776" height="50" rx="0" fill="white"/>
+  <text x="175" y="511" fill="#333" font-size="19" font-family="Arial">🏃 Allenamento — Prima Squadra</text>
+  <text x="895" y="511" fill="#999" font-size="17" font-family="Arial" text-anchor="end">lun 25 mag</text>
+  <line x1="175" y1="529" x2="906" y2="529" stroke="#eee" stroke-width="1"/>
+
+  <rect x="152" y="530" width="776" height="50" rx="0" fill="white"/>
+  <text x="175" y="561" fill="#333" font-size="19" font-family="Arial">🌍 Partita vs PROVA — Prima Squadra</text>
+  <text x="895" y="561" fill="#999" font-size="17" font-family="Arial" text-anchor="end">dom 21 giu</text>
+
+  <!-- Card portieri da attenzionare -->
+  <rect x="152" y="600" width="776" height="54" rx="10" fill="#fff8e6"/>
+  <text x="175" y="635" fill="#b8860b" font-size="22" font-weight="700" font-family="Arial">👁 4 portieri da attenzionare</text>
+
+  <rect x="152" y="665" width="776" height="72" rx="10" fill="white"/>
+  <circle cx="200" cy="701" r="22" fill="#0a7ec2"/>
+  <text x="200" y="709" fill="white" font-size="16" font-weight="700" font-family="Arial" text-anchor="middle">MP</text>
+  <text x="234" y="694" fill="#14202b" font-size="20" font-weight="700" font-family="Arial">Marco Pozza</text>
+  <text x="234" y="720" fill="#e74c3c" font-size="16" font-family="Arial">2 assenze nelle ultime 3 convocazioni</text>
+
+  <rect x="152" y="748" width="776" height="72" rx="10" fill="white"/>
+  <circle cx="200" cy="784" r="22" fill="#1a5c38"/>
+  <text x="200" y="792" fill="white" font-size="16" font-weight="700" font-family="Arial" text-anchor="middle">JB</text>
+  <text x="234" y="777" fill="#14202b" font-size="20" font-weight="700" font-family="Arial">Jacopo Barban</text>
+  <text x="234" y="803" fill="#e74c3c" font-size="16" font-family="Arial">3 assenze nelle ultime 3 convocazioni</text>
+
+  </g>
+
+  <!-- Testi in fondo -->
+  <rect x="0" y="1580" width="1080" height="340" fill="#0d2137"/>
+  <text x="60" y="1650" fill="white" font-size="52" font-weight="700"
+    font-family="Arial, sans-serif" letter-spacing="-1">Tutto sotto controllo</text>
+  <text x="60" y="1720" fill="white" font-size="30" opacity="0.75"
+    font-family="Arial, sans-serif">Dashboard con le priorità del giorno:</text>
+  <text x="60" y="1762" fill="white" font-size="30" opacity="0.75" font-family="Arial, sans-serif">da valutare, portieri da seguire</text>
+  <text x="1020" y="1860" fill="white" opacity="0.3" font-size="22"
+    font-family="Arial, sans-serif" text-anchor="end">gkt2026.vercel.app</text>
+</svg>

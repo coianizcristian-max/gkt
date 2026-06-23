@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <!-- Sfondo -->
+  <rect width="1080" height="1920" fill="#0d2137"/>
+  <!-- Cerchi decorativi -->
+  <circle cx="900" cy="150" r="280" fill="white" opacity="0.03"/>
+  <circle cx="180" cy="1770" r="220" fill="white" opacity="0.03"/>
+
+  <!-- Logo GKT in cima -->
+  <rect x="60" y="72" width="56" height="56" rx="12" fill="#0a7ec2"/>
+  <text x="88" y="109" fill="white" font-size="22" font-weight="700" font-family="Arial, sans-serif" text-anchor="middle">GK</text>
+  <text x="132" y="97" fill="white" font-size="26" font-weight="700" font-family="Arial, sans-serif">GKT</text>
+  <text x="132" y="120" fill="white" font-size="17" opacity="0.6" font-family="Arial, sans-serif">Gestionale Allenamento Portieri</text>
+
+  <!-- Cornice telefono -->
+  <rect x="120" y="175" width="840" height="1380" rx="52" fill="#1a2a3a" opacity="0.6"/>
+  <rect x="132" y="187" width="816" height="1356" rx="44" fill="#f5f6f7"/>
+  <!-- Notch -->
+  <rect x="390" y="187" width="300" height="36" rx="0" fill="#f5f6f7"/>
+  <rect x="440" y="192" width="200" height="26" rx="13" fill="#1a2a3a" opacity="0.15"/>
+
+  <!-- Contenuto UI reale -->
+  <clipPath id="screen">
+    <rect x="132" y="223" width="816" height="1308" rx="8"/>
+  </clipPath>
+  <g clip-path="url(#screen)">
+    
+  <rect x="132" y="223" width="816" height="72" fill="#14202b"/>
+  <rect x="132" y="223" width="6" height="72" fill="#0a7ec2"/>
+  <text x="160" y="246" fill="white" font-size="14" opacity="0.6" font-family="Arial">PORTIERI · STAGIONE 2025-26</text>
+  <text x="160" y="278" fill="white" font-size="26" font-weight="700" font-family="Arial">Marco Pozza</text>
+
+  <rect x="132" y="295" width="816" height="1236" fill="#f0f2f5"/>
+
+  <!-- Tab -->
+  <rect x="152" y="295" width="776" height="48" rx="0" fill="white"/>
+  <text x="218" y="325" fill="#0a7ec2" font-size="18" font-weight="700" font-family="Arial" text-anchor="middle">Scheda</text>
+  <rect x="152" y="340" width="130" height="3" fill="#0a7ec2"/>
+  <text x="410" y="325" fill="#888" font-size="18" font-family="Arial" text-anchor="middle">Obiettivi</text>
+  <text x="600" y="325" fill="#888" font-size="18" font-family="Arial" text-anchor="middle">Statistiche</text>
+  <text x="810" y="325" fill="#888" font-size="18" font-family="Arial" text-anchor="middle">Percorso</text>
+
+  <!-- Tag -->
+  <rect x="152" y="360" width="776" height="100" rx="12" fill="white"/>
+  <text x="175" y="390" fill="#333" font-size="18" font-weight="700" font-family="Arial">🏷 Tag</text>
+  <rect x="175" y="402" width="120" height="34" rx="17" fill="none" stroke="#0a7ec2" stroke-width="1.5"/>
+  <text x="235" y="424" fill="#0a7ec2" font-size="16" font-family="Arial" text-anchor="middle">Capitano</text>
+  <rect x="310" y="402" width="100" height="34" rx="17" fill="none" stroke="#e8a72c" stroke-width="1.5"/>
+  <text x="360" y="424" fill="#e8a72c" font-size="16" font-family="Arial" text-anchor="middle">Talento</text>
+  <rect x="425" y="402" width="90" height="34" rx="17" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="470" y="424" fill="#8b5cf6" font-size="16" font-family="Arial" text-anchor="middle">Leader</text>
+  <rect x="530" y="402" width="145" height="34" rx="17" fill="none" stroke="#666" stroke-width="1.5"/>
+  <text x="603" y="424" fill="#666" font-size="16" font-family="Arial" text-anchor="middle">Da osservare</text>
+
+  <!-- Form scheda -->
+  <rect x="152" y="475" width="776" height="380" rx="12" fill="white"/>
+  <text x="175" y="530" fill="#555" font-size="16" font-family="Arial">Nome *</text>
+  <rect x="175" y="542" width="340" height="50" rx="8" fill="#f5f6f7" stroke="#e2e6e1" stroke-width="1"/>
+  <text x="198" y="572" fill="#333" font-size="20" font-family="Arial">Marco</text>
+  <text x="540" y="530" fill="#555" font-size="16" font-family="Arial">Cognome</text>
+  <rect x="540" y="542" width="370" height="50" rx="8" fill="#f5f6f7" stroke="#e2e6e1" stroke-width="1"/>
+  <text x="563" y="572" fill="#333" font-size="20" font-family="Arial">Pozza</text>
+
+  <text x="175" y="618" fill="#555" font-size="16" font-family="Arial">Categoria *</text>
+  <rect x="175" y="630" width="340" height="50" rx="8" fill="#f5f6f7" stroke="#e2e6e1" stroke-width="1"/>
+  <text x="198" y="660" fill="#333" font-size="20" font-family="Arial">Prima Squadra</text>
+  <text x="540" y="618" fill="#555" font-size="16" font-family="Arial">Numero di maglia</text>
+  <rect x="540" y="630" width="370" height="50" rx="8" fill="#f5f6f7" stroke="#e2e6e1" stroke-width="1"/>
+
+  <text x="175" y="706" fill="#555" font-size="16" font-family="Arial">Data di nascita</text>
+  <rect x="175" y="718" width="340" height="50" rx="8" fill="#f5f6f7" stroke="#e2e6e1" stroke-width="1"/>
+  <text x="540" y="706" fill="#555" font-size="16" font-family="Arial">Piede</text>
+  <rect x="540" y="718" width="370" height="50" rx="8" fill="#f5f6f7" stroke="#e2e6e1" stroke-width="1"/>
+
+  <text x="175" y="794" fill="#555" font-size="16" font-family="Arial">Altezza (cm)</text>
+  <rect x="175" y="806" width="340" height="50" rx="8" fill="#f5f6f7" stroke="#e2e6e1" stroke-width="1"/>
+  <text x="540" y="794" fill="#555" font-size="16" font-family="Arial">Peso (kg)</text>
+  <rect x="540" y="806" width="370" height="50" rx="8" fill="#f5f6f7" stroke="#e2e6e1" stroke-width="1"/>
+
+  </g>
+
+  <!-- Testi in fondo -->
+  <rect x="0" y="1580" width="1080" height="340" fill="#0d2137"/>
+  <text x="60" y="1650" fill="white" font-size="52" font-weight="700"
+    font-family="Arial, sans-serif" letter-spacing="-1">Scheda portiere completa</text>
+  <text x="60" y="1720" fill="white" font-size="30" opacity="0.75"
+    font-family="Arial, sans-serif">Anagrafica, tag, obiettivi e percorso</text>
+  <text x="60" y="1762" fill="white" font-size="30" opacity="0.75" font-family="Arial, sans-serif">di crescita di ogni portiere</text>
+  <text x="1020" y="1860" fill="white" opacity="0.3" font-size="22"
+    font-family="Arial, sans-serif" text-anchor="end">gkt2026.vercel.app</text>
+</svg>

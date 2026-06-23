@@ -421,15 +421,21 @@ a { color: inherit; text-decoration: none; }
   .landing-top { padding: 0 20px; }
   .landing-hero { padding: 52px 20px 48px; }
   .landing-features { padding: 48px 20px; }
-  .landing-blocco { padding: 52px 20px; }
+  .landing-blocco { padding: 52px 20px; background: #fff; }
+  .landing-blocco.bg-alt { background: var(--landing-bg-alt); }
   .features { grid-template-columns: 1fr 1fr; }
   .hero-title { font-size: 36px; }
+  /* Stacco visibile quando landing-blocco segue landing-features (stesso sfondo) */
+  .landing-features + .landing-blocco { border-top: 6px solid #dce8f0; }
+  .landing-blocco.bg-alt + .landing-features { border-top: 6px solid #dce8f0; }
 }
 @media (max-width: 600px) {
   .features { grid-template-columns: 1fr; }
   .blocco, .blocco-rev { flex-direction: column; }
   .hero-title { font-size: 30px; }
   .landing-foot { padding: 20px; }
+  /* Su mobile il bottone Cerca va a capo e occupa tutta la larghezza */
+  .landing-cerca .btn { width: 100%; }
 }
 
 .card-portiere .nome .maglia {

@@ -9,12 +9,12 @@ const TIPI = [
   { v: 'hero', l: 'Hero (testata grande)' },
   { v: 'vantaggio', l: 'Vantaggio (riquadro)' },
   { v: 'contenuto', l: 'Contenuto (blocco testo + foto)' },
+  { v: 'banner', l: 'Banner (fascia orizzontale)' },
 ]
 
 function SezioneCard({ sezione, onChanged }) {
   const router = useRouter()
   const [s, setS] = useState(sezione)
-  // foto_posizione default 'sinistra' per retrocompatibilità
   const [fotoPos, setFotoPos] = useState(sezione.foto_posizione ?? 'sinistra')
   // Teniamo il file separato dall'URL — così se non si ricarica la foto il vecchio URL resta intatto
   const [file, setFile] = useState(null)
@@ -50,6 +50,8 @@ function SezioneCard({ sezione, onChanged }) {
         tipo: s.tipo, ordine: Number(s.ordine) || 0, visibile: s.visibile,
         titolo: s.titolo || null, testo: s.testo || null, immagine_url,
         foto_posizione: fotoPos,
+        altezza_px: s.altezza_px ? Number(s.altezza_px) : null,
+        link_url: s.link_url || null,
       }).eq('id', s.id)
       if (error) throw error
       setFile(null); setDone(true); router.refresh()
@@ -65,7 +67,7 @@ function SezioneCard({ sezione, onChanged }) {
     onChanged()
   }
 
-  const dimConsigliate = s.tipo === 'hero' ? '1400×600 px' : s.tipo === 'contenuto' ? '800×600 px' : '400×300 px'
+  const dimConsigliate = s.tipo === 'hero' ? '1400×600 px' : s.tipo === 'contenuto' ? '800×600 px' : s.tipo === 'banner' ? 'larghezza libera' : '400×300 px'
 
   return (
     <div className="sez-card">
@@ -92,6 +94,41 @@ function SezioneCard({ sezione, onChanged }) {
         </label>
         <textarea rows="5" value={s.testo ?? ''} onChange={upd('testo')} style={{ fontFamily: 'monospace', fontSize: 13 }} />
       </div>
+
+      {/* Campo link — per hero e banner */}
+      {(s.tipo === 'hero' || s.tipo === 'banner') && (
+        <div className="field">
+          <label>
+            Link (cliccabile)
+            <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--ink-soft)', marginLeft: 8 }}>facoltativo — rende l&apos;intera sezione un link</span>
+          </label>
+          <input type="url" value={s.link_url ?? ''} onChange={upd('link_url')} placeholder="https://..." />
+        </div>
+      )}
+
+      {/* Altezza — solo per banner */}
+      {s.tipo === 'banner' && (
+        <div className="field">
+          <label>Altezza banner</label>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {[200, 300, 400, 600].map((h) => (
+              <button key={h} type="button"
+                onClick={() => { setS((p) => ({ ...p, altezza_px: h })); setDone(false) }}
+                style={{
+                  padding: '5px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer',
+                  border: (s.altezza_px ?? 300) === h ? '2px solid var(--azzurro)' : '2px solid var(--linea)',
+                  background: (s.altezza_px ?? 300) === h ? 'rgba(10,126,194,0.08)' : 'var(--carta)',
+                  fontWeight: (s.altezza_px ?? 300) === h ? 700 : 400,
+                  color: (s.altezza_px ?? 300) === h ? 'var(--azzurro)' : 'var(--ink)',
+                }}
+              >
+                {h}px
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="sez-img">
         <div className="sez-thumb">
           {preview ? <img src={preview} alt="" /> : <span>nessuna immagine</span>}
@@ -104,16 +141,14 @@ function SezioneCard({ sezione, onChanged }) {
           <p style={{ fontSize: 11, color: 'var(--ink-soft)', margin: '6px 0 0' }}>
             Dimensioni consigliate: <b>{dimConsigliate}</b>
           </p>
+
+          {/* Posizione foto — solo per contenuto */}
           {s.tipo === 'contenuto' && (
             <div style={{ marginTop: 10 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                Posizione foto
-              </label>
+              <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>Posizione foto</label>
               <div style={{ display: 'flex', gap: 8 }}>
                 {['sinistra', 'destra'].map((pos) => (
-                  <button
-                    key={pos}
-                    type="button"
+                  <button key={pos} type="button"
                     onClick={() => { setFotoPos(pos); setDone(false) }}
                     style={{
                       padding: '5px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer',
@@ -166,6 +201,7 @@ export default function SitoEditor({ sezioni }) {
         <span>Aggiungi sezione:</span>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('vantaggio')} type="button">+ Vantaggio</button>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('contenuto')} type="button">+ Contenuto</button>
+        <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('banner')} type="button">+ Banner</button>
       </div>
     </div>
   )

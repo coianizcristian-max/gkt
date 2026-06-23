@@ -5,6 +5,21 @@ import { renderTesto } from '@/lib/renderTesto'
 
 export const dynamic = 'force-dynamic'
 
+// Raggruppa sezioni consecutive dello stesso tipo in blocchi,
+// rispettando sempre l'ordine numerico impostato dal supervisore.
+function gruppaPerTipo(lista) {
+  const gruppi = []
+  for (const sez of lista) {
+    const ultimo = gruppi[gruppi.length - 1]
+    if (ultimo && ultimo.tipo === sez.tipo) {
+      ultimo.sezioni.push(sez)
+    } else {
+      gruppi.push({ tipo: sez.tipo, sezioni: [sez] })
+    }
+  }
+  return gruppi
+}
+
 export default async function Home() {
   const supabase = await createClient()
 
@@ -14,10 +29,8 @@ export default async function Home() {
   ])
 
   const lista = sezioni ?? []
-  const hero = lista.find((s) => s.tipo === 'hero')
-  const vantaggi = lista.filter((s) => s.tipo === 'vantaggio')
-  const contenuti = lista.filter((s) => s.tipo === 'contenuto')
   const loggedIn = !!user
+  const gruppi = gruppaPerTipo(lista)
 
   return (
     <div className="landing">
@@ -36,50 +49,100 @@ export default async function Home() {
         </nav>
       </header>
 
-      {hero && (
-        <section className="hero" style={hero.immagine_url ? { backgroundImage: `linear-gradient(rgba(8,18,28,.55),rgba(8,18,28,.55)), url(${hero.immagine_url})` } : undefined} data-img={hero.immagine_url ? '1' : '0'}>
-          <p className="hero-eyebrow">Gestione portieri</p>
-          {hero.titolo && <h1 className="hero-title">{hero.titolo}</h1>}
-          {hero.testo && <p className="hero-lead">{renderTesto(hero.testo)}</p>}
-          {loggedIn ? (
-            <Link href="/portieri" className="cta-card">
-              <span className="cta-text">
-                <span className="cta-eyebrow">Area gestione</span>
-                <strong>Entra nella tua area operativa</strong>
-                <span className="cta-sub">Portieri · Calendario · Partite · Statistiche</span>
-              </span>
-              <span className="cta-arrow" aria-hidden="true">&rarr;</span>
-            </Link>
-          ) : (
-            <div className="cta-guest">
-              <Link href="/login" className="btn-hero">Accedi all&apos;area gestione</Link>
-              <span className="cta-guest-note">Riservata allo staff tecnico e ai portieri.</span>
-            </div>
-          )}
-        </section>
-      )}
+      {gruppi.map((gruppo, gi) => {
+        const { tipo, sezioni: sezs } = gruppo
 
-      {vantaggi.length > 0 && (
-        <section className="features">
-          {vantaggi.map((v) => (
-            <div className="feature" key={v.id}>
-              {v.immagine_url && <img className="feature-img" src={v.immagine_url} alt="" />}
-              {v.titolo && <h3>{v.titolo}</h3>}
-              {v.testo && <p>{renderTesto(v.testo)}</p>}
-            </div>
-          ))}
-        </section>
-      )}
+        // ── HERO ──────────────────────────────────────────────────────
+        if (tipo === 'hero') {
+          const h = sezs[0] // prende il primo se ce ne sono più di uno
+          const inner = (
+            <section className="hero" key={h.id}
+              style={h.immagine_url ? { backgroundImage: `linear-gradient(rgba(8,18,28,.55),rgba(8,18,28,.55)), url(${h.immagine_url})` } : undefined}
+              data-img={h.immagine_url ? '1' : '0'}>
+              <p className="hero-eyebrow">Gestione portieri</p>
+              {h.titolo && <h1 className="hero-title">{h.titolo}</h1>}
+              {h.testo && <p className="hero-lead">{renderTesto(h.testo)}</p>}
+              {loggedIn ? (
+                <Link href="/portieri" className="cta-card">
+                  <span className="cta-text">
+                    <span className="cta-eyebrow">Area gestione</span>
+                    <strong>Entra nella tua area operativa</strong>
+                    <span className="cta-sub">Portieri · Calendario · Partite · Statistiche</span>
+                  </span>
+                  <span className="cta-arrow" aria-hidden="true">&rarr;</span>
+                </Link>
+              ) : (
+                <div className="cta-guest">
+                  <Link href="/login" className="btn-hero">Accedi all&apos;area gestione</Link>
+                  <span className="cta-guest-note">Riservata allo staff tecnico e ai portieri.</span>
+                </div>
+              )}
+            </section>
+          )
+          return h.link_url
+            ? <a href={h.link_url} key={gi} style={{ display: 'block', textDecoration: 'none' }}>{inner}</a>
+            : inner
 
-      {contenuti.map((c) => (
-        <section className={`blocco ${c.foto_posizione === 'destra' ? 'blocco-rev' : ''}`} key={c.id}>
-          {c.immagine_url && <div className="blocco-img"><img src={c.immagine_url} alt="" /></div>}
-          <div className="blocco-testo">
-            {c.titolo && <h2>{c.titolo}</h2>}
-            {c.testo && <p>{renderTesto(c.testo)}</p>}
-          </div>
-        </section>
-      ))}
+        // ── VANTAGGI (gruppo di riquadri affiancati) ─────────────────
+        } else if (tipo === 'vantaggio') {
+          return (
+            <section className="features" key={gi}>
+              {sezs.map((v) => (
+                <div className="feature" key={v.id}>
+                  {v.immagine_url && <img className="feature-img" src={v.immagine_url} alt="" />}
+                  {v.titolo && <h3>{v.titolo}</h3>}
+                  {v.testo && <p>{renderTesto(v.testo)}</p>}
+                </div>
+              ))}
+            </section>
+          )
+
+        // ── CONTENUTO (testo + foto, alternabile) ────────────────────
+        } else if (tipo === 'contenuto') {
+          return sezs.map((c) => (
+            <section className={`blocco ${c.foto_posizione === 'destra' ? 'blocco-rev' : ''}`} key={c.id}>
+              {c.immagine_url && <div className="blocco-img"><img src={c.immagine_url} alt="" /></div>}
+              <div className="blocco-testo">
+                {c.titolo && <h2>{c.titolo}</h2>}
+                {c.testo && <p>{renderTesto(c.testo)}</p>}
+              </div>
+            </section>
+          ))
+
+        // ── BANNER (fascia orizzontale, eventualmente cliccabile) ────
+        } else if (tipo === 'banner') {
+          return sezs.map((b) => {
+            const altezza = b.altezza_px ?? 300
+            const style = {
+              width: '100%',
+              height: altezza + 'px',
+              position: 'relative',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              textAlign: 'center',
+              background: b.immagine_url
+                ? `linear-gradient(rgba(8,18,28,.45),rgba(8,18,28,.45)), url(${b.immagine_url}) center/cover no-repeat`
+                : 'var(--azzurro)',
+              color: '#fff',
+              padding: '0 5%',
+            }
+            const contenuto = (
+              <div key={b.id} style={style}>
+                {b.titolo && <h2 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 10px', color: '#fff' }}>{b.titolo}</h2>}
+                {b.testo && <p style={{ fontSize: 17, opacity: 0.92, maxWidth: 680, margin: 0 }}>{renderTesto(b.testo)}</p>}
+              </div>
+            )
+            return b.link_url
+              ? <a href={b.link_url} key={b.id} style={{ display: 'block', textDecoration: 'none' }}>{contenuto}</a>
+              : contenuto
+          })
+        }
+
+        return null
+      })}
 
       <CercaAllenatoriBox />
 

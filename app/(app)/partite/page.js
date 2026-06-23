@@ -59,9 +59,20 @@ export default async function PartitePage() {
       <div className="content">
         {!isPortiere && (
           <Guida titolo="Come usare le partite">
-            Inserisci le gare con &ldquo;+ Nuova partita&rdquo;: data, categoria, avversario, casa/trasferta e risultato.
-            Apri ogni partita per inserire le valutazioni dei portieri (voto, punti, note).
-            Le amichevoli sono escluse dalle medie nelle statistiche: vengono conteggiate separatamente.
+            <p>
+              Inserisci le gare con <strong>&ldquo;+ Nuova partita&rdquo;</strong>: data, categoria, avversario, casa/trasferta e risultato.
+              Apri ogni partita per inserire le <strong>valutazioni dei portieri</strong>: presenza, voto, punti e note.
+              I clean sheet vengono calcolati automaticamente dalle partite in cui il portiere era presente e i gol subiti sono zero.
+            </p>
+            <p style={{marginTop:10}}>
+              Il tipo partita conta nelle statistiche: le <strong>amichevoli</strong> non influenzano le medie di campionato
+              e vengono conteggiate separatamente. Usa il tipo <strong>&ldquo;Campionato&rdquo;</strong> per le gare ufficiali.
+            </p>
+            <p style={{marginTop:10}}>
+              Per <strong>eliminare più partite in blocco</strong> (es. inserite per errore) usa la sezione
+              {' '}<a href="/ricorrenze" className="link-inline">Ricorrenze → Eliminazione massiva</a>,
+              dove puoi filtrare per categoria, intervallo di date e presenza o assenza di valutazioni.
+            </p>
           </Guida>
         )}
         {stagione

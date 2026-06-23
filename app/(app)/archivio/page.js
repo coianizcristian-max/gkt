@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Guida from '@/app/components/Guida'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ArchivioSelect from '@/app/components/ArchivioSelect'
@@ -82,6 +83,16 @@ export default async function ArchivioPage({ searchParams }) {
       </div>
       <div className="content">
         <ArchivioSelect stagioni={stagioni} selectedId={stagione.id} />
+        <Guida titolo="Come usare l'archivio">
+          <p>
+            L&apos;archivio mostra le statistiche complete di qualsiasi stagione passata in <strong>sola lettura</strong>.
+            Seleziona la stagione dal menu in alto: vedrai presenze, medie voto, clean sheet, punti e l&apos;elenco completo delle partite.
+          </p>
+          <p style={{marginTop:10}}>
+            Con il pulsante <strong>Esporta</strong> puoi scaricare i dati della stagione selezionata in formato CSV o PDF,
+            utile per consegnarli ai portieri o alla società a fine anno.
+          </p>
+        </Guida>
         <ExportButtons stagioneId={stagione.id} />
         {!stagione.attiva && <p className="sub-intro">Stai consultando una stagione archiviata: i dati sono di sola lettura.</p>}
 

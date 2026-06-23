@@ -80,8 +80,23 @@ export default async function PortieriPage() {
       </div>
       <div className="content">
         <Guida titolo="Come gestire i portieri">
-          Aggiungi i portieri con &ldquo;+ Nuovo&rdquo; e iscrivili a una categoria della stagione attiva.
-          Per mandare l&apos;accesso al portiere usa la sezione <a href="/inviti" className="link-inline">Inviti</a>.
+          <p>
+            Aggiungi i portieri con <strong>&ldquo;+ Nuovo&rdquo;</strong> e iscrivili a una categoria della stagione attiva.
+            Dalla scheda del portiere puoi modificare tutti i dati anagrafici, la foto, il numero di maglia e la categoria di iscrizione.
+            Per mandare l&apos;accesso al portiere usa la sezione <a href="/inviti" className="link-inline">Inviti</a>:
+            crea un link di invito e il portiere si registra autonomamente, venendo collegato automaticamente alla sua scheda.
+          </p>
+          <p style={{marginTop:10}}>
+            Dalla scheda portiere trovi anche i tab <strong>Obiettivi</strong> (imposta traguardi con scadenza e monitora lo stato),
+            <strong> Feedback</strong> (storico dei commenti inseriti nelle valutazioni),
+            <strong> Percorso</strong> (timeline della crescita stagionale) e
+            <strong> Tag</strong> (etichette personalizzate per categorizzare le caratteristiche del portiere).
+            L&apos;indice di crescita viene calcolato automaticamente confrontando i voti recenti con quelli precedenti.
+          </p>
+          <p style={{marginTop:10}}>
+            Per disattivare un portiere senza eliminarlo (es. non è più nella squadra ma vuoi conservare i dati storici)
+            usa il toggle <strong>Attivo/Non attivo</strong> nella sua scheda.
+          </p>
         </Guida>
         {profilo?.ruolo === 'allenatore' && (
           <OnboardingChecklist checks={[

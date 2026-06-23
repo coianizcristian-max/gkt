@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Guida from '@/app/components/Guida'
 import { createClient } from '@/lib/supabase/server'
 import ParametriValutazioneManager from '@/app/components/ParametriValutazioneManager'
 
@@ -33,6 +34,17 @@ export default async function ParametriValutazionePage() {
         <h1>Parametri di valutazione</h1>
       </div>
       <div className="content">
+        <Guida titolo="Come funzionano i parametri di valutazione">
+          <p>
+            I parametri di valutazione sono i criteri con cui valuti ogni portiere negli allenamenti (es. tecnica, uscite, gioco coi piedi, posizionamento).
+            Qui puoi <strong>attivare o disattivare</strong> i parametri che vuoi usare: quelli attivi appaiono nella griglia di valutazione di ogni allenamento.
+          </p>
+          <p style={{marginTop:10}}>
+            I parametri globali disponibili vengono gestiti dal <a href="/supervisore" className="link-inline">Supervisore</a>.
+            La tua selezione qui è personale e non influenza gli altri allenatori.
+            Puoi modificarla in qualsiasi momento: i dati già inseriti restano invariati.
+          </p>
+        </Guida>
         <ParametriValutazioneManager parametri={parametri ?? []} attiviMap={attiviMap} />
       </div>
     </>

@@ -99,8 +99,22 @@ export default async function CalendarioPage() {
       <div className="content">
         {!isPortiere && (
           <Guida titolo="Come usare il calendario">
-            Clicca su un numero del giorno per creare un allenamento. Gli allenamenti in <b style={{color:'#2e9e5b'}}>verde</b> sono valutati, in <b style={{color:'#c0392b'}}>rosso</b> da valutare.
-            Le partite appaiono in <b style={{color:'#7c3aed'}}>viola</b>: scuro se passate, chiaro se future. Cliccaci sopra per aprirle.
+            <p>
+              Clicca sul <strong>numero del giorno</strong> per creare un nuovo allenamento in quella data.
+              Gli allenamenti in <b style={{color:'#2e9e5b'}}>verde</b> sono già valutati, in <b style={{color:'#c0392b'}}>rosso</b> sono da valutare.
+              Le partite appaiono in <b style={{color:'#7c3aed'}}>viola</b>: scuro se già passate, chiaro se future. Clicca su qualsiasi blocco per aprirlo.
+            </p>
+            <p style={{marginTop:10}}>
+              Dall&apos;interno di un allenamento puoi: segnare le presenze, inserire voto e punteggi per parametro per ogni portiere,
+              aggiungere gli esercizi della seduta, e attivare il flag <strong>&ldquo;Nessuna valutazione&rdquo;</strong> se l&apos;allenamento
+              si è svolto ma non vuoi inserire voti (in questo caso appare comunque come verde/valutato nel calendario).
+              Puoi anche <strong>accorpare</strong> due categorie in un unico allenamento condiviso direttamente dal form.
+            </p>
+            <p style={{marginTop:10}}>
+              Per <strong>eliminare più allenamenti o partite in blocco</strong> usa la sezione
+              {' '}<a href="/ricorrenze" className="link-inline">Ricorrenze → Eliminazione massiva</a>,
+              dove puoi filtrare per categoria, intervallo di date e presenza o assenza di valutazioni.
+            </p>
           </Guida>
         )}
         {stagione

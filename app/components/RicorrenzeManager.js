@@ -97,6 +97,9 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
         </button>
       </div>
       {gen && gen !== 'working' && <p className="sub-intro" style={{ marginTop: 8 }}>{gen}</p>}
+
+      {/* ── Eliminazione massiva ── */}
+      <EliminazioneRapida stagione={stagione} categorie={categorie} />
     </div>
   )
 }
@@ -132,6 +135,113 @@ function RicorrenzaRiga({ ricorrenza, onChanged }) {
       <label className="lista-ord">Fine<input type="time" value={ofine} onChange={(e) => { setOfine(e.target.value); setDone(false) }} /></label>
       <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '✓' : 'Salva'}</button>
       <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>
+    </div>
+  )
+}
+
+// ─── Eliminazione massiva allenamenti / partite ───────────────────────────────
+function EliminazioneRapida({ stagione, categorie }) {
+  const router = useRouter()
+  const [tipo, setTipo] = useState('allenamenti')       // 'allenamenti' | 'partite'
+  const [dal, setDal] = useState('')
+  const [al, setAl] = useState('')
+  const [categoriaId, setCategoriaId] = useState('tutte')
+  const [busy, setBusy] = useState(false)
+  const [risultato, setRisultato] = useState(null)
+  const [errore, setErrore] = useState('')
+
+  const tipoLabel = tipo === 'allenamenti' ? 'allenamenti' : 'partite'
+
+  async function elimina() {
+    if (!dal || !al) { setErrore('Seleziona entrambe le date.'); return }
+    if (dal > al) { setErrore('La data "dal" deve essere precedente alla data "al".'); return }
+
+    // Costruisce il messaggio del popup di conferma
+    const catLabel = categoriaId === 'tutte'
+      ? 'tutte le categorie'
+      : `la categoria "${categorie.find(c => c.id === categoriaId)?.nome ?? categoriaId}"`
+
+    const dalLabel = new Date(dal + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+    const alLabel  = new Date(al  + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+
+    const confermato = window.confirm(
+      `⚠️ Sei sicuro di voler eliminare i ${tipoLabel} dal ${dalLabel} al ${alLabel} per ${catLabel}?\n\n` +
+      `Questa operazione è irreversibile e non può essere annullata.`
+    )
+    if (!confermato) return
+
+    setBusy(true); setErrore(''); setRisultato(null)
+    try {
+      const res = await fetch('/api/elimina-massiva', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo, dal, al, categoriaId, stagioneId: stagione.id }),
+      })
+      const body = await res.json()
+      if (!res.ok) { setErrore(body.error ?? 'Errore.'); setBusy(false); return }
+      setRisultato(body.eliminati)
+      router.refresh()
+    } catch (e) { setErrore('Errore di rete.') }
+    setBusy(false)
+  }
+
+  return (
+    <div className="scheda" style={{ marginTop: 28, borderTop: '2px solid var(--linea)', paddingTop: 24 }}>
+      <h3 style={{ marginTop: 0, marginBottom: 4 }}>🗑 Eliminazione massiva</h3>
+      <p className="sub-intro" style={{ marginBottom: 16 }}>
+        Elimina in blocco allenamenti o partite in un intervallo di date, per tutte le categorie o una sola.
+      </p>
+
+      {errore && <div className="err" style={{ marginBottom: 12 }}>{errore}</div>}
+      {risultato != null && (
+        <div className="ok-msg" style={{ marginBottom: 12 }}>
+          ✅ Eliminati {risultato} {tipoLabel}.
+        </div>
+      )}
+
+      {/* Tipo */}
+      <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
+        <div className="field" style={{ margin: 0 }}>
+          <label>Tipo</label>
+          <select value={tipo} onChange={(e) => { setTipo(e.target.value); setRisultato(null) }}>
+            <option value="allenamenti">Allenamenti</option>
+            <option value="partite">Partite</option>
+          </select>
+        </div>
+
+        {/* Categoria */}
+        <div className="field" style={{ margin: 0 }}>
+          <label>Categoria</label>
+          <select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)}>
+            <option value="tutte">Tutte le categorie</option>
+            {categorie.map((c) => (
+              <option key={c.id} value={c.id}>{c.nome}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Dal */}
+        <div className="field" style={{ margin: 0 }}>
+          <label>Dal</label>
+          <input type="date" value={dal} onChange={(e) => setDal(e.target.value)} />
+        </div>
+
+        {/* Al */}
+        <div className="field" style={{ margin: 0 }}>
+          <label>Al</label>
+          <input type="date" value={al} onChange={(e) => setAl(e.target.value)} />
+        </div>
+      </div>
+
+      <button
+        className="btn-ghost btn-del"
+        onClick={elimina}
+        disabled={busy || !dal || !al}
+        type="button"
+        style={{ minWidth: 220 }}
+      >
+        {busy ? 'Eliminazione in corso...' : `🗑 Elimina ${tipoLabel} selezionati`}
+      </button>
     </div>
   )
 }

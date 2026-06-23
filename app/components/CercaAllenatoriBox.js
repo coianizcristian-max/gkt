@@ -67,7 +67,7 @@ export default function CercaAllenatoriBox() {
         </div>
 
         {/* Seconda riga: CAP + Provincia + Cerca */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input
             value={cap}
             onChange={(e) => setCap(e.target.value)}
@@ -84,7 +84,7 @@ export default function CercaAllenatoriBox() {
             maxLength={30}
             style={{ width: 140, padding: '11px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: '1rem', flexShrink: 0 }}
           />
-          <button className="btn" onClick={cerca} disabled={loading} type="button" style={{ flex: 1 }}>
+          <button className="btn" onClick={cerca} disabled={loading} type="button" style={{ flex: 1, minWidth: '100%' }}>
             {loading ? 'Cerco...' : 'Cerca'}
           </button>
         </div>

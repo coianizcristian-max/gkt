@@ -115,7 +115,7 @@ export default function CercaAllenatoriBox() {
                     cursor: 'pointer',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                     <div style={{
                       width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
                       overflow: 'hidden', background: 'var(--azzurro)',
@@ -125,13 +125,13 @@ export default function CercaAllenatoriBox() {
                         ? <img src={a.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : <span style={{ color: '#fff', fontWeight: 700, fontSize: 18 }}>{(a.nome || '?').charAt(0)}</span>}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, fontSize: 15 }}>{a.nome || 'Allenatore'}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nome || 'Allenatore'}</div>
                       <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
                         {a.citta ? a.citta.toUpperCase() : ''}{kmLabel}
                       </div>
                     </div>
-                    <span style={{ fontSize: 13, color: 'var(--azzurro)', fontWeight: 600, flexShrink: 0 }}>
+                    <span style={{ fontSize: 13, color: 'var(--azzurro)', fontWeight: 600, flexShrink: 0, marginLeft: 'auto' }}>
                       Vedi profilo →
                     </span>
                   </div>

@@ -74,6 +74,7 @@ export default async function AppLayout({ children }) {
     { href: '/come-iniziare', label: 'Come iniziare' },
     { href: '/archivio', label: 'Archivio' },
     { href: '/suggerimenti', label: 'Suggerimenti' },
+    { href: '/account', label: '👤 Account' },
     ...(isSupervisore ? [{ href: '/supervisore', label: 'Supervisore' }] : []),
     ...(mostraAbbonati ? [{ href: '/abbonati', label: '🔓 Abbonati' }] : []),
     { type: 'divider', key: 'd1' },

@@ -135,11 +135,6 @@ export default async function AllenamentoPage({ params }) {
   const libreriaMia = tutti.filter((e) => e.allenatore_id === user?.id)
   const libreriaPubblica = tutti.filter((e) => e.pubblico && e.allenatore_id !== user?.id)
 
-  // Aggiungo gli esercizi già selezionati a libreriaPubblica se non sono già presenti
-  // (garantisce che compaiano nell'OrdineView anche senza essere nella libreria visibile)
-  const idNellaLibreria = new Set(tutti.map((e) => e.id))
-  const eserciziExtra = eserciziSelezionati.filter((e) => !idNellaLibreria.has(e.id))
-  const libreriaPubblicaConExtra = [...libreriaPubblica, ...eserciziExtra]
 
   // Ordine esercizi dell'allenamento (per selezionatiIniziali)
   const eserciziOrdinati = (aeRows ?? []).sort((a, b) => a.ordine - b.ordine).map((r) => r.esercizio_id)
@@ -153,6 +148,11 @@ export default async function AllenamentoPage({ params }) {
         .in('id', eserciziOrdinati)
     : { data: [] }
   const eserciziSelezionati = (esSelRows ?? []).map((e) => ({ ...e, autore_nome: null }))
+
+  // Aggiungi esercizi già selezionati non presenti in libreria (es. di altri allenatori)
+  const idNellaLibreria = new Set(tutti.map((e) => e.id))
+  const eserciziExtra = eserciziSelezionati.filter((e) => !idNellaLibreria.has(e.id))
+  const libreriaPubblicaConExtra = [...libreriaPubblica, ...eserciziExtra]
 
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)

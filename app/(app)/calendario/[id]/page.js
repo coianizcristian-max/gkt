@@ -24,6 +24,25 @@ export default async function AllenamentoPage({ params }) {
     .from('allenamenti').select('*, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('id', id).maybeSingle()
   if (!allenamento) notFound()
 
+  // Risolvi accorpata_con: può contenere squadra_id (vecchia) o allenamento_id (nuova)
+  let accorpataConAllenamentoId = null
+  if (allenamento.accorpata_con) {
+    const { data: checkAll } = await supabase
+      .from('allenamenti').select('id').eq('id', allenamento.accorpata_con).maybeSingle()
+    if (checkAll) {
+      accorpataConAllenamentoId = checkAll.id
+    } else {
+      const { data: altroAll } = await supabase
+        .from('allenamenti').select('id')
+        .eq('stagione_id', allenamento.stagione_id)
+        .eq('squadra_id', allenamento.accorpata_con)
+        .eq('data', allenamento.data)
+        .maybeSingle()
+      if (altroAll) accorpataConAllenamentoId = altroAll.id
+    }
+  }
+
+
   const dataLabel = new Date(allenamento.data + 'T00:00:00')
     .toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -35,7 +54,7 @@ export default async function AllenamentoPage({ params }) {
         .eq('allenamento_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
       supabase.from('allenamento_esercizi')
         .select('ordine, esercizi(id, titolo, tipologia, descrizione_breve, descrizione, immagine_url)')
-        .eq('allenamento_id', allenamento.accorpata_con ?? id).order('ordine'),
+        .eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),
     ])
     const esercizi = (aeRows ?? [])
       .map((r) => r.esercizi).filter(Boolean)
@@ -112,7 +131,7 @@ export default async function AllenamentoPage({ params }) {
     supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
     supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
     supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id, profili(ruolo)').order('titolo'),
-    supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', allenamento.accorpata_con ?? id).order('ordine'),
+    supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),
     supabase.from('valutazioni')
       .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
       .eq('allenamento_id', id)
@@ -216,12 +235,12 @@ export default async function AllenamentoPage({ params }) {
         {/* Lista drag&drop esercizi con durata e totale */}
         <EserciziSedutaEditor
           esercizi={eserciziSelezionati}
-          allenamentoId={allenamento.accorpata_con ?? id}
+          allenamentoId={accorpataConAllenamentoId ?? id}
         />
 
         {/* Componente libreria per aggiungere/rimuovere esercizi */}
         {canEsercizi ? <AllenamentoEsercizi
-          allenamentoId={allenamento.accorpata_con ?? id}
+          allenamentoId={accorpataConAllenamentoId ?? id}
           libreriaMia={libreriaMia}
           libreriaPubblica={libreriaPubblicaConExtra}
           selezionatiIniziali={eserciziOrdinati}

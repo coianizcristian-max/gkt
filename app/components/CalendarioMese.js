@@ -235,8 +235,8 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                     <div className="cal-preview-categoria">{ev.squadra_nome}</div>
                   </div>
                   <div className="cal-preview-meta">
-                    {ev.ora_inizio ? ev.ora_inizio.slice(0,5) : '—'}
-                    {ev.ora_fine ? ` → ${ev.ora_fine.slice(0,5)}` : ''}
+                    {ev.ora_inizio ? ev.ora_inizio.slice(0,5) : null}
+                    {ev.ora_fine ? ` → ${ev.ora_fine.slice(0,5)}` : null}
                   </div>
                 </div>
                 <div className="cal-preview-stato">

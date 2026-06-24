@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import AllenamentoForm from '@/app/components/AllenamentoForm'
 import ValutazioniAllenamento from '@/app/components/ValutazioniAllenamento'
 import AllenamentoEsercizi from '@/app/components/AllenamentoEsercizi'
+import EserciziSedutaEditor from '@/app/components/EserciziSedutaEditor'
 import ValutazionePortiere from '@/app/components/ValutazionePortiere'
 import FeedbackAllenamento from '@/app/components/FeedbackAllenamento'
 import PaywallBanner from '@/app/components/PaywallBanner'
@@ -144,7 +145,7 @@ export default async function AllenamentoPage({ params }) {
   const { data: esSelRows } = eserciziOrdinati.length > 0
     ? await supabase
         .from('esercizi')
-        .select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id')
+        .select('id, titolo, tipologia, descrizione_breve, descrizione, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti')
         .in('id', eserciziOrdinati)
     : { data: [] }
   const eserciziSelezionati = (esSelRows ?? []).map((e) => ({ ...e, autore_nome: null }))
@@ -212,32 +213,13 @@ export default async function AllenamentoPage({ params }) {
 
         <h2 className="sezione-titolo">Esercizi della seduta</h2>
 
-        {/* Lista statica esercizi — sempre visibile, stessa UI della vista portiere */}
-        {eserciziSelezionati.length > 0 ? (
-          <div className="es-seduta-grid" style={{ marginBottom: 24 }}>
-            {eserciziSelezionati.map((e, i) => (
-              <details key={e.id} className="es-seduta-card">
-                <summary>
-                  {e.immagine_url && <img src={e.immagine_url} className="es-seduta-thumb" alt="" />}
-                  <div>
-                    <div className="es-seduta-titolo">{i + 1}. {e.titolo}</div>
-                    {e.tipologia && <span className="stat-cat">{e.tipologia}</span>}
-                  </div>
-                </summary>
-                {(e.descrizione_breve || e.descrizione) && (
-                  <div className="es-seduta-body">
-                    {e.descrizione_breve && <p><em>{e.descrizione_breve}</em></p>}
-                    {e.descrizione && <p>{e.descrizione}</p>}
-                  </div>
-                )}
-              </details>
-            ))}
-          </div>
-        ) : (
-          <div className="empty" style={{ marginBottom: 16 }}>Nessun esercizio inserito per questa seduta.</div>
-        )}
+        {/* Lista drag&drop esercizi con durata e totale */}
+        <EserciziSedutaEditor
+          esercizi={eserciziSelezionati}
+          allenamentoId={allenamento.accorpata_con ?? id}
+        />
 
-        {/* Componente interattivo per modificare gli esercizi — usa sempre l'id del principale se accorpato */}
+        {/* Componente libreria per aggiungere/rimuovere esercizi */}
         {canEsercizi ? <AllenamentoEsercizi
           allenamentoId={allenamento.accorpata_con ?? id}
           libreriaMia={libreriaMia}

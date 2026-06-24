@@ -51,7 +51,7 @@ export default async function AccountPage() {
         {/* Info utente */}
         <div className="scheda" style={{ marginBottom: 20 }}>
           <h3 style={{ marginTop: 0 }}>Dati di accesso</h3>
-          <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '12px 24px' }}>
+          <div className="form-grid">
             <div>
               <label className="campo-label">Email</label>
               <div className="campo-valore">{user.email}</div>

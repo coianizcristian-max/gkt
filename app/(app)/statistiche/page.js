@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getStagioneAttiva } from '@/lib/tenant'
 import Guida from '@/app/components/Guida'
 import StatisticheClient from './StatisticheClient'
 
@@ -11,8 +12,7 @@ export default async function StatistichePage() {
     .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
   const isPortiere = profilo?.ruolo === 'portiere'
 
-  const { data: stagione } = await supabase
-    .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user?.id)
 
   if (!stagione) {
     return (

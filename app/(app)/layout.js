@@ -74,6 +74,7 @@ export default async function AppLayout({ children }) {
     'statistiche':   (isPortiere || vedeStatistiche) ? { href: '/statistiche', label: 'Statistiche' } : null,
     'esercizi':      (isStaff && vedeAllenamenti) ? { href: '/esercizi', label: 'Esercizi' } : null,
     'profilo':       isStaff ? { href: '/profilo', label: 'Profilo allenatore' } : null,
+    'stagioni':      isStaff ? { href: '/stagioni', label: 'Le mie stagioni' } : null,
     'inviti':        isStaff ? { href: '/inviti', label: 'Inviti' } : null,
     'contatti':      isStaff ? { href: '/contatti', label: 'Contatti ricevuti' } : null,
     'come-iniziare': { href: '/come-iniziare', label: 'Come iniziare' },

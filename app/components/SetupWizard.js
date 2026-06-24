@@ -184,8 +184,8 @@ export default function SetupWizard({ anniDisponibili, ownerId, redirectAfter = 
       })
       const body = await res.json()
       if (!res.ok) { setErr(body.error ?? 'Errore.'); setBusy(false); return }
-      router.push(redirectAfter)
-      router.refresh()
+      // Hard reload per forzare il server a rileggere la stagione appena creata
+      window.location.href = redirectAfter
     } catch (e) { setErr('Errore di rete.'); setBusy(false) }
   }
 

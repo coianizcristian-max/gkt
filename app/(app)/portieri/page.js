@@ -120,9 +120,9 @@ export default async function PortieriPage() {
             },
             {
               ok: haAllenamenti,
-              titolo: 'Primo allenamento',
-              desc: 'Crea il primo allenamento dal calendario o configura le ricorrenze.',
-              href: '/calendario',
+              titolo: 'Crea gli allenamenti',
+              desc: 'Vai in Ricorrenze: imposta i giorni fissi di allenamento per ogni categoria e genera tutto il calendario in un click.',
+              href: '/ricorrenze',
             },
           ]} />
         )}

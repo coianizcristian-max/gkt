@@ -39,7 +39,7 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
           if (d.getDay() === dow) {
             const ds = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
             const key = r.squadra_id + '|' + ds
-            if (!seen.has(key)) { seen.add(key); toInsert.push({ stagione_id: stagione.id, squadra_id: r.squadra_id, data: ds }) }
+            if (!seen.has(key)) { seen.add(key); toInsert.push({ stagione_id: stagione.id, squadra_id: r.squadra_id, data: ds, accorpata_con: r.accorpata_con ?? null }) }
           }
         }
       }
@@ -85,7 +85,7 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
                 Nessuna ricorrenza impostata per questa categoria. Clicca &quot;+ Aggiungi giorno&quot; per impostarla qui.
               </p>
             )}
-            {righe.map((r) => <RicorrenzaRiga key={r.id} ricorrenza={r} onChanged={() => router.refresh()} />)}
+            {righe.map((r) => <RicorrenzaRiga key={r.id} ricorrenza={r} categorie={categorie} onChanged={() => router.refresh()} />)}
             <button className="btn-ghost" onClick={() => aggiungi(c.id)} type="button">+ Aggiungi giorno</button>
           </div>
         )
@@ -104,10 +104,11 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
   )
 }
 
-function RicorrenzaRiga({ ricorrenza, onChanged }) {
+function RicorrenzaRiga({ ricorrenza, categorie, onChanged }) {
   const [g, setG] = useState(ricorrenza.giorno_settimana)
   const [oi, setOi] = useState(ricorrenza.ora_inizio ? ricorrenza.ora_inizio.slice(0, 5) : '18:00')
   const [ofine, setOfine] = useState(ricorrenza.ora_fine ? ricorrenza.ora_fine.slice(0, 5) : '')
+  const [accorpaCon, setAccorpaCon] = useState(ricorrenza.accorpata_con ?? '')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -116,6 +117,7 @@ function RicorrenzaRiga({ ricorrenza, onChanged }) {
     const supabase = createClient()
     const { error } = await supabase.from('ricorrenze_stagionali').update({
       giorno_settimana: Number(g), ora_inizio: oi || '18:00', ora_fine: ofine || null,
+      accorpata_con: accorpaCon || null,
     }).eq('id', ricorrenza.id)
     if (error) alert('Errore: ' + error.message); else setDone(true)
     setBusy(false); onChanged()
@@ -133,6 +135,17 @@ function RicorrenzaRiga({ ricorrenza, onChanged }) {
       </select>
       <label className="lista-ord">Inizio<input type="time" value={oi} onChange={(e) => { setOi(e.target.value); setDone(false) }} /></label>
       <label className="lista-ord">Fine<input type="time" value={ofine} onChange={(e) => { setOfine(e.target.value); setDone(false) }} /></label>
+      <select
+        value={accorpaCon}
+        onChange={(e) => { setAccorpaCon(e.target.value); setDone(false) }}
+        title="Accorpa con categoria"
+        style={{ maxWidth: 140, fontSize: 12 }}
+      >
+        <option value="">— No accorpamento —</option>
+        {(categorie ?? []).filter(c => c.id !== ricorrenza.squadra_id).map(c => (
+          <option key={c.id} value={c.id}>{c.nome}</option>
+        ))}
+      </select>
       <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '✓' : 'Salva'}</button>
       <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>
     </div>

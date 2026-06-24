@@ -19,6 +19,8 @@ function SezioneCard({ sezione, onChanged }) {
   // Teniamo il file separato dall'URL — così se non si ricarica la foto il vecchio URL resta intatto
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(sezione.immagine_url || '')
+  const [fileMobile, setFileMobile] = useState(null)
+  const [previewMobile, setPreviewMobile] = useState(sezione.immagine_mobile_url || '')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const upd = (k) => (e) => {
@@ -28,6 +30,10 @@ function SezioneCard({ sezione, onChanged }) {
   function onFile(e) {
     const fl = e.target.files?.[0]; if (!fl) return
     setFile(fl); setPreview(URL.createObjectURL(fl)); setDone(false)
+  }
+  function onFileMobile(e) {
+    const fl = e.target.files?.[0]; if (!fl) return
+    setFileMobile(fl); setPreviewMobile(URL.createObjectURL(fl)); setDone(false)
   }
 
   async function salva() {
@@ -44,11 +50,21 @@ function SezioneCard({ sezione, onChanged }) {
         const { error: e1 } = await supabase.storage.from('sito').upload(path, file, { upsert: true })
         if (e1) throw e1
         immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
-        setS((p) => ({ ...p, immagine_url })) // aggiorna stato locale con nuovo URL
+        setS((p) => ({ ...p, immagine_url }))
+      }
+      let immagine_mobile_url = s.immagine_mobile_url ?? null
+      if (fileMobile) {
+        const ext = fileMobile.name.split('.').pop()
+        const path = `sez/${s.id}/mobile_${Date.now()}.${ext}`
+        const { error: e2 } = await supabase.storage.from('sito').upload(path, fileMobile, { upsert: true })
+        if (e2) throw e2
+        immagine_mobile_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
+        setS((p) => ({ ...p, immagine_mobile_url }))
       }
       const { error } = await supabase.from('sito_sezioni').update({
         tipo: s.tipo, ordine: Number(s.ordine) || 0, visibile: s.visibile,
         titolo: s.titolo || null, testo: s.testo || null, immagine_url,
+        immagine_mobile_url,
         foto_posizione: fotoPos,
         altezza_px: s.altezza_px ? Number(s.altezza_px) : null,
         link_url: s.link_url || null,
@@ -67,7 +83,8 @@ function SezioneCard({ sezione, onChanged }) {
     onChanged()
   }
 
-  const dimConsigliate = s.tipo === 'hero' ? '1400×600 px' : s.tipo === 'contenuto' ? '800×600 px' : s.tipo === 'banner' ? '1400 px di larghezza (tutta la larghezza del sito) × altezza scelta sotto' : '400×300 px'
+  const dimConsigliate = s.tipo === 'hero' ? '1400×600 px' : s.tipo === 'contenuto' ? '800×600 px' : s.tipo === 'banner' ? '1400×altezza scelta (desktop) — carica anche versione mobile sotto' : '400×300 px'
+  const dimConsigliateMobile = s.tipo === 'hero' ? '600×400 px' : s.tipo === 'banner' ? '600×altezza scelta (mobile)' : '400×300 px'
 
   return (
     <div className="sez-card">
@@ -147,6 +164,41 @@ function SezioneCard({ sezione, onChanged }) {
           <p style={{ fontSize: 11, color: 'var(--ink-soft)', margin: '6px 0 0' }}>
             Dimensioni consigliate: <b>{dimConsigliate}</b>
           </p>
+
+          {/* Immagine mobile — solo per hero e banner */}
+          {(s.tipo === 'hero' || s.tipo === 'banner') && (
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--linea)' }}>
+              <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                📱 Immagine mobile
+                <span style={{ fontWeight: 400, fontSize: 11, color: 'var(--ink-soft)', marginLeft: 8 }}>
+                  mostrata su schermi fino a 768 px — se non caricata, usa la stessa dell&apos;desktop
+                </span>
+              </label>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div className="sez-thumb" style={{ width: 80, height: 60 }}>
+                  {previewMobile
+                    ? <img src={previewMobile} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <span style={{ fontSize: 11 }}>nessuna</span>}
+                </div>
+                <div>
+                  <label className="foto-upload">
+                    {previewMobile ? 'Cambia immagine mobile' : 'Carica immagine mobile'}
+                    <input type="file" accept="image/*" onChange={onFileMobile} hidden />
+                  </label>
+                  {previewMobile && (
+                    <button type="button" className="btn-ghost btn-del"
+                      style={{ fontSize: 12, marginTop: 6, display: 'block' }}
+                      onClick={() => { setPreviewMobile(''); setFileMobile(null); setS(p => ({ ...p, immagine_mobile_url: null })); setDone(false) }}>
+                      Rimuovi immagine mobile
+                    </button>
+                  )}
+                  <p style={{ fontSize: 11, color: 'var(--ink-soft)', margin: '6px 0 0' }}>
+                    Dimensioni consigliate: <b>{dimConsigliateMobile}</b>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Posizione foto — solo per contenuto */}
           {s.tipo === 'contenuto' && (

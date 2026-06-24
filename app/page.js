@@ -54,11 +54,19 @@ export default async function Home() {
 
         if (tipo === 'hero') {
           const h = sezs[0]
-          const bgStyle = h.immagine_url
+          // Se c'è immagine mobile usa position:relative + <picture>, altrimenti background-image
+          const hasMobileHero = !!h.immagine_mobile_url
+          const bgStyle = h.immagine_url && !hasMobileHero
             ? { backgroundImage: `url(${h.immagine_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
             : {}
           const section = (
-            <div key={gi} className="landing-hero" data-hasimg={h.immagine_url ? '1' : '0'} style={bgStyle}>
+            <div key={gi} className="landing-hero" data-hasimg={h.immagine_url ? '1' : '0'} style={{ position: 'relative', overflow: 'hidden', ...bgStyle }}>
+              {hasMobileHero && (
+                <picture style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+                  <source media="(max-width: 768px)" srcSet={h.immagine_mobile_url} />
+                  <img src={h.immagine_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </picture>
+              )}
               <div className="landing-inner">
                 <div className="hero" data-img={h.immagine_url ? '1' : '0'}>
                   {h.titolo && <h1 className="hero-title">{h.titolo}</h1>}
@@ -121,9 +129,13 @@ export default async function Home() {
         } else if (tipo === 'banner') {
           return sezs.map((b) => {
             const altezza = b.altezza_px ?? 300
-            // background-size: contain mostra l'intera immagine senza tagliarla
-            // background-color serve come sfondo per le aree vuote attorno all'immagine
-            const bgStyle = b.immagine_url
+            // Se c'è immagine mobile usiamo un <picture> con <source media>
+            // altrimenti fallback all'immagine desktop su tutti i dispositivi
+            const hasMobile = !!b.immagine_mobile_url
+            const hasDesktop = !!b.immagine_url
+
+            // Stile di sfondo usato SOLO se non c'è immagine mobile definita (caso semplice)
+            const bgStyleDesktop = hasDesktop
               ? {
                   backgroundImage: `url(${b.immagine_url})`,
                   backgroundSize: 'contain',
@@ -132,11 +144,41 @@ export default async function Home() {
                   backgroundColor: '#0d2137',
                 }
               : { backgroundColor: '#0a5a8a' }
+
+            // Se ha immagine mobile, usiamo <picture> assoluto invece del background-image
+            // così possiamo usare media queries native del browser
             const contenuto = (
-              <div key={b.id} className="landing-banner" style={{ minHeight: altezza, ...bgStyle }}>
-                {/* Nessun overlay — l'immagine deve vedersi come caricata */}
+              <div
+                key={b.id}
+                className="landing-banner"
+                style={{
+                  minHeight: altezza,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  ...(hasMobile ? { backgroundColor: '#0d2137' } : bgStyleDesktop),
+                }}
+              >
+                {/* Immagine con media query nativa — solo se c'è almeno una delle due */}
+                {(hasMobile || hasDesktop) && (
+                  <picture style={{
+                    position: 'absolute', inset: 0, zIndex: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {hasMobile && (
+                      <source media="(max-width: 768px)" srcSet={b.immagine_mobile_url} />
+                    )}
+                    {hasDesktop && (
+                      <img
+                        src={b.immagine_url}
+                        alt=""
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                      />
+                    )}
+                  </picture>
+                )}
+                {/* Testo sopra l'immagine */}
                 {(b.titolo || b.testo) && (
-                  <div className="landing-banner-inner">
+                  <div className="landing-banner-inner" style={{ position: 'relative', zIndex: 1 }}>
                     {b.titolo && <h2>{b.titolo}</h2>}
                     {b.testo && <p>{renderTesto(b.testo)}</p>}
                   </div>

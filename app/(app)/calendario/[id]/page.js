@@ -111,7 +111,7 @@ export default async function AllenamentoPage({ params }) {
     supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
     supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
     supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id, profili(ruolo)').order('titolo'),
-    supabase.from('allenamento_esercizi').select('esercizio_id, ordine, esercizi(id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id)').eq('allenamento_id', id).order('ordine'),
+    supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', id).order('ordine'),
     supabase.from('valutazioni')
       .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
       .eq('allenamento_id', id)
@@ -144,11 +144,16 @@ export default async function AllenamentoPage({ params }) {
   // Ordine esercizi dell'allenamento (per selezionatiIniziali)
   const eserciziOrdinati = (aeRows ?? []).sort((a, b) => a.ordine - b.ordine).map((r) => r.esercizio_id)
 
-  // Esercizi già selezionati nell'allenamento — inclusi sempre in libreria per evitare
-  // che spariscano dall'OrdineView quando non visibili via RLS
-  const eserciziSelezionati = (aeRows ?? [])
-    .map((r) => r.esercizi).filter(Boolean)
-    .map((e) => ({ ...e, autore_nome: null, _daAllenamento: true }))
+  // Carica gli esercizi già selezionati nell'allenamento con una query separata
+  // per garantire che compaiano anche se non visibili tramite RLS della libreria
+  let eserciziSelezionati = []
+  if (eserciziOrdinati.length > 0) {
+    const { data: esRows } = await supabase
+      .from('esercizi')
+      .select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id')
+      .in('id', eserciziOrdinati)
+    eserciziSelezionati = (esRows ?? []).map((e) => ({ ...e, autore_nome: null }))
+  }
 
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)

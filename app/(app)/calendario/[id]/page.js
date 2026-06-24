@@ -146,14 +146,13 @@ export default async function AllenamentoPage({ params }) {
 
   // Carica gli esercizi già selezionati nell'allenamento con una query separata
   // per garantire che compaiano anche se non visibili tramite RLS della libreria
-  let eserciziSelezionati = []
-  if (eserciziOrdinati.length > 0) {
-    const { data: esRows } = await supabase
-      .from('esercizi')
-      .select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id')
-      .in('id', eserciziOrdinati)
-    eserciziSelezionati = (esRows ?? []).map((e) => ({ ...e, autore_nome: null }))
-  }
+  const { data: esSelRows } = eserciziOrdinati.length > 0
+    ? await supabase
+        .from('esercizi')
+        .select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id')
+        .in('id', eserciziOrdinati)
+    : { data: [] }
+  const eserciziSelezionati = (esSelRows ?? []).map((e) => ({ ...e, autore_nome: null }))
 
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)

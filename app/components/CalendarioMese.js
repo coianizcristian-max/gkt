@@ -14,6 +14,8 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const [cursor, setCursor] = useState(() => new Date(oggi.getFullYear(), oggi.getMonth(), 1))
   const [filtro,  setFiltro]  = useState('')
   const [selectedDay, setSelectedDay] = useState(null) // numero giorno selezionato
+  const [previewExtra, setPreviewExtra] = useState({}) // { [allenamId]: { esercizi: [] } }
+  const [loadingExtra, setLoadingExtra] = useState(false)
 
   const year  = cursor.getFullYear()
   const month = cursor.getMonth()
@@ -65,11 +67,36 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
 
   const labelPartita = (p) => `${p.casa ? '🏠' : '✈'} ${p.avversario || 'Partita'}`
 
-  // Click su cella: toggle selezione
-  function handleCellClick(day) {
+  // Click su cella: toggle selezione e carica esercizi lazy
+  async function handleCellClick(day) {
     const evs = byDay[day] ?? []
-    if (evs.length === 0) return // cella vuota, nessuna preview
-    setSelectedDay(prev => prev === day ? null : day)
+    if (evs.length === 0) return
+    if (selectedDay === day) { setSelectedDay(null); return }
+    setSelectedDay(day)
+    // Carica esercizi solo per gli allenamenti di questo giorno non ancora caricati
+    const allIds = evs.filter(e => e._tipo === 'allenamento' && !previewExtra[e.id]).map(e => e.id)
+    if (allIds.length === 0) return
+    setLoadingExtra(true)
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const { data: ae } = await supabase
+        .from('allenamento_esercizi')
+        .select('allenamento_id, ordine, esercizi(id, titolo, tipologia)')
+        .in('allenamento_id', allIds)
+        .order('ordine')
+      const byAll = {}
+      for (const r of (ae ?? [])) {
+        if (!byAll[r.allenamento_id]) byAll[r.allenamento_id] = []
+        if (r.esercizi) byAll[r.allenamento_id].push(r.esercizi)
+      }
+      setPreviewExtra(prev => {
+        const next = { ...prev }
+        for (const id of allIds) next[id] = { esercizi: byAll[id] ?? [] }
+        return next
+      })
+    } catch (_) {}
+    setLoadingExtra(false)
   }
 
   // Preview degli eventi del giorno selezionato
@@ -235,8 +262,8 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                     <div className="cal-preview-categoria">{ev.squadra_nome}</div>
                   </div>
                   <div className="cal-preview-meta">
-                    {ev.ora_inizio ? ev.ora_inizio.slice(0,5) : null}
-                    {ev.ora_fine ? ` → ${ev.ora_fine.slice(0,5)}` : null}
+                    {ev.ora_inizio ? ev.ora_inizio.slice(0,5) : '—'}
+                    {ev.ora_fine ? ` → ${ev.ora_fine.slice(0,5)}` : ''}
                   </div>
                 </div>
                 <div className="cal-preview-stato">
@@ -248,6 +275,27 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                         ? <span style={{color:'var(--campo)'}}>✓ Valutato</span>
                         : <span style={{color:'var(--ink-soft)'}}>Programmato</span>}
                 </div>
+                {/* Esercizi pianificati */}
+                {previewExtra[ev.id] && (
+                  <div className="cal-preview-esercizi">
+                    {previewExtra[ev.id].esercizi.length > 0
+                      ? <>
+                          <div className="cal-preview-esercizi-label">📋 Esercizi:</div>
+                          <ol className="cal-preview-esercizi-list">
+                            {previewExtra[ev.id].esercizi.map((e, i) => (
+                              <li key={e.id}>
+                                <span className="cal-preview-es-nome">{e.titolo}</span>
+                                {e.tipologia && <span className="cal-preview-es-tipo"> · {e.tipologia}</span>}
+                              </li>
+                            ))}
+                          </ol>
+                        </>
+                      : <div style={{fontSize:12,color:'var(--ink-soft)'}}>Nessun esercizio pianificato</div>}
+                  </div>
+                )}
+                {loadingExtra && !previewExtra[ev.id] && (
+                  <div style={{fontSize:12,color:'var(--ink-soft)',margin:'6px 0'}}>Caricamento esercizi...</div>
+                )}
                 <div className="cal-preview-actions">
                   <Link href={`/calendario/${ev.id}`} className="btn-mini">
                     {daVal ? 'Inserisci valutazioni →' : 'Apri allenamento →'}

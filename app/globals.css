@@ -1495,3 +1495,95 @@ a.brand { text-decoration: none; color: inherit; }
   display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;
   padding-top: 20px; border-top: 1px solid var(--linea);
 }
+
+/* ===== Calendario: cella selezionata ===== */
+.cal-cell-selected {
+  background: rgba(10, 126, 194, 0.08);
+  outline: 2px solid var(--azzurro);
+  outline-offset: -2px;
+  border-radius: var(--r-sm);
+}
+
+/* ===== Calendario: preview giorno ===== */
+.cal-preview {
+  margin-top: 16px;
+  border: 1.5px solid var(--azzurro);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.cal-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(10, 126, 194, 0.07);
+  border-bottom: 1px solid var(--linea);
+}
+.cal-preview-titolo {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.cal-preview-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--ink-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.cal-preview-close:hover { background: var(--linea); }
+
+.cal-preview-card {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--linea);
+  background: var(--bianco);
+}
+.cal-preview-card:last-child { border-bottom: none; }
+.cal-preview-card.cal-preview-daval {
+  background: rgba(192, 57, 43, 0.04);
+}
+.cal-preview-partita {
+  background: rgba(124, 58, 237, 0.04);
+}
+.cal-preview-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.cal-preview-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: 4px;
+}
+.cal-preview-categoria {
+  font-size: 16px;
+  font-weight: 700;
+}
+.cal-preview-meta {
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: right;
+  white-space: nowrap;
+}
+.cal-preview-risultato {
+  font-weight: 700;
+  color: var(--ink);
+}
+.cal-preview-avversario {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--ink-soft);
+}
+.cal-preview-stato {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.cal-preview-actions { display: flex; gap: 8px; }

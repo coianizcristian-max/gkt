@@ -59,24 +59,41 @@ export default async function AppLayout({ children }) {
 
   const schedaHref = isPortiere && portiereId ? `/portieri/${portiereId}` : '/portieri'
 
-  // Costruisce array voci per SidebarMobile
+  // Carica ordine sidebar personalizzato dal supervisore
+  const { data: sidebarOrdineRows } = await supabase
+    .from('sidebar_ordine').select('chiave, ordine').order('ordine')
+  const sidebarOrdine = sidebarOrdineRows ?? []
+
+  // Costruisce mappa chiave→voce (con condizioni di visibilità)
+  const tutteLeVoci = {
+    'dashboard':     isStaff ? { href: '/dashboard', label: '🏠 Dashboard' } : null,
+    'portieri':      (isPortiere || vedePortieri) ? { href: schedaHref, label: isPortiere ? 'La mia scheda' : 'Portieri' } : null,
+    'calendario':    (isPortiere || vedeAllenamenti) ? { href: '/calendario', label: 'Calendario' } : null,
+    'ricorrenze':    (isStaff && vedeAllenamenti) ? { href: '/ricorrenze', label: 'Ricorrenze' } : null,
+    'partite':       (isPortiere || vedePartite) ? { href: '/partite', label: 'Partite' } : null,
+    'statistiche':   (isPortiere || vedeStatistiche) ? { href: '/statistiche', label: 'Statistiche' } : null,
+    'esercizi':      (isStaff && vedeAllenamenti) ? { href: '/esercizi', label: 'Esercizi' } : null,
+    'profilo':       isStaff ? { href: '/profilo', label: 'Profilo allenatore' } : null,
+    'inviti':        isStaff ? { href: '/inviti', label: 'Inviti' } : null,
+    'contatti':      isStaff ? { href: '/contatti', label: 'Contatti ricevuti' } : null,
+    'come-iniziare': { href: '/come-iniziare', label: 'Come iniziare' },
+    'archivio':      { href: '/archivio', label: 'Archivio' },
+    'suggerimenti':  { href: '/suggerimenti', label: 'Suggerimenti' },
+    'newsletter':    { href: '/newsletter', label: 'Newsletter' },
+    'account':       { href: '/account', label: '👤 Account' },
+    'supervisore':   isSupervisore ? { href: '/supervisore', label: 'Supervisore' } : null,
+    'abbonati':      mostraAbbonati ? { href: '/abbonati', label: '🔓 Abbonati' } : null,
+  }
+
+  // Ordina le chiavi secondo sidebarOrdine dal DB; le chiavi non presenti vanno in fondo
+  const ordineChiavi = sidebarOrdine.length > 0
+    ? sidebarOrdine.map((r) => r.chiave)
+    : Object.keys(tutteLeVoci)
+  // Aggiungi chiavi non coperte dall'ordine salvato (nuove voci future)
+  const tutteChiavi = [...ordineChiavi, ...Object.keys(tutteLeVoci).filter(k => !ordineChiavi.includes(k))]
+
   const voci = [
-    ...(isStaff ? [{ href: '/dashboard', label: '🏠 Dashboard' }] : []),
-    ...(isPortiere || vedePortieri ? [{ href: schedaHref, label: isPortiere ? 'La mia scheda' : 'Portieri' }] : []),
-    ...(isPortiere || vedeAllenamenti ? [{ href: '/calendario', label: 'Calendario' }] : []),
-    ...(isStaff && vedeAllenamenti ? [{ href: '/ricorrenze', label: 'Ricorrenze' }] : []),
-    ...(isPortiere || vedePartite ? [{ href: '/partite', label: 'Partite' }] : []),
-    ...(isPortiere || vedeStatistiche ? [{ href: '/statistiche', label: 'Statistiche' }] : []),
-    ...(isStaff && vedeAllenamenti ? [{ href: '/esercizi', label: 'Esercizi' }] : []),
-    ...(isStaff ? [{ href: '/profilo', label: 'Profilo allenatore' }] : []),
-    ...(isStaff ? [{ href: '/inviti', label: 'Inviti' }] : []),
-    ...(isStaff ? [{ href: '/contatti', label: 'Contatti ricevuti' }] : []),
-    { href: '/come-iniziare', label: 'Come iniziare' },
-    { href: '/archivio', label: 'Archivio' },
-    { href: '/suggerimenti', label: 'Suggerimenti' },
-    { href: '/account', label: '👤 Account' },
-    ...(isSupervisore ? [{ href: '/supervisore', label: 'Supervisore' }] : []),
-    ...(mostraAbbonati ? [{ href: '/abbonati', label: '🔓 Abbonati' }] : []),
+    ...tutteChiavi.map((k) => tutteLeVoci[k]).filter(Boolean),
     { type: 'divider', key: 'd1' },
     { href: '/', label: '↗ Vai al sito' },
     { type: 'signout', key: 'signout' },
@@ -102,25 +119,9 @@ export default async function AppLayout({ children }) {
             🎟 Periodo gratuito: {couponGiorni} gg rimasti
           </div>
         )}
-        {isStaff && <NavLink href="/dashboard">🏠 Dashboard</NavLink>}
-        {(isPortiere || vedePortieri) && (isPortiere
-          ? <NavLink href={schedaHref}>La mia scheda</NavLink>
-          : <NavLink href="/portieri">Portieri</NavLink>)}
-        {(isPortiere || vedeAllenamenti) && <NavLink href="/calendario">Calendario</NavLink>}
-        {isStaff && vedeAllenamenti && <NavLink href="/ricorrenze">Ricorrenze</NavLink>}
-        {(isPortiere || vedePartite) && <NavLink href="/partite">Partite</NavLink>}
-        {(isPortiere || vedeStatistiche) && <NavLink href="/statistiche">Statistiche</NavLink>}
-        {isStaff && vedeAllenamenti && <NavLink href="/esercizi">Esercizi</NavLink>}
-        {isStaff && <NavLink href="/profilo">Profilo allenatore</NavLink>}
-        {isStaff && <NavLink href="/inviti">Inviti</NavLink>}
-        {isStaff && <NavLink href="/contatti">Contatti ricevuti</NavLink>}
-        <NavLink href="/come-iniziare">Come iniziare</NavLink>
-        <NavLink href="/archivio">Archivio</NavLink>
-        <NavLink href="/suggerimenti">Suggerimenti</NavLink>
-        <NavLink href="/newsletter">Newsletter</NavLink>
-        <NavLink href="/account">👤 Account</NavLink>
-        {isSupervisore && <NavLink href="/supervisore">Supervisore</NavLink>}
-        {mostraAbbonati && <NavLink href="/abbonati">🔓 Abbonati</NavLink>}
+        {voci.filter(v => v.href && v.href !== '/').map((v) => (
+          <NavLink key={v.href} href={v.href}>{v.label}</NavLink>
+        ))}
         <div className="sidebar-foot">
           <Link href="/" className="nav-link nav-sito">↗ Vai al sito</Link>
           <SignOutButton />

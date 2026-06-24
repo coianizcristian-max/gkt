@@ -66,25 +66,28 @@ export default function CercaAllenatoriBox() {
           />
         </div>
 
-        {/* Seconda riga: CAP + Provincia + Cerca */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {/* Seconda riga: CAP + Provincia */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
           <input
             value={cap}
             onChange={(e) => setCap(e.target.value)}
             onKeyDown={onKey}
-            placeholder="CAP  (es. 36100)"
+            placeholder="CAP (es. 36100)"
             maxLength={5}
-            style={{ width: 110, padding: '11px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: '1rem', flexShrink: 0 }}
+            style={{ flex: '0 0 100px', minWidth: 0, padding: '11px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: '1rem' }}
           />
           <input
             value={provincia}
             onChange={(e) => setProvincia(e.target.value)}
             onKeyDown={onKey}
-            placeholder="Provincia  (es. VI)"
+            placeholder="Provincia (es. VI)"
             maxLength={30}
-            style={{ width: 140, padding: '11px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: '1rem', flexShrink: 0 }}
+            style={{ flex: 1, minWidth: 0, padding: '11px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: '1rem' }}
           />
-          <button className="btn" onClick={cerca} disabled={loading} type="button" style={{ flex: 1, minWidth: '100%' }}>
+        </div>
+        {/* Terza riga: Cerca */}
+        <div>
+          <button className="btn" onClick={cerca} disabled={loading} type="button" style={{ width: '100%' }}>
             {loading ? 'Cerco...' : 'Cerca'}
           </button>
         </div>

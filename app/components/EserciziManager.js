@@ -53,10 +53,31 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
   const [editing, setEditing] = useState(null)
   const [popup, setPopup] = useState(null)
   const [tabAttivo, setTabAttivo] = useState(null)
-  const [sezione, setSezione] = useState('miei') // 'miei' | 'pubblici'
+  const [sezione, setSezione] = useState('miei') // 'miei' | 'pubblici' | 'scopri'
+  const [esPublici, setEsPublici] = useState(null) // null=non caricati
+  const [prefIds, setPrefIds] = useState(new Set((eserciziPubblici ?? []).map(e => e.id)))
+  const [loadingPref, setLoadingPref] = useState(null) // id in corso
 
   // Ragruppa per tipologia — sezione corrente
   const lista = sezione === 'miei' ? esercizi : eserciziPubblici
+
+  async function togglePreferito(esercizioId) {
+    setLoadingPref(esercizioId)
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    if (prefIds.has(esercizioId)) {
+      await supabase.from('esercizi_preferiti').delete()
+        .eq('allenatore_id', allenatoreId).eq('esercizio_id', esercizioId)
+      setPrefIds(prev => { const s = new Set(prev); s.delete(esercizioId); return s })
+    } else {
+      await supabase.from('esercizi_preferiti').upsert(
+        { allenatore_id: allenatoreId, esercizio_id: esercizioId },
+        { onConflict: 'allenatore_id,esercizio_id' }
+      )
+      setPrefIds(prev => new Set([...prev, esercizioId]))
+    }
+    setLoadingPref(null)
+  }
   const gruppi = {}
   for (const e of lista) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
   const chiavi = Object.keys(gruppi).sort()
@@ -91,7 +112,25 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
         <button type="button"
           className={`sub-nav-link ${sezione === 'pubblici' ? 'active' : ''}`}
           onClick={() => { setSezione('pubblici'); setTabAttivo(null) }}>
-          ★ Pubblici preferiti ({eserciziPubblici.length})
+          ★ Preferiti ({eserciziPubblici.length})
+        </button>
+        <button type="button"
+          className={`sub-nav-link ${sezione === 'scopri' ? 'active' : ''}`}
+          onClick={async () => {
+            setSezione('scopri'); setTabAttivo(null)
+            if (esPublici === null) {
+              const supabase = (await import('@/lib/supabase/client')).createClient()
+              const { data } = await supabase
+                .from('esercizi')
+                .select('id, titolo, tipologia, immagine_url, descrizione, note, allenatore_id')
+                .eq('pubblico', true)
+                .eq('archiviato', false)
+                .neq('allenatore_id', allenatoreId)
+                .order('titolo')
+              setEsPublici(data ?? [])
+            }
+          }}>
+          🌐 Libreria pubblica
         </button>
       </div>
 
@@ -137,6 +176,47 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
             </div>
           )}
         </>
+      )}
+
+      {/* Sezione libreria pubblica */}
+      {sezione === 'scopri' && (
+        <div style={{ marginTop: 8 }}>
+          {esPublici === null && <div className="empty">Caricamento...</div>}
+          {esPublici !== null && esPublici.length === 0 && (
+            <div className="empty">Nessun esercizio pubblico disponibile al momento.</div>
+          )}
+          {esPublici !== null && esPublici.length > 0 && (
+            <div className="es-lib-grid">
+              {esPublici.map((e) => (
+                <div key={e.id} className="es-lib-tile" style={{ position: 'relative' }}>
+                  <button className="es-lib-img-wrap" type="button" onClick={() => setPopup(e)} title="Vedi dettaglio">
+                    {e.immagine_url
+                      ? <img src={e.immagine_url} alt="" />
+                      : <div className="es-lib-no-img">📋</div>}
+                  </button>
+                  <div className="es-lib-info">
+                    <button className="es-lib-titolo" type="button" onClick={() => setPopup(e)}>{e.titolo}</button>
+                  </div>
+                  <button
+                    className="btn-mini"
+                    type="button"
+                    disabled={loadingPref === e.id}
+                    onClick={() => togglePreferito(e.id)}
+                    title={prefIds.has(e.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                    style={{
+                      background: prefIds.has(e.id) ? 'var(--giallo, #e8a72c)' : undefined,
+                      color: prefIds.has(e.id) ? '#000' : undefined,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {loadingPref === e.id ? '...' : prefIds.has(e.id) ? '★ Salvato' : '☆ Salva'}
+                  </button>
+                  <button className="btn-mini es-lib-edit" type="button" onClick={() => setPopup(e)}>Dettaglio</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )

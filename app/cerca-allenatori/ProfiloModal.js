@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 
 export default function ProfiloModal({ allenatoreId, onClose }) {
   const [profilo, setProfilo] = useState(null)
@@ -24,19 +23,13 @@ export default function ProfiloModal({ allenatoreId, onClose }) {
 
   useEffect(() => {
     async function carica() {
-      const supabase = createClient()
-      const [{ data: p }, { data: feeConfig }, { data: feeImporto }] = await Promise.all([
-        supabase.from('profili')
-          .select('id, nome_completo, bio, foto_url, citta, esperienze, certificati, disponibile')
-          .eq('id', allenatoreId).maybeSingle(),
-        supabase.from('funzionalita_config').select('free, label').eq('chiave', 'contatto_form').maybeSingle(),
-        supabase.from('funzionalita_config').select('label').eq('chiave', 'fee_contatto_importo').maybeSingle(),
-      ])
-      setProfilo(p)
-      setGating({
-        free: feeConfig?.free ?? true,
-        importo: feeImporto?.label ?? '2.90',
-      })
+      try {
+        const res = await fetch(`/api/profilo-pubblico?id=${allenatoreId}`)
+        if (!res.ok) { setLoading(false); return }
+        const json = await res.json()
+        setProfilo(json.profilo ?? null)
+        setGating(json.gating ?? { free: true, importo: '2.90' })
+      } catch (_) { /* rete */ }
       setLoading(false)
     }
     carica()

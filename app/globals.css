@@ -1598,3 +1598,11 @@ a.brand { text-decoration: none; color: inherit; }
 .cal-preview-esercizi-list li { font-size: 13px; }
 .cal-preview-es-nome { font-weight: 600; }
 .cal-preview-es-tipo { color: var(--ink-soft); font-size: 12px; }
+
+.cal-preview-note {
+  padding: 8px 10px;
+  background: var(--carta);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--linea);
+  margin-bottom: 6px;
+}

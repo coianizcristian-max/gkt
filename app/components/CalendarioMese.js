@@ -80,19 +80,29 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     try {
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
-      const { data: ae } = await supabase
-        .from('allenamento_esercizi')
-        .select('allenamento_id, ordine, esercizi(id, titolo, tipologia)')
-        .in('allenamento_id', allIds)
-        .order('ordine')
+      const [{ data: ae }, { data: allRows }] = await Promise.all([
+        supabase.from('allenamento_esercizi')
+          .select('allenamento_id, ordine, esercizi(id, titolo, tipologia)')
+          .in('allenamento_id', allIds)
+          .order('ordine'),
+        supabase.from('allenamenti')
+          .select('id, obiettivi, consuntivo')
+          .in('id', allIds),
+      ])
       const byAll = {}
       for (const r of (ae ?? [])) {
         if (!byAll[r.allenamento_id]) byAll[r.allenamento_id] = []
         if (r.esercizi) byAll[r.allenamento_id].push(r.esercizi)
       }
+      const allMap = {}
+      for (const a of (allRows ?? [])) allMap[a.id] = a
       setPreviewExtra(prev => {
         const next = { ...prev }
-        for (const id of allIds) next[id] = { esercizi: byAll[id] ?? [] }
+        for (const id of allIds) next[id] = {
+          esercizi: byAll[id] ?? [],
+          obiettivi: allMap[id]?.obiettivi ?? null,
+          consuntivo: allMap[id]?.consuntivo ?? null,
+        }
         return next
       })
     } catch (_) {}
@@ -275,6 +285,19 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                         ? <span style={{color:'var(--campo)'}}>✓ Valutato</span>
                         : <span style={{color:'var(--ink-soft)'}}>Programmato</span>}
                 </div>
+                {/* Obiettivi e consuntivo */}
+                {previewExtra[ev.id]?.obiettivi && (
+                  <div className="cal-preview-note" style={{marginBottom:6}}>
+                    <span className="cal-preview-esercizi-label">🎯 Obiettivi:</span>
+                    <p style={{margin:'4px 0 0',fontSize:13,whiteSpace:'pre-wrap'}}>{previewExtra[ev.id].obiettivi}</p>
+                  </div>
+                )}
+                {previewExtra[ev.id]?.consuntivo && (
+                  <div className="cal-preview-note" style={{marginBottom:6}}>
+                    <span className="cal-preview-esercizi-label">📝 Consuntivo:</span>
+                    <p style={{margin:'4px 0 0',fontSize:13,whiteSpace:'pre-wrap'}}>{previewExtra[ev.id].consuntivo}</p>
+                  </div>
+                )}
                 {/* Esercizi pianificati */}
                 {previewExtra[ev.id] && (
                   <div className="cal-preview-esercizi">

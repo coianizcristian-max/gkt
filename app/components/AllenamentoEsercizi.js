@@ -282,7 +282,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
 }
 
 // ─── Componente principale ────────────────────────────────────────────────────
-export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], libreriaPubblica = [], selezionatiIniziali }) {
+export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], libreriaPubblica = [], selezionatiIniziali, selezionatiEsercizi = [] }) {
   const router = useRouter()
   const [tab, setTab] = useState('libreria')
   const [sel, setSel] = useState(new Set(selezionatiIniziali))
@@ -291,7 +291,10 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
-  const tuttiEsercizi = [...libreriaMia, ...libreriaPubblica]
+  // tuttiEsercizi include anche gli esercizi già selezionati non presenti in libreria
+  const idInLibreria = new Set([...libreriaMia, ...libreriaPubblica].map(e => e.id))
+  const esExtra = selezionatiEsercizi.filter(e => !idInLibreria.has(e.id))
+  const tuttiEsercizi = [...libreriaMia, ...libreriaPubblica, ...esExtra]
 
   const toggle = useCallback((id) => {
     setSel((s) => {

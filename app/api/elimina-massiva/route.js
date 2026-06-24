@@ -20,14 +20,30 @@ export async function POST(request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
 
-    // Verifica che la stagione appartenga all'owner
     const ownerId = await getOwnerId(supabase, user.id)
-    const { data: stagione } = await supabase
+
+    // Verifica che la stagione appartenga all'owner
+    const { data: stagione, error: stagErr } = await supabase
       .from('stagioni').select('id').eq('id', stagioneId).eq('owner_id', ownerId).maybeSingle()
-    if (!stagione) return NextResponse.json({ error: 'Stagione non trovata.' }, { status: 403 })
+
+    // DEBUG: risposta con dettagli intermedi se richiesto
+    const debug = {
+      userId: user.id,
+      ownerId,
+      stagioneId,
+      stagioneTrovata: !!stagione,
+      stagErrMsg: stagErr?.message ?? null,
+      dal,
+      al,
+      categoriaId,
+      filtroVal,
+    }
+
+    if (!stagione) {
+      return NextResponse.json({ error: 'Stagione non trovata.', debug }, { status: 403 })
+    }
 
     if (tipo === 'allenamenti') {
-      // Leggo gli allenamenti nel range
       let q = supabase.from('allenamenti')
         .select('id')
         .eq('stagione_id', stagioneId)
@@ -36,11 +52,15 @@ export async function POST(request) {
       if (categoriaId && categoriaId !== 'tutte') q = q.eq('squadra_id', categoriaId)
       const { data: rows, error: selErr } = await q
       if (selErr) throw selErr
-      if (!rows || rows.length === 0) return NextResponse.json({ eliminati: 0 })
+
+      debug.allenamentiFiltroDate = rows?.length ?? 0
+
+      if (!rows || rows.length === 0) {
+        return NextResponse.json({ eliminati: 0, debug })
+      }
 
       let ids = rows.map((r) => r.id)
 
-      // Filtro valutazioni: cerco quali allenamenti hanno almeno una valutazione
       if (filtroVal === 'senza' || filtroVal === 'con') {
         const { data: valRows, error: valErr } = await supabase
           .from('valutazioni')
@@ -48,25 +68,24 @@ export async function POST(request) {
           .in('allenamento_id', ids)
         if (valErr) throw valErr
 
+        debug.valutazioniTrovate = valRows?.length ?? 0
         const conVal = new Set((valRows ?? []).map((v) => v.allenamento_id))
 
         if (filtroVal === 'senza') {
-          // Tieni solo quelli che NON hanno valutazioni
           ids = ids.filter((id) => !conVal.has(id))
         } else {
-          // Tieni solo quelli che HANNO valutazioni
           ids = ids.filter((id) => conVal.has(id))
         }
+        debug.idsDopofiltroVal = ids.length
       }
 
-      if (!ids.length) return NextResponse.json({ eliminati: 0 })
+      if (!ids.length) return NextResponse.json({ eliminati: 0, debug })
 
       const { error: delErr } = await supabase.from('allenamenti').delete().in('id', ids)
       if (delErr) throw delErr
-      return NextResponse.json({ eliminati: ids.length })
+      return NextResponse.json({ eliminati: ids.length, debug })
 
     } else {
-      // partite
       let q = supabase.from('partite')
         .select('id')
         .eq('stagione_id', stagioneId)
@@ -75,11 +94,13 @@ export async function POST(request) {
       if (categoriaId && categoriaId !== 'tutte') q = q.eq('squadra_id', categoriaId)
       const { data: rows, error: selErr } = await q
       if (selErr) throw selErr
-      if (!rows || rows.length === 0) return NextResponse.json({ eliminati: 0 })
+
+      debug.partiteFiltroDate = rows?.length ?? 0
+
+      if (!rows || rows.length === 0) return NextResponse.json({ eliminati: 0, debug })
 
       let ids = rows.map((r) => r.id)
 
-      // Filtro valutazioni partite
       if (filtroVal === 'senza' || filtroVal === 'con') {
         const { data: valRows, error: valErr } = await supabase
           .from('valutazioni_partita')
@@ -87,6 +108,7 @@ export async function POST(request) {
           .in('partita_id', ids)
         if (valErr) throw valErr
 
+        debug.valutazioniTrovate = valRows?.length ?? 0
         const conVal = new Set((valRows ?? []).map((v) => v.partita_id))
 
         if (filtroVal === 'senza') {
@@ -94,13 +116,14 @@ export async function POST(request) {
         } else {
           ids = ids.filter((id) => conVal.has(id))
         }
+        debug.idsDopofiltroVal = ids.length
       }
 
-      if (!ids.length) return NextResponse.json({ eliminati: 0 })
+      if (!ids.length) return NextResponse.json({ eliminati: 0, debug })
 
       const { error: delErr } = await supabase.from('partite').delete().in('id', ids)
       if (delErr) throw delErr
-      return NextResponse.json({ eliminati: ids.length })
+      return NextResponse.json({ eliminati: ids.length, debug })
     }
 
   } catch (err) {

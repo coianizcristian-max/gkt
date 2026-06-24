@@ -151,26 +151,31 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                 {evs.map((ev) => {
                   if (ev._tipo === 'partita') {
                     return (
-                      <span key={`p-${ev.id}`} className="cal-ev cal-ev-partita" style={stylePartita(ev)}
-                        title={`${ev.tipo} · ${ev.squadra_nome}`}>
+                      <Link key={`p-${ev.id}`} href={`/partite/${ev.id}`}
+                        className="cal-ev cal-ev-partita" style={stylePartita(ev)}
+                        title={`${ev.tipo} · ${ev.squadra_nome}`}
+                        onClick={(e) => e.stopPropagation()}>
                         {labelPartita(ev)}
-                      </span>
+                      </Link>
                     )
                   }
                   if (isPortiere) {
                     return (
-                      <span key={ev.id} className="cal-ev" style={stylePortiere(ev)}>
+                      <Link key={ev.id} href={`/calendario/${ev.id}`}
+                        className="cal-ev" style={stylePortiere(ev)}
+                        onClick={(e) => e.stopPropagation()}>
                         {ev.squadra_nome}
-                      </span>
+                      </Link>
                     )
                   }
                   const cls = ev.valutato ? 'ev-verde' : (ev.data < oggiStr ? 'ev-rosso' : '')
                   return (
-                    <span key={ev.id}
+                    <Link key={ev.id} href={`/calendario/${ev.id}`}
                       className={`cal-ev ${cls}`}
-                      style={ev.accorpata_con ? { outline: '2px solid var(--giallo)', outlineOffset: '-2px' } : {}}>
+                      style={ev.accorpata_con ? { outline: '2px solid var(--giallo)', outlineOffset: '-2px' } : {}}
+                      onClick={(e) => e.stopPropagation()}>
                       {ev.squadra_nome}
-                    </span>
+                    </Link>
                   )
                 })}
               </div>

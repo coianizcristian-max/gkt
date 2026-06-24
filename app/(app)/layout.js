@@ -132,14 +132,16 @@ export default async function AppLayout({ children }) {
       {/* Header mobile con hamburger */}
       <SidebarMobile voci={voci} brand={brand} />
 
-      <main className="main">{children}</main>
-      <footer className="app-foot">
-        <a href="/privacy-policy">Privacy</a>
-        <span>·</span>
-        <a href="/cookie-policy">Cookie</a>
-        <span>·</span>
-        <a href="/termini-di-servizio">Termini</a>
-      </footer>
+      <div className="main-col">
+        <main className="main">{children}</main>
+        <footer className="app-foot">
+          <a href="/privacy-policy">Privacy</a>
+          <span>·</span>
+          <a href="/cookie-policy">Cookie</a>
+          <span>·</span>
+          <a href="/termini-di-servizio">Termini</a>
+        </footer>
+      </div>
     </div>
   )
 }

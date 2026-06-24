@@ -1458,7 +1458,9 @@ a.brand { text-decoration: none; color: inherit; }
 .landing-foot-sep { opacity: 0.4; }
 
 /* Footer area riservata */
-.app-foot { grid-column: 2; padding: 12px 24px; border-top: 1px solid var(--linea); font-size: 11px; color: var(--ink-soft); display: flex; gap: 10px; align-items: center; }
+.main-col { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100vh; }
+.main-col .main { flex: 1; }
+.app-foot { padding: 12px 24px; border-top: 1px solid var(--linea); font-size: 11px; color: var(--ink-soft); display: flex; gap: 10px; align-items: center; }
 .app-foot a { color: var(--ink-soft); text-decoration: none; }
 .app-foot a:hover { color: var(--azzurro); }
 
@@ -1535,19 +1537,14 @@ a.brand { text-decoration: none; color: inherit; }
   border-radius: 4px;
 }
 .cal-preview-close:hover { background: var(--linea); }
-
 .cal-preview-card {
   padding: 14px 16px;
   border-bottom: 1px solid var(--linea);
   background: var(--bianco);
 }
 .cal-preview-card:last-child { border-bottom: none; }
-.cal-preview-card.cal-preview-daval {
-  background: rgba(192, 57, 43, 0.04);
-}
-.cal-preview-partita {
-  background: rgba(124, 58, 237, 0.04);
-}
+.cal-preview-card.cal-preview-daval { background: rgba(192, 57, 43, 0.04); }
+.cal-preview-partita { background: rgba(124, 58, 237, 0.04); }
 .cal-preview-card-top {
   display: flex;
   justify-content: space-between;
@@ -1563,27 +1560,14 @@ a.brand { text-decoration: none; color: inherit; }
   border-radius: 20px;
   margin-bottom: 4px;
 }
-.cal-preview-categoria {
-  font-size: 16px;
-  font-weight: 700;
-}
+.cal-preview-categoria { font-size: 16px; font-weight: 700; }
 .cal-preview-meta {
   font-size: 13px;
   color: var(--ink-soft);
   text-align: right;
   white-space: nowrap;
 }
-.cal-preview-risultato {
-  font-weight: 700;
-  color: var(--ink);
-}
-.cal-preview-avversario {
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: var(--ink-soft);
-}
-.cal-preview-stato {
-  font-size: 13px;
-  margin-bottom: 8px;
-}
+.cal-preview-risultato { font-weight: 700; color: var(--ink); }
+.cal-preview-avversario { font-size: 14px; margin-bottom: 8px; color: var(--ink-soft); }
+.cal-preview-stato { font-size: 13px; margin-bottom: 8px; }
 .cal-preview-actions { display: flex; gap: 8px; }

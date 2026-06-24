@@ -4,35 +4,36 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 const MESI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']
-const GIORNI = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom']
+const GIORNI_SHORT = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom']
+const GIORNI_LONG  = ['lunedì','martedì','mercoledì','giovedì','venerdì','sabato','domenica']
+const pad = (n) => String(n).padStart(2, '0')
 
 export default function CalendarioMese({ allenamenti, partite = [], categorie, vista = 'staff' }) {
   const isPortiere = vista === 'portiere'
   const oggi = new Date()
   const [cursor, setCursor] = useState(() => new Date(oggi.getFullYear(), oggi.getMonth(), 1))
-  const [filtro, setFiltro] = useState('')
+  const [filtro,  setFiltro]  = useState('')
+  const [selectedDay, setSelectedDay] = useState(null) // numero giorno selezionato
 
-  const year = cursor.getFullYear()
+  const year  = cursor.getFullYear()
   const month = cursor.getMonth()
-  const startDow = (new Date(year, month, 1).getDay() + 6) % 7
+  const startDow   = (new Date(year, month, 1).getDay() + 6) % 7
   const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const oggiStr = `${oggi.getFullYear()}-${pad(oggi.getMonth() + 1)}-${pad(oggi.getDate())}`
 
   const filtrati = allenamenti.filter((a) => !filtro || a.squadra_id === filtro)
-  const pad = (n) => String(n).padStart(2, '0')
-  const oggiStr = `${oggi.getFullYear()}-${pad(oggi.getMonth() + 1)}-${pad(oggi.getDate())}`
 
   const daValutare = isPortiere ? [] : filtrati
     .filter((a) => !a.valutato && a.data < oggiStr)
     .sort((a, b) => (a.data < b.data ? 1 : -1))
 
-  // Raggruppa allenamenti per giorno del mese corrente
+  // Raggruppa allenamenti e partite per giorno del mese corrente
   const byDay = {}
   for (const a of filtrati) {
     const d = new Date(a.data + 'T00:00:00')
     if (d.getFullYear() === year && d.getMonth() === month)
       (byDay[d.getDate()] ??= []).push({ ...a, _tipo: 'allenamento' })
   }
-  // Aggiungi partite nello stesso byDay
   for (const p of (partite ?? [])) {
     if (!filtro || p.squadra_id === filtro) {
       const d = new Date(p.data + 'T00:00:00')
@@ -44,38 +45,218 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const cells = []
   for (let i = 0; i < startDow; i++) cells.push(null)
   for (let day = 1; day <= daysInMonth; day++) cells.push(day)
-  const fmt = (day) => `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+  const fmt    = (day) => `${year}-${pad(month + 1)}-${pad(day)}`
   const isOggi = (day) => year === oggi.getFullYear() && month === oggi.getMonth() && day === oggi.getDate()
 
   // Stili portiere
   const stylePortiere = (a) => {
     if (!a.presente) return { background: '#3a6ea5', borderLeft: '3px solid #1d4a78' }
-    if (a.ha_voto) return { background: '#2e9e5b', borderLeft: '3px solid #1a6b3a' }
+    if (a.ha_voto)   return { background: '#2e9e5b', borderLeft: '3px solid #1a6b3a' }
     return { background: '#c0392b', borderLeft: '3px solid #8b1a10' }
   }
 
-  // Stile partita:
-  // passata + valutata → viola pieno
-  // passata + NON valutata → viola con cornice rossa (da fare)
-  // futura → viola chiaro
   const stylePartita = (p) => {
     const passata = p.data < oggiStr
     if (!passata) return { background: '#c4b5fd', color: '#4c1d95', borderLeft: '3px solid #8b5cf6' }
     if (p.ha_valutazioni) return { background: '#7c3aed', color: '#fff', borderLeft: '3px solid #5b21b6' }
-    // passata senza valutazione: cornice rossa
     return { background: '#7c3aed', color: '#fff', outline: '2px solid #c0392b', outlineOffset: '-2px' }
   }
 
-  // Label partita compatta
-  const labelPartita = (p) => {
-    const emoji = p.casa ? '🏠' : '✈'
-    return `${emoji} ${p.avversario || 'Partita'}`
+  const labelPartita = (p) => `${p.casa ? '🏠' : '✈'} ${p.avversario || 'Partita'}`
+
+  // Click su cella: toggle selezione
+  function handleCellClick(day) {
+    const evs = byDay[day] ?? []
+    if (evs.length === 0) return // cella vuota, nessuna preview
+    setSelectedDay(prev => prev === day ? null : day)
   }
+
+  // Preview degli eventi del giorno selezionato
+  const selectedEvs = selectedDay ? (byDay[selectedDay] ?? []).sort((a, b) => {
+    if (a._tipo !== b._tipo) return a._tipo === 'allenamento' ? -1 : 1
+    return 0
+  }) : []
+
+  const selectedDateStr = selectedDay ? fmt(selectedDay) : null
+  const selectedDow = selectedDay ? (new Date(selectedDateStr + 'T00:00:00').getDay() + 6) % 7 : null
+  const selectedDateLabel = selectedDay
+    ? `${GIORNI_LONG[selectedDow]} ${selectedDay} ${MESI[month].toLowerCase()} ${year}`
+    : ''
 
   return (
     <div className="cal">
+      {/* Legenda */}
+      <div className="cal-legenda">
+        {!isPortiere && (
+          <>
+            <span className="cal-leg-dot" style={{background:'#2e9e5b'}} />valutato
+            <span className="cal-leg-dot" style={{background:'#c0392b'}} />da valutare
+          </>
+        )}
+        <span className="cal-leg-dot" style={{background:'#7c3aed'}} />partita passata
+        <span className="cal-leg-dot" style={{background:'#c4b5fd',border:'1px solid #8b5cf6'}} />partita futura
+      </div>
+
+      {/* Nav mese + filtro categoria */}
+      <div className="cal-bar">
+        <div className="cal-nav">
+          <button type="button" onClick={() => { setCursor(new Date(year, month - 1, 1)); setSelectedDay(null) }} aria-label="Mese precedente">‹</button>
+          <span className="cal-title">{MESI[month]} {year}</span>
+          <button type="button" onClick={() => { setCursor(new Date(year, month + 1, 1)); setSelectedDay(null) }} aria-label="Mese successivo">›</button>
+        </div>
+        {categorie.length > 1 && (
+          <select value={filtro} onChange={(e) => { setFiltro(e.target.value); setSelectedDay(null) }} aria-label="Filtra categoria">
+            <option value="">Tutte le categorie</option>
+            {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+          </select>
+        )}
+      </div>
+
+      {/* Intestazione giorni settimana */}
+      <div className="cal-grid cal-head">
+        {GIORNI_SHORT.map((g) => <div key={g} className="cal-dow">{g}</div>)}
+      </div>
+
+      {/* Griglia giorni */}
+      <div className="cal-grid">
+        {cells.map((day, i) => {
+          if (!day) return <div key={i} className="cal-cell empty" />
+          const evs = (byDay[day] ?? []).sort((a, b) => {
+            if (a._tipo !== b._tipo) return a._tipo === 'allenamento' ? -1 : 1
+            return 0
+          })
+          const isSelected = selectedDay === day
+          const hasEvs = evs.length > 0
+
+          return (
+            <div
+              key={i}
+              className={`cal-cell ${isOggi(day) ? 'oggi' : ''} ${isSelected ? 'cal-cell-selected' : ''}`}
+              onClick={hasEvs ? () => handleCellClick(day) : undefined}
+              style={hasEvs ? { cursor: 'pointer' } : {}}
+            >
+              {isPortiere
+                ? <span className="cal-day">{day}</span>
+                : (
+                  <span
+                    className="cal-day"
+                    onClick={(e) => { e.stopPropagation(); }}
+                    title="Nuovo allenamento"
+                  >
+                    <Link href={`/calendario/nuovo?data=${fmt(day)}`} onClick={(e) => e.stopPropagation()}>{day}</Link>
+                  </span>
+                )}
+              <div className="cal-evs">
+                {evs.map((ev) => {
+                  if (ev._tipo === 'partita') {
+                    return (
+                      <span key={`p-${ev.id}`} className="cal-ev cal-ev-partita" style={stylePartita(ev)}
+                        title={`${ev.tipo} · ${ev.squadra_nome}`}>
+                        {labelPartita(ev)}
+                      </span>
+                    )
+                  }
+                  if (isPortiere) {
+                    return (
+                      <span key={ev.id} className="cal-ev" style={stylePortiere(ev)}>
+                        {ev.squadra_nome}
+                      </span>
+                    )
+                  }
+                  const cls = ev.valutato ? 'ev-verde' : (ev.data < oggiStr ? 'ev-rosso' : '')
+                  return (
+                    <span key={ev.id}
+                      className={`cal-ev ${cls}`}
+                      style={ev.accorpata_con ? { outline: '2px solid var(--giallo)', outlineOffset: '-2px' } : {}}>
+                      {ev.squadra_nome}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ── Preview giorno selezionato ── */}
+      {selectedDay && (
+        <div className="cal-preview">
+          <div className="cal-preview-header">
+            <h3 className="cal-preview-titolo">
+              📅 {selectedDateLabel}
+            </h3>
+            <button className="cal-preview-close" type="button" onClick={() => setSelectedDay(null)}>✕</button>
+          </div>
+
+          {selectedEvs.map((ev) => {
+            if (ev._tipo === 'partita') {
+              const passata = ev.data < oggiStr
+              return (
+                <div key={`p-${ev.id}`} className="cal-preview-card cal-preview-partita">
+                  <div className="cal-preview-card-top">
+                    <div>
+                      <div className="cal-preview-badge" style={{background:'#7c3aed',color:'#fff'}}>Partita</div>
+                      <div className="cal-preview-categoria">{ev.squadra_nome}</div>
+                    </div>
+                    <div className="cal-preview-meta">
+                      {ev.casa ? '🏠 Casa' : '✈ Trasferta'}
+                      {ev.gol_fatti != null && <span className="cal-preview-risultato"> · {ev.gol_fatti} - {ev.gol_subiti}</span>}
+                    </div>
+                  </div>
+                  <div className="cal-preview-avversario">vs {ev.avversario || '—'}</div>
+                  <div className="cal-preview-actions">
+                    <Link href={`/partite/${ev.id}`} className="btn-mini">
+                      {passata && !ev.ha_valutazioni ? '⚠ Inserisci valutazioni →' : 'Apri partita →'}
+                    </Link>
+                  </div>
+                </div>
+              )
+            }
+
+            // Allenamento
+            const passato = ev.data < oggiStr
+            const daVal   = passato && !ev.valutato
+
+            return (
+              <div key={ev.id} className={`cal-preview-card ${daVal ? 'cal-preview-daval' : ''}`}>
+                <div className="cal-preview-card-top">
+                  <div>
+                    {ev.accorpata_con && (
+                      <div className="cal-preview-badge" style={{background:'var(--giallo)',color:'#000'}}>
+                        🔗 Accorpato con {ev.accorpata_nome || '...'}
+                      </div>
+                    )}
+                    <div className="cal-preview-categoria">{ev.squadra_nome}</div>
+                  </div>
+                  <div className="cal-preview-meta">
+                    {ev.ora_inizio ? ev.ora_inizio.slice(0,5) : '—'}
+                    {ev.ora_fine ? ` → ${ev.ora_fine.slice(0,5)}` : ''}
+                  </div>
+                </div>
+                <div className="cal-preview-stato">
+                  {ev.nessuna_valutazione
+                    ? <span style={{color:'var(--campo)'}}>✓ Nessuna valutazione prevista</span>
+                    : daVal
+                      ? <span style={{color:'var(--rosso)'}}>⚠ Da valutare</span>
+                      : passato
+                        ? <span style={{color:'var(--campo)'}}>✓ Valutato</span>
+                        : <span style={{color:'var(--ink-soft)'}}>Programmato</span>}
+                </div>
+                <div className="cal-preview-actions">
+                  <Link href={`/calendario/${ev.id}`} className="btn-mini">
+                    {daVal ? 'Inserisci valutazioni →' : 'Apri allenamento →'}
+                  </Link>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* ── Da valutare ── (in fondo, dopo la preview) */}
       {daValutare.length > 0 && (
-        <div className="da-valutare">
+        <div className="da-valutare" style={{ marginTop: 24 }}>
           <h3>Da valutare ({daValutare.length})</h3>
           <div className="dv-list">
             {daValutare.map((a) => (
@@ -87,77 +268,6 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
           </div>
         </div>
       )}
-
-      {/* Legenda */}
-      <div className="cal-legenda">
-        {!isPortiere && <><span className="cal-leg-dot" style={{background:'#2e9e5b'}} />valutato<span className="cal-leg-dot" style={{background:'#c0392b'}} />da valutare</>}
-        <span className="cal-leg-dot" style={{background:'#7c3aed'}} />partita passata
-        <span className="cal-leg-dot" style={{background:'#c4b5fd',border:'1px solid #8b5cf6'}} />partita futura
-      </div>
-
-      <div className="cal-bar">
-        <div className="cal-nav">
-          <button type="button" onClick={() => setCursor(new Date(year, month - 1, 1))} aria-label="Mese precedente">‹</button>
-          <span className="cal-title">{MESI[month]} {year}</span>
-          <button type="button" onClick={() => setCursor(new Date(year, month + 1, 1))} aria-label="Mese successivo">›</button>
-        </div>
-        {categorie.length > 1 && (
-          <select value={filtro} onChange={(e) => setFiltro(e.target.value)} aria-label="Filtra categoria">
-            <option value="">Tutte le categorie</option>
-            {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
-          </select>
-        )}
-      </div>
-
-      <div className="cal-grid cal-head">
-        {GIORNI.map((g) => <div key={g} className="cal-dow">{g}</div>)}
-      </div>
-      <div className="cal-grid">
-        {cells.map((day, i) => {
-          if (!day) return <div key={i} className="cal-cell empty" />
-          const evs = (byDay[day] ?? []).sort((a, b) => {
-            // allenamenti prima, partite dopo
-            if (a._tipo !== b._tipo) return a._tipo === 'allenamento' ? -1 : 1
-            return 0
-          })
-          return (
-            <div key={i} className={`cal-cell ${isOggi(day) ? 'oggi' : ''}`}>
-              {isPortiere
-                ? <span className="cal-day">{day}</span>
-                : <Link href={`/calendario/nuovo?data=${fmt(day)}`} className="cal-day" title="Nuovo allenamento">{day}</Link>}
-              <div className="cal-evs">
-                {evs.map((ev) => {
-                  if (ev._tipo === 'partita') {
-                    return (
-                      <Link key={`p-${ev.id}`} href={`/partite/${ev.id}`}
-                        className="cal-ev cal-ev-partita"
-                        style={stylePartita(ev)}
-                        title={`${ev.tipo} · ${ev.squadra_nome}`}>
-                        {labelPartita(ev)}
-                      </Link>
-                    )
-                  }
-                  if (isPortiere) {
-                    return (
-                      <Link key={ev.id} href={`/calendario/${ev.id}`} className="cal-ev" style={stylePortiere(ev)}>
-                        {ev.squadra_nome}
-                      </Link>
-                    )
-                  }
-                  const cls = ev.valutato ? 'ev-verde' : (ev.data < oggiStr ? 'ev-rosso' : '')
-                  return (
-                    <Link key={ev.id} href={`/calendario/${ev.id}`}
-                      className={`cal-ev ${cls}`}
-                      style={ev.accorpata_con ? { outline: '2px solid var(--giallo)', outlineOffset: '-2px' } : {}}>
-                      {ev.squadra_nome}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          )
-        })}
-      </div>
     </div>
   )
 }

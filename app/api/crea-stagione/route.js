@@ -1,0 +1,74 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { getOwnerId } from '@/lib/tenant'
+
+export async function POST(request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+
+  const { data: profilo } = await supabase
+    .from('profili').select('ruolo').eq('id', user.id).maybeSingle()
+  if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'))
+    return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 })
+
+  const { annoNome, societa, dataInizio, dataFine, categorie, renderAttiva = true } = await request.json()
+  if (!annoNome) return NextResponse.json({ error: 'Anno mancante.' }, { status: 400 })
+
+  const ownerId = await getOwnerId(supabase, user.id)
+
+  // 1. Se la nuova stagione deve essere attiva, disattiva le precedenti
+  if (renderAttiva) {
+    await supabase.from('stagioni').update({ attiva: false }).eq('owner_id', ownerId)
+  }
+
+  // 2. Crea la nuova stagione
+  const { data: stagione, error: stagErr } = await supabase
+    .from('stagioni')
+    .insert({
+      nome: annoNome,
+      societa_nome: societa || null,
+      data_inizio: dataInizio || null,
+      data_fine: dataFine || null,
+      attiva: renderAttiva,
+      owner_id: ownerId,
+    })
+    .select('id')
+    .single()
+
+  if (stagErr) return NextResponse.json({ error: stagErr.message }, { status: 500 })
+
+  // 3. Crea le categorie
+  if (Array.isArray(categorie) && categorie.length > 0) {
+    for (let i = 0; i < categorie.length; i++) {
+      const nomecat = categorie[i]?.trim()
+      if (!nomecat) continue
+
+      // Cerca o crea la squadra per questo owner
+      let { data: squadra } = await supabase
+        .from('squadre')
+        .select('id')
+        .eq('owner_id', ownerId)
+        .eq('nome', nomecat)
+        .maybeSingle()
+
+      if (!squadra) {
+        const { data: nuova } = await supabase
+          .from('squadre')
+          .insert({ nome: nomecat, ordine: i + 1, owner_id: ownerId })
+          .select('id')
+          .single()
+        squadra = nuova
+      }
+
+      if (squadra) {
+        await supabase
+          .from('stagione_categorie')
+          .upsert({ stagione_id: stagione.id, squadra_id: squadra.id },
+            { onConflict: 'stagione_id,squadra_id' })
+      }
+    }
+  }
+
+  return NextResponse.json({ ok: true, stagioneId: stagione.id })
+}

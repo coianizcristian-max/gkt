@@ -102,9 +102,9 @@ export default async function PortieriPage() {
           <OnboardingChecklist checks={[
             {
               ok: !!stagione,
-              titolo: 'Stagione attiva',
-              desc: 'Crea e attiva una stagione in Supervisore.',
-              href: '/supervisore/stagioni',
+              titolo: 'Configura la tua stagione',
+              desc: 'Seleziona l\u2019anno e imposta societ\u00e0, date e categorie.',
+              href: '/setup',
             },
             {
               ok: haCategorie,
@@ -127,7 +127,7 @@ export default async function PortieriPage() {
           ]} />
         )}
         {!stagione
-          ? <div className="empty">Nessuna stagione attiva. <Link href="/supervisore/stagioni" className="link-inline">Crea una stagione</Link></div>
+          ? <div className="empty">Nessuna stagione attiva. <Link href="/setup" className="link-inline">Configura la stagione</Link></div>
           : <PortieriSearch squadre={squadre} iscrizioni={iscrizioni} stats={stats} tagPerPortiere={tagPerPortiere} />}
       </div>
     </>

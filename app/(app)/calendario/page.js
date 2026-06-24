@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { getStagioneAttiva } from '@/lib/tenant'
 import CalendarioMese from '@/app/components/CalendarioMese'
 import Guida from '@/app/components/Guida'
 
@@ -12,8 +13,7 @@ export default async function CalendarioPage() {
     .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
   const isPortiere = profilo?.ruolo === 'portiere'
 
-  const { data: stagione } = await supabase
-    .from('stagioni').select('id, nome').eq('attiva', true).maybeSingle()
+  const { stagione } = await getStagioneAttiva(supabase, user?.id)
 
   let allenamenti = []
   let partite = []

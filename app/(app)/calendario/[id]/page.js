@@ -211,8 +211,35 @@ export default async function AllenamentoPage({ params }) {
         )}
 
         <h2 className="sezione-titolo">Esercizi della seduta</h2>
+
+        {/* Lista statica esercizi — sempre visibile, stessa UI della vista portiere */}
+        {eserciziSelezionati.length > 0 ? (
+          <div className="es-seduta-grid" style={{ marginBottom: 24 }}>
+            {eserciziSelezionati.map((e, i) => (
+              <details key={e.id} className="es-seduta-card">
+                <summary>
+                  {e.immagine_url && <img src={e.immagine_url} className="es-seduta-thumb" alt="" />}
+                  <div>
+                    <div className="es-seduta-titolo">{i + 1}. {e.titolo}</div>
+                    {e.tipologia && <span className="stat-cat">{e.tipologia}</span>}
+                  </div>
+                </summary>
+                {(e.descrizione_breve || e.descrizione) && (
+                  <div className="es-seduta-body">
+                    {e.descrizione_breve && <p><em>{e.descrizione_breve}</em></p>}
+                    {e.descrizione && <p>{e.descrizione}</p>}
+                  </div>
+                )}
+              </details>
+            ))}
+          </div>
+        ) : (
+          <div className="empty" style={{ marginBottom: 16 }}>Nessun esercizio inserito per questa seduta.</div>
+        )}
+
+        {/* Componente interattivo per modificare gli esercizi — usa sempre l'id del principale se accorpato */}
         {canEsercizi ? <AllenamentoEsercizi
-          allenamentoId={id}
+          allenamentoId={allenamento.accorpata_con ?? id}
           libreriaMia={libreriaMia}
           libreriaPubblica={libreriaPubblicaConExtra}
           selezionatiIniziali={eserciziOrdinati}

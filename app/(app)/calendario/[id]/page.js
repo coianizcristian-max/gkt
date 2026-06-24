@@ -34,7 +34,7 @@ export default async function AllenamentoPage({ params }) {
         .eq('allenamento_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
       supabase.from('allenamento_esercizi')
         .select('ordine, esercizi(id, titolo, tipologia, descrizione_breve, descrizione, immagine_url)')
-        .eq('allenamento_id', id).order('ordine'),
+        .eq('allenamento_id', allenamento.accorpata_con ?? id).order('ordine'),
     ])
     const esercizi = (aeRows ?? [])
       .map((r) => r.esercizi).filter(Boolean)
@@ -111,7 +111,7 @@ export default async function AllenamentoPage({ params }) {
     supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
     supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
     supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id, profili(ruolo)').order('titolo'),
-    supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', id).order('ordine'),
+    supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', allenamento.accorpata_con ?? id).order('ordine'),
     supabase.from('valutazioni')
       .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
       .eq('allenamento_id', id)
@@ -216,6 +216,7 @@ export default async function AllenamentoPage({ params }) {
           libreriaMia={libreriaMia}
           libreriaPubblica={libreriaPubblicaConExtra}
           selezionatiIniziali={eserciziOrdinati}
+          selezionatiEsercizi={eserciziSelezionati}
         /> : <PaywallBanner label="Esercizi negli allenamenti" />}
 
         {canFeedback && feedback.length > 0 && (

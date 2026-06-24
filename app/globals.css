@@ -1461,3 +1461,37 @@ a.brand { text-decoration: none; color: inherit; }
 .app-foot { grid-column: 2; padding: 12px 24px; border-top: 1px solid var(--linea); font-size: 11px; color: var(--ink-soft); display: flex; gap: 10px; align-items: center; }
 .app-foot a { color: var(--ink-soft); text-decoration: none; }
 .app-foot a:hover { color: var(--azzurro); }
+
+/* ===== Setup Wizard ===== */
+.wizard-wrap {
+  display: flex; justify-content: center; padding: 24px 0;
+}
+.wizard-box {
+  background: var(--bianco); border: 1px solid var(--linea);
+  border-radius: var(--r); padding: 32px; width: 100%; max-width: 560px;
+  box-shadow: var(--ombra);
+}
+.wizard-header { margin-bottom: 24px; }
+.wizard-step-indicator {
+  font-size: 12px; color: var(--ink-soft); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+}
+.wizard-header h2 { margin: 0 0 8px; font-size: 22px; }
+.wizard-sezione { margin: 0 0 16px; font-size: 15px; }
+.wizard-anni {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px;
+}
+.wizard-anno-btn {
+  padding: 10px 20px; border-radius: var(--r-sm); border: 2px solid var(--linea);
+  background: var(--carta); font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.wizard-anno-btn:hover { border-color: var(--azzurro); color: var(--azzurro); }
+.wizard-anno-btn.selected {
+  border-color: var(--azzurro); background: rgba(10,126,194,0.08);
+  color: var(--azzurro);
+}
+.wizard-footer {
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;
+  padding-top: 20px; border-top: 1px solid var(--linea);
+}

@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function StagioniManager({ stagioni, ownerId }) {
   const router = useRouter()
-  const [creating, setCreating] = useState(false)
 
   async function rendiAttiva(id) {
     const supabase = createClient()
@@ -18,23 +18,15 @@ export default function StagioniManager({ stagioni, ownerId }) {
     router.refresh()
   }
 
-  async function creaStagione() {
-    const nome = prompt('Nome della nuova stagione (es. 2026-27):')
-    if (!nome) return
-    setCreating(true)
-    const supabase = createClient()
-    const { error } = await supabase.from('stagioni').insert({ nome: nome.trim(), attiva: false, owner_id: ownerId })
-    if (error) alert('Errore: ' + error.message)
-    setCreating(false); router.refresh()
-  }
-
   return (
     <div className="lista-editor">
       <p className="sub-intro">La stagione <b>attiva</b> e quella usata da calendario, partite, statistiche e portieri. Puo essere attiva una sola stagione alla volta.</p>
       {stagioni.map((s) => (
         <StagioneRiga key={s.id} stagione={s} onAttiva={() => rendiAttiva(s.id)} onChanged={() => router.refresh()} />
       ))}
-      <button className="btn-ghost" onClick={creaStagione} disabled={creating} type="button">+ Nuova stagione</button>
+      <Link href="/supervisore/stagioni/nuova" className="btn-azione" style={{ display: 'inline-block', marginTop: 8 }}>
+        + Nuova stagione
+      </Link>
     </div>
   )
 }

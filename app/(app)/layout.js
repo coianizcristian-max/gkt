@@ -58,7 +58,7 @@ export default async function AppLayout({ children }) {
     }
   }
 
-  const schedaHref = isPortiere && portiereId ? `/portieri/${portiereId}` : '/portieri'
+  const schedaHref = isPortiere && portiereId ? `/portieri/${portiereId}` : '/dashboard'
 
   // Controlla se c'è una nuova versione non ancora vista dall'utente
   let versioneNuova = null

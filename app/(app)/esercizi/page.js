@@ -17,7 +17,7 @@ export default async function EserciziPage() {
   const [{ data: esercizi }, { data: tip }, { data: attributi }] = await Promise.all([
     supabase.from('esercizi').select('*').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
     supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('attivo', true).order('ordine'),
-    Promise.resolve({ data: [] }),
+    supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
   ])
   const tipologie = (tip ?? []).map((t) => t.valore)
 

@@ -74,6 +74,7 @@ export default async function AccountPage() {
           <h3 style={{ marginTop: 0 }}>Stato abbonamento</h3>
 
           {abbRow ? (
+            <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 28 }}>{abbRow.stato === 'disdetto' ? '⏳' : '✅'}</span>
               <div>
@@ -98,6 +99,7 @@ export default async function AccountPage() {
             {abbRow.stato === 'attivo' && abbRow.piano !== 'lifetime' && (
               <DisdiciButton scadenza={abbRow.scadenza} />
             )}
+            </>
           ) : couponRow ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 28 }}>🎟</span>

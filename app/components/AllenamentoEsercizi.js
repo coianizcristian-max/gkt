@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -49,7 +50,6 @@ function EsercizioPreview({ esercizio, onClose }) {
 function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
   const [fonte, setFonte] = useState('mia')
   const [soloPref, setSoloPref] = useState(false)
-  const [tipologiaAttiva, setTipologiaAttiva] = useState(null)
   const [tipologiaAttiva, setTipologiaAttiva] = useState(null)
   const [preferiti, setPreferiti] = useState(new Set())
   const [preview, setPreview] = useState(null)

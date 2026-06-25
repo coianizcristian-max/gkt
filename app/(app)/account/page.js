@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import CouponBox from '@/app/components/CouponBox'
 import { hasAbbonamento } from '@/lib/gating'
+import DisdiciButton from '@/app/components/DisdiciButton'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Account | GKT' }
@@ -21,8 +22,9 @@ export default async function AccountPage() {
 
   // Dettaglio abbonamento o coupon attivo
   const { data: abbRow } = await supabase.from('abbonamenti')
-    .select('piano, scadenza, created_at')
-    .eq('allenatore_id', user.id).eq('stato', 'attivo').maybeSingle()
+    .select('piano, scadenza, created_at, stato')
+    .eq('allenatore_id', user.id).in('stato', ['attivo', 'disdetto'])
+    .order('created_at', { ascending: false }).limit(1).maybeSingle()
 
   const { data: couponRow } = await supabase.from('coupon_utilizzi')
     .select('scade_il, coupon:coupon_id(codice, durata_gg)')
@@ -73,14 +75,19 @@ export default async function AccountPage() {
 
           {abbRow ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 28 }}>✅</span>
+              <span style={{ fontSize: 28 }}>{abbRow.stato === 'disdetto' ? '⏳' : '✅'}</span>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 16 }}>
-                  Piano {abbRow.piano === 'lifetime' ? 'Lifetime' : abbRow.piano === 'annuale' ? 'Annuale' : 'Mensile'} attivo
+                  Piano {abbRow.piano === 'lifetime' ? 'Lifetime' : abbRow.piano === 'annuale' ? 'Annuale' : 'Mensile'}
+                  {abbRow.stato === 'disdetto'
+                    ? <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 400, color: 'var(--rosso)', background: 'rgba(192,57,43,0.08)', padding: '2px 8px', borderRadius: 20 }}>Disdetto</span>
+                    : <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 400, color: 'var(--campo)', background: 'rgba(46,158,91,0.08)', padding: '2px 8px', borderRadius: 20 }}>Attivo</span>}
                 </div>
                 {abbRow.scadenza && abbRow.piano !== 'lifetime' && (
                   <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
-                    Rinnovo il {new Date(abbRow.scadenza).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {abbRow.stato === 'disdetto'
+                      ? <>Attivo fino al <b>{new Date(abbRow.scadenza).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</b>, poi tornerai al piano gratuito</>
+                      : <>Rinnovo il {new Date(abbRow.scadenza).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</>}
                   </div>
                 )}
                 {abbRow.piano === 'lifetime' && (
@@ -88,6 +95,9 @@ export default async function AccountPage() {
                 )}
               </div>
             </div>
+            {abbRow.stato === 'attivo' && abbRow.piano !== 'lifetime' && (
+              <DisdiciButton scadenza={abbRow.scadenza} />
+            )}
           ) : couponRow ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 28 }}>🎟</span>

@@ -50,7 +50,13 @@ export default async function Home() {
 
       {/* ── Sezioni dal DB in ordine ── */}
       {gruppi.map((gruppo, gi) => {
-        const { tipo, sezioni: sezs } = gruppo
+        // Salta sezioni senza contenuto reale (titolo di default e nessun testo/immagine)
+        const sezsFiltrate = gruppo.sezioni.filter(s =>
+          s.immagine_url || s.testo || (s.titolo && s.titolo !== 'Nuova sezione')
+        )
+        if (sezsFiltrate.length === 0) return null
+        const gruppoFiltrato = { ...gruppo, sezioni: sezsFiltrate }
+        const { tipo, sezioni: sezs } = gruppoFiltrato
 
         if (tipo === 'hero') {
           const h = sezs[0]

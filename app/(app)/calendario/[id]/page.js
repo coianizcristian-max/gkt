@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import AllenamentoForm from '@/app/components/AllenamentoForm'
 import ValutazioniAllenamento from '@/app/components/ValutazioniAllenamento'
 import AllenamentoEsercizi from '@/app/components/AllenamentoEsercizi'
+import AllenamentoTabs from '@/app/components/AllenamentoTabs'
+import AllenamentoTabs from '@/app/components/AllenamentoTabs'
 import EserciziSedutaEditor from '@/app/components/EserciziSedutaEditor'
 import ValutazionePortiere from '@/app/components/ValutazionePortiere'
 import FeedbackAllenamento from '@/app/components/FeedbackAllenamento'
@@ -42,6 +44,22 @@ export default async function AllenamentoPage({ params }) {
     }
   }
 
+
+  // Nome della categoria accorpata per la testata
+  let accorpataConNome = null
+  if (allenamento.accorpata_con) {
+    // accorpata_con può essere squadra_id o allenamento_id
+    const { data: squadraAcc } = await supabase
+      .from('squadre').select('nome').eq('id', allenamento.accorpata_con).maybeSingle()
+    if (squadraAcc) {
+      accorpataConNome = squadraAcc.nome
+    } else if (accorpataConAllenamentoId) {
+      const { data: allAcc } = await supabase
+        .from('allenamenti').select('squadra_id, squadre(nome)')
+        .eq('id', accorpataConAllenamentoId).maybeSingle()
+      accorpataConNome = allAcc?.squadre?.nome ?? null
+    }
+  }
 
   const dataLabel = new Date(allenamento.data + 'T00:00:00')
     .toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -202,57 +220,68 @@ export default async function AllenamentoPage({ params }) {
     <>
       <div className="topbar">
         <div className="eyebrow"><Link href="/calendario">Calendario</Link></div>
-        <h1>{allenamento.squadra?.nome}<span className="topbar-sub"> · {dataLabel}</span></h1>
+        <h1>
+          {allenamento.squadra?.nome}
+          {accorpataConNome && (
+            <span style={{ fontWeight: 400, fontSize: '0.65em', color: 'var(--ink-soft)', marginLeft: 8 }}>
+              / {accorpataConNome}
+            </span>
+          )}
+          <span className="topbar-sub"> · {dataLabel}</span>
+        </h1>
       </div>
       <div className="content">
-        <AllenamentoForm allenamento={allenamento} categorie={categorie} stagioneId={allenamento.stagione_id} />
-
-        <h2 className="sezione-titolo">Valutazioni</h2>
-        {!canValutare ? (
-          <PaywallBanner label="Valutazioni allenamento" wrap>
-            <ValutazioniAllenamento
-              allenamentoId={id} portieri={portieri} parametri={parametri ?? []}
-              valIniziali={valIniziali} punteggiIniziali={punteggiIniziali}
-              scalaVoti={scalaVoti} allenamentoNessuno={allenamento.nessuna_valutazione ?? false}
-            />
-          </PaywallBanner>
-        ) : portieri.length > 0 ? (
-          <ValutazioniAllenamento
-            allenamentoId={id}
-            portieri={portieri}
-            parametri={parametri ?? []}
-            valIniziali={valIniziali}
-            punteggiIniziali={punteggiIniziali}
-            scalaVoti={scalaVoti}
-            allenamentoNessuno={allenamento.nessuna_valutazione ?? false}
-          />
-        ) : (
-          <div className="empty">Nessun portiere iscritto a questa categoria per la stagione.</div>
-        )}
-
-        <h2 className="sezione-titolo">Esercizi della seduta</h2>
-
-        {/* Lista drag&drop esercizi con durata e totale */}
-        <EserciziSedutaEditor
-          esercizi={eserciziSelezionati}
-          allenamentoId={accorpataConAllenamentoId ?? id}
+        <AllenamentoTabs
+          dettaglio={
+            <AllenamentoForm allenamento={allenamento} categorie={categorie} stagioneId={allenamento.stagione_id} />
+          }
+          valutazioni={
+            !canValutare ? (
+              <PaywallBanner label="Valutazioni allenamento" wrap>
+                <ValutazioniAllenamento
+                  allenamentoId={id} portieri={portieri} parametri={parametri ?? []}
+                  valIniziali={valIniziali} punteggiIniziali={punteggiIniziali}
+                  scalaVoti={scalaVoti} allenamentoNessuno={allenamento.nessuna_valutazione ?? false}
+                />
+              </PaywallBanner>
+            ) : portieri.length > 0 ? (
+              <ValutazioniAllenamento
+                allenamentoId={id}
+                portieri={portieri}
+                parametri={parametri ?? []}
+                valIniziali={valIniziali}
+                punteggiIniziali={punteggiIniziali}
+                scalaVoti={scalaVoti}
+                allenamentoNessuno={allenamento.nessuna_valutazione ?? false}
+              />
+            ) : (
+              <div className="empty">Nessun portiere iscritto a questa categoria per la stagione.</div>
+            )
+          }
+          esercizi={
+            <>
+              <EserciziSedutaEditor
+                esercizi={eserciziSelezionati}
+                allenamentoId={accorpataConAllenamentoId ?? id}
+              />
+              {canEsercizi ? <AllenamentoEsercizi
+                allenamentoId={accorpataConAllenamentoId ?? id}
+                libreriaMia={libreriaMia}
+                libreriaPubblica={libreriaPubblicaConExtra}
+                selezionatiIniziali={eserciziOrdinati}
+                selezionatiEsercizi={eserciziSelezionati}
+              /> : <PaywallBanner label="Esercizi negli allenamenti" />}
+            </>
+          }
+          feedback={
+            canFeedback && feedback.length > 0 ? (
+              <>
+                <h2 className="sezione-titolo" style={{ marginTop: 24 }}>Feedback portieri</h2>
+                <FeedbackAllenamento feedback={feedback} />
+              </>
+            ) : null
+          }
         />
-
-        {/* Componente libreria per aggiungere/rimuovere esercizi */}
-        {canEsercizi ? <AllenamentoEsercizi
-          allenamentoId={accorpataConAllenamentoId ?? id}
-          libreriaMia={libreriaMia}
-          libreriaPubblica={libreriaPubblicaConExtra}
-          selezionatiIniziali={eserciziOrdinati}
-          selezionatiEsercizi={eserciziSelezionati}
-        /> : <PaywallBanner label="Esercizi negli allenamenti" />}
-
-        {canFeedback && feedback.length > 0 && (
-          <>
-            <h2 className="sezione-titolo">Feedback portieri</h2>
-            <FeedbackAllenamento feedback={feedback} />
-          </>
-        )}
       </div>
     </>
   )

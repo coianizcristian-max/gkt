@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PortiereForm from '@/app/components/PortiereForm'
 import OnboardingChecklist from '@/app/components/OnboardingChecklist'
-import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import TagManager from '@/app/components/TagManager'
 import { getStagioneAttiva } from '@/lib/tenant'
 

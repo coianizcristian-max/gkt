@@ -63,8 +63,8 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
       {/* Lista drag & drop */}
       <div className="drag-list">
         {lista.map((e, i) => (
+          <div key={e.id}>
           <div
-            key={e.id}
             className={`drag-item${dragIdx === i ? ' dragging' : ''}`}
             draggable
             onDragStart={() => onDragStart(i)}
@@ -132,6 +132,7 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
               )}
             </div>
           )}
+          </div>
         ))}
       </div>
 

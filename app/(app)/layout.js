@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import NavLink from '@/app/components/NavLink'
+import VersionePopup from '@/app/components/VersionePopup'
+import VersionePopup from '@/app/components/VersionePopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
 import { createClient } from '@/lib/supabase/server'
@@ -58,6 +60,28 @@ export default async function AppLayout({ children }) {
   }
 
   const schedaHref = isPortiere && portiereId ? `/portieri/${portiereId}` : '/portieri'
+
+  // Controlla se c'è una nuova versione non ancora vista dall'utente
+  let versioneNuova = null
+  if (user) {
+    const { data: ultimaVersione } = await supabase
+      .from('versioni')
+      .select('id, numero, titolo, note')
+      .eq('pubblicata', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (ultimaVersione) {
+      const { data: giàVista } = await supabase
+        .from('versioni_viste')
+        .select('versione_id')
+        .eq('user_id', user.id)
+        .eq('versione_id', ultimaVersione.id)
+        .maybeSingle()
+      if (!giàVista) versioneNuova = ultimaVersione
+    }
+  }
 
   // Carica ordine sidebar personalizzato dal supervisore
   const { data: sidebarOrdineRows } = await supabase
@@ -143,5 +167,6 @@ export default async function AppLayout({ children }) {
         </footer>
       </div>
     </div>
+      {versioneNuova && <VersionePopup versione={versioneNuova} />}
   )
 }

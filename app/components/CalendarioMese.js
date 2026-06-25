@@ -82,7 +82,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
       const supabase = createClient()
       const [{ data: ae }, { data: allRows }] = await Promise.all([
         supabase.from('allenamento_esercizi')
-          .select('allenamento_id, ordine, esercizi(id, titolo, tipologia)')
+          .select('allenamento_id, ordine, esercizi(id, titolo, tipologia, durata_minuti, recupero_minuti)')
           .in('allenamento_id', allIds)
           .order('ordine'),
         supabase.from('allenamenti')
@@ -102,6 +102,8 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
           esercizi: byAll[id] ?? [],
           obiettivi: allMap[id]?.obiettivi ?? null,
           consuntivo: allMap[id]?.consuntivo ?? null,
+          totaleMinuti: (byAll[id] ?? []).reduce((tot, e) => tot + (parseFloat(e.durata_minuti)||0) + (parseFloat(e.recupero_minuti)||0), 0),
+          totaleMinuti: (byAll[id] ?? []).reduce((tot, e) => tot + (parseFloat(e.durata_minuti)||0) + (parseFloat(e.recupero_minuti)||0), 0),
         }
         return next
       })
@@ -310,6 +312,16 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                           </ol>
                         </>
                       : <div style={{fontSize:12,color:'var(--ink-soft)'}}>Nessun esercizio pianificato</div>}
+                  </div>
+                )}
+                {previewExtra[ev.id]?.totaleMinuti > 0 && (
+                  <div style={{marginTop:8,fontSize:13,fontWeight:600,color:'var(--ink-soft)'}}>
+                    ⏱ Durata totale stimata:{' '}
+                    <b style={{color:'var(--ink)'}}>
+                      {previewExtra[ev.id].totaleMinuti >= 60
+                        ? `${Math.floor(previewExtra[ev.id].totaleMinuti/60)}h ${Math.round(previewExtra[ev.id].totaleMinuti%60)}min`
+                        : `${Math.round(previewExtra[ev.id].totaleMinuti)} min`}
+                    </b>
                   </div>
                 )}
                 {loadingExtra && !previewExtra[ev.id] && (

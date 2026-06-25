@@ -1,5 +1,8 @@
 'use client'
 
+import { useState, useCallback } from 'react'
+import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
+
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -115,7 +118,13 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
       {lista.length === 0 ? (
         <div className="empty">
           {fonte === 'mia'
-            ? <a href="/esercizi" className="link-inline">Vai alla libreria esercizi per crearne</a>
+            ? <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                <a href="/esercizi" className="link-inline">Vai alla libreria esercizi</a>
+                <span style={{ color: 'var(--ink-soft)' }}>oppure</span>
+                <button className="btn-ghost" type="button" onClick={() => setShowNuovoModal(true)} style={{ fontSize: 13 }}>
+                  + Crea nuovo esercizio
+                </button>
+              </div>
             : soloPref ? 'Nessun preferito. Clicca ★ per salvare.' : 'Nessun esercizio pubblico disponibile.'}
         </div>
       ) : (
@@ -173,6 +182,12 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
             </div>
           </div>
         ))
+      )}
+      {showNuovoModal && (
+        <NuovoEsercizioModal
+          onSaved={onNuovoEsercizioSaved}
+          onClose={() => setShowNuovoModal(false)}
+        />
       )}
     </>
   )
@@ -290,11 +305,19 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
+  const [showNuovoModal, setShowNuovoModal] = useState(false)
 
   // tuttiEsercizi include anche gli esercizi già selezionati non presenti in libreria
   const idInLibreria = new Set([...libreriaMia, ...libreriaPubblica].map(e => e.id))
   const esExtra = selezionatiEsercizi.filter(e => !idInLibreria.has(e.id))
   const tuttiEsercizi = [...libreriaMia, ...libreriaPubblica, ...esExtra]
+
+  function onNuovoEsercizioSaved(esercizio) {
+    // Aggiunge il nuovo esercizio alla libreria locale e lo seleziona automaticamente
+    libreriaMia.push(esercizio)
+    toggle(esercizio.id)
+    setShowNuovoModal(false)
+  }
 
   const toggle = useCallback((id) => {
     setSel((s) => {

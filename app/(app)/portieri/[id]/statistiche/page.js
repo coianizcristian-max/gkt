@@ -72,7 +72,7 @@ export default async function StatistichePortierePage({ params }) {
 
   if (stagione) {
     const { data: allenamenti } = await supabase.from('allenamenti')
-      .select('id, data, squadra_id').eq('stagione_id', stagione.id).order('data')
+      .select('id, data, squadra_id').eq('stagione_id', stagione.id).lt('data', new Date().toISOString().slice(0, 10)).order('data')
     const allenIds = (allenamenti ?? []).map((a) => a.id)
     const allenByDate = {}
     for (const a of allenamenti ?? []) allenByDate[a.id] = a.data
@@ -80,7 +80,7 @@ export default async function StatistichePortierePage({ params }) {
     // Partite con gol_subiti (campo della tabella partite, non valutazioni_partita)
     const { data: par } = await supabase.from('partite')
       .select('id, data, tipo, gol_subiti, gol_fatti, avversario, casa')
-      .eq('stagione_id', stagione.id).order('data')
+      .eq('stagione_id', stagione.id).lt('data', new Date().toISOString().slice(0, 10)).order('data')
     partiteRows = par ?? []
     const partIds = partiteRows.map((p) => p.id)
     const partiteByID = {}

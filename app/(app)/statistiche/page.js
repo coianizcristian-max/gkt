@@ -28,8 +28,8 @@ export default async function StatistichePage() {
       .select('portiere_id, squadra_id, numero_maglia, portieri(id, nome, cognome, foto_url)')
       .eq('stagione_id', stagione.id),
     supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-    supabase.from('allenamenti').select('id, squadra_id').eq('stagione_id', stagione.id),
-    supabase.from('partite').select('id, squadra_id, gol_subiti, tipo').eq('stagione_id', stagione.id),
+    supabase.from('allenamenti').select('id, squadra_id, data').eq('stagione_id', stagione.id).lt('data', new Date().toISOString().slice(0, 10)),
+    supabase.from('partite').select('id, squadra_id, gol_subiti, tipo').eq('stagione_id', stagione.id).lt('data', new Date().toISOString().slice(0, 10)),
   ])
 
   const allenIds = (allen ?? []).map((a) => a.id)

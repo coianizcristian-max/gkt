@@ -166,7 +166,7 @@ export default async function AppLayout({ children }) {
           <a href="/termini-di-servizio">Termini</a>
         </footer>
       </div>
-    </div>
       {versioneNuova && <VersionePopup versione={versioneNuova} />}
+    </div>
   )
 }

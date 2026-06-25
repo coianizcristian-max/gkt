@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import NavLink from '@/app/components/NavLink'
 import VersionePopup from '@/app/components/VersionePopup'
-import VersionePopup from '@/app/components/VersionePopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
 import { createClient } from '@/lib/supabase/server'

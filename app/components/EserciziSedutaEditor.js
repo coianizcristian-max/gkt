@@ -62,15 +62,22 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
       {popup && (
         <div className="modal-overlay" onClick={() => setPopup(null)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{popup.titolo}</h3>
-              <button className="modal-close" onClick={() => setPopup(null)}>✕</button>
+            <div style={{ position: 'relative', padding: '20px 20px 12px' }}>
+              <button
+                onClick={() => setPopup(null)}
+                style={{
+                  position: 'absolute', top: -14, right: -14,
+                  width: 30, height: 30, borderRadius: '50%',
+                  background: '#e74c3c', border: '2px solid #fff',
+                  color: '#fff', fontSize: 14, fontWeight: 700,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  lineHeight: 1, zIndex: 10, boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+                }}
+              >✕</button>
+              <h3 style={{ margin: 0 }}>{popup.titolo}</h3>
             </div>
             {popup.tipologia && <div className="stat-cat" style={{ marginBottom: 8 }}>{popup.tipologia}</div>}
             <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-              {popup.immagine_url && (
-                <img src={popup.immagine_url} alt="" style={{ flex: 1, minWidth: 0, borderRadius: 8, objectFit: 'cover', maxHeight: 200 }} />
-              )}
               {popup.video_url && (
                 <a
                   href={popup.video_url}
@@ -87,6 +94,9 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
                   <span style={{ fontSize: 36, lineHeight: 1 }}>▶</span>
                   <span style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>Guarda<br/>video</span>
                 </a>
+              )}
+              {popup.immagine_url && (
+                <img src={popup.immagine_url} alt="" style={{ flex: 1, minWidth: 0, borderRadius: 8, objectFit: 'cover', maxHeight: 200 }} />
               )}
             </div>
             {popup.descrizione_breve && <p><em>{popup.descrizione_breve}</em></p>}

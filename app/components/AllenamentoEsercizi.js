@@ -51,6 +51,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
   const [fonte, setFonte] = useState('mia')
   const [soloPref, setSoloPref] = useState(false)
   const [tipologiaAttiva, setTipologiaAttiva] = useState(null)
+  const [showNuovoModal, setShowNuovoModal] = useState(false)
   const [preferiti, setPreferiti] = useState(new Set())
   const [preview, setPreview] = useState(null)
 
@@ -110,6 +111,15 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
           }}>
             <span>★</span>
             {soloPref ? `Solo preferiti (${preferiti.size})` : `Preferiti (${preferiti.size})`}
+          </button>
+        </div>
+      )}
+
+      {/* Bottone crea nuovo esercizio — sempre visibile nella libreria personale */}
+      {fonte === 'mia' && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <button className="btn-ghost" type="button" onClick={() => setShowNuovoModal(true)} style={{ fontSize: 13 }}>
+            + Crea nuovo esercizio
           </button>
         </div>
       )}
@@ -194,6 +204,12 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
             )
           })()}
         </>
+      )}
+      {showNuovoModal && (
+        <NuovoEsercizioModal
+          onSaved={onNuovoEsercizioSaved}
+          onClose={() => setShowNuovoModal(false)}
+        />
       )}
     </>
   )
@@ -316,6 +332,12 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
   const idInLibreria = new Set([...libreriaMia, ...libreriaPubblica].map(e => e.id))
   const esExtra = selezionatiEsercizi.filter(e => !idInLibreria.has(e.id))
   const tuttiEsercizi = [...libreriaMia, ...libreriaPubblica, ...esExtra]
+
+  function onNuovoEsercizioSaved(esercizio) {
+    libreriaMia.push(esercizio)
+    toggle(esercizio.id)
+    setShowNuovoModal(false)
+  }
 
   const toggle = useCallback((id) => {
     setSel((s) => {

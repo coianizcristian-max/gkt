@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 
 const VOCI = [
   { href: '/supervisore', label: 'Sito' },
-  { href: '/supervisore/stagioni', label: 'Stagioni' },
+  { href: '/supervisore/anni', label: 'Anni disponibili' },
   { href: '/supervisore/categorie', label: 'Categorie' },
   { href: '/supervisore/attributi', label: 'Attributi' },
   { href: '/supervisore/elenchi', label: 'Elenchi' },

@@ -14,7 +14,7 @@ export default async function PortieriPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id, permessi_collaboratore').eq('id', user?.id).maybeSingle()
+    .from('profili').select('ruolo, portiere_id, permessi_collaboratore, nome_completo, foto_url').eq('id', user?.id).maybeSingle()
   if (profilo?.ruolo === 'portiere' && profilo.portiere_id) {
     redirect(`/portieri/${profilo.portiere_id}`)
   }
@@ -32,6 +32,7 @@ export default async function PortieriPage() {
   let haCategorie = false
   let haPortieri = false
   let haAllenamenti = false
+  const haProfiloCompilato = !!(profilo?.nome_completo && profilo.nome_completo.trim())
   if (stagione) {
     const [sq, isc, allen, cat] = await Promise.all([
       supabase.from('squadre').select('id, nome, ordine').eq('owner_id', ownerId).order('ordine'),
@@ -123,6 +124,12 @@ export default async function PortieriPage() {
               titolo: 'Crea gli allenamenti',
               desc: 'Vai in Ricorrenze: imposta i giorni fissi di allenamento per ogni categoria e genera tutto il calendario in un click.',
               href: '/ricorrenze',
+            },
+            {
+              ok: haProfiloCompilato,
+              titolo: 'Completa il tuo profilo',
+              desc: 'Aggiungi nome, foto e bio per apparire nella ricerca pubblica degli allenatori.',
+              href: '/profilo',
             },
           ]} />
         )}

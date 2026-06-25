@@ -99,11 +99,18 @@ export default function PartiteLista({ partite, categorie, isPortiere = false })
         )}
       </div>
 
-      {/* Tab per tipologia */}
+      {/* Bottone nuova partita — floating in basso a destra */}
       {!isPortiere && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-          <Link href="/partite/nuova" className="btn-azione">+ Nuova partita</Link>
-        </div>
+        <Link href="/partite/nuova" style={{
+          position: 'fixed', bottom: 28, right: 28, zIndex: 100,
+          padding: '13px 22px', borderRadius: 999,
+          background: 'var(--azzurro)', color: '#fff',
+          fontWeight: 700, fontSize: 15, textDecoration: 'none',
+          boxShadow: '0 4px 18px rgba(10,126,194,0.35)',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          + Nuova partita
+        </Link>
       )}
 
       <div className="sub-nav">

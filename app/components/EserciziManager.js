@@ -59,6 +59,8 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
   const [esPublici, setEsPublici] = useState(null) // null=non caricati
   const [prefIds, setPrefIds] = useState(new Set((eserciziPubblici ?? []).map(e => e.id)))
   const [loadingPref, setLoadingPref] = useState(null) // id in corso
+  const [filtroAttr, setFiltroAttr] = useState(new Set())
+  const [modoFiltro, setModoFiltro] = useState('almeno')
 
   // Ragruppa per tipologia — sezione corrente
   const lista = sezione === 'miei' ? esercizi : eserciziPubblici

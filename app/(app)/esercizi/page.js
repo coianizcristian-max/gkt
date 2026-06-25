@@ -14,9 +14,10 @@ export default async function EserciziPage() {
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
   const ownerId = await getOwnerId(supabase, user.id)
-  const [{ data: esercizi }, { data: tip }] = await Promise.all([
-    supabase.from('esercizi').select('*').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
+  const [{ data: esercizi }, { data: tip }, { data: attributi }] = await Promise.all([
+    supabase.from('esercizi').select('*, esercizio_attributi(attributo_id), tipologie').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
     supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('attivo', true).order('ordine'),
+    supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
   ])
   const tipologie = (tip ?? []).map((t) => t.valore)
 
@@ -30,7 +31,7 @@ export default async function EserciziPage() {
       const prefIds = prefRows.map((r) => r.esercizio_id)
       const { data: pubPref } = await supabase
         .from('esercizi')
-        .select('*')
+        .select('*, esercizio_attributi(attributo_id), tipologie')
         .eq('pubblico', true)
         .eq('archiviato', false)
         .neq('allenatore_id', ownerId)
@@ -69,6 +70,7 @@ export default async function EserciziPage() {
           esercizi={esercizi ?? []}
           eserciziPubblici={eserciziPubbliciPreferiti}
           tipologie={tipologie}
+          attributiDisponibili={attributi ?? []}
           allenatoreId={ownerId}
         />
       </div>

@@ -118,8 +118,8 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
       {/* Bottone crea nuovo esercizio — sempre visibile nella libreria personale */}
       {fonte === 'mia' && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-          <button className="btn-ghost" type="button" onClick={() => setShowNuovoModal(true)} style={{ fontSize: 13 }}>
-            + Crea nuovo esercizio
+          <button className="btn" type="button" onClick={() => setShowNuovoModal(true)}>
+            ✏️ Crea nuovo esercizio
           </button>
         </div>
       )}

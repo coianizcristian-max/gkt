@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PortiereForm from '@/app/components/PortiereForm'
+import OnboardingChecklist from '@/app/components/OnboardingChecklist'
+import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import TagManager from '@/app/components/TagManager'
 import { getStagioneAttiva } from '@/lib/tenant'
 
@@ -63,6 +65,29 @@ export default async function SchedaPortierePage({ params }) {
           <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">Statistiche</Link>
           <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">Percorso</Link>
         </div>
+        {soloPortiere && (
+          <OnboardingChecklist checks={[
+            {
+              ok: !!(portiere.nome && portiere.cognome),
+              titolo: 'Completa i tuoi dati',
+              desc: 'Aggiungi nome, cognome e data di nascita nella tua scheda.',
+              href: `/portieri/${id}`,
+            },
+            {
+              ok: !!portiere.foto_url,
+              titolo: 'Aggiungi una foto profilo',
+              desc: 'Carica la tua foto per essere riconoscibile dallo staff.',
+              href: `/portieri/${id}`,
+            },
+            {
+              ok: !!iscrizione,
+              titolo: 'Iscritto a una categoria',
+              desc: 'Lo staff ti iscriverà alla categoria della stagione corrente.',
+              href: `/portieri/${id}`,
+            },
+          ]} />
+        )}
+
         {!soloPortiere && tagDisponibili.length > 0 && (
           <TagManager portiereId={id} tagAttivi={tagAttivi} tagDisponibili={tagDisponibili} />
         )}

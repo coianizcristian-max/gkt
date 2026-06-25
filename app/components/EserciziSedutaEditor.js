@@ -67,26 +67,35 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
               <button className="modal-close" onClick={() => setPopup(null)}>✕</button>
             </div>
             {popup.tipologia && <div className="stat-cat" style={{ marginBottom: 8 }}>{popup.tipologia}</div>}
-            {popup.immagine_url && (
-              <img src={popup.immagine_url} alt="" style={{ width: '100%', borderRadius: 8, marginBottom: 12, objectFit: 'cover', maxHeight: 220 }} />
-            )}
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+              {popup.immagine_url && (
+                <img src={popup.immagine_url} alt="" style={{ flex: 1, minWidth: 0, borderRadius: 8, objectFit: 'cover', maxHeight: 200 }} />
+              )}
+              {popup.video_url && (
+                <a
+                  href={popup.video_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 8, padding: '16px 20px', borderRadius: 8, textDecoration: 'none',
+                    background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
+                    color: '#fff', minWidth: 110, flexShrink: 0, cursor: 'pointer',
+                    border: '2px solid rgba(255,255,255,0.1)',
+                  }}
+                >
+                  <span style={{ fontSize: 36, lineHeight: 1 }}>▶</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>Guarda<br/>video</span>
+                </a>
+              )}
+            </div>
             {popup.descrizione_breve && <p><em>{popup.descrizione_breve}</em></p>}
             {popup.descrizione && <p style={{ whiteSpace: 'pre-wrap' }}>{popup.descrizione}</p>}
             <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 13, color: 'var(--ink-soft)' }}>
               {popup.durata_minuti && <span>⏱ Durata: <b>{popup.durata_minuti} min</b></span>}
               {popup.recupero_minuti && <span>↩ Recupero: <b>{popup.recupero_minuti} min</b></span>}
             </div>
-            {popup.video_url && (
-              <a
-                href={popup.video_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, fontSize: 13 }}
-              >
-                🎬 Guarda il video
-              </a>
-            )}
+
           </div>
         </div>
       )}

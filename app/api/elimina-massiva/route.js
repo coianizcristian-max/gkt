@@ -23,7 +23,7 @@ export async function POST(request) {
     if (!stagione) return NextResponse.json({ error: 'Stagione non trovata.' }, { status: 403 })
 
     if (tipo === 'allenamenti') {
-      // Carica allenamenti con flag nessuna_valutazione
+      // Carica allenamenti nel range con flag nessuna_valutazione
       let q = supabase.from('allenamenti')
         .select('id, nessuna_valutazione')
         .eq('stagione_id', stagioneId)
@@ -35,35 +35,25 @@ export async function POST(request) {
       if (!rows || rows.length === 0) return NextResponse.json({ eliminati: 0 })
 
       let ids = rows.map(r => r.id)
+      const rowMap = Object.fromEntries(rows.map(r => [r.id, r]))
 
       if (filtroVal === 'senza' || filtroVal === 'con') {
-        // Carica IDs allenamenti che hanno ALMENO UNA valutazione inserita
-        // Usiamo una query aggregata per evitare problemi RLS:
-        // selezioniamo gli allenamento_id distinti dalla tabella valutazioni
-        const { data: valRows, error: valErr } = await supabase
+        // Stessa logica del calendario/page.js:
+        // usa .not('voto', 'is', null) per trovare allenamenti con almeno un voto
+        const { data: vrows } = await supabase
           .from('valutazioni')
           .select('allenamento_id')
+          .not('voto', 'is', null)
           .in('allenamento_id', ids)
 
-        // Se valErr (RLS), conValutazioni sarà un Set vuoto
-        // e il filtro si baserà solo su nessuna_valutazione
-        const conValutazioni = new Set((valRows ?? []).map(v => v.allenamento_id))
+        const conVoto = new Set((vrows ?? []).map(r => r.allenamento_id))
 
-        const rowMap = {}
-        for (const r of rows) rowMap[r.id] = r
-
+        // "valutato" = ha almeno un voto inserito OPPURE nessuna_valutazione = true
+        // (identico a: valutati.has(a.id) || a.nessuna_valutazione nel calendario)
         if (filtroVal === 'senza') {
-          // "Senza valutazioni" = non ha voti inseriti E non ha flag nessuna_valutazione
-          ids = ids.filter(id => !conValutazioni.has(id) && !rowMap[id]?.nessuna_valutazione)
+          ids = ids.filter(id => !conVoto.has(id) && !rowMap[id]?.nessuna_valutazione)
         } else {
-          // "Con valutazioni" = ha voti inseriti OPPURE ha flag nessuna_valutazione
-          ids = ids.filter(id => conValutazioni.has(id) || !!rowMap[id]?.nessuna_valutazione)
-        }
-
-        // Se valErr e nessuna valutazione trovata, il problema è RLS
-        // In quel caso log di warning ma procediamo con il risultato
-        if (valErr) {
-          console.warn('valutazioni query error (RLS?):', valErr.message)
+          ids = ids.filter(id => conVoto.has(id) || !!rowMap[id]?.nessuna_valutazione)
         }
       }
 
@@ -89,6 +79,7 @@ export async function POST(request) {
         const { data: valRows } = await supabase
           .from('valutazioni_partita')
           .select('partita_id')
+          .not('voto', 'is', null)
           .in('partita_id', ids)
         const conVal = new Set((valRows ?? []).map(v => v.partita_id))
         ids = filtroVal === 'senza'

@@ -76,6 +76,17 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
               {popup.durata_minuti && <span>⏱ Durata: <b>{popup.durata_minuti} min</b></span>}
               {popup.recupero_minuti && <span>↩ Recupero: <b>{popup.recupero_minuti} min</b></span>}
             </div>
+            {popup.video_url && (
+              <a
+                href={popup.video_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, fontSize: 13 }}
+              >
+                🎬 Guarda il video
+              </a>
+            )}
           </div>
         </div>
       )}

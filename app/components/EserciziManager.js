@@ -50,7 +50,7 @@ function EsercizioTile({ esercizio, onDetail, onEdit }) {
   )
 }
 
-export default function EserciziManager({ esercizi, eserciziPubblici = [], tipologie, allenatoreId }) {
+export default function EserciziManager({ esercizi, eserciziPubblici = [], tipologie, attributiDisponibili = [], allenatoreId }) {
   const router = useRouter()
   const [editing, setEditing] = useState(null)
   const [popup, setPopup] = useState(null)

@@ -124,24 +124,22 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
           >
             <span className="drag-handle" title="Trascina per riordinare">⠿</span>
             <span style={{ fontSize: 12, color: 'var(--ink-soft)', width: 22, flexShrink: 0 }}>{i + 1}.</span>
-            <button
-              type="button"
+            <div
+              className="drag-info"
               onClick={() => setPopup(e)}
-              style={{ display: 'contents', cursor: 'pointer' }}
+              style={{ cursor: 'pointer', flex: 1 }}
             >
-              <div className="drag-info">
-                <b>{e.titolo}</b>
-                {e.tipologia && <span className="stat-cat" style={{ marginLeft: 6 }}>{e.tipologia}</span>}
-                {(e.durata_minuti || e.recupero_minuti) && (
-                  <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 8 }}>
-                    {e.durata_minuti ? `⏱ ${e.durata_minuti}min` : ''}
-                    {e.durata_minuti && e.recupero_minuti ? ' · ' : ''}
-                    {e.recupero_minuti ? `↩ ${e.recupero_minuti}min rec.` : ''}
-                  </span>
-                )}
-                <span style={{ fontSize: 11, color: 'var(--azzurro)', marginLeft: 8 }}>Tocca per dettaglio</span>
-              </div>
-            </button>
+              <b>{e.titolo}</b>
+              {e.tipologia && <span className="stat-cat" style={{ marginLeft: 6 }}>{e.tipologia}</span>}
+              {(e.durata_minuti || e.recupero_minuti) && (
+                <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 8 }}>
+                  {e.durata_minuti ? `⏱ ${e.durata_minuti}min` : ''}
+                  {e.durata_minuti && e.recupero_minuti ? ' · ' : ''}
+                  {e.recupero_minuti ? `↩ ${e.recupero_minuti}min rec.` : ''}
+                </span>
+              )}
+              <span style={{ fontSize: 11, color: 'var(--azzurro)', marginLeft: 8 }}>▸ dettaglio</span>
+            </div>
             {e.immagine_url && (
               <img src={e.immagine_url} className="drag-thumb" alt="" onClick={() => setPopup(e)} style={{ cursor: 'pointer' }} />
             )}

@@ -13,7 +13,7 @@ const VOCI = [
   { href: '/supervisore/abbonamenti', label: 'Abbonamenti' },
   { href: '/supervisore/coupon', label: 'Coupon' },
   { href: '/supervisore/newsletter', label: 'Newsletter' },
-  { href: '/supervisore/anni', label: 'Anni stagione' },
+  { href: '/supervisore/versioni', label: 'Versioni' },
 ]
 
 export default function SupervisoreNav() {

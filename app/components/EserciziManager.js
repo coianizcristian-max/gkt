@@ -11,7 +11,9 @@ function EsercizioPopup({ esercizio, onClose }) {
       <div className="popup-box" onClick={(e) => e.stopPropagation()}>
         <button className="popup-close" onClick={onClose} type="button">✕</button>
         <h2 style={{ margin: '0 0 6px' }}>{esercizio.titolo}</h2>
-        {esercizio.tipologia && <span className="stat-cat" style={{ marginBottom: 12, display: 'inline-block' }}>{esercizio.tipologia}</span>}
+        {((esercizio.tipologie?.length ? esercizio.tipologie : (esercizio.tipologia ? [esercizio.tipologia] : []))).map(t => (
+          <span key={t} className="stat-cat" style={{ marginBottom: 4, marginRight: 4, display: 'inline-block' }}>{t}</span>
+        ))}
         {esercizio.immagine_url && (
           <img src={esercizio.immagine_url} alt="" style={{ width: '100%', borderRadius: 'var(--r)', marginBottom: 14, maxHeight: 280, objectFit: 'cover' }} />
         )}
@@ -78,8 +80,18 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
     }
     setLoadingPref(null)
   }
+  // Filtro attributi
+  const listaFiltrata = filtroAttr.size === 0 ? lista : lista.filter(e => {
+    const eAttr = new Set((e.esercizio_attributi ?? []).map(a => a.attributo_id))
+    if (modoFiltro === 'tutti') return [...filtroAttr].every(id => eAttr.has(id))
+    return [...filtroAttr].some(id => eAttr.has(id))
+  })
+
   const gruppi = {}
-  for (const e of lista) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
+  for (const e of listaFiltrata) {
+    const tips = (e.tipologie?.length ? e.tipologie : (e.tipologia ? [e.tipologia] : ['Senza tipologia']))
+    for (const t of tips) (gruppi[t] ??= []).push(e)
+  }
   const chiavi = Object.keys(gruppi).sort()
   const tabCorrente = tabAttivo ?? chiavi[0] ?? null
 
@@ -90,6 +102,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
         <EsercizioForm
           esercizio={editing === 'new' ? null : editing}
           tipologie={tipologie}
+          attributiDisponibili={attributiDisponibili}
           allenatoreId={allenatoreId}
           onSaved={() => { setEditing(null); router.refresh() }}
           onCancel={() => setEditing(null)}
@@ -222,11 +235,11 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
   )
 }
 
-function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }) {
+function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allenatoreId, onSaved, onCancel }) {
   const isEdit = !!esercizio
   const [f, setF] = useState({
     titolo: esercizio?.titolo ?? '',
-    tipologia: esercizio?.tipologia ?? (tipologie[0] ?? ''),
+    tipologie: esercizio?.tipologie?.length ? esercizio.tipologie : (esercizio?.tipologia ? [esercizio.tipologia] : []),
     descrizione_breve: esercizio?.descrizione_breve ?? '',
     descrizione: esercizio?.descrizione ?? '',
     note: esercizio?.note ?? '',
@@ -235,6 +248,7 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
     durata_minuti: esercizio?.durata_minuti ?? '',
     recupero_minuti: esercizio?.recupero_minuti ?? '',
   })
+  const [attributiSel, setAttributiSel] = useState(new Set(esercizio?.attributi?.map(a => a.attributo_id) ?? []))
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(esercizio?.immagine_url ?? '')
   const [busy, setBusy] = useState(false)
@@ -246,18 +260,24 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
     const fl = e.target.files?.[0]; if (!fl) return
     setFile(fl); setPreview(URL.createObjectURL(fl)); setDone(false)
   }
-  function onTip(e) {
-    const v = e.target.value
-    if (v === '__nuova__') {
-      const nome = prompt('Nome della nuova tipologia:')
-      if (!nome) return
-      const supabase = createClient()
-      supabase.from('elenco_voci').insert({
-        elenco: 'tipologie_esercizio', valore: nome.trim(), stato: 'proposta', proposto_da: allenatoreId, ordine: 999,
-      }).then(() => setF((s) => ({ ...s, tipologia: nome.trim() })))
-    } else {
-      setF((s) => ({ ...s, tipologia: v }))
-    }
+  function toggleTip(t) {
+    setF((s) => {
+      const cur = s.tipologie ?? []
+      const next = cur.includes(t) ? cur.filter(x => x !== t) : [...cur, t]
+      return { ...s, tipologie: next }
+    })
+    setDone(false)
+  }
+  function aggiungiTip() {
+    const nome = prompt('Nome della nuova tipologia:')
+    if (!nome) return
+    const supabase = createClient()
+    supabase.from('elenco_voci').insert({
+      elenco: 'tipologie_esercizio', valore: nome.trim(), stato: 'proposta', proposto_da: allenatoreId, ordine: 999,
+    }).then(() => toggleTip(nome.trim()))
+  }
+  function toggleAttr(id) {
+    setAttributiSel(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
     setDone(false)
   }
 
@@ -275,18 +295,30 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
         immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
       }
       const payload = {
-        allenatore_id: allenatoreId, titolo: f.titolo.trim(), tipologia: f.tipologia || null,
+        allenatore_id: allenatoreId, titolo: f.titolo.trim(),
+        tipologia: f.tipologie?.[0] || null,  // retrocompatibilità
+        tipologie: f.tipologie ?? [],
         descrizione_breve: f.descrizione_breve || null, descrizione: f.descrizione || null,
         note: f.note || null, video_url: f.video_url || null, immagine_url, pubblico: !!f.pubblico,
         durata_minuti: f.durata_minuti !== '' ? parseFloat(f.durata_minuti) : null,
         recupero_minuti: f.recupero_minuti !== '' ? parseFloat(f.recupero_minuti) : null,
       }
+      let esercizioId
       if (isEdit) {
         const { error } = await supabase.from('esercizi').update(payload).eq('id', esercizio.id)
         if (error) throw error
+        esercizioId = esercizio.id
       } else {
-        const { error } = await supabase.from('esercizi').insert(payload)
+        const { data: ins, error } = await supabase.from('esercizi').insert(payload).select('id').single()
         if (error) throw error
+        esercizioId = ins.id
+      }
+      // Salva attributi
+      await supabase.from('esercizio_attributi').delete().eq('esercizio_id', esercizioId)
+      if (attributiSel.size > 0) {
+        await supabase.from('esercizio_attributi').insert(
+          [...attributiSel].map(aId => ({ esercizio_id: esercizioId, attributo_id: aId }))
+        )
       }
       setDone(true); setBusy(false); if (onSaved) onSaved()
     } catch (err) { setError(err.message); setBusy(false) }
@@ -305,11 +337,48 @@ function EsercizioForm({ esercizio, tipologie, allenatoreId, onSaved, onCancel }
       {error && <div className="err">{error}</div>}
       <div className="form-grid">
         <div className="field field-full"><label>Titolo *</label><input value={f.titolo} onChange={upd('titolo')} /></div>
-        <div className="field"><label>Tipologia</label>
-          <select value={f.tipologia} onChange={onTip}>
-            {tipologie.map((t) => <option key={t} value={t}>{t}</option>)}
-            <option value="__nuova__">+ Proponi nuova...</option>
-          </select></div>
+        <div className="field field-full">
+          <label>Tipologie (seleziona una o più)</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+            {tipologie.map((t) => (
+              <button key={t} type="button"
+                onClick={() => toggleTip(t)}
+                style={{
+                  padding: '4px 12px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
+                  border: (f.tipologie ?? []).includes(t) ? '2px solid var(--azzurro)' : '1.5px solid var(--linea)',
+                  background: (f.tipologie ?? []).includes(t) ? 'rgba(10,126,194,0.1)' : 'var(--carta)',
+                  color: (f.tipologie ?? []).includes(t) ? 'var(--azzurro)' : 'var(--ink)',
+                  fontWeight: (f.tipologie ?? []).includes(t) ? 700 : 400,
+                }}>
+                {t}
+              </button>
+            ))}
+            <button type="button" onClick={aggiungiTip}
+              style={{ padding: '4px 12px', borderRadius: 20, fontSize: 13, border: '1.5px dashed var(--linea)', background: 'none', cursor: 'pointer', color: 'var(--ink-soft)' }}>
+              + Nuova...
+            </button>
+          </div>
+        </div>
+        {attributiDisponibili.length > 0 && (
+          <div className="field field-full">
+            <label>Attributi (caratteristiche dell&apos;esercizio)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+              {attributiDisponibili.map((a) => (
+                <button key={a.id} type="button"
+                  onClick={() => toggleAttr(a.id)}
+                  style={{
+                    padding: '4px 12px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
+                    border: attributiSel.has(a.id) ? '2px solid var(--campo)' : '1.5px solid var(--linea)',
+                    background: attributiSel.has(a.id) ? 'rgba(46,158,91,0.1)' : 'var(--carta)',
+                    color: attributiSel.has(a.id) ? 'var(--campo)' : 'var(--ink)',
+                    fontWeight: attributiSel.has(a.id) ? 700 : 400,
+                  }}>
+                  {a.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="field"><label>Immagine</label>
           <label className="foto-upload">{preview ? 'Cambia immagine' : 'Carica immagine'}
             <input type="file" accept="image/*" onChange={onFile} hidden />

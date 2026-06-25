@@ -37,20 +37,23 @@ export async function POST(request) {
       const rowMap = Object.fromEntries(rows.map(r => [r.id, r]))
 
       if (filtroVal === 'senza' || filtroVal === 'con') {
+        // Cerca allenamenti che hanno almeno una riga valutazione (anche senza voto)
+        // uguale al calendario che usa: supabase.from('valutazioni').select('allenamento_id')
         const { data: vrows } = await supabase
           .from('valutazioni')
           .select('allenamento_id')
-          .not('voto', 'is', null)
           .in('allenamento_id', ids)
-        const conVoto = new Set((vrows ?? []).map(r => r.allenamento_id))
+        const conValutazione = new Set((vrows ?? []).map(r => r.allenamento_id))
 
         if (filtroVal === 'senza') {
-          ids = ids.filter(id => !conVoto.has(id) && !rowMap[id]?.nessuna_valutazione)
+          // Senza = nessuna riga valutazione E nessuna_valutazione non impostato
+          ids = ids.filter(id => !conValutazione.has(id) && !rowMap[id]?.nessuna_valutazione)
         } else {
-          ids = ids.filter(id => conVoto.has(id) || !!rowMap[id]?.nessuna_valutazione)
+          // Con = ha righe valutazione OPPURE nessuna_valutazione impostato
+          ids = ids.filter(id => conValutazione.has(id) || !!rowMap[id]?.nessuna_valutazione)
         }
       }
-      // 'tutti' = nessun filtro aggiuntivo, elimina tutti
+      // 'tutti' = elimina tutti senza filtro valutazioni
 
       if (!ids.length) return NextResponse.json({ eliminati: 0 })
       const { error: delErr } = await supabase.from('allenamenti').delete().in('id', ids)
@@ -74,7 +77,6 @@ export async function POST(request) {
         const { data: valRows } = await supabase
           .from('valutazioni_partita')
           .select('partita_id')
-          .not('voto', 'is', null)
           .in('partita_id', ids)
         const conVal = new Set((valRows ?? []).map(v => v.partita_id))
         ids = filtroVal === 'senza'

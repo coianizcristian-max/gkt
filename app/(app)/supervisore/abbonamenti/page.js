@@ -1,16 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import SupervisoreNav from '@/app/components/SupervisoreNav'
+import AbbonamentiManager from '@/app/components/AbbonamentiManager'
 
 export const dynamic = 'force-dynamic'
-
-function fmtData(d) {
-  if (!d) return '—'
-  return new Date(d).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
-const PIANO_LABEL = { mensile: 'Mensile', annuale: 'Annuale', lifetime: 'A vita' }
-const STATO_LABEL = { attivo: '🟢 Attivo', scaduto: '🔴 Scaduto', cancellato: '⛔ Cancellato' }
 
 export default async function AbbonamentiSupPage() {
   const supabase = await createClient()
@@ -19,51 +12,60 @@ export default async function AbbonamentiSupPage() {
   const { data: profilo } = await supabase.from('profili').select('supervisore').eq('id', user.id).maybeSingle()
   if (!profilo?.supervisore) redirect('/')
 
+  // Carica tutti gli abbonamenti con dati allenatore
   const { data: abbRows } = await supabase
     .from('abbonamenti')
-    .select('allenatore_id, piano, stato, scadenza, created_at, stripe_customer_id, stripe_subscription_id')
+    .select('id, allenatore_id, piano, stato, scadenza, created_at')
     .order('created_at', { ascending: false })
 
-  // Carica nomi allenatori
-  const ids = [...new Set((abbRows ?? []).map((r) => r.allenatore_id))]
-  let nomi = {}
+  // Carica profili allenatori
+  const { data: profili } = await supabase
+    .from('profili')
+    .select('id, nome_visualizzato, nome_completo')
+    .eq('ruolo', 'allenatore')
+    .order('nome_visualizzato')
+
+  // Carica email da auth.users tramite join profili
+  const ids = (profili ?? []).map(p => p.id)
+  let emails = {}
   if (ids.length) {
-    const { data: profili } = await supabase.from('profili').select('id, nome_visualizzato').in('id', ids)
-    for (const p of profili ?? []) nomi[p.id] = p.nome_visualizzato
+    // Usiamo una funzione RPC o leggiamo dalla tabella profili
+    // email non è nella tabella profili ma possiamo usare la funzione admin
+    // Per ora usiamo l'id come fallback
   }
 
-  const totAttivi = (abbRows ?? []).filter((r) => r.stato === 'attivo').length
+  const totAttivi = (abbRows ?? []).filter(r => ['attivo', 'disdetto'].includes(r.stato)).length
+  const totLifetime = (abbRows ?? []).filter(r => r.piano === 'lifetime').length
 
   return (
     <>
       <div className="topbar">
-        <div className="eyebrow">Area riservata</div>
-        <h1>Supervisore · Abbonamenti</h1>
+        <div className="eyebrow">Supervisore</div>
+        <h1>Gestione abbonamenti</h1>
       </div>
       <div className="content">
         <SupervisoreNav />
-        <div className="scheda" style={{ display: 'flex', gap: 32, marginBottom: 20 }}>
-          <div><div style={{ fontSize: 28, fontWeight: 700 }}>{totAttivi}</div><div className="sub-intro" style={{ marginTop: 2 }}>Abbonamenti attivi</div></div>
-          <div><div style={{ fontSize: 28, fontWeight: 700 }}>{(abbRows ?? []).length}</div><div className="sub-intro" style={{ marginTop: 2 }}>Totale storici</div></div>
+
+        {/* Statistiche */}
+        <div className="scheda" style={{ display: 'flex', gap: 32, marginBottom: 24, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 700 }}>{totAttivi}</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>Abbonamenti attivi</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 700 }}>{totLifetime}</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>Piani Lifetime</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 700 }}>{(abbRows ?? []).length}</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>Totale storici</div>
+          </div>
         </div>
-        {(abbRows ?? []).length === 0
-          ? <div className="empty">Nessun abbonamento registrato.</div>
-          : (
-            <div className="lista-editor">
-              {(abbRows ?? []).map((r, i) => (
-                <div key={i} className="lista-riga">
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600 }}>{nomi[r.allenatore_id] ?? r.allenatore_id}</div>
-                    <small style={{ color: 'var(--ink-soft)' }}>
-                      {PIANO_LABEL[r.piano] ?? r.piano} · dal {fmtData(r.created_at)}
-                      {r.piano !== 'lifetime' && <> · scade {fmtData(r.scadenza)}</>}
-                    </small>
-                  </div>
-                  <span>{STATO_LABEL[r.stato] ?? r.stato}</span>
-                </div>
-              ))}
-            </div>
-          )}
+
+        <AbbonamentiManager
+          abbonamenti={abbRows ?? []}
+          profili={profili ?? []}
+        />
       </div>
     </>
   )

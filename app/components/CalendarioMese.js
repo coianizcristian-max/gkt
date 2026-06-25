@@ -17,7 +17,6 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const [previewExtra, setPreviewExtra] = useState({}) // { [allenamId]: { esercizi: [] } }
   const [loadingExtra, setLoadingExtra] = useState(false)
   const [previewPartite, setPreviewPartite] = useState({}) // { [partitaId]: { valutazioni: [] } }
-  const [previewPartite, setPreviewPartite] = useState({}) // { [partitaId]: { valutazioni: [] } }
 
   const year  = cursor.getFullYear()
   const month = cursor.getMonth()

@@ -9,22 +9,20 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
-      - name: Install PostgreSQL client
-        run: sudo apt-get install -y postgresql-client
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
 
-      - name: Run pg_dump
+      - name: Dump database via Supabase CLI
         env:
-          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M)
-          pg_dump "$DB_URL" \
-            --no-owner \
-            --no-privileges \
-            --format=plain \
-            --no-password \
+          supabase db dump \
+            --project-ref kaqgpdbojawjbssqrtoh \
             -f "backup_${TIMESTAMP}.sql"
           gzip "backup_${TIMESTAMP}.sql"
-          echo "BACKUP_FILE=backup_${TIMESTAMP}.sql.gz" >> $GITHUB_ENV
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v4

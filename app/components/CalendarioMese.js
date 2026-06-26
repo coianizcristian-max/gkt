@@ -16,6 +16,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const [selectedDay, setSelectedDay] = useState(null) // numero giorno selezionato
   const [previewExtra, setPreviewExtra] = useState({}) // { [allenamId]: { esercizi: [] } }
   const [loadingExtra, setLoadingExtra] = useState(false)
+  const [previewPartite, setPreviewPartite] = useState({}) // { [partitaId]: { valutazioni: [] } }
 
   const year  = cursor.getFullYear()
   const month = cursor.getMonth()
@@ -73,6 +74,32 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     if (evs.length === 0) return
     if (selectedDay === day) { setSelectedDay(null); return }
     setSelectedDay(day)
+
+    // Carica valutazioni partite del giorno non ancora caricate
+    const partIds = (byDay[day] ?? []).filter(e => e._tipo === 'partita' && !previewPartite[e.id]).map(e => e.id)
+    if (partIds.length > 0) {
+      try {
+        const { createClient } = await import('@/lib/supabase/client')
+        const supabase = createClient()
+        const { data: vp } = await supabase
+          .from('valutazioni_partita')
+          .select('partita_id, voto, presente, portieri(nome, cognome)')
+          .in('partita_id', partIds)
+          .eq('presente', true)
+          .order('voto', { ascending: false })
+        const byPart = {}
+        for (const v of (vp ?? [])) {
+          if (!byPart[v.partita_id]) byPart[v.partita_id] = []
+          byPart[v.partita_id].push(v)
+        }
+        setPreviewPartite(prev => {
+          const next = { ...prev }
+          for (const id of partIds) next[id] = { valutazioni: byPart[id] ?? [] }
+          return next
+        })
+      } catch (_) {}
+    }
+
     // Carica esercizi solo per gli allenamenti di questo giorno non ancora caricati
     const allIds = evs.filter(e => e._tipo === 'allenamento' && !previewExtra[e.id]).map(e => e.id)
     if (allIds.length === 0) return
@@ -82,7 +109,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
       const supabase = createClient()
       const [{ data: ae }, { data: allRows }] = await Promise.all([
         supabase.from('allenamento_esercizi')
-          .select('allenamento_id, ordine, esercizi(id, titolo, tipologia)')
+          .select('allenamento_id, ordine, esercizi(id, titolo, tipologia, durata_minuti, recupero_minuti)')
           .in('allenamento_id', allIds)
           .order('ordine'),
         supabase.from('allenamenti')
@@ -102,6 +129,8 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
           esercizi: byAll[id] ?? [],
           obiettivi: allMap[id]?.obiettivi ?? null,
           consuntivo: allMap[id]?.consuntivo ?? null,
+          totaleMinuti: (byAll[id] ?? []).reduce((tot, e) => tot + (parseFloat(e.durata_minuti)||0) + (parseFloat(e.recupero_minuti)||0), 0),
+          totaleMinuti: (byAll[id] ?? []).reduce((tot, e) => tot + (parseFloat(e.durata_minuti)||0) + (parseFloat(e.recupero_minuti)||0), 0),
         }
         return next
       })
@@ -243,6 +272,26 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                     </div>
                   </div>
                   <div className="cal-preview-avversario">vs {ev.avversario || '—'}</div>
+                  {/* Risultato */}
+                  {passata && ev.gol_fatti != null && (
+                    <div style={{ margin: '6px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontWeight: 700, fontSize: 22, letterSpacing: 2 }}>
+                        {ev.gol_fatti} — {ev.gol_subiti}
+                      </span>
+                      {ev.gol_subiti === 0 && <span style={{ fontSize: 12, color: 'var(--campo)', fontWeight: 700 }}>✓ Clean sheet</span>}
+                    </div>
+                  )}
+                  {/* Valutazioni portieri */}
+                  {previewPartite[ev.id]?.valutazioni?.length > 0 && (
+                    <div style={{ margin: '8px 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      {previewPartite[ev.id].valutazioni.map((v, vi) => (
+                        <div key={vi} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 8px', background: 'var(--carta)', borderRadius: 6 }}>
+                          <span>{v.portieri?.nome} {v.portieri?.cognome}</span>
+                          {v.voto != null && <span style={{ fontWeight: 700 }}>⭐ {v.voto}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="cal-preview-actions">
                     <Link href={`/partite/${ev.id}`} className="btn-mini">
                       {passata && !ev.ha_valutazioni ? '⚠ Inserisci valutazioni →' : 'Apri partita →'}
@@ -310,6 +359,16 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                           </ol>
                         </>
                       : <div style={{fontSize:12,color:'var(--ink-soft)'}}>Nessun esercizio pianificato</div>}
+                  </div>
+                )}
+                {previewExtra[ev.id]?.totaleMinuti > 0 && (
+                  <div style={{marginTop:8,fontSize:13,fontWeight:600,color:'var(--ink-soft)'}}>
+                    ⏱ Durata totale stimata:{' '}
+                    <b style={{color:'var(--ink)'}}>
+                      {previewExtra[ev.id].totaleMinuti >= 60
+                        ? `${Math.floor(previewExtra[ev.id].totaleMinuti/60)}h ${Math.round(previewExtra[ev.id].totaleMinuti%60)}min`
+                        : `${Math.round(previewExtra[ev.id].totaleMinuti)} min`}
+                    </b>
                   </div>
                 )}
                 {loadingExtra && !previewExtra[ev.id] && (

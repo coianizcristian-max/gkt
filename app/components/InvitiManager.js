@@ -138,7 +138,7 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
       {modalUrl && <LinkModal url={modalUrl} onClose={() => setModalUrl(null)} />}
 
       <p className="sub-intro">
-        Crea un link d&apos;invito da inviare a un portiere o a un membro dello staff. Lo staff condivide automaticamente le stesse funzionalità sbloccate dall&apos;abbonamento dell&apos;allenatore principale.
+        Crea un link d&apos;invito da inviare a un portiere o a un membro dello staff. Il portiere accede alle sue statistiche e alla sua pagina che legge i dati inseriti dall&apos;allenatore. Lo staff condivide automaticamente le stesse funzionalità sbloccate dall&apos;abbonamento dell&apos;allenatore principale.
       </p>
       <div className="scheda">
         {error && <div className="err">{error}</div>}

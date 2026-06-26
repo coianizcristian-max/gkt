@@ -90,7 +90,7 @@ export default async function AppLayout({ children }) {
   // Costruisce mappa chiave→voce (con condizioni di visibilità)
   const tutteLeVoci = {
     'dashboard':     isStaff ? { href: '/dashboard', label: '🏠 Dashboard' } : null,
-    'portieri':      (isPortiere || vedePortieri) ? { href: schedaHref, label: isPortiere ? 'La mia scheda' : 'Portieri' } : null,
+    'portieri':      (isPortiere || vedePortieri) ? { href: isPortiere ? schedaHref : '/portieri', label: isPortiere ? 'La mia scheda' : 'Portieri' } : null,
     'calendario':    (isPortiere || vedeAllenamenti) ? { href: '/calendario', label: 'Calendario' } : null,
     'ricorrenze':    (isStaff && vedeAllenamenti) ? { href: '/ricorrenze', label: 'Ricorrenze' } : null,
     'partite':       (isPortiere || vedePartite) ? { href: '/partite', label: 'Partite' } : null,

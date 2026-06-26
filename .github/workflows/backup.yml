@@ -9,28 +9,40 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
-      - name: Install PostgreSQL client
-        run: sudo apt-get install -y postgresql-client
-
-      - name: Run pg_dump via Supabase pooler
+      - name: Backup via Supabase REST API
         env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_URL: https://kaqgpdbojawjbssqrtoh.supabase.co
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M)
-          pg_dump \
-            -h aws-0-eu-central-1.pooler.supabase.com \
-            -p 6543 \
-            -U postgres.kaqgpdbojawjbssqrtoh \
-            -d postgres \
-            --no-owner \
-            --no-privileges \
-            --no-password \
-            -f "backup_${TIMESTAMP}.sql"
-          gzip "backup_${TIMESTAMP}.sql"
+          mkdir -p backup_${TIMESTAMP}
+
+          # Lista delle tabelle da esportare
+          TABLES=(
+            allenamenti valutazioni portieri profili stagioni squadre
+            partite valutazioni_partita ricorrenze_stagionali stagione_categorie
+            abbonamenti coupon coupon_utilizzi esercizi allenamento_esercizi
+            obiettivi portiere_tag versioni versioni_viste
+            attributi_esercizio esercizio_attributi anni_stagione
+          )
+
+          for TABLE in "${TABLES[@]}"; do
+            echo "Esportando $TABLE..."
+            curl -s \
+              "${SUPABASE_URL}/rest/v1/${TABLE}?select=*&limit=10000" \
+              -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+              -o "backup_${TIMESTAMP}/${TABLE}.json" || echo "Tabella $TABLE non trovata, skip"
+          done
+
+          # Comprimi tutto
+          tar -czf "gkt_backup_${TIMESTAMP}.tar.gz" "backup_${TIMESTAMP}/"
+          rm -rf "backup_${TIMESTAMP}/"
+          echo "Backup completato: gkt_backup_${TIMESTAMP}.tar.gz"
 
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v4
         with:
           name: backup-${{ github.run_number }}
-          path: "*.sql.gz"
+          path: "*.tar.gz"
           retention-days: 30

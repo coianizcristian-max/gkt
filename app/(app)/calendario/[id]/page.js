@@ -181,7 +181,7 @@ export default async function AllenamentoPage({ params }) {
   const { data: esSelRows } = eserciziOrdinati.length > 0
     ? await supabase
         .from('esercizi')
-        .select('id, titolo, tipologia, descrizione_breve, descrizione, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti')
+        .select('id, titolo, tipologia, descrizione_breve, descrizione, immagine_url, video_url, pubblico, allenatore_id, durata_minuti, recupero_minuti')
         .in('id', eserciziOrdinati)
     : { data: [] }
   const eserciziSelezionati = (esSelRows ?? []).map((e) => ({ ...e, autore_nome: null }))

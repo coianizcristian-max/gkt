@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -49,6 +50,8 @@ function EsercizioPreview({ esercizio, onClose }) {
 function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
   const [fonte, setFonte] = useState('mia')
   const [soloPref, setSoloPref] = useState(false)
+  const [tipologiaAttiva, setTipologiaAttiva] = useState(null)
+  const [showNuovoModal, setShowNuovoModal] = useState(false)
   const [preferiti, setPreferiti] = useState(new Set())
   const [preview, setPreview] = useState(null)
 
@@ -87,11 +90,11 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
       {preview && <EsercizioPreview esercizio={preview} onClose={() => setPreview(null)} />}
       <div className="sub-nav">
         <button type="button" className={`sub-nav-link ${fonte === 'mia' ? 'active' : ''}`}
-          onClick={() => { setFonte('mia'); setSoloPref(false) }}>
+          onClick={() => { setFonte('mia'); setSoloPref(false); setTipologiaAttiva(null) }}>
           La mia libreria ({libreriaMia.length})
         </button>
         <button type="button" className={`sub-nav-link ${fonte === 'pubblica' ? 'active' : ''}`}
-          onClick={() => setFonte('pubblica')}>
+          onClick={() => { setFonte('pubblica'); setTipologiaAttiva(null) }}>
           Libreria pubblica ({libreriaPubblica.length})
         </button>
       </div>
@@ -112,6 +115,15 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
         </div>
       )}
 
+      {/* Bottone crea nuovo esercizio — sempre visibile nella libreria personale */}
+      {fonte === 'mia' && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <button className="btn" type="button" onClick={() => setShowNuovoModal(true)}>
+            ✏️ Crea nuovo esercizio
+          </button>
+        </div>
+      )}
+
       {lista.length === 0 ? (
         <div className="empty">
           {fonte === 'mia'
@@ -119,9 +131,26 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
             : soloPref ? 'Nessun preferito. Clicca ★ per salvare.' : 'Nessun esercizio pubblico disponibile.'}
         </div>
       ) : (
-        chiavi.map((k) => (
+        <>
+          {/* Tab tipologie */}
+          <div className="sub-nav" style={{ flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+            {chiavi.map((k) => (
+              <button
+                key={k}
+                type="button"
+                className={`sub-nav-link ${(tipologiaAttiva ?? chiavi[0]) === k ? 'active' : ''}`}
+                onClick={() => setTipologiaAttiva(k)}
+                style={{ fontSize: 12 }}
+              >
+                {k} ({gruppi[k].length})
+              </button>
+            ))}
+          </div>
+          {(() => {
+            const k = tipologiaAttiva ?? chiavi[0]
+            const gruppo = gruppi[k] ?? []
+            return (
           <div className="elenco-blocco" key={k}>
-            <h3>{k}</h3>
             <div className="es-grid">
               {gruppi[k].map((e) => {
                 const selezionato = sel.has(e.id)
@@ -172,7 +201,15 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
               })}
             </div>
           </div>
-        ))
+            )
+          })()}
+        </>
+      )}
+      {showNuovoModal && (
+        <NuovoEsercizioModal
+          onSaved={onNuovoEsercizioSaved}
+          onClose={() => setShowNuovoModal(false)}
+        />
       )}
     </>
   )
@@ -295,6 +332,12 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
   const idInLibreria = new Set([...libreriaMia, ...libreriaPubblica].map(e => e.id))
   const esExtra = selezionatiEsercizi.filter(e => !idInLibreria.has(e.id))
   const tuttiEsercizi = [...libreriaMia, ...libreriaPubblica, ...esExtra]
+
+  function onNuovoEsercizioSaved(esercizio) {
+    libreriaMia.push(esercizio)
+    toggle(esercizio.id)
+    setShowNuovoModal(false)
+  }
 
   const toggle = useCallback((id) => {
     setSel((s) => {

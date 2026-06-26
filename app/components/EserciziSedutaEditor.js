@@ -8,7 +8,7 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
   const router = useRouter()
   const [lista, setLista] = useState(iniziali ?? [])
   const [dragIdx, setDragIdx] = useState(null)
-  const [popup, setPopup] = useState(null)
+  const [openIdx, setOpenIdx] = useState(null)  // indice riga espansa
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -58,33 +58,13 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
 
   return (
     <div>
-      {/* Popup dettaglio esercizio */}
-      {popup && (
-        <div className="modal-overlay" onClick={() => setPopup(null)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{popup.titolo}</h3>
-              <button className="modal-close" onClick={() => setPopup(null)}>✕</button>
-            </div>
-            {popup.tipologia && <div className="stat-cat" style={{ marginBottom: 8 }}>{popup.tipologia}</div>}
-            {popup.immagine_url && (
-              <img src={popup.immagine_url} alt="" style={{ width: '100%', borderRadius: 8, marginBottom: 12, objectFit: 'cover', maxHeight: 220 }} />
-            )}
-            {popup.descrizione_breve && <p><em>{popup.descrizione_breve}</em></p>}
-            {popup.descrizione && <p style={{ whiteSpace: 'pre-wrap' }}>{popup.descrizione}</p>}
-            <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 13, color: 'var(--ink-soft)' }}>
-              {popup.durata_minuti && <span>⏱ Durata: <b>{popup.durata_minuti} min</b></span>}
-              {popup.recupero_minuti && <span>↩ Recupero: <b>{popup.recupero_minuti} min</b></span>}
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Lista drag & drop */}
       <div className="drag-list">
         {lista.map((e, i) => (
+          <div key={e.id}>
           <div
-            key={e.id}
             className={`drag-item${dragIdx === i ? ' dragging' : ''}`}
             draggable
             onDragStart={() => onDragStart(i)}
@@ -94,27 +74,64 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
           >
             <span className="drag-handle" title="Trascina per riordinare">⠿</span>
             <span style={{ fontSize: 12, color: 'var(--ink-soft)', width: 22, flexShrink: 0 }}>{i + 1}.</span>
-            <button
-              type="button"
-              onClick={() => setPopup(e)}
-              style={{ display: 'contents', cursor: 'pointer' }}
+            <div
+              className="drag-info"
+              onClick={() => setOpenIdx(prev => prev === i ? null : i)}
+              style={{ cursor: 'pointer', flex: 1 }}
             >
-              <div className="drag-info">
-                <b>{e.titolo}</b>
-                {e.tipologia && <span className="stat-cat" style={{ marginLeft: 6 }}>{e.tipologia}</span>}
-                {(e.durata_minuti || e.recupero_minuti) && (
-                  <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 8 }}>
-                    {e.durata_minuti ? `⏱ ${e.durata_minuti}min` : ''}
-                    {e.durata_minuti && e.recupero_minuti ? ' · ' : ''}
-                    {e.recupero_minuti ? `↩ ${e.recupero_minuti}min rec.` : ''}
-                  </span>
-                )}
-                <span style={{ fontSize: 11, color: 'var(--azzurro)', marginLeft: 8 }}>Tocca per dettaglio</span>
-              </div>
-            </button>
+              <b>{e.titolo}</b>
+              {e.tipologia && <span className="stat-cat" style={{ marginLeft: 6 }}>{e.tipologia}</span>}
+              {(e.durata_minuti || e.recupero_minuti) && (
+                <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 8 }}>
+                  {e.durata_minuti ? `⏱ ${e.durata_minuti}min` : ''}
+                  {e.durata_minuti && e.recupero_minuti ? ' · ' : ''}
+                  {e.recupero_minuti ? `↩ ${e.recupero_minuti}min rec.` : ''}
+                </span>
+              )}
+              <span style={{ fontSize: 11, color: 'var(--azzurro)', marginLeft: 8 }}>
+                {openIdx === i ? '▾ chiudi' : '▸ dettaglio'}
+              </span>
+            </div>
             {e.immagine_url && (
-              <img src={e.immagine_url} className="drag-thumb" alt="" onClick={() => setPopup(e)} style={{ cursor: 'pointer' }} />
+              <img src={e.immagine_url} className="drag-thumb" alt="" onClick={() => setOpenIdx(prev => prev === i ? null : i)} style={{ cursor: 'pointer' }} />
             )}
+          </div>
+          {/* Dettaglio inline espanso */}
+          {openIdx === i && (
+            <div style={{
+              margin: '0 0 8px', padding: '14px 16px',
+              background: 'var(--carta)', borderRadius: '0 0 var(--r-sm) var(--r-sm)',
+              border: '1px solid var(--linea)', borderTop: 'none',
+            }}>
+              {(e.video_url || e.immagine_url) && (
+                <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                  {e.video_url && (
+                    <a href={e.video_url} target="_blank" rel="noopener noreferrer"
+                      style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        gap: 6, padding: '12px 16px', borderRadius: 8, textDecoration: 'none',
+                        background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
+                        color: '#fff', minWidth: 90, flexShrink: 0,
+                      }}>
+                      <span style={{ fontSize: 28 }}>▶</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>Guarda<br/>video</span>
+                    </a>
+                  )}
+                  {e.immagine_url && (
+                    <img src={e.immagine_url} alt="" style={{ flex: 1, minWidth: 0, maxHeight: 160, objectFit: 'cover', borderRadius: 6 }} />
+                  )}
+                </div>
+              )}
+              {e.descrizione_breve && <p style={{ margin: '0 0 6px', fontStyle: 'italic', fontSize: 13 }}>{e.descrizione_breve}</p>}
+              {e.descrizione && <p style={{ margin: '0 0 6px', fontSize: 13, whiteSpace: 'pre-wrap' }}>{e.descrizione}</p>}
+              {(e.durata_minuti || e.recupero_minuti) && (
+                <div style={{ fontSize: 12, color: 'var(--ink-soft)', display: 'flex', gap: 12 }}>
+                  {e.durata_minuti && <span>⏱ Durata: <b>{e.durata_minuti} min</b></span>}
+                  {e.recupero_minuti && <span>↩ Recupero: <b>{e.recupero_minuti} min</b></span>}
+                </div>
+              )}
+            </div>
+          )}
           </div>
         ))}
       </div>

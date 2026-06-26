@@ -4,7 +4,7 @@ import { getOwnerId } from '@/lib/tenant'
 
 export async function POST(request) {
   try {
-    const { tipo, dal, al, categoriaId, stagioneId, filtroVal } = await request.json()
+    const { tipo, dal, al, categoriaId, stagioneId, filtroVal, dryRun } = await request.json()
 
     if (!tipo || !dal || !al || !stagioneId)
       return NextResponse.json({ error: 'Parametri mancanti.' }, { status: 400 })
@@ -37,8 +37,7 @@ export async function POST(request) {
       const rowMap = Object.fromEntries(rows.map(r => [r.id, r]))
 
       if (filtroVal === 'senza' || filtroVal === 'con') {
-        // Cerca allenamenti che hanno almeno una riga valutazione (anche senza voto)
-        // uguale al calendario che usa: supabase.from('valutazioni').select('allenamento_id')
+        // Cerca allenamenti che hanno almeno una riga in valutazioni
         const { data: vrows } = await supabase
           .from('valutazioni')
           .select('allenamento_id')
@@ -46,16 +45,18 @@ export async function POST(request) {
         const conValutazione = new Set((vrows ?? []).map(r => r.allenamento_id))
 
         if (filtroVal === 'senza') {
-          // Senza = nessuna riga valutazione E nessuna_valutazione non impostato
           ids = ids.filter(id => !conValutazione.has(id) && !rowMap[id]?.nessuna_valutazione)
         } else {
-          // Con = ha righe valutazione OPPURE nessuna_valutazione impostato
           ids = ids.filter(id => conValutazione.has(id) || !!rowMap[id]?.nessuna_valutazione)
         }
       }
-      // 'tutti' = elimina tutti senza filtro valutazioni
+      // 'tutti' = nessun filtro aggiuntivo
 
       if (!ids.length) return NextResponse.json({ eliminati: 0 })
+
+      // dryRun = solo conta, non elimina
+      if (dryRun) return NextResponse.json({ eliminati: 0, daEliminare: ids.length })
+
       const { error: delErr } = await supabase.from('allenamenti').delete().in('id', ids)
       if (delErr) throw delErr
       return NextResponse.json({ eliminati: ids.length })
@@ -85,6 +86,8 @@ export async function POST(request) {
       }
 
       if (!ids.length) return NextResponse.json({ eliminati: 0 })
+      if (dryRun) return NextResponse.json({ eliminati: 0, daEliminare: ids.length })
+
       const { error: delErr } = await supabase.from('partite').delete().in('id', ids)
       if (delErr) throw delErr
       return NextResponse.json({ eliminati: ids.length })

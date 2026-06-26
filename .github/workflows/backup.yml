@@ -2,8 +2,8 @@ name: Database Backup
 
 on:
   schedule:
-    - cron: '0 */6 * * *'   # ogni 6 ore
-  workflow_dispatch:          # eseguibile manualmente
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   backup:
@@ -21,7 +21,8 @@ jobs:
             --no-owner \
             --no-privileges \
             --format=plain \
-            --file="backup_${TIMESTAMP}.sql"
+            --no-password \
+            -f "backup_${TIMESTAMP}.sql"
           gzip "backup_${TIMESTAMP}.sql"
           echo "BACKUP_FILE=backup_${TIMESTAMP}.sql.gz" >> $GITHUB_ENV
 
@@ -30,4 +31,4 @@ jobs:
         with:
           name: backup-${{ github.run_number }}
           path: "*.sql.gz"
-          retention-days: 30   # conserva per 30 giorni
+          retention-days: 30

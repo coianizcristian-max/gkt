@@ -61,6 +61,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
   const [loadingPref, setLoadingPref] = useState(null) // id in corso
   const [filtroAttr, setFiltroAttr] = useState(new Set())
   const [modoFiltro, setModoFiltro] = useState('almeno')
+  const [tabScopri, setTabScopri] = useState(null)
 
   // Ragruppa per tipologia — sezione corrente
   const lista = sezione === 'miei' ? esercizi : eserciziPubblici
@@ -200,37 +201,64 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
           {esPublici !== null && esPublici.length === 0 && (
             <div className="empty">Nessun esercizio pubblico disponibile al momento.</div>
           )}
-          {esPublici !== null && esPublici.length > 0 && (
-            <div className="es-lib-grid">
-              {esPublici.map((e) => (
-                <div key={e.id} className="es-lib-tile" style={{ position: 'relative' }}>
-                  <button className="es-lib-img-wrap" type="button" onClick={() => setPopup(e)} title="Vedi dettaglio">
-                    {e.immagine_url
-                      ? <img src={e.immagine_url} alt="" />
-                      : <div className="es-lib-no-img">📋</div>}
-                  </button>
-                  <div className="es-lib-info">
-                    <button className="es-lib-titolo" type="button" onClick={() => setPopup(e)}>{e.titolo}</button>
-                  </div>
-                  <button
-                    className="btn-mini"
-                    type="button"
-                    disabled={loadingPref === e.id}
-                    onClick={() => togglePreferito(e.id)}
-                    title={prefIds.has(e.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
-                    style={{
-                      background: prefIds.has(e.id) ? 'var(--giallo, #e8a72c)' : undefined,
-                      color: prefIds.has(e.id) ? '#000' : undefined,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {loadingPref === e.id ? '...' : prefIds.has(e.id) ? '★ Salvato' : '☆ Salva'}
-                  </button>
-                  <button className="btn-mini es-lib-edit" type="button" onClick={() => setPopup(e)}>Dettaglio</button>
+          {esPublici !== null && esPublici.length > 0 && (() => {
+            const gruppiScopri = {}
+            for (const e of esPublici) {
+              const tips = (e.tipologie?.length ? e.tipologie : (e.tipologia ? [e.tipologia] : ['Senza tipologia']))
+              for (const t of tips) (gruppiScopri[t] ??= []).push(e)
+            }
+            const chiaviScopri = Object.keys(gruppiScopri).sort()
+            const tabCorrScopri = tabScopri ?? chiaviScopri[0] ?? null
+            return (
+              <>
+                <div className="sub-nav" style={{ overflowX: 'auto', flexWrap: 'nowrap', marginBottom: 8 }}>
+                  {chiaviScopri.map((k) => (
+                    <button key={k} type="button"
+                      className={`sub-nav-link ${tabCorrScopri === k ? 'active' : ''}`}
+                      onClick={() => setTabScopri(k)}>
+                      {k} <span style={{ fontSize: 11, opacity: 0.7 }}>({gruppiScopri[k].length})</span>
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
+                {tabCorrScopri && (
+                  <div className="es-lib-grid">
+                    {gruppiScopri[tabCorrScopri].map((e) => (
+                      <div key={e.id} className="es-lib-tile" style={{ position: 'relative' }}>
+                        <button className="es-lib-img-wrap" type="button" onClick={() => setPopup(e)} title="Vedi dettaglio">
+                          {e.immagine_url
+                            ? <img src={e.immagine_url} alt="" />
+                            : <div className="es-lib-no-img">📋</div>}
+                        </button>
+                        <div className="es-lib-info">
+                          <button className="es-lib-titolo" type="button" onClick={() => setPopup(e)}>{e.titolo}</button>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, margin: '0 8px 8px' }}>
+                          <button
+                            className="btn-mini"
+                            type="button"
+                            disabled={loadingPref === e.id}
+                            onClick={() => togglePreferito(e.id)}
+                            title={prefIds.has(e.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                            style={{
+                              flex: 1, fontSize: 11, padding: '3px 6px',
+                              background: prefIds.has(e.id) ? 'var(--giallo, #e8a72c)' : undefined,
+                              color: prefIds.has(e.id) ? '#000' : undefined,
+                              fontWeight: 700,
+                            }}
+                          >
+                            {loadingPref === e.id ? '...' : prefIds.has(e.id) ? '★ Salvato' : '☆ Salva'}
+                          </button>
+                          <button className="btn-mini" type="button" onClick={() => setPopup(e)} style={{ flex: 1, fontSize: 11, padding: '3px 6px' }}>
+                            Dettaglio
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )
+          })()}
         </div>
       )}
     </div>

@@ -445,7 +445,7 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
         const { error: iErr } = await supabase.from('allenamento_esercizi').insert(rows)
         if (iErr) throw iErr
       }
-      setDone(true); router.refresh()
+      setDone(true); setTab('ordine'); router.refresh()
     } catch (err) { setError(err.message) }
     setBusy(false)
   }
@@ -480,10 +480,20 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
         />
       )}
 
-      <div className="form-actions" style={{ marginTop: 16 }}>
-        <span className="sub-intro" style={{ marginRight: 'auto' }}>{sel.size} esercizi</span>
-        <button className="btn" onClick={salva} disabled={busy} type="button">
-          {busy ? 'Salvataggio...' : done ? 'Salvato ✓' : 'Salva esercizi'}
+      {/* Bottone salva fisso in basso a destra */}
+      <div style={{
+        position: 'fixed', bottom: 20, right: 20, zIndex: 200,
+        display: 'flex', alignItems: 'center', gap: 10,
+        background: 'var(--carta, #fff)', borderRadius: 40,
+        boxShadow: '0 4px 20px rgba(20,32,43,0.18)',
+        padding: '8px 16px 8px 14px',
+        border: '1px solid var(--linea)',
+      }}>
+        <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontWeight: 500 }}>
+          {sel.size} selezionati
+        </span>
+        <button className="btn" onClick={salva} disabled={busy} type="button" style={{ borderRadius: 30, padding: '8px 20px' }}>
+          {busy ? 'Salvataggio...' : done ? '✓ Salvato' : 'Salva esercizi'}
         </button>
       </div>
     </div>

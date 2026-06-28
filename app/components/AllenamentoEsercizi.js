@@ -54,6 +54,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
   const [showNuovoModal, setShowNuovoModal] = useState(false)
   const [preferiti, setPreferiti] = useState(new Set())
   const [preview, setPreview] = useState(null)
+  const [cerca, setCerca] = useState('')
 
   useEffect(() => {
     async function carica() {
@@ -80,7 +81,14 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
   }
 
   const listaPubblica = soloPref ? libreriaPubblica.filter((e) => preferiti.has(e.id)) : libreriaPubblica
-  const lista = fonte === 'mia' ? libreriaMia : listaPubblica
+  const listaBase = fonte === 'mia' ? libreriaMia : listaPubblica
+  const lista = cerca.trim()
+    ? listaBase.filter(e => {
+        const q = cerca.toLowerCase()
+        return (e.titolo || '').toLowerCase().includes(q) ||
+               (e.descrizione_breve || '').toLowerCase().includes(q)
+      })
+    : listaBase
   const gruppi = {}
   for (const e of lista) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
   const chiavi = Object.keys(gruppi).sort()
@@ -90,11 +98,11 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
       {preview && <EsercizioPreview esercizio={preview} onClose={() => setPreview(null)} />}
       <div className="sub-nav">
         <button type="button" className={`sub-nav-link ${fonte === 'mia' ? 'active' : ''}`}
-          onClick={() => { setFonte('mia'); setSoloPref(false); setTipologiaAttiva(null) }}>
+          onClick={() => { setFonte('mia'); setSoloPref(false); setTipologiaAttiva(null); setCerca('') }}>
           La mia libreria ({libreriaMia.length})
         </button>
         <button type="button" className={`sub-nav-link ${fonte === 'pubblica' ? 'active' : ''}`}
-          onClick={() => { setFonte('pubblica'); setTipologiaAttiva(null) }}>
+          onClick={() => { setFonte('pubblica'); setTipologiaAttiva(null); setCerca('') }}>
           Libreria pubblica ({libreriaPubblica.length})
         </button>
       </div>
@@ -124,11 +132,24 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
         </div>
       )}
 
+      {/* Ricerca testuale */}
+      <div style={{ margin: '8px 0 4px' }}>
+        <input
+          type="search"
+          value={cerca}
+          onChange={(e) => { setCerca(e.target.value); setTipologiaAttiva(null) }}
+          placeholder="Cerca per titolo o descrizione..."
+          style={{ width: '100%', padding: '7px 12px', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--linea)', fontSize: 14, background: 'var(--carta)', boxSizing: 'border-box' }}
+        />
+      </div>
+
       {lista.length === 0 ? (
         <div className="empty">
-          {fonte === 'mia'
-            ? <a href="/esercizi" className="link-inline">Vai alla libreria esercizi per crearne</a>
-            : soloPref ? 'Nessun preferito. Clicca ★ per salvare.' : 'Nessun esercizio pubblico disponibile.'}
+          {cerca.trim()
+            ? 'Nessun esercizio corrisponde alla ricerca.'
+            : fonte === 'mia'
+              ? <a href="/esercizi" className="link-inline">Vai alla libreria esercizi per crearne</a>
+              : soloPref ? 'Nessun preferito. Clicca ★ per salvare.' : 'Nessun esercizio pubblico disponibile.'}
         </div>
       ) : (
         <>

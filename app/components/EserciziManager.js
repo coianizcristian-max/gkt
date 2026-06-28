@@ -150,7 +150,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
               const supabase = (await import('@/lib/supabase/client')).createClient()
               const { data } = await supabase
                 .from('esercizi')
-                .select('id, titolo, tipologia, immagine_url, descrizione, note, allenatore_id')
+                .select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, allenatore_id')
                 .eq('pubblico', true)
                 .eq('archiviato', false)
                 .neq('allenatore_id', allenatoreId)

@@ -424,6 +424,7 @@ a { color: inherit; text-decoration: none; }
 
 /* ── Responsive ── */
 @media (max-width: 860px) {
+  .landing-inner { padding: 0 8px; }
   .landing-top { padding: 0 16px; }
   .landing-top .brand b { font-size: 15px; }
   .landing-top .brand span { font-size: 11px; }
@@ -1076,6 +1077,7 @@ a.brand { text-decoration: none; color: inherit; }
 .es-lib-info {
   padding: 6px 8px 4px;
   display: flex; align-items: baseline; gap: 4px;
+  flex: 1;
 }
 .es-lib-titolo {
   font-size: 12px; font-weight: 600; color: var(--ink);

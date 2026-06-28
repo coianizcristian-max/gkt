@@ -32,7 +32,7 @@ function EsercizioPopup({ esercizio, onClose }) {
 }
 
 // Tile singolo esercizio nella libreria
-function EsercizioTile({ esercizio, onDetail, onEdit }) {
+function EsercizioTile({ esercizio, onDetail, onEdit, onRemoveFav }) {
   return (
     <div className="es-lib-tile">
       <button className="es-lib-img-wrap" type="button" onClick={() => onDetail(esercizio)} title="Vedi dettaglio">
@@ -46,6 +46,12 @@ function EsercizioTile({ esercizio, onDetail, onEdit }) {
       </div>
       <button className="btn-mini es-lib-edit" type="button" onClick={() => onDetail(esercizio)}>Dettaglio</button>
       {onEdit && <button className="btn-mini es-lib-edit" type="button" onClick={() => onEdit(esercizio)}>Modifica</button>}
+      {onRemoveFav && (
+        <button className="btn-mini" type="button" onClick={() => onRemoveFav(esercizio.id)}
+          style={{ margin: '0 8px 8px', fontSize: 11, padding: '3px 8px', background: 'var(--giallo, #e8a72c)', color: '#000', fontWeight: 700, border: 'none', borderRadius: 'var(--r-sm)', cursor: 'pointer' }}>
+          ★ Rimuovi dai preferiti
+        </button>
+      )}
     </div>
   )
 }
@@ -193,6 +199,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
                   esercizio={e}
                   onDetail={setPopup}
                   onEdit={sezione === 'miei' ? setEditing : null}
+                  onRemoveFav={sezione === 'pubblici' ? togglePreferito : null}
                 />
               ))}
             </div>

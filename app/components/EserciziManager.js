@@ -62,9 +62,11 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
   const [filtroAttr, setFiltroAttr] = useState(new Set())
   const [modoFiltro, setModoFiltro] = useState('almeno')
   const [tabScopri, setTabScopri] = useState(null)
+  // Lista preferiti locale — si aggiorna subito al click senza aspettare il server
+  const [preferitiFull, setPreferitieFull] = useState(eserciziPubblici ?? [])
 
   // Ragruppa per tipologia — sezione corrente
-  const lista = sezione === 'miei' ? esercizi : eserciziPubblici
+  const lista = sezione === 'miei' ? esercizi : preferitiFull
 
   async function togglePreferito(esercizioId) {
     setLoadingPref(esercizioId)
@@ -74,12 +76,16 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
       await supabase.from('esercizi_preferiti').delete()
         .eq('allenatore_id', allenatoreId).eq('esercizio_id', esercizioId)
       setPrefIds(prev => { const s = new Set(prev); s.delete(esercizioId); return s })
+      setPreferitieFull(prev => prev.filter(e => e.id !== esercizioId))
     } else {
       await supabase.from('esercizi_preferiti').upsert(
         { allenatore_id: allenatoreId, esercizio_id: esercizioId },
         { onConflict: 'allenatore_id,esercizio_id' }
       )
       setPrefIds(prev => new Set([...prev, esercizioId]))
+      // Aggiunge l'esercizio alla lista preferiti prendendo i dati da esPublici
+      const esercizio = esPublici?.find(e => e.id === esercizioId)
+      if (esercizio) setPreferitieFull(prev => [...prev, esercizio])
     }
     setLoadingPref(null)
   }
@@ -128,7 +134,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
         <button type="button"
           className={`sub-nav-link ${sezione === 'pubblici' ? 'active' : ''}`}
           onClick={() => { setSezione('pubblici'); setTabAttivo(null) }}>
-          ★ Preferiti ({eserciziPubblici.length})
+          ★ Preferiti ({preferitiFull.length})
         </button>
         <button type="button"
           className={`sub-nav-link ${sezione === 'scopri' ? 'active' : ''}`}

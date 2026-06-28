@@ -5,7 +5,7 @@ import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-// ─── Popup anteprima esercizio (usato sia in libreria che in ordine) ─────────
+// ─── Popup anteprima esercizio ────────────────────────────────────────────────
 function EsercizioPreview({ esercizio, onClose }) {
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose() }
@@ -38,7 +38,12 @@ function EsercizioPreview({ esercizio, onClose }) {
             {e.descrizione_breve && <p style={{ margin: '0 0 8px', fontWeight: 600 }}>{e.descrizione_breve}</p>}
             {e.descrizione && <p style={{ margin: '0 0 8px', color: 'var(--ink-soft)', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{e.descrizione}</p>}
             {e.note && <p style={{ margin: '0 0 8px', fontSize: 13, color: 'var(--ink-soft)', borderTop: '1px solid var(--linea)', paddingTop: 8, whiteSpace: 'pre-wrap' }}>📝 {e.note}</p>}
-            {e.video_url && <a href={e.video_url} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 14 }}>▶ Guarda il video</a>}
+            {e.video_url && (
+              <a href={e.video_url} target="_blank" rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '10px 16px', background: '#ff0000', color: '#fff', borderRadius: 8, fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
+                ▶ Guarda il video
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -46,8 +51,8 @@ function EsercizioPreview({ esercizio, onClose }) {
   )
 }
 
-// ─── Vista libreria: selezione esercizi con bottone + esplicito ───────────────
-function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
+// ─── Vista libreria: selezione esercizi ──────────────────────────────────────
+function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle, attributiDisponibili }) {
   const [fonte, setFonte] = useState('mia')
   const [soloPref, setSoloPref] = useState(false)
   const [tipologiaAttiva, setTipologiaAttiva] = useState(null)
@@ -55,6 +60,8 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
   const [preferiti, setPreferiti] = useState(new Set())
   const [preview, setPreview] = useState(null)
   const [cerca, setCerca] = useState('')
+  const [filtroAttr, setFiltroAttr] = useState(new Set())
+  const [modoFiltro, setModoFiltro] = useState('almeno') // 'almeno' | 'tutti'
 
   useEffect(() => {
     async function carica() {
@@ -80,15 +87,34 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
     }
   }
 
+  function toggleAttr(id) {
+    setFiltroAttr(s => {
+      const n = new Set(s)
+      n.has(id) ? n.delete(id) : n.add(id)
+      return n
+    })
+    setTipologiaAttiva(null)
+  }
+
   const listaPubblica = soloPref ? libreriaPubblica.filter((e) => preferiti.has(e.id)) : libreriaPubblica
   const listaBase = fonte === 'mia' ? libreriaMia : listaPubblica
+
+  // Filtra per attributi
+  const listaDopoAttr = filtroAttr.size === 0 ? listaBase : listaBase.filter(e => {
+    const eAttr = new Set((e.esercizio_attributi ?? []).map(a => a.attributo_id))
+    if (modoFiltro === 'tutti') return [...filtroAttr].every(id => eAttr.has(id))
+    return [...filtroAttr].some(id => eAttr.has(id))
+  })
+
+  // Filtra per testo
   const lista = cerca.trim()
-    ? listaBase.filter(e => {
+    ? listaDopoAttr.filter(e => {
         const q = cerca.toLowerCase()
         return (e.titolo || '').toLowerCase().includes(q) ||
                (e.descrizione_breve || '').toLowerCase().includes(q)
       })
-    : listaBase
+    : listaDopoAttr
+
   const gruppi = {}
   for (const e of lista) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
   const chiavi = Object.keys(gruppi).sort()
@@ -96,13 +122,15 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
   return (
     <>
       {preview && <EsercizioPreview esercizio={preview} onClose={() => setPreview(null)} />}
+
+      {/* Tab fonte */}
       <div className="sub-nav">
         <button type="button" className={`sub-nav-link ${fonte === 'mia' ? 'active' : ''}`}
-          onClick={() => { setFonte('mia'); setSoloPref(false); setTipologiaAttiva(null); setCerca('') }}>
+          onClick={() => { setFonte('mia'); setSoloPref(false); setTipologiaAttiva(null); setCerca(''); setFiltroAttr(new Set()) }}>
           La mia libreria ({libreriaMia.length})
         </button>
         <button type="button" className={`sub-nav-link ${fonte === 'pubblica' ? 'active' : ''}`}
-          onClick={() => { setFonte('pubblica'); setTipologiaAttiva(null); setCerca('') }}>
+          onClick={() => { setFonte('pubblica'); setTipologiaAttiva(null); setCerca(''); setFiltroAttr(new Set()) }}>
           Libreria pubblica ({libreriaPubblica.length})
         </button>
       </div>
@@ -123,7 +151,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
         </div>
       )}
 
-      {/* Bottone crea nuovo esercizio — sempre visibile nella libreria personale */}
+      {/* Bottone crea nuovo esercizio */}
       {fonte === 'mia' && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
           <button className="btn" type="button" onClick={() => setShowNuovoModal(true)}>
@@ -143,10 +171,46 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
         />
       </div>
 
+      {/* Filtro attributi */}
+      {attributiDisponibili.length > 0 && (
+        <div style={{ margin: '8px 0 4px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginRight: 2 }}>Attributi:</span>
+            {attributiDisponibili.map((a) => (
+              <button key={a.id} type="button" onClick={() => toggleAttr(a.id)} style={{
+                padding: '3px 10px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
+                border: filtroAttr.has(a.id) ? '2px solid var(--campo)' : '1.5px solid var(--linea)',
+                background: filtroAttr.has(a.id) ? 'rgba(46,158,91,0.12)' : 'var(--carta)',
+                color: filtroAttr.has(a.id) ? 'var(--campo)' : 'var(--ink-soft)',
+                fontWeight: filtroAttr.has(a.id) ? 700 : 400,
+              }}>
+                {a.nome}
+              </button>
+            ))}
+            {filtroAttr.size > 1 && (
+              <button type="button" onClick={() => setModoFiltro(v => v === 'almeno' ? 'tutti' : 'almeno')} style={{
+                padding: '3px 10px', borderRadius: 20, fontSize: 11, cursor: 'pointer',
+                border: '1.5px solid var(--linea)', background: 'var(--carta)', color: 'var(--ink-soft)',
+              }}>
+                {modoFiltro === 'almeno' ? 'almeno uno ▾' : 'tutti ▾'}
+              </button>
+            )}
+            {filtroAttr.size > 0 && (
+              <button type="button" onClick={() => { setFiltroAttr(new Set()); setTipologiaAttiva(null) }} style={{
+                padding: '3px 8px', borderRadius: 20, fontSize: 11, cursor: 'pointer',
+                border: 'none', background: 'none', color: 'var(--ink-soft)', textDecoration: 'underline',
+              }}>
+                Rimuovi filtri
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {lista.length === 0 ? (
         <div className="empty">
-          {cerca.trim()
-            ? 'Nessun esercizio corrisponde alla ricerca.'
+          {cerca.trim() || filtroAttr.size > 0
+            ? 'Nessun esercizio corrisponde ai filtri.'
             : fonte === 'mia'
               ? <a href="/esercizi" className="link-inline">Vai alla libreria esercizi per crearne</a>
               : soloPref ? 'Nessun preferito. Clicca ★ per salvare.' : 'Nessun esercizio pubblico disponibile.'}
@@ -169,66 +233,69 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle }) {
           </div>
           {(() => {
             const k = tipologiaAttiva ?? chiavi[0]
-            const gruppo = gruppi[k] ?? []
             return (
-          <div className="elenco-blocco" key={k}>
-            <div className="es-grid">
-              {gruppi[k].map((e) => {
-                const selezionato = sel.has(e.id)
-                return (
-                  <div key={e.id} className={`es-tile ${selezionato ? 'selezionato' : ''}`} style={{ position: 'relative' }}>
-                    {/* Clic sull'immagine o titolo → anteprima */}
-                    <button type="button" style={{ display: 'contents' }} onClick={() => setPreview(e)}>
-                      {e.immagine_url && <div className="es-tile-img"><img src={e.immagine_url} alt="" /></div>}
-                      <div className="es-tile-body">
-                        <div className="es-tile-titolo">{e.titolo}</div>
-                        {e.autore_nome && <div className="es-tile-autore">{e.autore_nome}</div>}
-                        {e.descrizione_breve && <div className="es-tile-desc">{e.descrizione_breve}</div>}
-                        {(e.durata_minuti || e.recupero_minuti) && (
-                          <div style={{ marginTop: 4, fontSize: 11, color: 'var(--ink-soft)', display: 'flex', gap: 6 }}>
-                            {e.durata_minuti && <span>⏱ {e.durata_minuti}min</span>}
-                            {e.recupero_minuti && <span>↩ {e.recupero_minuti}min</span>}
+              <div className="elenco-blocco" key={k}>
+                <div className="es-grid">
+                  {(gruppi[k] ?? []).map((e) => {
+                    const selezionato = sel.has(e.id)
+                    return (
+                      <div key={e.id} className={`es-tile ${selezionato ? 'selezionato' : ''}`} style={{ position: 'relative' }}>
+                        <button type="button" style={{ display: 'contents' }} onClick={() => setPreview(e)}>
+                          {e.immagine_url && <div className="es-tile-img"><img src={e.immagine_url} alt="" /></div>}
+                          <div className="es-tile-body">
+                            <div className="es-tile-titolo">{e.titolo}</div>
+                            {e.autore_nome && <div className="es-tile-autore">{e.autore_nome}</div>}
+                            {e.descrizione_breve && <div className="es-tile-desc">{e.descrizione_breve}</div>}
+                            {(e.durata_minuti || e.recupero_minuti) && (
+                              <div style={{ marginTop: 4, fontSize: 11, color: 'var(--ink-soft)', display: 'flex', gap: 6 }}>
+                                {e.durata_minuti && <span>⏱ {e.durata_minuti}min</span>}
+                                {e.recupero_minuti && <span>↩ {e.recupero_minuti}min</span>}
+                              </div>
+                            )}
+                            {e.video_url && <div style={{ marginTop: 4, fontSize: 11, color: 'var(--azzurro)' }}>▶ Video disponibile</div>}
                           </div>
+                        </button>
+                        {/* Bottone + / ✓ */}
+                        <button
+                          type="button"
+                          onClick={() => onToggle(e.id)}
+                          title={selezionato ? 'Rimuovi dalla seduta' : 'Aggiungi alla seduta'}
+                          style={{
+                            position: 'absolute', bottom: 6, right: 6,
+                            width: 28, height: 28, borderRadius: '50%',
+                            border: 'none', cursor: 'pointer',
+                            background: selezionato ? 'var(--azzurro)' : 'var(--campo)',
+                            color: '#fff', fontSize: 18, fontWeight: 700,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            lineHeight: 1, boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+                          }}
+                        >
+                          {selezionato ? '✓' : '+'}
+                        </button>
+                        {/* Stella preferiti — solo libreria pubblica */}
+                        {fonte === 'pubblica' && (
+                          <button type="button" onClick={(ev) => togglePreferito(ev, e.id)}
+                            title={preferiti.has(e.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                            style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, color: preferiti.has(e.id) ? 'var(--giallo, #e8a72c)' : '#ccc', padding: 2 }}>
+                            {preferiti.has(e.id) ? '★' : '☆'}
+                          </button>
                         )}
                       </div>
-                    </button>
-                    {/* Bottone + / ✓ esplicito in basso a destra */}
-                    <button
-                      type="button"
-                      onClick={() => onToggle(e.id)}
-                      title={selezionato ? 'Rimuovi dalla seduta' : 'Aggiungi alla seduta'}
-                      style={{
-                        position: 'absolute', bottom: 6, right: 6,
-                        width: 28, height: 28, borderRadius: '50%',
-                        border: 'none', cursor: 'pointer',
-                        background: selezionato ? 'var(--azzurro)' : 'var(--campo)',
-                        color: '#fff', fontSize: 18, fontWeight: 700,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        lineHeight: 1, boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
-                      }}
-                    >
-                      {selezionato ? '✓' : '+'}
-                    </button>
-                    {/* Stella preferiti — solo libreria pubblica */}
-                    {fonte === 'pubblica' && (
-                      <button type="button" onClick={(ev) => togglePreferito(ev, e.id)}
-                        title={preferiti.has(e.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
-                        style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, color: preferiti.has(e.id) ? 'var(--giallo, #e8a72c)' : '#ccc', padding: 2 }}>
-                        {preferiti.has(e.id) ? '★' : '☆'}
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+                    )
+                  })}
+                </div>
+              </div>
             )
           })()}
         </>
       )}
       {showNuovoModal && (
         <NuovoEsercizioModal
-          onSaved={onNuovoEsercizioSaved}
+          onSaved={(esercizio) => {
+            libreriaMia.push(esercizio)
+            onToggle(esercizio.id)
+            setShowNuovoModal(false)
+          }}
           onClose={() => setShowNuovoModal(false)}
         />
       )}
@@ -340,7 +407,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
 }
 
 // ─── Componente principale ────────────────────────────────────────────────────
-export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], libreriaPubblica = [], selezionatiIniziali, selezionatiEsercizi = [] }) {
+export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], libreriaPubblica = [], selezionatiIniziali, selezionatiEsercizi = [], attributiDisponibili = [] }) {
   const router = useRouter()
   const [tab, setTab] = useState('libreria')
   const [sel, setSel] = useState(new Set(selezionatiIniziali))
@@ -349,16 +416,9 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
-  // tuttiEsercizi include anche gli esercizi già selezionati non presenti in libreria
   const idInLibreria = new Set([...libreriaMia, ...libreriaPubblica].map(e => e.id))
   const esExtra = selezionatiEsercizi.filter(e => !idInLibreria.has(e.id))
   const tuttiEsercizi = [...libreriaMia, ...libreriaPubblica, ...esExtra]
-
-  function onNuovoEsercizioSaved(esercizio) {
-    libreriaMia.push(esercizio)
-    toggle(esercizio.id)
-    setShowNuovoModal(false)
-  }
 
   const toggle = useCallback((id) => {
     setSel((s) => {
@@ -403,7 +463,13 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
       </div>
 
       {tab === 'libreria' && (
-        <LibreriaView libreriaMia={libreriaMia} libreriaPubblica={libreriaPubblica} sel={sel} onToggle={toggle} />
+        <LibreriaView
+          libreriaMia={libreriaMia}
+          libreriaPubblica={libreriaPubblica}
+          sel={sel}
+          onToggle={toggle}
+          attributiDisponibili={attributiDisponibili}
+        />
       )}
       {tab === 'ordine' && (
         <OrdineView

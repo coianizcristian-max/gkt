@@ -140,6 +140,7 @@ export default async function AllenamentoPage({ params }) {
     { data: libRows },
     { data: aeRows },
     { data: feedbackRows },
+    { data: attrRows },
   ] = await Promise.all([
     supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
     supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
@@ -147,13 +148,14 @@ export default async function AllenamentoPage({ params }) {
     supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
     supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
     supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
-    supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id, profili(ruolo)').order('titolo'),
+    supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, profili(ruolo), esercizio_attributi(attributo_id)').order('titolo'),
     supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),
     supabase.from('valutazioni')
       .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
       .eq('allenamento_id', id)
       .not('feedback_portiere', 'is', null)
       .order('created_at', { ascending: false }),
+    supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
   ])
 
   // Carica nomi allenatori per gli esercizi (per mostrare autore)
@@ -269,6 +271,7 @@ export default async function AllenamentoPage({ params }) {
                 libreriaPubblica={libreriaPubblicaConExtra}
                 selezionatiIniziali={eserciziOrdinati}
                 selezionatiEsercizi={eserciziSelezionati}
+                attributiDisponibili={attrRows ?? []}
               /> : <PaywallBanner label="Esercizi negli allenamenti" />}
             </>
           }

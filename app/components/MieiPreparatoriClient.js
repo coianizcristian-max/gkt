@@ -88,7 +88,7 @@ export default function MieiPreparatoriClient({ preparatoriIniziali }) {
             {/* Azioni */}
             <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
               <Link
-                href={`/supervisore/preparatore/${p.preparatore_id}`}
+                href={`/responsabile/preparatore/${p.preparatore_id}`}
                 className="btn btn-mini"
                 style={{ textDecoration: 'none' }}
               >

@@ -1,6 +1,11 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
+
+function getAdmin() {
+  return createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+}
 import AllenamentoForm from '@/app/components/AllenamentoForm'
 import ValutazioniAllenamento from '@/app/components/ValutazioniAllenamento'
 import AllenamentoEsercizi from '@/app/components/AllenamentoEsercizi'
@@ -193,6 +198,43 @@ export default async function AllenamentoPage({ params }) {
   const eserciziExtra = eserciziSelezionati.filter((e) => !idNellaLibreria.has(e.id))
   const libreriaPubblicaConExtra = [...libreriaPubblica, ...eserciziExtra]
 
+  // Carica esercizi del responsabile se il preparatore è collegato
+  let eserciziResponsabile = []
+  try {
+    const { data: profiloExt } = await supabase
+      .from('profili').select('supervisore_id').eq('id', user.id).maybeSingle()
+    const supervisoreId = profiloExt?.supervisore_id ?? null
+    if (supervisoreId) {
+      const admin = getAdmin()
+      const { data: rel } = await admin
+        .from('relazioni_supervisione').select('id')
+        .eq('supervisore_id', supervisoreId).eq('preparatore_id', user.id).eq('attivo', true).maybeSingle()
+      if (rel) {
+        const { data: esResp } = await admin
+          .from('esercizi')
+          .select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, esercizio_attributi(attributo_id)')
+          .eq('allenatore_id', supervisoreId)
+          .eq('archiviato', false)
+          .order('titolo')
+        // Aggiunge nome responsabile come autore e li mette nella libreria pubblica
+        const { data: profResp } = await admin
+          .from('profili').select('nome_completo').eq('id', supervisoreId).maybeSingle()
+        const nomeResp = profResp?.nome_completo ?? 'Responsabile'
+        eserciziResponsabile = (esResp ?? []).map(e => ({
+          ...e,
+          autore_nome: nomeResp,
+          profili: { ruolo: 'allenatore' },
+        }))
+      }
+    }
+  } catch (_) {}
+
+  // Aggiungi esercizi responsabile alla libreria pubblica visibile nell'allenamento
+  // (escludi quelli già presenti per evitare duplicati)
+  const idNellaLibreriaConExtra = new Set(libreriaPubblicaConExtra.map(e => e.id))
+  const eserciziRespNuovi = eserciziResponsabile.filter(e => !idNellaLibreriaConExtra.has(e.id))
+  const libreriaPubblicaFinale = [...libreriaPubblicaConExtra, ...eserciziRespNuovi]
+
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
   const portieri = (iscr ?? []).map((r) => r.portieri).filter(Boolean)
@@ -268,7 +310,7 @@ export default async function AllenamentoPage({ params }) {
               {canEsercizi ? <AllenamentoEsercizi
                 allenamentoId={accorpataConAllenamentoId ?? id}
                 libreriaMia={libreriaMia}
-                libreriaPubblica={libreriaPubblicaConExtra}
+                libreriaPubblica={libreriaPubblicaFinale}
                 selezionatiIniziali={eserciziOrdinati}
                 selezionatiEsercizi={eserciziSelezionati}
                 attributiDisponibili={attrRows ?? []}

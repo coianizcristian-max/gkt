@@ -15,7 +15,6 @@ function LinkModal({ url, onClose }) {
       setCopiato(true)
       setTimeout(() => setCopiato(false), 2000)
     } catch {
-      // fallback: seleziona l'input
       const el = document.getElementById('link-invito-input')
       if (el) { el.select(); el.setSelectionRange(0, 99999) }
     }
@@ -24,10 +23,10 @@ function LinkModal({ url, onClose }) {
   return (
     <div className="popup-overlay" onClick={onClose}>
       <div className="popup-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
-        <button className="popup-close" onClick={onClose} type="button">✕</button>
+        <button className="popup-close" onClick={onClose} type="button">X</button>
         <h2 style={{ margin: '0 0 12px', fontSize: 17 }}>Link di invito</h2>
         <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: 12 }}>
-          Copia questo link e invialo al portiere. Chi lo apre potrà registrarsi e verrà collegato automaticamente.
+          Copia questo link e invialo. Chi lo apre potrà registrarsi e verrà collegato automaticamente.
         </p>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <input
@@ -41,96 +40,93 @@ function LinkModal({ url, onClose }) {
               fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis',
             }}
           />
-          <button className="btn" onClick={copia} type="button" style={{ width: 'auto', padding: '10px 16px', flexShrink: 0 }}>
+          <button className="btn" onClick={copia} type="button" style={{ flexShrink: 0 }}>
             {copiato ? '✓ Copiato' : 'Copia'}
           </button>
         </div>
-        {copiato && (
-          <p style={{ marginTop: 10, fontSize: 13, color: 'var(--campo)', fontWeight: 600 }}>
-            ✓ Link copiato negli appunti!
-          </p>
-        )}
       </div>
     </div>
   )
 }
 
-export default function InvitiManager({ inviti, portieri, stagioneId }) {
+export default function InvitiManager({ inviti: invitiIniziali, portieri, stagioneId }) {
   const router = useRouter()
+  const [inviti, setInviti] = useState(invitiIniziali)
   const [tipo, setTipo] = useState('')
-  const [portiereId, setPortiereId] = useState(portieri[0]?.id ?? '')
-  const [emailInvitato, setEmailInvitato] = useState('')
-  const [perm, setPerm] = useState(permessiDiDefault())
+  const [portiereId, setPortiereId] = useState('')
+  const [permessi, setPermessi] = useState(permessiDiDefault)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [modalUrl, setModalUrl] = useState(null)
 
+  const linkOf = (token) => `${window.location.origin}/registrazione?invito=${token}`
+
+  const nomePortiere = (id) => {
+    const p = portieri.find((x) => x.id === id)
+    return p ? `${p.nome} ${p.cognome ?? ''}`.trim() : ''
+  }
+
   async function crea() {
-    setBusy(true); setError('')
-    const supabase = createClient()
+    setError('')
+    setBusy(true)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
 
-    if (tipo === 'portiere' && portiereId) {
-      const esistente = inviti.find(
-        (inv) => inv.stato === 'attivo' && inv.tipo === 'portiere' && inv.portiere_id === portiereId
-      )
-      if (esistente) {
-        setError('Esiste già un invito attivo per questo portiere. Revocalo prima di crearne uno nuovo.')
-        setBusy(false)
-        return
+      // Genera token univoco
+      const token = crypto.randomUUID()
+
+      const payload = {
+        token,
+        stagione_id: stagioneId,
+        tipo,
+        stato: 'attivo',
       }
+
+      // Campi extra per tipo portiere
+      if (tipo === 'portiere') {
+        if (!portiereId) { setError('Seleziona un portiere.'); setBusy(false); return }
+        payload.portiere_id = portiereId
+      }
+
+      // Campi extra per tipo collaboratore
+      if (tipo === 'collaboratore') {
+        payload.permessi = permessi
+      }
+
+      // Tipo preparatore: nessun campo extra (il legame avviene lato consuma-invito)
+
+      const { error: insErr } = await supabase.from('inviti').insert(payload)
+      if (insErr) { setError(insErr.message); setBusy(false); return }
+
+      // Ricarica lista inviti
+      const { data: nuoviInviti } = await supabase
+        .from('inviti')
+        .select('*')
+        .eq('stagione_id', stagioneId)
+        .order('created_at', { ascending: false })
+
+      setInviti(nuoviInviti ?? [])
+      setTipo('')
+      setPortiereId('')
+      setPermessi(permessiDiDefault)
+      setModalUrl(linkOf(token))
+    } catch (e) {
+      setError(e.message)
     }
-
-    const token = (typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).slice(2) + Date.now()
-    ).replace(/-/g, '')
-
-    const row = {
-      token,
-      tipo,
-      stagione_id: stagioneId,
-      stato: 'attivo',
-      portiere_id: tipo === 'portiere' ? (portiereId || null) : null,
-      email_invitato: emailInvitato.trim() || null,
-      permessi: tipo === 'collaboratore' ? perm : {},
-    }
-    const { error: insertErr } = await supabase.from('inviti').insert(row)
-    if (insertErr) { setError(insertErr.message); setBusy(false); return }
-
-    setEmailInvitato('')
     setBusy(false)
-    router.refresh()
-
-    // Apri direttamente il modal con il link appena creato
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    setModalUrl(`${origin}/registrati?invito=${token}`)
   }
 
   async function revoca(id) {
     const supabase = createClient()
     await supabase.from('inviti').update({ stato: 'revocato' }).eq('id', id)
-    router.refresh()
+    setInviti(prev => prev.map(i => i.id === id ? { ...i, stato: 'revocato' } : i))
   }
 
   async function elimina(id) {
-    const inv = inviti.find((i) => i.id === id)
-    const msg = inv?.consumato_da
-      ? 'Questo invito è già stato usato. Eliminarlo rimuove solo il record ma NON revoca l\'accesso. Continuare?'
-      : 'Eliminare questo invito?'
-    if (!confirm(msg)) return
     const supabase = createClient()
     await supabase.from('inviti').delete().eq('id', id)
-    router.refresh()
-  }
-
-  function linkOf(token) {
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    return `${origin}/registrati?invito=${token}`
-  }
-
-  const nomePortiere = (id) => {
-    const p = portieri.find((x) => x.id === id)
-    return p ? `${p.nome} ${p.cognome ?? ''}`.trim() : ''
+    setInviti(prev => prev.filter(i => i.id !== id))
   }
 
   return (
@@ -138,11 +134,16 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
       {modalUrl && <LinkModal url={modalUrl} onClose={() => setModalUrl(null)} />}
 
       <p className="sub-intro">
-        Crea un link d&apos;invito da inviare a un portiere o a un membro dello staff. Il portiere accede alle sue statistiche e alla sua pagina che legge i dati inseriti dall&apos;allenatore. Lo staff condivide automaticamente le stesse funzionalità sbloccate dall&apos;abbonamento dell&apos;allenatore principale.
+        Crea un link d&apos;invito da inviare a un portiere, a un membro dello staff o a un preparatore collaboratore.
+        Il portiere accede alle sue statistiche. Lo staff condivide le funzionalità dell&apos;allenatore principale.
+        Il preparatore mantiene la propria area autonoma e condivide la libreria esercizi.
       </p>
+
       <div className="scheda">
         {error && <div className="err">{error}</div>}
         <div className="form-grid">
+
+          {/* Selezione tipo */}
           <div className="field" style={{
             border: tipo ? 'none' : '2px solid var(--azzurro)',
             borderRadius: tipo ? 0 : 'var(--r)',
@@ -161,39 +162,64 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
               <option value="" disabled>— Seleziona tipo —</option>
               <option value="portiere">Portiere</option>
               <option value="collaboratore">Staff / Collaboratore</option>
+              <option value="preparatore">Preparatore (supervisione)</option>
             </select>
           </div>
+
+          {/* Portiere: selezione portiere */}
           {tipo === 'portiere' && (
             <div className="field"><label>Portiere</label>
               <select value={portiereId} onChange={(e) => setPortiereId(e.target.value)}>
-                {portieri.map((p) => <option key={p.id} value={p.id}>{p.nome} {p.cognome ?? ''}</option>)}
-              </select></div>
+                <option value="">— Seleziona portiere —</option>
+                {portieri.map((p) => (
+                  <option key={p.id} value={p.id}>{p.nome} {p.cognome ?? ''}</option>
+                ))}
+              </select>
+            </div>
           )}
-          <div className="field"><label>Email invitato (opzionale)</label>
-            <input type="email" value={emailInvitato} onChange={(e) => setEmailInvitato(e.target.value)}
-              placeholder="es. mario.rossi@email.com" />
-          </div>
-        </div>
-        {tipo === 'collaboratore' && (
-          <div className="elenco-blocco">
-            <h3>Permessi per modulo</h3>
-            <p className="sub-intro" style={{ marginTop: -6 }}>
-              Scegli cosa può vedere e modificare questo collaboratore in ogni sezione.
-            </p>
-            {Object.entries(MODULI_PERMESSI).map(([k, info]) => (
-              <div key={k} className="lista-riga" style={{ flexWrap: 'wrap', gap: 10 }}>
-                <span style={{ flex: '1 1 140px', fontWeight: 600, fontSize: 13 }}>{info.label}</span>
-                <select value={perm[k] ?? 'modifica'} onChange={(e) => setPerm((s) => ({ ...s, [k]: e.target.value }))}>
-                  {LIVELLI.map((l) => <option key={l.v} value={l.v}>{l.label}</option>)}
-                </select>
+
+          {/* Collaboratore: permessi */}
+          {tipo === 'collaboratore' && (
+            <div className="field">
+              <label>Permessi collaboratore</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+                {MODULI_PERMESSI.map((mod) => (
+                  <div key={mod.chiave} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ flex: 1, fontSize: 13 }}>{mod.label}</span>
+                    <select
+                      value={permessi[mod.chiave] ?? 'nessuno'}
+                      onChange={(e) => setPermessi(prev => ({ ...prev, [mod.chiave]: e.target.value }))}
+                      style={{ fontSize: 13, padding: '4px 8px' }}
+                    >
+                      {LIVELLI.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+                    </select>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          )}
+
+          {/* Preparatore: messaggio informativo */}
+          {tipo === 'preparatore' && (
+            <div className="field" style={{ background: 'rgba(10,126,194,0.04)', borderRadius: 'var(--r-sm)', padding: '10px 12px' }}>
+              <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: 0 }}>
+                🔗 Il preparatore manterrà la propria area autonoma con le sue stagioni e squadre.
+                Una volta collegato, potrà vedere la tua libreria esercizi e tu potrai accedere
+                alla sua area per seguire il suo lavoro.
+              </p>
+            </div>
+          )}
+
+          <div className="field">
+            <button
+              className="btn"
+              onClick={crea}
+              disabled={busy || !tipo || (tipo === 'portiere' && !portiereId)}
+              type="button"
+            >
+              {busy ? 'Creazione...' : 'Crea invito e copia link'}
+            </button>
           </div>
-        )}
-        <div className="form-actions">
-          <button className="btn" onClick={crea} disabled={busy || !tipo || (tipo === 'portiere' && !portiereId)} type="button">
-            {busy ? 'Creazione...' : 'Crea invito e copia link'}
-          </button>
         </div>
       </div>
 
@@ -204,14 +230,14 @@ export default function InvitiManager({ inviti, portieri, stagioneId }) {
           <div className={`lista-riga ${inv.stato === 'attivo' ? '' : 'assente'}`} key={inv.id}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 600, fontSize: 14 }}>
-                {inv.tipo === 'portiere' ? 'Portiere' : '👤 Staff'}
+                {inv.tipo === 'portiere' ? 'Portiere' : inv.tipo === 'collaboratore' ? '👤 Staff' : '🔗 Preparatore'}
                 {inv.portiere_id ? ` · ${nomePortiere(inv.portiere_id)}` : ''}
-                {inv.email_invitato
-                  ? <span style={{ color: 'var(--ink-soft)', marginLeft: 6, fontSize: 12 }}>{inv.email_invitato}</span>
-                  : null}
               </div>
+              {inv.email_invitato
+                ? <span style={{ color: 'var(--ink-soft)', marginLeft: 6, fontSize: 12 }}>{inv.email_invitato}</span>
+                : null}
               <small>
-                {inv.stato === 'attivo' ? '🟢 attivo' : inv.stato === 'consumato' ? '✅ usato' : '⛔ revocato'}
+                {inv.stato === 'attivo' ? '🟢 attivo' : inv.stato === 'consumato' ? '✅ usato' : '🔴 revocato'}
                 {inv.consumato_da ? ' · collegato' : ''}
               </small>
             </div>

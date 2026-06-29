@@ -19,6 +19,7 @@ export default async function AppLayout({ children }) {
   let couponGiorni = null
   let vedePortieri = true, vedeAllenamenti = true, vedePartite = true, vedeStatistiche = true
   let ruoloUtente = null
+  let haPreparatori = false
 
   if (user) {
     const { data: profilo } = await supabase
@@ -54,6 +55,16 @@ export default async function AppLayout({ children }) {
           // Salva giorni per mostrarli nel layout
           couponGiorni = giorni
         }
+      }
+
+      // Controlla se ha almeno un preparatore collegato (per mostrare voce sidebar)
+      if (profilo?.ruolo === 'allenatore') {
+        const { count } = await supabase
+          .from('relazioni_supervisione')
+          .select('id', { count: 'exact', head: true })
+          .eq('supervisore_id', user.id)
+          .eq('attivo', true)
+        haPreparatori = (count ?? 0) > 0
       }
     }
   }
@@ -99,6 +110,7 @@ export default async function AppLayout({ children }) {
     'profilo':       isStaff ? { href: '/profilo', label: 'Profilo allenatore' } : null,
     'stagioni':      isStaff ? { href: '/stagioni', label: 'Le mie stagioni' } : null,
     'inviti':        isStaff ? { href: '/inviti', label: 'Inviti' } : null,
+    'i-miei-preparatori': (ruoloUtente === 'allenatore' && haPreparatori) ? { href: '/i-miei-preparatori', label: '🔗 I miei preparatori' } : null,
     'contatti':      isStaff ? { href: '/contatti', label: 'Contatti ricevuti' } : null,
     'come-iniziare': { href: '/come-iniziare', label: 'Come iniziare' },
     'archivio':      { href: '/archivio', label: 'Archivio' },

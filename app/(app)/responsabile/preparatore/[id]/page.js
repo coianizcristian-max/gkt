@@ -30,7 +30,7 @@ export default async function SupervisionePanoramica({ params }) {
   if (stagioneAttiva) {
     const [{ data: isc }, { data: all }, { data: par }] = await Promise.all([
       admin.from('iscrizioni').select('portieri(id, nome, cognome, foto_url)').eq('stagione_id', stagioneAttiva.id),
-      admin.from('allenamenti').select('id, data, note').eq('stagione_id', stagioneAttiva.id).order('data', { ascending: false }).limit(5),
+      admin.from('allenamenti').select('id, data, note, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('stagione_id', stagioneAttiva.id).order('data', { ascending: false }).limit(5),
       admin.from('partite').select('id, data, avversario, gol_fatti, gol_subiti, casa').eq('stagione_id', stagioneAttiva.id).order('data', { ascending: false }).limit(1),
     ])
     portieri = (isc ?? []).map(r => r.portieri).filter(Boolean)
@@ -91,14 +91,22 @@ export default async function SupervisionePanoramica({ params }) {
           <div className="scheda">
             <h3 style={{ marginTop: 0 }}>Ultimi allenamenti</h3>
             {ultimiAllenamenti.map(a => (
-              <div key={a.id} className="lista-riga">
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontWeight: 600 }}>
-                    {new Date(a.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'long' })}
-                  </span>
-                  {a.note && <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 8 }}>{a.note}</span>}
+              <Link key={a.id} href={`${base}/calendario/${a.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div className="lista-riga" style={{ cursor: 'pointer' }}>
+                  <div style={{ flex: 1 }}>
+                    <span style={{ fontWeight: 600 }}>
+                      {new Date(a.data + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'long' })}
+                    </span>
+                    {a.squadra?.nome && (
+                      <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 8 }}>{a.squadra.nome}</span>
+                    )}
+                    {a.note && (
+                      <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>{a.note}</div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 13, color: 'var(--azzurro)' }}>→</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

@@ -4,6 +4,7 @@ import CouponBox from '@/app/components/CouponBox'
 import { hasAbbonamento } from '@/lib/gating'
 import DisdiciButton from '@/app/components/DisdiciButton'
 import CollegaSupervisoreBox from '@/app/components/CollegaSupervisoreBox'
+import CommentiRicevuti from '@/app/components/CommentiRicevuti'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Account | GKT' }
@@ -134,6 +135,11 @@ export default async function AccountPage() {
         {/* Collegamento supervisore — solo per allenatori */}
         {profilo?.ruolo === 'allenatore' && (
           <CollegaSupervisoreBox supervisoreAttuale={profilo?.supervisore_id ?? null} />
+        )}
+
+        {/* Commenti ricevuti dal supervisore — visibili al preparatore collegato */}
+        {profilo?.ruolo === 'allenatore' && profilo?.supervisore_id && (
+          <CommentiRicevuti preparatoreId={user.id} />
         )}
 
       </div>

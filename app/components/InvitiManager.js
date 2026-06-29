@@ -232,13 +232,14 @@ export default function InvitiManager({ inviti: invitiIniziali, portieri, stagio
               <div style={{ fontWeight: 600, fontSize: 14 }}>
                 {inv.tipo === 'portiere' ? 'Portiere' : inv.tipo === 'collaboratore' ? '👤 Staff' : '🔗 Preparatore'}
                 {inv.portiere_id ? ` · ${nomePortiere(inv.portiere_id)}` : ''}
+                {inv.tipo === 'preparatore' && inv.nome_consumatore ? ` · ${inv.nome_consumatore}` : ''}
               </div>
               {inv.email_invitato
                 ? <span style={{ color: 'var(--ink-soft)', marginLeft: 6, fontSize: 12 }}>{inv.email_invitato}</span>
                 : null}
               <small>
                 {inv.stato === 'attivo' ? '🟢 attivo' : inv.stato === 'consumato' ? '✅ usato' : '🔴 revocato'}
-                {inv.consumato_da ? ' · collegato' : ''}
+                {inv.consumato_da && !inv.nome_consumatore ? ' · collegato' : inv.consumato_da && inv.tipo !== 'preparatore' ? ' · collegato' : ''}
               </small>
             </div>
             {inv.stato === 'attivo' && (

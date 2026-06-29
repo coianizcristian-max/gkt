@@ -56,12 +56,12 @@ function EsercizioTile({ esercizio, onDetail, onEdit, onRemoveFav }) {
   )
 }
 
-export default function EserciziManager({ esercizi, eserciziPubblici = [], tipologie, attributiDisponibili = [], allenatoreId }) {
+export default function EserciziManager({ esercizi, eserciziPubblici = [], eserciziResponsabile = [], tipologie, attributiDisponibili = [], allenatoreId }) {
   const router = useRouter()
   const [editing, setEditing] = useState(null)
   const [popup, setPopup] = useState(null)
   const [tabAttivo, setTabAttivo] = useState(null)
-  const [sezione, setSezione] = useState('miei') // 'miei' | 'pubblici' | 'scopri'
+  const [sezione, setSezione] = useState('miei') // 'miei' | 'pubblici' | 'scopri' | 'responsabile'
   const [esPublici, setEsPublici] = useState(null) // null=non caricati
   const [prefIds, setPrefIds] = useState(new Set((eserciziPubblici ?? []).map(e => e.id)))
   const [loadingPref, setLoadingPref] = useState(null) // id in corso
@@ -72,7 +72,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
   const [preferitiFull, setPreferitieFull] = useState(eserciziPubblici ?? [])
 
   // Ragruppa per tipologia — sezione corrente
-  const lista = sezione === 'miei' ? esercizi : preferitiFull
+  const lista = sezione === 'miei' ? esercizi : sezione === 'responsabile' ? eserciziResponsabile : preferitiFull
 
   async function togglePreferito(esercizioId) {
     setLoadingPref(esercizioId)
@@ -142,6 +142,13 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
           onClick={() => { setSezione('pubblici'); setTabAttivo(null) }}>
           ★ Preferiti ({preferitiFull.length})
         </button>
+        {eserciziResponsabile.length > 0 && (
+          <button type="button"
+            className={`sub-nav-link ${sezione === 'responsabile' ? 'active' : ''}`}
+            onClick={() => { setSezione('responsabile'); setTabAttivo(null) }}>
+            🔗 Del responsabile ({eserciziResponsabile.length})
+          </button>
+        )}
         <button type="button"
           className={`sub-nav-link ${sezione === 'scopri' ? 'active' : ''}`}
           onClick={async () => {
@@ -163,7 +170,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
       </div>
 
       {/* Azioni — solo nella sezione miei */}
-      {sezione === 'miei' && (
+      {sezione === 'miei' && sezione !== 'responsabile' && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
           <button className="btn-azione" onClick={() => setEditing('new')} type="button">+ Nuovo esercizio</button>
         </div>
@@ -173,7 +180,9 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
         <div className="empty">
           {sezione === 'miei'
             ? 'Nessun esercizio in libreria. Creane uno con il pulsante sopra.'
-            : 'Nessun esercizio pubblico preferito. Salva gli esercizi con ★ dalla libreria pubblica in un allenamento per trovarli qui.'}
+            : sezione === 'responsabile'
+              ? 'Nessun esercizio del responsabile disponibile.'
+              : 'Nessun esercizio pubblico preferito. Salva gli esercizi con ★ dalla libreria pubblica in un allenamento per trovarli qui.'}
         </div>
       )}
 
@@ -198,7 +207,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], tipol
                   key={e.id}
                   esercizio={e}
                   onDetail={setPopup}
-                  onEdit={sezione === 'miei' ? setEditing : null}
+                  onEdit={sezione === 'miei' && sezione !== 'responsabile' ? setEditing : null}
                   onRemoveFav={sezione === 'pubblici' ? togglePreferito : null}
                 />
               ))}

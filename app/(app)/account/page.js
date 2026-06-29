@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import CouponBox from '@/app/components/CouponBox'
 import { hasAbbonamento } from '@/lib/gating'
 import DisdiciButton from '@/app/components/DisdiciButton'
+import CollegaSupervisoreBox from '@/app/components/CollegaSupervisoreBox'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Account | GKT' }
@@ -16,7 +17,7 @@ export default async function AccountPage() {
     { data: profilo },
     abbonamentoAttivo,
   ] = await Promise.all([
-    supabase.from('profili').select('ruolo, supervisore').eq('id', user.id).maybeSingle(),
+    supabase.from('profili').select('ruolo, supervisore, supervisore_id').eq('id', user.id).maybeSingle(),
     hasAbbonamento(supabase, user.id),
   ])
 
@@ -128,6 +129,11 @@ export default async function AccountPage() {
         {/* Box coupon — sempre visibile se non ha abbonamento Stripe attivo */}
         {!abbRow && (
           <CouponBox />
+        )}
+
+        {/* Collegamento supervisore — solo per allenatori */}
+        {profilo?.ruolo === 'allenatore' && (
+          <CollegaSupervisoreBox supervisoreAttuale={profilo?.supervisore_id ?? null} />
         )}
 
       </div>

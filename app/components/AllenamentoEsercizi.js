@@ -52,7 +52,7 @@ function EsercizioPreview({ esercizio, onClose }) {
 }
 
 // ─── Vista libreria: selezione esercizi ──────────────────────────────────────
-function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle, attributiDisponibili }) {
+function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = [], sel, onToggle, attributiDisponibili }) {
   const [fonte, setFonte] = useState('mia')
   const [soloPref, setSoloPref] = useState(false)
   const [tipologiaAttiva, setTipologiaAttiva] = useState(null)
@@ -97,7 +97,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle, attributiD
   }
 
   const listaPubblica = soloPref ? libreriaPubblica.filter((e) => preferiti.has(e.id)) : libreriaPubblica
-  const listaBase = fonte === 'mia' ? libreriaMia : listaPubblica
+  const listaBase = fonte === 'mia' ? libreriaMia : fonte === 'responsabile' ? eserciziResponsabile : listaPubblica
 
   // Filtra per attributi
   const listaDopoAttr = filtroAttr.size === 0 ? listaBase : listaBase.filter(e => {
@@ -133,6 +133,12 @@ function LibreriaView({ libreriaMia, libreriaPubblica, sel, onToggle, attributiD
           onClick={() => { setFonte('pubblica'); setTipologiaAttiva(null); setCerca(''); setFiltroAttr(new Set()) }}>
           Libreria pubblica ({libreriaPubblica.length})
         </button>
+        {eserciziResponsabile.length > 0 && (
+          <button type="button" className={`sub-nav-link ${fonte === 'responsabile' ? 'active' : ''}`}
+            onClick={() => { setFonte('responsabile'); setTipologiaAttiva(null); setCerca(''); setFiltroAttr(new Set()) }}>
+            🔗 Del responsabile ({eserciziResponsabile.length})
+          </button>
+        )}
       </div>
 
       {fonte === 'pubblica' && (
@@ -407,7 +413,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
 }
 
 // ─── Componente principale ────────────────────────────────────────────────────
-export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], libreriaPubblica = [], selezionatiIniziali, selezionatiEsercizi = [], attributiDisponibili = [] }) {
+export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], libreriaPubblica = [], eserciziResponsabile = [], selezionatiIniziali, selezionatiEsercizi = [], attributiDisponibili = [] }) {
   const router = useRouter()
   const [tab, setTab] = useState('libreria')
   const [sel, setSel] = useState(new Set(selezionatiIniziali))
@@ -416,9 +422,9 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
-  const idInLibreria = new Set([...libreriaMia, ...libreriaPubblica].map(e => e.id))
+  const idInLibreria = new Set([...libreriaMia, ...libreriaPubblica, ...eserciziResponsabile].map(e => e.id))
   const esExtra = selezionatiEsercizi.filter(e => !idInLibreria.has(e.id))
-  const tuttiEsercizi = [...libreriaMia, ...libreriaPubblica, ...esExtra]
+  const tuttiEsercizi = [...libreriaMia, ...libreriaPubblica, ...eserciziResponsabile, ...esExtra]
 
   const toggle = useCallback((id) => {
     setSel((s) => {
@@ -466,6 +472,7 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
         <LibreriaView
           libreriaMia={libreriaMia}
           libreriaPubblica={libreriaPubblica}
+          eserciziResponsabile={eserciziResponsabile}
           sel={sel}
           onToggle={toggle}
           attributiDisponibili={attributiDisponibili}

@@ -229,11 +229,7 @@ export default async function AllenamentoPage({ params }) {
     }
   } catch (_) {}
 
-  // Aggiungi esercizi responsabile alla libreria pubblica visibile nell'allenamento
-  // (escludi quelli già presenti per evitare duplicati)
-  const idNellaLibreriaConExtra = new Set(libreriaPubblicaConExtra.map(e => e.id))
-  const eserciziRespNuovi = eserciziResponsabile.filter(e => !idNellaLibreriaConExtra.has(e.id))
-  const libreriaPubblicaFinale = [...libreriaPubblicaConExtra, ...eserciziRespNuovi]
+  // eserciziResponsabile passati come prop separata a AllenamentoEsercizi
 
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
@@ -310,7 +306,8 @@ export default async function AllenamentoPage({ params }) {
               {canEsercizi ? <AllenamentoEsercizi
                 allenamentoId={accorpataConAllenamentoId ?? id}
                 libreriaMia={libreriaMia}
-                libreriaPubblica={libreriaPubblicaFinale}
+                libreriaPubblica={libreriaPubblicaConExtra}
+                eserciziResponsabile={eserciziResponsabile}
                 selezionatiIniziali={eserciziOrdinati}
                 selezionatiEsercizi={eserciziSelezionati}
                 attributiDisponibili={attrRows ?? []}

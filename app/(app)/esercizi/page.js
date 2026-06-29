@@ -1,8 +1,13 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Guida from '@/app/components/Guida'
 import EserciziManager from '@/app/components/EserciziManager'
 import { getOwnerId } from '@/lib/tenant'
+
+function getAdmin() {
+  return createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +19,12 @@ export default async function EserciziPage() {
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
   const ownerId = await getOwnerId(supabase, user.id)
+
+  // Carica supervisore_id — se l'utente è un preparatore con responsabile
+  const { data: profiloExt } = await supabase
+    .from('profili').select('supervisore_id').eq('id', user.id).maybeSingle()
+  const supervisoreId = profiloExt?.supervisore_id ?? null
+
   const [{ data: esercizi }, { data: tip }, { data: attributi }] = await Promise.all([
     supabase.from('esercizi').select('*').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
     supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('attivo', true).order('ordine'),
@@ -43,6 +54,31 @@ export default async function EserciziPage() {
     // Tabella non ancora creata — funziona comunque senza preferiti pubblici
   }
 
+  // Carica esercizi del responsabile se collegato
+  let eserciziResponsabile = []
+  if (supervisoreId) {
+    try {
+      const admin = getAdmin()
+      // Verifica che la relazione sia ancora attiva
+      const { data: rel } = await admin
+        .from('relazioni_supervisione')
+        .select('id')
+        .eq('supervisore_id', supervisoreId)
+        .eq('preparatore_id', user.id)
+        .eq('attivo', true)
+        .maybeSingle()
+      if (rel) {
+        const { data: esResp } = await admin
+          .from('esercizi')
+          .select('*')
+          .eq('allenatore_id', supervisoreId)
+          .eq('archiviato', false)
+          .order('created_at', { ascending: false })
+        eserciziResponsabile = esResp ?? []
+      }
+    } catch (_) {}
+  }
+
   return (
     <>
       <div className="topbar">
@@ -69,6 +105,7 @@ export default async function EserciziPage() {
         <EserciziManager
           esercizi={esercizi ?? []}
           eserciziPubblici={eserciziPubbliciPreferiti}
+          eserciziResponsabile={eserciziResponsabile}
           tipologie={tipologie}
           attributiDisponibili={attributi ?? []}
           allenatoreId={ownerId}

@@ -1,6 +1,11 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import InvitiManager from '@/app/components/InvitiManager'
+
+function getAdmin() {
+  return createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+}
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getStagioneAttiva } from '@/lib/tenant'
@@ -30,6 +35,25 @@ export default async function InvitiPage() {
     ])
     inviti = inv.data ?? []
     portieri = (isc.data ?? []).map((r) => r.portieri).filter(Boolean).sort((a, b) => `${a.nome}`.localeCompare(`${b.nome}`))
+
+    // Arricchisci gli inviti di tipo 'preparatore' con il nome di chi li ha consumati
+    const consumatiIds = inviti
+      .filter(i => i.tipo === 'preparatore' && i.consumato_da)
+      .map(i => i.consumato_da)
+    if (consumatiIds.length > 0) {
+      const admin = getAdmin()
+      const { data: profiliConsumatori } = await admin
+        .from('profili')
+        .select('id, nome_completo')
+        .in('id', consumatiIds)
+      const nomiMap = {}
+      for (const p of profiliConsumatori ?? []) nomiMap[p.id] = p.nome_completo
+      inviti = inviti.map(i =>
+        i.tipo === 'preparatore' && i.consumato_da
+          ? { ...i, nome_consumatore: nomiMap[i.consumato_da] ?? null }
+          : i
+      )
+    }
   }
 
   return (

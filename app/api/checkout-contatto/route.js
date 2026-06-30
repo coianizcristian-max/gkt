@@ -27,7 +27,7 @@ export async function POST(request) {
         price_data: {
           currency: 'eur',
           unit_amount: importoCent,
-          product_data: { name: 'Sblocco contatti allenatore GKT' },
+          product_data: { name: 'Sblocco contatti allenatore GKSeason' },
         },
         quantity: 1,
       }],

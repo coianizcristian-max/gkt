@@ -11,7 +11,7 @@ export default async function NewsletterPage() {
 
   const ultima = invii?.[0]
   const archivio = invii?.slice(1) ?? []
-  const societa = 'GKT'
+  const societa = 'GKSeason'
 
   return (
     <>

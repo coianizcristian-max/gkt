@@ -31,7 +31,7 @@ function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviApert
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>GKT — Report fine stagione</Text>
+          <Text style={styles.eyebrow}>GKSeason — Report fine stagione</Text>
           <Text style={styles.titolo}>{portiere.nome} {portiere.cognome ?? ''}</Text>
           <Text style={styles.sottotitolo}>Stagione {stagione.nome}</Text>
         </View>
@@ -52,7 +52,7 @@ function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviApert
           <View style={styles.riga}><Text style={styles.rigaLabel}>Punti portati alla squadra</Text><Text style={styles.rigaVal}>{kpi.puntiTotali}</Text></View>
           <View style={styles.riga}><Text style={styles.rigaLabel}>% presenze allenamenti</Text><Text style={styles.rigaVal}>{kpi.pctPresenze}%</Text></View>
           {kpi.indiceCrescita != null && (
-            <View style={styles.riga}><Text style={styles.rigaLabel}>Indice di Crescita GKT</Text><Text style={styles.rigaVal}>{kpi.indiceCrescita} / 100</Text></View>
+            <View style={styles.riga}><Text style={styles.rigaLabel}>Indice di Crescita GKSeason</Text><Text style={styles.rigaVal}>{kpi.indiceCrescita} / 100</Text></View>
           )}
         </View>
 
@@ -93,7 +93,7 @@ function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviApert
         </View>
 
         <Text style={styles.footer}>
-          Generato da GKT — Gestionale Allenamento Portieri · {new Date().toLocaleDateString('it-IT')}
+          Generato da GKSeason — Gestionale Allenamento Portieri · {new Date().toLocaleDateString('it-IT')}
         </Text>
       </Page>
     </Document>

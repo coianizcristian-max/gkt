@@ -1,6 +1,6 @@
 {
-  "name": "GKT — Gestionale Allenamento Portieri",
-  "short_name": "GKT",
+  "name": "GKSeason — Gestionale Allenamento Portieri",
+  "short_name": "GKSeason",
   "description": "Il gestionale professionale per allenatori dei portieri. Gestisci allenamenti, valutazioni, statistiche e partite.",
   "start_url": "/dashboard",
   "display": "standalone",

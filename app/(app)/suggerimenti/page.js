@@ -41,7 +41,7 @@ export default async function SuggerimentiPage() {
   return (
     <>
       <div className="topbar">
-        <div className="eyebrow">GKT</div>
+        <div className="eyebrow">GKSeason</div>
         <h1>Suggerimenti e migliorie</h1>
       </div>
       <div className="content">

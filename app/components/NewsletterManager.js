@@ -18,7 +18,7 @@ export function NewsletterRender({ titolo, sezioni, dataStr, societa }) {
         padding: '32px 36px 24px', color: '#fff',
       }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.75, marginBottom: 8 }}>
-          {societa ?? 'GKT'} · Newsletter
+          {societa ?? 'GKSeason'} · Newsletter
         </div>
         <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, lineHeight: 1.25, letterSpacing: '-0.3px' }}>{titolo || 'Titolo newsletter'}</h1>
         {dataStr && <div style={{ marginTop: 10, fontSize: 13, opacity: 0.75 }}>{dataStr}</div>}
@@ -68,7 +68,7 @@ export function NewsletterRender({ titolo, sezioni, dataStr, societa }) {
       {/* Footer */}
       <div style={{ background: '#f6f8fa', borderTop: '1px solid #e8f0f8', padding: '16px 36px', textAlign: 'center' }}>
         <p style={{ margin: 0, fontSize: 11, color: '#8899a8', lineHeight: 1.6 }}>
-          Hai ricevuto questa email perché sei iscritto alla newsletter di {societa ?? 'GKT'}.<br />
+          Hai ricevuto questa email perché sei iscritto alla newsletter di {societa ?? 'GKSeason'}.<br />
           <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Disiscriviti</span>
         </p>
       </div>

@@ -103,7 +103,7 @@ export default function RegistratiClient({ token, datiInvito }) {
         <div className="brand">
           <div className="glove">GK</div>
           <div>
-            <b>GKT</b>
+            <b>GKSeason</b>
             <span>Gestione portieri</span>
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function RegistratiClient({ token, datiInvito }) {
           </div>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--ink-soft)', marginBottom: 12 }}>
             <input type="checkbox" checked={iscriviNewsletter} onChange={(e) => setIscriviNewsletter(e.target.checked)} />
-            Iscrivimi alla newsletter GKT (puoi disiscriverti in qualsiasi momento)
+            Iscrivimi alla newsletter GKSeason (puoi disiscriverti in qualsiasi momento)
           </label>
           <button className="btn" type="submit" disabled={loading || tokenInvalido}>
             {loading ? 'Creazione…' : 'Crea account'}

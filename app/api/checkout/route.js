@@ -53,8 +53,8 @@ export async function POST(request) {
 
     const isLifetime = piano === 'lifetime'
     const nomeRuolo = ruolo === 'portiere' ? 'Portiere' : 'Allenatore'
-    // Nome chiaro: es. "GKT Annuale — Allenatore"
-    const nomeProdotto = `GKT ${PIANO_LABEL[piano]} — ${nomeRuolo}`
+    // Nome chiaro: es. "GKSeason Annuale — Allenatore"
+    const nomeProdotto = `GKSeason ${PIANO_LABEL[piano]} — ${nomeRuolo}`
 
     // Price dinamico sempre inline — non agganciato a prodotti Stripe preesistenti
     // così il nome mostrato su Stripe è sempre quello corretto per il piano

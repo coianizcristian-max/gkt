@@ -37,7 +37,7 @@ export default async function Home() {
         <div className="brand">
           <div className="glove" style={{ width: 32, height: 32, fontSize: 13 }}>GK</div>
           <div>
-            <b>GKT</b>
+            <b>GKSeason</b>
             <span>Gestione portieri</span>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default async function Home() {
 
       {/* ── Footer ── */}
       <footer className="landing-foot">
-        GKT · Gestione portieri
+        GKSeason · Gestione portieri
         <span className="landing-foot-sep">·</span>
         <Link href="/privacy-policy">Privacy Policy</Link>
         <span className="landing-foot-sep">·</span>

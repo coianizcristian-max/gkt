@@ -145,7 +145,7 @@ export default async function AppLayout({ children }) {
         <Link href={schedaHref} className="brand">
           {logo ? <img className="brand-logo" src={logo} alt="" /> : <div className="glove">GK</div>}
           <div>
-            <b>GKT</b>
+            <b>GKSeason</b>
             {societa && <span>{societa}</span>}
             {stagioneNome && <span className="brand-stagione">Stagione {stagioneNome}</span>}
           </div>

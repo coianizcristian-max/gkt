@@ -92,7 +92,7 @@ export default async function EserciziPage() {
             potrai poi aggiungerlo a qualsiasi allenamento direttamente dall&apos;interno della seduta (tab Esercizi nell&apos;allenamento).
           </p>
           <p style={{marginTop:10}}>
-            Se spunti <strong>&ldquo;Pubblico&rdquo;</strong> su un esercizio lo rendi visibile agli altri allenatori GKT
+            Se spunti <strong>&ldquo;Pubblico&rdquo;</strong> su un esercizio lo rendi visibile agli altri allenatori GKSeason
             nella libreria condivisa. Nella sezione <strong>&ldquo;Pubblici preferiti&rdquo;</strong> trovi gli esercizi
             di altri allenatori che hai salvato con ★ dalla libreria pubblica: puoi usarli nei tuoi allenamenti senza doverli ricreare.
           </p>

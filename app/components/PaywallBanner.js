@@ -166,7 +166,7 @@ const DEMO_DATA = {
 
   profilo_ricerca: {
     titolo: 'Profilo nella ricerca pubblica',
-    desc: 'Il tuo profilo appare nella ricerca pubblica di GKT. I club possono trovarti e contattarti.',
+    desc: 'Il tuo profilo appare nella ricerca pubblica di GKSeason. I club possono trovarti e contattarti.',
     content: () => (
       <div>
         <div style={{border:'1px solid #e2e6e1',borderRadius:8,padding:16,marginBottom:12}}>

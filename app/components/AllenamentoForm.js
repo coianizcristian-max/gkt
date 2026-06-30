@@ -4,11 +4,14 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
+import DuplicaAllenamentoPicker from '@/app/components/DuplicaAllenamentoPicker'
 
 export default function AllenamentoForm({ allenamento, categorie, stagioneId, defaultData }) {
   const router = useRouter()
   const isEdit = !!allenamento
   const inizioRef = useRef(null)
+  const [showDuplica, setShowDuplica] = useState(false)
+  const [eserciziDaDuplicare, setEserciziDaDuplicare] = useState(null) // array ordinato di esercizio_id, o null
 
   useEffect(() => {
     if (!isEdit) {
@@ -54,8 +57,17 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
         const { data, error } = await supabase.from('allenamenti')
           .insert({ ...payload, stagione_id: stagioneId }).select('id').single()
         if (error) throw error
+
+        if (eserciziDaDuplicare?.length) {
+          const rows = eserciziDaDuplicare.map((eid, i) => ({
+            allenamento_id: data.id, esercizio_id: eid, ordine: i,
+          }))
+          const { error: dupErr } = await supabase.from('allenamento_esercizi').insert(rows)
+          if (dupErr) console.error('Errore duplicazione esercizi:', dupErr.message)
+        }
+
         const durataSec = inizioRef.current ? Math.round((Date.now() - inizioRef.current) / 1000) : null
-        trackEvento('allenamento_creazione_completata', { durata_secondi: durataSec })
+        trackEvento('allenamento_creazione_completata', { durata_secondi: durataSec, esercizi_duplicati: !!eserciziDaDuplicare?.length })
         router.push(`/calendario/${data.id}`); router.refresh()
       }
     } catch (err) { setError(err.message); setSaving(false) }
@@ -92,6 +104,28 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
         <p className="sub-intro" style={{ marginTop: 0, color: 'var(--giallo)' }}>
           ⚠ Allenamento accorpato: nel calendario apparirà con cornice gialla. I portieri della categoria ospite vedranno la scheda di questa seduta.
         </p>
+      )}
+      {!isEdit && (
+        <div style={{ marginTop: 14 }}>
+          {!showDuplica && !eserciziDaDuplicare && (
+            <button type="button" className="btn-ghost" onClick={() => setShowDuplica(true)}>
+              📋 Duplica esercizi da un altro allenamento
+            </button>
+          )}
+          {!showDuplica && eserciziDaDuplicare && (
+            <div className="sub-intro" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              ✅ {eserciziDaDuplicare.length} esercizi pronti per essere copiati in questo allenamento.
+              <button type="button" className="btn-mini" onClick={() => setShowDuplica(true)}>Cambia</button>
+              <button type="button" className="btn-mini" onClick={() => setEserciziDaDuplicare(null)}>Rimuovi</button>
+            </div>
+          )}
+          {showDuplica && (
+            <DuplicaAllenamentoPicker
+              onAnnulla={() => setShowDuplica(false)}
+              onConferma={(idsOrdinati) => { setEserciziDaDuplicare(idsOrdinati); setShowDuplica(false) }}
+            />
+          )}
+        </div>
       )}
       <div className="form-actions">
         {!isEdit && <button type="button" className="btn-ghost" onClick={() => router.push('/calendario')}>Annulla</button>}

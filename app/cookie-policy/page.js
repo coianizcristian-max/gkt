@@ -83,7 +83,7 @@ export default function CookiePolicy() {
         <section>
           <h2>6. Contatti</h2>
           <p>
-            Per qualsiasi domanda sui cookie utilizzati: <a href="mailto:[INSERIRE EMAIL]">[INSERIRE EMAIL]</a>
+            Per qualsiasi domanda sui cookie utilizzati: <a href="mailto:info@gkseason.it">info@gkseason.it</a>
           </p>
         </section>
       </div>

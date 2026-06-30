@@ -14,7 +14,7 @@ export default function TerminiDiServizio() {
           <h2>1. Accettazione dei termini</h2>
           <p>
             Utilizzando la piattaforma GKSeason — Gestionale Allenamento Portieri (&quot;il Servizio&quot;), accessibile
-            all&apos;indirizzo gkt2026.vercel.app, dichiari di aver letto, compreso e accettato integralmente
+            all&apos;indirizzo gkseason.it, dichiari di aver letto, compreso e accettato integralmente
             i presenti Termini di Servizio. Se non accetti questi termini, non puoi utilizzare il Servizio.
           </p>
         </section>
@@ -126,18 +126,22 @@ export default function TerminiDiServizio() {
         </section>
 
         <section>
-          <h2>11. Legge applicabile e foro competente</h2>
+          <h2>11. Titolare del servizio, legge applicabile e foro competente</h2>
+          <p>
+            Il Servizio è gestito da Coianiz Cristian, con sede in Via Salgaroni 18, Montecchio Precalcino (VI),
+            Codice Fiscale CNZCST76T22Z133X.
+          </p>
           <p>
             I presenti termini sono regolati dalla legge italiana. Per qualsiasi controversia è competente
-            in via esclusiva il Foro di [INSERIRE: città del titolare], salvo diversa disposizione
-            imperativa di legge applicabile ai consumatori.
+            in via esclusiva il Foro di Vicenza, salvo diversa disposizione imperativa di legge applicabile
+            ai consumatori.
           </p>
         </section>
 
         <section>
           <h2>12. Contatti</h2>
           <p>
-            Per qualsiasi domanda: <a href="mailto:[INSERIRE EMAIL]">[INSERIRE EMAIL]</a>
+            Per qualsiasi domanda: <a href="mailto:info@gkseason.it">info@gkseason.it</a>
           </p>
         </section>
       </div>

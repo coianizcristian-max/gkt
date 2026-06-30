@@ -34,7 +34,7 @@ export default function VersionePopup({ versione }) {
 
         <div className="versione-body">
           <p className="versione-intro">
-            GKT è stato aggiornato. Ecco le novità di questa versione:
+            GKSeason è stato aggiornato. Ecco le novità di questa versione:
           </p>
           <ul className="versione-lista">
             {(versione.note ?? []).map((nota, i) => (

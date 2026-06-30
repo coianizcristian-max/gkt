@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
   const nome = profilo.nome_completo || 'Allenatore'
   const desc = profilo.bio
     ? profilo.bio.slice(0, 155)
-    : `Preparatore portieri${profilo.citta ? ' a ' + profilo.citta : ''}. Scopri esperienze e certificazioni su GKT.`
+    : `Preparatore portieri${profilo.citta ? ' a ' + profilo.citta : ''}. Scopri esperienze e certificazioni su GKSeason.`
 
   return {
     title: `${nome}${profilo.citta ? ' — ' + profilo.citta : ''}`,

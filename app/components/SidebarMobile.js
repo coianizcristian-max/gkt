@@ -28,7 +28,7 @@ export default function SidebarMobile({ voci, brand }) {
           ? <img src={brand.logo} alt="" className="brand-logo" />
           : <div className="glove">GK</div>}
         <div>
-          <b>{brand.societa || 'GKT'}</b>
+          <b>{brand.societa || 'GKSeason'}</b>
           {brand.stagioneNome && <span>{brand.stagioneNome}</span>}
         </div>
       </Link>

@@ -105,7 +105,7 @@ export async function GET(request) {
 
         {/* Footer */}
         <View style={s.footer} fixed>
-          <Text>GKT — Gestionale Allenamento Portieri</Text>
+          <Text>GKSeason — Gestionale Allenamento Portieri</Text>
           <Text>Generato il {oggi}</Text>
         </View>
       </Page>

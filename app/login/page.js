@@ -36,7 +36,7 @@ export default function LoginPage() {
         <div className="brand">
           <div className="glove">GK</div>
           <div>
-            <b>GKT</b>
+            <b>GKSeason</b>
             <span>Gestione portieri</span>
           </div>
         </div>

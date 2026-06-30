@@ -52,7 +52,7 @@ export default async function AbbonatiPage() {
     <>
       <div className="topbar">
         <div className="eyebrow">Area riservata</div>
-        <h1>Abbonamento GKT</h1>
+        <h1>Abbonamento GKSeason</h1>
       </div>
       <div className="content">
         <AbbonatoClient abbonamento={abbonamento} userId={user.id} prezzi={prezzi} ruolo={ruolo} />

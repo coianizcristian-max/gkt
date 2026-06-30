@@ -29,7 +29,7 @@ export default function SetupWizard({ anniDisponibili, ownerId, redirectAfter = 
         <div className="wizard-box">
           <div className="wizard-header">
             <div className="wizard-step-indicator">Passo 1 di 4</div>
-            <h2>{isNuova ? 'Nuova stagione' : 'Benvenuto in GKT!'}</h2>
+            <h2>{isNuova ? 'Nuova stagione' : 'Benvenuto in GKSeason!'}</h2>
             <p className="sub-intro">
               {isNuova
                 ? 'Crea una nuova stagione: puoi cambiare società, date e categorie rispetto a quelle precedenti.'

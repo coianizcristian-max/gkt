@@ -8,7 +8,7 @@ export default function IndiceCrescita({ score, dettagli }) {
 
   return (
     <div className="scheda" style={{ marginBottom: 14 }}>
-      <h3 style={{ marginTop: 0, marginBottom: 14 }}>📊 Indice di Crescita GKT</h3>
+      <h3 style={{ marginTop: 0, marginBottom: 14 }}>📊 Indice di Crescita GKSeason</h3>
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', width: 100, height: 100, flexShrink: 0 }}>
           <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>

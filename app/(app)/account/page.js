@@ -7,7 +7,7 @@ import CollegaSupervisoreBox from '@/app/components/CollegaSupervisoreBox'
 import CommentiRicevuti from '@/app/components/CommentiRicevuti'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Account | GKT' }
+export const metadata = { title: 'Account | GKSeason' }
 
 export default async function AccountPage() {
   const supabase = await createClient()

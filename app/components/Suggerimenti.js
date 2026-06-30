@@ -124,14 +124,23 @@ export default function Suggerimenti({ isStaff, isLoggedIn = true, iniziali = []
       payload.email = email.trim() || null
     }
     const { error } = await supabase.from('suggerimenti').insert(payload)
-    if (error) setError(error.message)
-    else { setTesto(''); setNome(''); setEmail(''); setDone(true); router.refresh() }
+    if (error) {
+      setError(error.message)
+    } else {
+      // Notifica email a support@gkseason.it (non blocca l'utente se fallisce)
+      fetch('/api/notifica-suggerimento', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ testo: payload.testo, categoria, nome: payload.nome, email: payload.email }),
+      }).catch(() => {})
+      setTesto(''); setNome(''); setEmail(''); setDone(true); router.refresh()
+    }
     setBusy(false)
   }
 
   return (
     <div className="lista-editor">
-      <p className="sub-intro">Hai un&apos;idea per migliorare GKT o hai trovato un problema? Scrivilo qui — lo leggiamo tutti.</p>
+      <p className="sub-intro">Hai un&apos;idea per migliorare GKSeason o hai trovato un problema? Scrivilo qui — lo leggiamo tutti.</p>
 
       <div className="field">
         <label>Categoria</label>

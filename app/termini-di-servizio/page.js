@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'Termini di Servizio | GKT',
-  description: 'Termini e condizioni di utilizzo della piattaforma GKT.',
+  title: 'Termini di Servizio | GKSeason',
+  description: 'Termini e condizioni di utilizzo della piattaforma GKSeason.',
 }
 
 export default function TerminiDiServizio() {
@@ -13,7 +13,7 @@ export default function TerminiDiServizio() {
         <section>
           <h2>1. Accettazione dei termini</h2>
           <p>
-            Utilizzando la piattaforma GKT — Gestionale Allenamento Portieri (&quot;il Servizio&quot;), accessibile
+            Utilizzando la piattaforma GKSeason — Gestionale Allenamento Portieri (&quot;il Servizio&quot;), accessibile
             all&apos;indirizzo gkt2026.vercel.app, dichiari di aver letto, compreso e accettato integralmente
             i presenti Termini di Servizio. Se non accetti questi termini, non puoi utilizzare il Servizio.
           </p>
@@ -22,7 +22,7 @@ export default function TerminiDiServizio() {
         <section>
           <h2>2. Descrizione del servizio</h2>
           <p>
-            GKT è una piattaforma SaaS (Software as a Service) destinata agli allenatori dei portieri e ai
+            GKSeason è una piattaforma SaaS (Software as a Service) destinata agli allenatori dei portieri e ai
             loro staff tecnici. Permette di gestire allenamenti, valutazioni dei portieri, statistiche,
             partite, esercizi e comunicazioni con i portieri iscritti.
           </p>
@@ -60,7 +60,7 @@ export default function TerminiDiServizio() {
           <h2>5. Dati dei portieri</h2>
           <p>
             In qualità di allenatore che inserisce dati relativi ai propri portieri, sei il &quot;titolare del
-            trattamento&quot; di quei dati ai sensi del GDPR. GKT agisce come &quot;responsabile del trattamento&quot;
+            trattamento&quot; di quei dati ai sensi del GDPR. GKSeason agisce come &quot;responsabile del trattamento&quot;
             per tuo conto. Ti impegni a:
           </p>
           <ul>
@@ -73,7 +73,7 @@ export default function TerminiDiServizio() {
         <section>
           <h2>6. Piani e pagamenti</h2>
           <p>
-            GKT offre un piano base gratuito e piani a pagamento con funzionalità avanzate. I prezzi sono
+            GKSeason offre un piano base gratuito e piani a pagamento con funzionalità avanzate. I prezzi sono
             indicati nella sezione dedicata della piattaforma. I pagamenti sono elaborati tramite Stripe.
             Non conserviamo dati delle carte di credito sui nostri server.
           </p>
@@ -86,11 +86,11 @@ export default function TerminiDiServizio() {
         <section>
           <h2>7. Proprietà intellettuale</h2>
           <p>
-            Il software, il design e i contenuti originali di GKT sono di proprietà esclusiva del titolare.
+            Il software, il design e i contenuti originali di GKSeason sono di proprietà esclusiva del titolare.
             Ti è concessa una licenza limitata, non esclusiva e non trasferibile per utilizzare il Servizio.
           </p>
           <p>
-            I contenuti che carichi (foto, testi, esercizi) rimangono di tua proprietà. Concedi a GKT una
+            I contenuti che carichi (foto, testi, esercizi) rimangono di tua proprietà. Concedi a GKSeason una
             licenza per memorizzarli ed elaborarli al solo scopo di erogare il Servizio.
           </p>
         </section>
@@ -98,7 +98,7 @@ export default function TerminiDiServizio() {
         <section>
           <h2>8. Limitazione di responsabilità</h2>
           <p>
-            GKT è fornito &quot;così com&apos;è&quot;. Non garantiamo la disponibilità continua e ininterrotta del
+            GKSeason è fornito &quot;così com&apos;è&quot;. Non garantiamo la disponibilità continua e ininterrotta del
             Servizio. Non siamo responsabili per danni indiretti, perdita di dati o mancati guadagni derivanti
             dall&apos;utilizzo o dall&apos;impossibilità di utilizzare il Servizio, salvo dolo o colpa grave.
           </p>

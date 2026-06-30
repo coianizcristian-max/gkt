@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Informativa sulla Privacy | GKT',
+  title: 'Informativa sulla Privacy | GKSeason',
   description: 'Informativa sul trattamento dei dati personali ai sensi del GDPR.',
 }
 
@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
 
         <section>
           <h2>2. Dati raccolti</h2>
-          <p>GKT raccoglie le seguenti categorie di dati personali:</p>
+          <p>GKSeason raccoglie le seguenti categorie di dati personali:</p>
           <ul>
             <li><strong>Dati di registrazione</strong>: nome, cognome, indirizzo email, password (in forma cifrata).</li>
             <li><strong>Dati del profilo</strong>: ruolo (allenatore, staff, portiere), fotografia, città, CAP, provincia, coordinate geografiche approssimative, biografia professionale, esperienze e certificati.</li>

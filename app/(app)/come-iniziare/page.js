@@ -45,8 +45,8 @@ export default async function ComeIniziarePage() {
       <div className="content">
         <p className="sub-intro">
           {isPortiere
-            ? 'Ecco le sezioni principali di GKT e come usarle come portiere.'
-            : 'Segui questi passaggi in ordine per configurare GKT e iniziare a usarlo con la tua squadra.'}
+            ? 'Ecco le sezioni principali di GKSeason e come usarle come portiere.'
+            : 'Segui questi passaggi in ordine per configurare GKSeason e iniziare a usarlo con la tua squadra.'}
         </p>
         <div className="guida-step-grid">
           {passi.map((p, i) => (

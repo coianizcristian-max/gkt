@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'Cookie Policy | GKT',
-  description: 'Informativa sull\'uso dei cookie su GKT.',
+  title: 'Cookie Policy | GKSeason',
+  description: 'Informativa sull\'uso dei cookie su GKSeason.',
 }
 
 export default function CookiePolicy() {
@@ -27,7 +27,7 @@ export default function CookiePolicy() {
             <thead><tr><th>Nome</th><th>Fornitore</th><th>Scopo</th><th>Durata</th></tr></thead>
             <tbody>
               <tr><td>sb-*</td><td>Supabase</td><td>Sessione di autenticazione</td><td>Sessione / 1 anno</td></tr>
-              <tr><td>gkt-cookie-consent</td><td>GKT (locale)</td><td>Memorizza la tua scelta sui cookie</td><td>1 anno</td></tr>
+              <tr><td>gkt-cookie-consent</td><td>GKSeason (locale)</td><td>Memorizza la tua scelta sui cookie</td><td>1 anno</td></tr>
             </tbody>
           </table>
 

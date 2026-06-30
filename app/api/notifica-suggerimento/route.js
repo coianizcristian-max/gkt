@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const MITTENTE = 'GKSeason <notifiche@gkseason.it>'
-const DESTINATARIO = 'support@gkseason.it'
+const DESTINATARIO = 'supporto@gkseason.it'
 
 export async function POST(req) {
   try {

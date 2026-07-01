@@ -66,7 +66,10 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     return { background: '#7c3aed', color: '#fff', outline: '2px solid #c0392b', outlineOffset: '-2px' }
   }
 
-  const labelPartita = (p) => `${p.casa ? '🏠' : '✈'} ${p.avversario || 'Partita'}`
+  const labelPartita = (p) => {
+    const icona = p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'
+    return `${p.squadra_nome} · ${icona} ${p.avversario || 'Partita'}`
+  }
 
   // Click su cella: toggle selezione e carica esercizi lazy
   async function handleCellClick(day) {

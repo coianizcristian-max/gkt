@@ -7,6 +7,6 @@ export default function robots() {
         disallow: ['/api/', '/portieri', '/calendario', '/partite', '/statistiche', '/supervisore', '/profilo', '/inviti', '/esercizi', '/ricorrenze', '/abbonati', '/suggerimenti', '/archivio', '/come-iniziare'],
       },
     ],
-    sitemap: 'https://gkt2026.vercel.app/sitemap.xml',
+    sitemap: 'https://www.gkseason.it/sitemap.xml',
   }
 }

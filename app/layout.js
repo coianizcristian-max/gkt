@@ -15,7 +15,7 @@ const inter = Inter({
 })
 
 export const metadata = {
-  metadataBase: new URL('https://gkt2026.vercel.app'),
+  metadataBase: new URL('https://www.gkseason.it'),
   title: {
     default: 'GKSeason — Gestionale Allenamento Portieri',
     template: '%s | GKSeason',
@@ -37,7 +37,7 @@ export const metadata = {
     siteName: 'GKSeason — Gestionale Allenamento Portieri',
     title: 'GKSeason — Gestionale Allenamento Portieri',
     description: 'La piattaforma per allenatori di portieri: calendario, valutazioni, statistiche ed esercizi in un\'unica app.',
-    url: 'https://gkt2026.vercel.app',
+    url: 'https://www.gkseason.it',
   },
   twitter: {
     card: 'summary_large_image',

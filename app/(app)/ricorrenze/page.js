@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Guida from '@/app/components/Guida'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
-import RicorrenzeManager from '@/app/components/RicorrenzeManager'
+import RicorrenzeTabs from '@/app/components/RicorrenzeTabs'
 import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
@@ -19,13 +19,16 @@ export default async function RicorrenzePage() {
 
   let categorie = []
   let ricorrenze = []
+  let ricorrenzePartite = []
   if (stagione) {
-    const [cat, ric] = await Promise.all([
+    const [cat, ric, ricPar] = await Promise.all([
       supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
       supabase.from('ricorrenze_stagionali').select('*').eq('stagione_id', stagione.id),
+      supabase.from('ricorrenze_partite_stagionali').select('*').eq('stagione_id', stagione.id),
     ])
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
     ricorrenze = ric.data ?? []
+    ricorrenzePartite = ricPar.data ?? []
   }
 
   const [gatingCfg, abbAttivo] = await Promise.all([
@@ -38,23 +41,24 @@ export default async function RicorrenzePage() {
     <>
       <div className="topbar">
         <div className="eyebrow">Stagione {stagione?.nome ?? '—'}</div>
-        <h1>Ricorrenze allenamenti</h1>
+        <h1>Ricorrenze</h1>
       </div>
       <div className="content">
         <Guida titolo="Come funzionano le ricorrenze">
           <p>
-            Imposta per ogni categoria il giorno e l&apos;orario fisso di allenamento settimanale.
-            Quando hai configurato tutti i giorni, clicca &ldquo;Genera allenamenti stagione&rdquo; per creare
-            automaticamente tutte le date nel calendario. Le date già presenti non vengono duplicate:
-            puoi rigenerare senza problemi dopo modifiche. Ricorda di impostare prima le date di inizio
-            e fine stagione in Stagioni.
+            <strong>Allenamenti</strong>: imposta per ogni categoria il giorno e l&apos;orario fisso di
+            allenamento settimanale, poi genera automaticamente tutte le date nel calendario. Le date già
+            presenti non vengono duplicate: puoi rigenerare senza problemi dopo modifiche.
           </p>
           <p style={{ marginTop: 10 }}>
-            Per ogni categoria puoi aggiungere più ricorrenze (es. martedì + giovedì), modificare
-            giorno e orario in qualsiasi momento, oppure eliminare una singola ricorrenza con il
-            pulsante <strong>Elimina</strong> sulla riga corrispondente. Le ricorrenze si riferiscono
-            solo alla pianificazione futura: eliminare una ricorrenza non cancella gli allenamenti già
-            generati nel calendario.
+            <strong>Partite</strong>: due modi per compilare il calendario partite. Il{' '}
+            <strong>Metodo 1</strong> genera partite vuote (solo data e categoria) in un giorno fisso della
+            settimana, utile quando conosci solo il giorno di gioco e vuoi velocizzare l&apos;inserimento —
+            avversario e casa/trasferta li aggiungi dopo aprendo la partita. Il <strong>Metodo 2</strong>{' '}
+            importa un calendario ufficiale già completo da un file Excel: scarica il template dalla
+            sezione, compilalo con date, avversari e casa/trasferta di andata, poi caricalo selezionando la
+            categoria — il programma crea automaticamente sia le partite di andata che quelle di ritorno
+            (invertendo casa/trasferta).
           </p>
           <p style={{ marginTop: 10 }}>
             Nella sezione <strong>🗑 Eliminazione massiva</strong> in fondo alla pagina puoi cancellare
@@ -66,7 +70,7 @@ export default async function RicorrenzePage() {
         </Guida>
         {stagione
           ? (canRicorrenze
-            ? <RicorrenzeManager stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} />
+            ? <RicorrenzeTabs stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} ricorrenzePartite={ricorrenzePartite} />
             : <PaywallBanner chiave="ricorrenze_genera" label="Generazione automatica ricorrenze" />)
           : <div className="empty">Nessuna stagione attiva.</div>}
       </div>

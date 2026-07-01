@@ -20,7 +20,7 @@ function RigaPartita({ p, compact = false }) {
       <span className="pr-data">{fmtData(p.data)}</span>
       <span className="pr-cat">{p.squadra_nome}</span>
       <span className="pr-match">
-        {p.casa ? '🏠' : '✈'} {p.avversario || '—'}
+        {p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'} {p.avversario || '—'}
         {!compact && p.tipo !== 'campionato' && (
           <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--ink-soft)', background: 'var(--carta)', borderRadius: 4, padding: '1px 5px' }}>
             {TIPO_LABEL[p.tipo] ?? p.tipo}

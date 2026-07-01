@@ -23,6 +23,8 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
   const [f, setF] = useState({
     data: allenamento?.data ?? defaultData ?? '',
     squadra_id: allenamento?.squadra_id ?? (categorie[0]?.id ?? ''),
+    ora_inizio: allenamento?.ora_inizio?.slice(0, 5) ?? '18:00',
+    ora_fine: allenamento?.ora_fine?.slice(0, 5) ?? '',
     accorpata_con: allenamento?.accorpata_con ?? '',
     obiettivi: allenamento?.obiettivi ?? '',
     consuntivo: allenamento?.consuntivo ?? '',
@@ -43,6 +45,8 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
     const payload = {
       data: f.data,
       squadra_id: f.squadra_id,
+      ora_inizio: f.ora_inizio || '18:00',
+      ora_fine: f.ora_fine || null,
       accorpata_con: f.accorpata_con || null,
       obiettivi: f.obiettivi || null,
       consuntivo: f.consuntivo || null,
@@ -86,6 +90,10 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
           <select value={f.squadra_id} onChange={upd('squadra_id')} disabled={isEdit} required>
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></div>
+        <div className="field"><label>Ora inizio</label>
+          <input type="time" value={f.ora_inizio} onChange={upd('ora_inizio')} /></div>
+        <div className="field"><label>Ora fine</label>
+          <input type="time" value={f.ora_fine} onChange={upd('ora_fine')} /></div>
         <div className="field">
           <label>Accorpata con (opzionale)</label>
           <select value={f.accorpata_con} onChange={upd('accorpata_con')}>

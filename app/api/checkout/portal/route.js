@@ -13,7 +13,7 @@ export async function POST(request) {
     if (!abb?.stripe_customer_id) return NextResponse.json({ error: 'Nessun abbonamento trovato' }, { status: 404 })
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-    const origin = request.headers.get('origin') ?? 'https://gkt2026.vercel.app'
+    const origin = request.headers.get('origin') ?? 'https://www.gkseason.it'
     const session = await stripe.billingPortal.sessions.create({
       customer: abb.stripe_customer_id,
       return_url: `${origin}/abbonati`,

@@ -32,7 +32,7 @@ export async function POST(request) {
     const importoCent = Math.round(parseFloat(String(importoStr).replace(',', '.')) * 100)
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-    const origin = request.headers.get('origin') ?? 'https://gkt2026.vercel.app'
+    const origin = request.headers.get('origin') ?? 'https://www.gkseason.it'
 
     // Customer Stripe
     let customerId

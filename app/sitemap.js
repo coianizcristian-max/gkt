@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 
 export default async function sitemap() {
-  const baseUrl = 'https://gkt2026.vercel.app'
+  const baseUrl = 'https://www.gkseason.it'
 
   const staticPages = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },

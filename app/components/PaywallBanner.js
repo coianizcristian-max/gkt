@@ -80,7 +80,7 @@ const DEMO_DATA = {
           <div style={{fontSize:12,color:'#4a5b68',marginBottom:8}}>Esempio link invito</div>
           <div style={{display:'flex',gap:8,alignItems:'center'}}>
             <div style={{flex:1,background:'#fff',border:'1px solid #e2e6e1',borderRadius:6,padding:'8px 10px',fontSize:11,fontFamily:'monospace',color:'#4a5b68',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-              gkt2026.vercel.app/registrati?invito=a1b2c3d4...
+              www.gkseason.it/registrati?invito=a1b2c3d4...
             </div>
             <div style={{padding:'8px 12px',background:'#0a7ec2',color:'#fff',borderRadius:6,fontSize:12,fontWeight:700,flexShrink:0}}>Copia</div>
           </div>

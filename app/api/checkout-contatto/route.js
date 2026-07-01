@@ -18,7 +18,7 @@ export async function POST(request) {
     const importoCent = Math.round(importoEur * 100)
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-    const origin = request.headers.get('origin') ?? 'https://gkt2026.vercel.app'
+    const origin = request.headers.get('origin') ?? 'https://www.gkseason.it'
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

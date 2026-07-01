@@ -154,8 +154,6 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
         </button>
       </div>
       {gen && gen !== 'working' && <p className="sub-intro" style={{ marginTop: 8 }}>{gen}</p>}
-
-      <EliminazioneRapida stagione={stagione} categorie={categorie} />
     </div>
   )
 }
@@ -243,7 +241,7 @@ function RicorrenzaRiga({ ricorrenza, categorie, stagione, onChanged }) {
   )
 }
 
-function EliminazioneRapida({ stagione, categorie }) {
+export function EliminazioneRapida({ stagione, categorie }) {
   const router = useRouter()
   const [tipo,        setTipo]        = useState('allenamenti')
   const [dal,         setDal]         = useState('')

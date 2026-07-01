@@ -24,7 +24,7 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
     let error
     if (on) {
       ;({ error } = await supabase.from('stagione_categorie')
-        .insert({ stagione_id: stagioneId, squadra_id: squadraId }))
+        .upsert({ stagione_id: stagioneId, squadra_id: squadraId }, { onConflict: 'stagione_id,squadra_id', ignoreDuplicates: true }))
     } else {
       ;({ error } = await supabase.from('stagione_categorie')
         .delete().eq('stagione_id', stagioneId).eq('squadra_id', squadraId))
@@ -111,6 +111,13 @@ function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown,
   const [nome, setNome] = useState(categoria.nome)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
+  const [toggleBusy, setToggleBusy] = useState(false)
+
+  async function handleToggle(e) {
+    setToggleBusy(true)
+    await onToggle(categoria.id, e.target.checked)
+    setToggleBusy(false)
+  }
 
   async function salva() {
     setBusy(true)
@@ -155,7 +162,7 @@ function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown,
       </span>
       <input className="lista-nome" value={nome} onChange={(e) => { setNome(e.target.value); setDone(false) }} />
       <label className="lista-attiva">
-        <input type="checkbox" checked={attiva} onChange={(e) => onToggle(categoria.id, e.target.checked)} />
+        <input type="checkbox" checked={attiva} disabled={toggleBusy} onChange={handleToggle} />
         Attiva in stagione
       </label>
       <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '✓' : 'Salva'}</button>

@@ -41,7 +41,7 @@ export default async function DashboardPage() {
   if (stagione) {
     const [allRows, parRows, couponRow] = await Promise.all([
       supabase.from('allenamenti')
-        .select('id, data, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
+        .select('id, data, ora_inizio, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id).order('data'),
       supabase.from('partite')
         .select('id, data, avversario, casa, tipo, squadre(nome)')
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
 
         {/* Widget principale: cosa devo fare oggi */}
         {totDaValutare > 0 && (
-          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--rosso)' }}>
+          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--rosso)', maxWidth: 'none' }}>
             <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--rosso)' }}>
               ⚠ {totDaValutare} {totDaValutare === 1 ? 'cosa da valutare' : 'cose da valutare'}
             </h3>
@@ -203,13 +203,13 @@ export default async function DashboardPage() {
         )}
 
         {totDaValutare === 0 && (
-          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--campo)' }}>
+          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--campo)', maxWidth: 'none' }}>
             <p style={{ margin: 0, color: 'var(--campo)', fontWeight: 600 }}>✓ Tutto valutato, sei in pari!</p>
           </div>
         )}
 
         {portieriAttenzione.length > 0 && (
-          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--giallo)' }}>
+          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--giallo)', maxWidth: 'none' }}>
             <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--giallo)' }}>
               👁 {portieriAttenzione.length} {portieriAttenzione.length === 1 ? 'portiere da attenzionare' : 'portieri da attenzionare'}
             </h3>
@@ -232,13 +232,14 @@ export default async function DashboardPage() {
 
         <div className="dash-grid">
           {/* Prossimo allenamento */}
-          <div className="scheda">
+          <div className="scheda" style={{ maxWidth: 'none' }}>
             <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>📅 Prossimo allenamento</h3>
             {prossimoAllenamento ? (
               <Link href={`/calendario/${prossimoAllenamento.id}`} className="link-inline" style={{ display: 'block' }}>
                 <div style={{ fontWeight: 700, fontSize: 16 }}>{prossimoAllenamento.squadra?.nome}</div>
                 <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
                   {prossimoAllenamento.data === oggiStr ? 'Oggi' : fmtData(prossimoAllenamento.data)}
+                  {prossimoAllenamento.ora_inizio ? ` · ${fmtOra(prossimoAllenamento.ora_inizio)}` : ''}
                 </div>
               </Link>
             ) : (
@@ -247,13 +248,13 @@ export default async function DashboardPage() {
           </div>
 
           {/* Partite imminenti */}
-          <div className="scheda">
+          <div className="scheda" style={{ maxWidth: 'none' }}>
             <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>⚽ Partite nei prossimi 7 giorni</h3>
             {partiteImminenti.length === 0 ? (
               <p className="sub-intro" style={{ margin: 0 }}>Nessuna partita in programma.</p>
             ) : partiteImminenti.map((p) => (
               <Link key={p.id} href={`/partite/${p.id}`} className="dv-item" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>{p.casa ? '🏠' : '✈'} {p.avversario || '—'}</span>
+                <span>{p.squadre?.nome ? `${p.squadre.nome} · ` : ''}{p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'} {p.avversario || '—'}</span>
                 <span className="dv-data">{fmtData(p.data)}</span>
               </Link>
             ))}
@@ -261,7 +262,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Link rapidi */}
-        <div className="scheda" style={{ marginTop: 16 }}>
+        <div className="scheda" style={{ marginTop: 16, maxWidth: 'none' }}>
           <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>Accesso rapido</h3>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Link href="/portieri" className="btn-ghost" style={{ fontSize: 13 }}>👥 Portieri</Link>

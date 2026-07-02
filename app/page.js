@@ -43,7 +43,7 @@ export default async function Home() {
         </div>
         <nav>
           {loggedIn
-            ? <Link href="/portieri" className="link-accedi">La mia area</Link>
+            ? <Link href="/dashboard" className="link-accedi">La mia area</Link>
             : <Link href="/login" className="link-accedi">Accedi</Link>}
         </nav>
       </header>
@@ -78,7 +78,7 @@ export default async function Home() {
                   {h.titolo && <h1 className="hero-title">{h.titolo}</h1>}
                   {h.testo && <p className="hero-lead">{renderTesto(h.testo)}</p>}
                   {loggedIn ? (
-                    <Link href="/portieri" className="cta-card">
+                    <Link href="/dashboard" className="cta-card">
                       <span className="cta-text">
                         <span className="cta-eyebrow">Area gestione</span>
                         <strong>Entra nella tua area operativa</strong>

@@ -8,9 +8,9 @@ const STEP_SOCIETA   = 2
 const STEP_DATE      = 3
 const STEP_CATEGORIE = 4
 
-// redirectAfter: dove mandare dopo la creazione (default /portieri)
+// redirectAfter: dove mandare dopo la creazione (default /dashboard)
 // isNuova: true se è una stagione aggiuntiva (non primo accesso)
-export default function SetupWizard({ anniDisponibili, ownerId, redirectAfter = '/portieri', isNuova = false }) {
+export default function SetupWizard({ anniDisponibili, ownerId, redirectAfter = '/dashboard', isNuova = false }) {
   const router = useRouter()
   const [step, setStep]         = useState(STEP_ANNO)
   const [anno, setAnno]         = useState(null)

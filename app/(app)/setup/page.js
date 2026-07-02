@@ -16,7 +16,7 @@ export default async function SetupPage() {
 
   // Se ha già una stagione attiva non ha bisogno del wizard primo accesso
   const { stagione } = await getStagioneAttiva(supabase, user.id)
-  if (stagione) redirect('/portieri')
+  if (stagione) redirect('/dashboard')
 
   const ownerId = await getOwnerId(supabase, user.id)
 

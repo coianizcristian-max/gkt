@@ -87,7 +87,7 @@ export default function RegistratiClient({ token, datiInvito }) {
     if (data.session) {
       // Sessione immediata (email confirm disabilitata): vai all'app
       trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: false })
-      router.push('/portieri')
+      router.push('/dashboard')
       router.refresh()
     } else {
       // Email di conferma richiesta

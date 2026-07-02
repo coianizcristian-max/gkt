@@ -24,6 +24,7 @@ export default async function InvitiPage() {
     hasAbbonamento(supabase, user.id),
   ])
   const canInviti = isUnlocked('inviti_creazione', gatingCfg, abbAttivo)
+  const canInvitiStaff = isUnlocked('inviti_staff', gatingCfg, abbAttivo)
 
   const { stagione } = await getStagioneAttiva(supabase, user.id)
   let inviti = []
@@ -66,7 +67,7 @@ export default async function InvitiPage() {
         {!canInviti
           ? <PaywallBanner chiave="inviti_creazione" label="Creazione link di invito" />
           : stagione
-            ? <InvitiManager inviti={inviti} portieri={portieri} stagioneId={stagione.id} />
+            ? <InvitiManager inviti={inviti} portieri={portieri} stagioneId={stagione.id} canStaff={canInvitiStaff} />
             : <div className="empty">Nessuna stagione attiva.</div>}
       </div>
     </>

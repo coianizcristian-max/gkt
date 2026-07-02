@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Guida from '@/app/components/Guida'
 import EserciziManager from '@/app/components/EserciziManager'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getOwnerId } from '@/lib/tenant'
 
 function getAdmin() {
@@ -17,6 +19,12 @@ export default async function EserciziPage() {
   if (!user) redirect('/login')
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
+
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user.id),
+  ])
+  const canLibreria = isUnlocked('esercizi_libreria', gatingCfg, abbAttivo)
 
   const ownerId = await getOwnerId(supabase, user.id)
 
@@ -102,14 +110,16 @@ export default async function EserciziPage() {
             Gli esercizi archiviati non appaiono nell&apos;elenco principale ma restano collegati agli allenamenti dove erano stati inseriti.
           </p>
         </Guida>
-        <EserciziManager
-          esercizi={esercizi ?? []}
-          eserciziPubblici={eserciziPubbliciPreferiti}
-          eserciziResponsabile={eserciziResponsabile}
-          tipologie={tipologie}
-          attributiDisponibili={attributi ?? []}
-          allenatoreId={ownerId}
-        />
+        {canLibreria
+          ? <EserciziManager
+              esercizi={esercizi ?? []}
+              eserciziPubblici={eserciziPubbliciPreferiti}
+              eserciziResponsabile={eserciziResponsabile}
+              tipologie={tipologie}
+              attributiDisponibili={attributi ?? []}
+              allenatoreId={ownerId}
+            />
+          : <PaywallBanner chiave="esercizi_libreria" label="Libreria esercizi personale" />}
       </div>
     </>
   )

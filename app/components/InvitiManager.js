@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MODULI_PERMESSI, LIVELLI, permessiDiDefault } from '@/lib/permessi'
+import PaywallBanner from '@/app/components/PaywallBanner'
 
 // Modal per copiare il link su mobile
 function LinkModal({ url, onClose }) {
@@ -49,7 +50,7 @@ function LinkModal({ url, onClose }) {
   )
 }
 
-export default function InvitiManager({ inviti: invitiIniziali, portieri, stagioneId }) {
+export default function InvitiManager({ inviti: invitiIniziali, portieri, stagioneId, canStaff = true }) {
   const router = useRouter()
   const [inviti, setInviti] = useState(invitiIniziali)
   const [tipo, setTipo] = useState('')
@@ -87,6 +88,13 @@ export default function InvitiManager({ inviti: invitiIniziali, portieri, stagio
       if (tipo === 'portiere') {
         if (!portiereId) { setError('Seleziona un portiere.'); setBusy(false); return }
         payload.portiere_id = portiereId
+      }
+
+      // Staff/preparatore: funzionalità a pagamento
+      if ((tipo === 'collaboratore' || tipo === 'preparatore') && !canStaff) {
+        setError('Invito staff/preparatore non disponibile con il tuo piano.')
+        setBusy(false)
+        return
       }
 
       // Campi extra per tipo collaboratore
@@ -161,10 +169,14 @@ export default function InvitiManager({ inviti: invitiIniziali, portieri, stagio
               style={{ border: tipo ? '' : '1px solid var(--azzurro)', fontWeight: tipo ? 'normal' : '600' }}>
               <option value="" disabled>— Seleziona tipo —</option>
               <option value="portiere">Portiere</option>
-              <option value="collaboratore">Staff / Collaboratore</option>
-              <option value="preparatore">Preparatore (supervisione)</option>
+              <option value="collaboratore">{canStaff ? 'Staff / Collaboratore' : '🔒 Staff / Collaboratore — a pagamento'}</option>
+              <option value="preparatore">{canStaff ? 'Preparatore (supervisione)' : '🔒 Preparatore (supervisione) — a pagamento'}</option>
             </select>
           </div>
+
+          {!canStaff && (tipo === 'collaboratore' || tipo === 'preparatore') && (
+            <PaywallBanner chiave="inviti_staff" label="Invito staff/preparatore" />
+          )}
 
           {/* Portiere: selezione portiere */}
           {tipo === 'portiere' && (
@@ -214,7 +226,7 @@ export default function InvitiManager({ inviti: invitiIniziali, portieri, stagio
             <button
               className="btn"
               onClick={crea}
-              disabled={busy || !tipo || (tipo === 'portiere' && !portiereId)}
+              disabled={busy || !tipo || (tipo === 'portiere' && !portiereId) || ((tipo === 'collaboratore' || tipo === 'preparatore') && !canStaff)}
               type="button"
             >
               {busy ? 'Creazione...' : 'Crea invito e copia link'}

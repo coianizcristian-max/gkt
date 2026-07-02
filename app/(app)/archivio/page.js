@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ArchivioSelect from '@/app/components/ArchivioSelect'
 import ExportButtons from '@/app/components/ExportButtons'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getOwnerId } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
@@ -18,6 +20,11 @@ export default async function ArchivioPage({ searchParams }) {
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/dashboard')
 
   const ownerId = await getOwnerId(supabase, user.id)
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user.id),
+  ])
+  const canExport = isUnlocked('export_dati', gatingCfg, abbAttivo)
   const { data: stagioni } = await supabase.from('stagioni')
     .select('id, nome, attiva').eq('owner_id', ownerId).order('data_inizio', { ascending: false, nullsFirst: false })
 
@@ -93,7 +100,9 @@ export default async function ArchivioPage({ searchParams }) {
             utile per consegnarli ai portieri o alla società a fine anno.
           </p>
         </Guida>
-        <ExportButtons stagioneId={stagione.id} />
+        {canExport
+          ? <ExportButtons stagioneId={stagione.id} />
+          : <PaywallBanner chiave="export_dati" label="Export dati (CSV)" />}
         {!stagione.attiva && <p className="sub-intro">Stai consultando una stagione archiviata: i dati sono di sola lettura.</p>}
 
         <h2 className="sezione-titolo">Statistiche</h2>

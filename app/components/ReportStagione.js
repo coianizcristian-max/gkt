@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-export default function ReportStagione({ portiereId, stagioneId, soloPortiere, commentoIniziale }) {
+export default function ReportStagione({ portiereId, stagioneId, soloPortiere, commentoIniziale, canReport = true }) {
   const [commentoAllenatore, setCommentoAllenatore] = useState(commentoIniziale.allenatore ?? '')
   const [commentoPortiere, setCommentoPortiere] = useState(commentoIniziale.portiere ?? '')
   const [busy, setBusy] = useState(false)
@@ -49,9 +49,13 @@ export default function ReportStagione({ portiereId, stagioneId, soloPortiere, c
         <button className="btn-ghost" onClick={salvaCommento} disabled={busy} type="button">
           {busy ? 'Salvataggio…' : saved ? 'Salvato ✓' : 'Salva commento'}
         </button>
-        <a className="btn" href={`/api/report-stagione?portiere_id=${portiereId}`} target="_blank" rel="noopener noreferrer">
-          ⬇ Scarica report PDF
-        </a>
+        {canReport
+          ? <a className="btn" href={`/api/report-stagione?portiere_id=${portiereId}`} target="_blank" rel="noopener noreferrer">
+              ⬇ Scarica report PDF
+            </a>
+          : <a className="btn-ghost" href="/abbonati" style={{ color: 'var(--ink-soft)' }}>
+              🔒 Report PDF — abbonati per sbloccare
+            </a>}
       </div>
     </div>
   )

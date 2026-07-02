@@ -26,7 +26,7 @@ export default function LoginPage() {
       return
     }
     trackEvento('login_riuscito')
-    router.push('/portieri')
+    router.push('/dashboard')
     router.refresh()
   }
 

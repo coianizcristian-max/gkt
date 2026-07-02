@@ -13,7 +13,7 @@ export default async function ComeIniziarePage() {
 
   const passiAllenatore = [
     { t: 'Supervisore → Stagioni', d: 'Controlla che ci sia una stagione attiva. Imposta nome, date di inizio e fine, nome della società e logo.' },
-    { t: 'Supervisore → Categorie', d: 'Attiva e ordina le categorie (squadre) per la stagione corrente. Senza categorie attive non puoi iscrivere portieri.' },
+    { t: 'Le mie categorie', d: 'Attiva e ordina le categorie (squadre) per la stagione corrente. Senza categorie attive non puoi iscrivere portieri.' },
     { t: 'Supervisore → Elenchi', d: 'Personalizza i valori dei menu a tendina (tipologie esercizi, piede preferito, provenienza…).' },
     { t: 'Parametri di valutazione', d: 'Scegli quali parametri vuoi usare nelle valutazioni degli allenamenti (tecnica, uscite, gioco coi piedi…).' },
     { t: 'Portieri', d: 'Aggiungi i portieri con dati anagrafici completi e iscrivili alla categoria. Puoi impostare obiettivi, tag e consultare il percorso di crescita da ogni scheda portiere.' },

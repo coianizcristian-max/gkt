@@ -109,6 +109,7 @@ export default async function AppLayout({ children }) {
     'esercizi':      (isStaff && vedeAllenamenti) ? { href: '/esercizi', label: 'Esercizi' } : null,
     'profilo':       isStaff ? { href: '/profilo', label: 'Profilo allenatore' } : null,
     'stagioni':      isStaff ? { href: '/stagioni', label: 'Le mie stagioni' } : null,
+    'categorie':     isStaff ? { href: '/categorie', label: 'Le mie categorie' } : null,
     'inviti':        isStaff ? { href: '/inviti', label: 'Inviti' } : null,
     'i-miei-preparatori': (ruoloUtente === 'allenatore' && haPreparatori) ? { href: '/i-miei-preparatori', label: '🔗 I miei preparatori' } : null,
     'contatti':      isStaff ? { href: '/contatti', label: 'Contatti ricevuti' } : null,

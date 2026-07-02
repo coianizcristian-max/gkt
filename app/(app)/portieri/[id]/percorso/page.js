@@ -29,6 +29,7 @@ export default async function PercorsoCrescitaPage({ params }) {
   ])
   // Riusa lo stesso gate delle statistiche/obiettivi: è una vista derivata da entrambi
   const canVedere = isUnlocked('statistiche_dettaglio', gatingCfg, abbAttivo) && isUnlocked('obiettivi_portieri', gatingCfg, abbAttivo)
+  const canReport = isUnlocked('report_pdf_stagione', gatingCfg, abbAttivo)
 
   const navLinks = (
     <div className="sub-nav">
@@ -127,6 +128,7 @@ export default async function PercorsoCrescitaPage({ params }) {
             stagioneId={stagione.id}
             soloPortiere={soloPortiere}
             commentoIniziale={{ allenatore: commentoRow?.commento_allenatore, portiere: commentoRow?.commento_portiere }}
+            canReport={canReport}
           />
         )}
       </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 function toCSV(rows, cols) {
   const header = cols.map((c) => `"${c.label}"`).join(',')
@@ -21,6 +22,14 @@ export async function GET(request) {
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (profilo?.ruolo !== 'allenatore' && profilo?.ruolo !== 'staff') {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+  }
+
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user.id),
+  ])
+  if (!isUnlocked('export_dati', gatingCfg, abbAttivo)) {
+    return NextResponse.json({ error: 'Funzionalità non disponibile con il tuo piano.' }, { status: 402 })
   }
 
   const url = new URL(request.url)

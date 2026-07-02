@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { renderToBuffer, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'Helvetica', fontSize: 10, color: '#14202b' },
@@ -112,6 +113,14 @@ export async function GET(request) {
   const { data: profiloViewer } = await supabase.from('profili').select('ruolo, portiere_id').eq('id', user.id).maybeSingle()
   if (profiloViewer?.ruolo === 'portiere' && profiloViewer.portiere_id !== portiereId) {
     return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+  }
+
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user.id),
+  ])
+  if (!isUnlocked('report_pdf_stagione', gatingCfg, abbAttivo)) {
+    return NextResponse.json({ error: 'Funzionalità non disponibile con il tuo piano.' }, { status: 402 })
   }
 
   const { data: portiere } = await supabase.from('portieri').select('id, nome, cognome').eq('id', portiereId).maybeSingle()

@@ -111,7 +111,7 @@ export default async function PortieriPage() {
               ok: haCategorie,
               titolo: 'Almeno una categoria',
               desc: 'Aggiungi le categorie (Under 15, Under 17…) alla stagione.',
-              href: '/supervisore/categorie',
+              href: '/categorie',
             },
             {
               ok: haPortieri,

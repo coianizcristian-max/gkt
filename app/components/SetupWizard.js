@@ -197,7 +197,7 @@ export default function SetupWizard({ anniDisponibili, ownerId, redirectAfter = 
           <h2>Categorie della stagione</h2>
           <p className="sub-intro">
             Aggiungi le squadre/categorie che alleni (es. Under 15, Under 17, Prima Squadra).
-            Puoi aggiungerne altre in qualsiasi momento da Supervisore → Categorie.
+            Puoi aggiungerne altre in qualsiasi momento da Le mie categorie.
           </p>
         </div>
 

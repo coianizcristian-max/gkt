@@ -12,7 +12,7 @@ export default async function ComeIniziarePage() {
   const isPortiere = profilo?.ruolo === 'portiere'
 
   const passiAllenatore = [
-    { t: 'Supervisore → Stagioni', d: 'Controlla che ci sia una stagione attiva. Imposta nome, date di inizio e fine, nome della società e logo.' },
+    { t: 'Le mie stagioni', d: 'Controlla che ci sia una stagione attiva. Imposta nome, date di inizio e fine, nome della società e logo.' },
     { t: 'Le mie categorie', d: 'Attiva e ordina le categorie (squadre) per la stagione corrente. Senza categorie attive non puoi iscrivere portieri.' },
     { t: 'Supervisore → Elenchi', d: 'Personalizza i valori dei menu a tendina (tipologie esercizi, piede preferito, provenienza…).' },
     { t: 'Parametri di valutazione', d: 'Scegli quali parametri vuoi usare nelle valutazioni degli allenamenti (tecnica, uscite, gioco coi piedi…).' },

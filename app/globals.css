@@ -473,6 +473,26 @@ a { color: inherit; text-decoration: none; }
 .btn-azione:hover { background: var(--azzurro-scuro); }
 .link-inline { color: var(--azzurro); font-weight: 600; }
 
+/* ===== Elimina allenamento (icona cestino in topbar) ===== */
+.btn-icon-danger {
+  flex-shrink: 0; width: 40px; height: 40px; display: grid; place-items: center;
+  border-radius: 999px; color: var(--ink-soft); background: transparent;
+  border: 1px solid var(--linea); transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.btn-icon-danger:hover { color: var(--rosso); border-color: rgba(192,57,43,0.35); background: rgba(192,57,43,0.06); }
+.elimina-conferma {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end;
+}
+.elimina-conferma-testo { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
+.elimina-conferma-errore { font-size: 13px; color: var(--rosso); width: 100%; text-align: right; }
+.btn-danger-solid {
+  flex-shrink: 0; padding: 9px 16px; font-size: 14px; font-weight: 600;
+  color: var(--bianco); background: var(--rosso); border-radius: 999px;
+  transition: background 0.12s; border: none;
+}
+.btn-danger-solid:hover { background: #a53225; }
+.btn-danger-solid:disabled { opacity: 0.6; cursor: default; }
+
 /* ===== Card portiere: avatar + link ===== */
 .card-portiere { display: block; }
 .card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }

@@ -190,9 +190,12 @@ function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle
           Gli attributi mostrati sotto ogni template sono calcolati automaticamente dagli esercizi che
           contiene: aggiungili o rimuovili dal template (aprendolo) per cambiarli.
         </p>
-        <div className="form-actions" style={{ marginTop: 12 }}>
-          <button className="btn-ghost" type="button" onClick={onEditToggle}>Annulla</button>
-          <button className="btn" type="button" onClick={salva} disabled={busy}>{busy ? 'Salvataggio...' : 'Salva'}</button>
+        <div className="form-actions" style={{ marginTop: 12, justifyContent: 'space-between' }}>
+          <Link href={`/template-allenamenti/${t.id}`} className="btn-ghost">✏️ Modifica esercizi</Link>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-ghost" type="button" onClick={onEditToggle}>Annulla</button>
+            <button className="btn" type="button" onClick={salva} disabled={busy}>{busy ? 'Salvataggio...' : 'Salva'}</button>
+          </div>
         </div>
       </div>
     )

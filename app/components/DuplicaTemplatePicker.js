@@ -21,19 +21,20 @@ export default function DuplicaTemplatePicker({ onConferma, onAnnulla }) {
       // Solo template con almeno un esercizio collegato (join "!inner")
       const { data, error } = await supabase
         .from('template_allenamento')
-        .select('id, nome, descrizione, template_allenamento_esercizi!inner(id, esercizi(titolo))')
+        .select('id, nome, descrizione, template_allenamento_esercizi!inner(id, esercizi(titolo, durata_minuti, recupero_minuti))')
         .order('nome')
       if (!error && data) {
         const risultato = data.map((r) => {
-          const titoli = (r.template_allenamento_esercizi ?? [])
-            .map((x) => x.esercizi?.titolo)
-            .filter(Boolean)
+          const righe = r.template_allenamento_esercizi ?? []
+          const titoli = righe.map((x) => x.esercizi?.titolo).filter(Boolean)
+          const minutiTotali = righe.reduce((s, x) => s + (parseFloat(x.esercizi?.durata_minuti) || 0) + (parseFloat(x.esercizi?.recupero_minuti) || 0), 0)
           return {
             id: r.id,
             nome: r.nome,
             descrizione: r.descrizione,
             numEsercizi: titoli.length,
             eserciziTitoli: titoli,
+            minutiTotali,
           }
         })
         setLista(risultato)
@@ -105,7 +106,14 @@ export default function DuplicaTemplatePicker({ onConferma, onAnnulla }) {
               >
                 <div style={{ fontWeight: 700, fontSize: 14 }}>{t.nome}</div>
                 {t.descrizione && <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>{t.descrizione}</div>}
-                <div style={{ fontSize: 12, color: 'var(--azzurro)', marginTop: 3 }}>{t.numEsercizi} esercizi</div>
+                <div style={{ fontSize: 12, color: 'var(--azzurro)', marginTop: 3, display: 'flex', gap: 8 }}>
+                  <span>{t.numEsercizi} esercizi</span>
+                  {t.minutiTotali > 0 && (
+                    <span style={{ color: 'var(--ink-soft)' }}>
+                      ⏱ {t.minutiTotali >= 60 ? `${Math.floor(t.minutiTotali / 60)}h ${Math.round(t.minutiTotali % 60)}min` : `${Math.round(t.minutiTotali)} min`}
+                    </span>
+                  )}
+                </div>
               </button>
             ))}
           </div>

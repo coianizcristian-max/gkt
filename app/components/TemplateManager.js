@@ -159,12 +159,7 @@ function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle
   const router = useRouter()
   const [nome, setNome] = useState(t.nome)
   const [descrizione, setDescrizione] = useState(t.descrizione ?? '')
-  const [attrSel, setAttrSel] = useState(new Set(t.attributoIds ?? []))
   const [busy, setBusy] = useState(false)
-
-  function toggleAttr(id) {
-    setAttrSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
-  }
 
   async function salva() {
     setBusy(true)
@@ -173,13 +168,6 @@ function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle
       nome: nome.trim() || t.nome,
       descrizione: descrizione.trim() || null,
     }).eq('id', t.id)
-
-    await supabase.from('template_allenamento_attributi').delete().eq('template_id', t.id)
-    if (attrSel.size > 0) {
-      await supabase.from('template_allenamento_attributi').insert(
-        [...attrSel].map((attributo_id) => ({ template_id: t.id, attributo_id }))
-      )
-    }
     setBusy(false)
     onEditToggle()
     router.refresh()
@@ -198,24 +186,10 @@ function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle
             <textarea rows="2" value={descrizione} onChange={(e) => setDescrizione(e.target.value)} />
           </div>
         </div>
-        {attributiDisponibili.length > 0 && (
-          <div style={{ marginTop: 4 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600 }}>Attributi (per la ricerca)</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-              {attributiDisponibili.map((a) => (
-                <button key={a.id} type="button" onClick={() => toggleAttr(a.id)} style={{
-                  padding: '3px 10px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
-                  border: attrSel.has(a.id) ? '2px solid var(--azzurro)' : '1.5px solid var(--linea)',
-                  background: attrSel.has(a.id) ? 'rgba(10,126,194,0.1)' : 'var(--carta)',
-                  color: attrSel.has(a.id) ? 'var(--azzurro)' : 'var(--ink-soft)',
-                  fontWeight: attrSel.has(a.id) ? 700 : 400,
-                }}>
-                  {a.nome}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        <p className="sub-intro" style={{ marginTop: 4 }}>
+          Gli attributi mostrati sotto ogni template sono calcolati automaticamente dagli esercizi che
+          contiene: aggiungili o rimuovili dal template (aprendolo) per cambiarli.
+        </p>
         <div className="form-actions" style={{ marginTop: 12 }}>
           <button className="btn-ghost" type="button" onClick={onEditToggle}>Annulla</button>
           <button className="btn" type="button" onClick={salva} disabled={busy}>{busy ? 'Salvataggio...' : 'Salva'}</button>

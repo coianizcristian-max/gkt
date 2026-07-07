@@ -24,26 +24,19 @@ export default function DuplicaTemplatePicker({ onConferma, onAnnulla }) {
         .select('id, nome, descrizione, template_allenamento_esercizi!inner(id, esercizi(titolo))')
         .order('nome')
       if (!error && data) {
-        const visti = new Map()
-        for (const r of data) {
-          if (!visti.has(r.id)) {
-            visti.set(r.id, {
-              id: r.id,
-              nome: r.nome,
-              descrizione: r.descrizione,
-              numEsercizi: 0,
-              eserciziTitoli: [],
-            })
+        const risultato = data.map((r) => {
+          const titoli = (r.template_allenamento_esercizi ?? [])
+            .map((x) => x.esercizi?.titolo)
+            .filter(Boolean)
+          return {
+            id: r.id,
+            nome: r.nome,
+            descrizione: r.descrizione,
+            numEsercizi: titoli.length,
+            eserciziTitoli: titoli,
           }
-        }
-        // Ricostruisci conteggio/titoli corretti (la join !inner ripete righe per stesso template)
-        for (const r of data) {
-          const t = visti.get(r.id)
-          const tit = r.template_allenamento_esercizi?.esercizi?.titolo
-          if (tit && !t.eserciziTitoli.includes(tit)) t.eserciziTitoli.push(tit)
-        }
-        for (const t of visti.values()) t.numEsercizi = t.eserciziTitoli.length
-        setLista([...visti.values()])
+        })
+        setLista(risultato)
       }
       setLoading(false)
     }

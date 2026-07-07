@@ -210,8 +210,13 @@ function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle
       <Link href={`/template-allenamenti/${t.id}`} style={{ flex: 1, textDecoration: 'none', color: 'inherit' }}>
         <div style={{ fontWeight: 700 }}>{t.nome}</div>
         {t.descrizione && <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>{t.descrizione}</div>}
-        <div style={{ fontSize: 12, color: 'var(--azzurro)', marginTop: 4, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ fontSize: 12, color: 'var(--azzurro)', marginTop: 4, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <span>{t.numEsercizi} esercizi</span>
+          {t.minutiTotali > 0 && (
+            <span style={{ color: 'var(--ink-soft)' }}>
+              ⏱ {t.minutiTotali >= 60 ? `${Math.floor(t.minutiTotali / 60)}h ${Math.round(t.minutiTotali % 60)}min` : `${Math.round(t.minutiTotali)} min`}
+            </span>
+          )}
           {nomiAttr.map((n) => (
             <span key={n} style={{ background: 'rgba(46,158,91,0.12)', color: 'var(--campo)', padding: '1px 8px', borderRadius: 999 }}>{n}</span>
           ))}

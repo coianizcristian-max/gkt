@@ -38,12 +38,13 @@ export default async function TemplateAllenamentiPage() {
   try {
     const { data: righe } = await supabase
       .from('template_allenamento_esercizi')
-      .select('template_id, esercizi(titolo, esercizio_attributi(attributo_id))')
+      .select('template_id, esercizi(titolo, durata_minuti, recupero_minuti, esercizio_attributi(attributo_id))')
       .in('template_id', (templatesBase ?? []).map((t) => t.id))
     for (const r of righe ?? []) {
-      const d = (dettagliPerTemplate[r.template_id] ??= { titoli: [], attributoIds: new Set() })
+      const d = (dettagliPerTemplate[r.template_id] ??= { titoli: [], attributoIds: new Set(), minutiTotali: 0 })
       if (r.esercizi?.titolo) d.titoli.push(r.esercizi.titolo)
       for (const a of r.esercizi?.esercizio_attributi ?? []) d.attributoIds.add(a.attributo_id)
+      d.minutiTotali += (parseFloat(r.esercizi?.durata_minuti) || 0) + (parseFloat(r.esercizi?.recupero_minuti) || 0)
     }
   } catch (_) {
     // Migrazione esercizi/attributi non ancora presente o altro errore: si degrada senza rompere la lista.
@@ -58,6 +59,7 @@ export default async function TemplateAllenamentiPage() {
       numEsercizi: d?.titoli.length ?? 0,
       eserciziTitoli: d?.titoli ?? [],
       attributoIds: d ? [...d.attributoIds] : [],
+      minutiTotali: d?.minutiTotali ?? 0,
     }
   })
 

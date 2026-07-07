@@ -82,7 +82,7 @@ export default function TemplateManager({ templates, attributiDisponibili }) {
             </div>
           </div>
           <p className="sub-intro" style={{ marginTop: 0 }}>
-            Potrai assegnare gli attributi di ricerca dopo aver creato il template, dalla lista qui sotto.
+            Gli attributi per la ricerca vengono calcolati automaticamente dagli esercizi che aggiungerai al template.
           </p>
           <div className="form-actions">
             <button className="btn-ghost" type="button" onClick={() => setShowNuovo(false)}>Annulla</button>

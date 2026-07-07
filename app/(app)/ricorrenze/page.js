@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import Guida from '@/app/components/Guida'
 import PaywallBanner from '@/app/components/PaywallBanner'
@@ -46,6 +47,12 @@ export default async function RicorrenzePage() {
       <div className="content">
         <Guida titolo="Come funzionano le ricorrenze">
           <p>
+            <strong>Prima di tutto</strong>: le ricorrenze funzionano solo sulle categorie <strong>attive</strong> nella
+            stagione corrente. Se questa pagina ti sembra vuota, vai su{' '}
+            <Link href="/categorie" className="link-inline">Le mie categorie</Link> e assicurati di aver
+            spuntato &ldquo;Attiva in stagione&rdquo; per almeno una categoria.
+          </p>
+          <p style={{ marginTop: 10 }}>
             <strong>Allenamenti</strong>: imposta per ogni categoria il giorno e l&apos;orario fisso di
             allenamento settimanale, poi genera automaticamente tutte le date nel calendario. Le date già
             presenti non vengono duplicate: puoi rigenerare senza problemi dopo modifiche.
@@ -68,6 +75,16 @@ export default async function RicorrenzePage() {
             L&apos;operazione è irreversibile: viene sempre richiesta una conferma prima di procedere.
           </p>
         </Guida>
+        {stagione && categorie.length === 0 && (
+          <div className="avviso">
+            <span aria-hidden="true">⚠️</span>
+            <span>
+              Non hai ancora nessuna categoria attiva per la stagione <strong>{stagione.nome}</strong>, quindi
+              qui non vedrai nulla da generare. Vai su{' '}
+              <Link href="/categorie">Le mie categorie</Link> e attivane almeno una.
+            </span>
+          </div>
+        )}
         {stagione
           ? (canRicorrenze
             ? <RicorrenzeTabs stagione={stagione} categorie={categorie} ricorrenze={ricorrenze} ricorrenzePartite={ricorrenzePartite} />

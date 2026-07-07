@@ -107,6 +107,7 @@ export default async function AppLayout({ children }) {
     'partite':       (isPortiere || vedePartite) ? { href: '/partite', label: 'Partite' } : null,
     'statistiche':   (isPortiere || vedeStatistiche) ? { href: '/statistiche', label: 'Statistiche' } : null,
     'esercizi':      (isStaff && vedeAllenamenti) ? { href: '/esercizi', label: 'Esercizi' } : null,
+    'template-allenamenti': (isStaff && vedeAllenamenti) ? { href: '/template-allenamenti', label: 'Template allenamenti' } : null,
     'profilo':       isStaff ? { href: '/profilo', label: 'Profilo allenatore' } : null,
     'stagioni':      isStaff ? { href: '/stagioni', label: 'Le mie stagioni' } : null,
     'categorie':     isStaff ? { href: '/categorie', label: 'Le mie categorie' } : null,

@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import DuplicaAllenamentoPicker from '@/app/components/DuplicaAllenamentoPicker'
+import DuplicaTemplatePicker from '@/app/components/DuplicaTemplatePicker'
 
 export default function AllenamentoForm({ allenamento, categorie, stagioneId, defaultData }) {
   const router = useRouter()
   const isEdit = !!allenamento
   const inizioRef = useRef(null)
   const [showDuplica, setShowDuplica] = useState(false)
+  const [fonteDuplica, setFonteDuplica] = useState('allenamento') // 'allenamento' | 'template'
   const [eserciziDaDuplicare, setEserciziDaDuplicare] = useState(null) // array ordinato di esercizio_id, o null
 
   useEffect(() => {
@@ -116,9 +118,14 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
       {!isEdit && (
         <div style={{ marginTop: 14 }}>
           {!showDuplica && !eserciziDaDuplicare && (
-            <button type="button" className="btn-ghost" onClick={() => setShowDuplica(true)}>
-              📋 Duplica esercizi da un altro allenamento
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button type="button" className="btn-ghost" onClick={() => { setFonteDuplica('allenamento'); setShowDuplica(true) }}>
+                📋 Duplica esercizi da un altro allenamento
+              </button>
+              <button type="button" className="btn-ghost" onClick={() => { setFonteDuplica('template'); setShowDuplica(true) }}>
+                🗂 Duplica esercizi da un template
+              </button>
+            </div>
           )}
           {!showDuplica && eserciziDaDuplicare && (
             <div className="sub-intro" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -127,8 +134,14 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
               <button type="button" className="btn-mini" onClick={() => setEserciziDaDuplicare(null)}>Rimuovi</button>
             </div>
           )}
-          {showDuplica && (
+          {showDuplica && fonteDuplica === 'allenamento' && (
             <DuplicaAllenamentoPicker
+              onAnnulla={() => setShowDuplica(false)}
+              onConferma={(idsOrdinati) => { setEserciziDaDuplicare(idsOrdinati); setShowDuplica(false) }}
+            />
+          )}
+          {showDuplica && fonteDuplica === 'template' && (
+            <DuplicaTemplatePicker
               onAnnulla={() => setShowDuplica(false)}
               onConferma={(idsOrdinati) => { setEserciziDaDuplicare(idsOrdinati); setShowDuplica(false) }}
             />

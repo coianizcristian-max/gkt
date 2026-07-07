@@ -48,6 +48,7 @@ export default async function SupervisioneLayout({ children, params }) {
     { href: `${base}/partite`, label: 'Partite' },
     { href: `${base}/statistiche`, label: 'Statistiche' },
     { href: `${base}/esercizi`, label: 'Esercizi' },
+    { href: `${base}/template-allenamenti`, label: 'Template' },
   ]
 
   return (

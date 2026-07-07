@@ -14,9 +14,7 @@ import EserciziSedutaEditor from '@/app/components/EserciziSedutaEditor'
 import ValutazionePortiere from '@/app/components/ValutazionePortiere'
 import FeedbackAllenamento from '@/app/components/FeedbackAllenamento'
 import PaywallBanner from '@/app/components/PaywallBanner'
-import EliminaAllenamentoButton from '@/app/components/EliminaAllenamentoButton'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
-import { puoModificare } from '@/lib/permessi'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +24,7 @@ export default async function AllenamentoPage({ params }) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id, permessi_collaboratore').eq('id', user?.id).maybeSingle()
+    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
 
   const { data: allenamento } = await supabase
     .from('allenamenti').select('*, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('id', id).maybeSingle()
@@ -186,9 +184,12 @@ export default async function AllenamentoPage({ params }) {
   const eserciziOrdinati = (aeRows ?? []).sort((a, b) => a.ordine - b.ordine).map((r) => r.esercizio_id)
 
   // Carica gli esercizi già selezionati nell'allenamento con una query separata
-  // per garantire che compaiano anche se non visibili tramite RLS della libreria
+  // (client admin: il collegamento è già autorizzato tramite allenamento_esercizi,
+  // ma la RLS sulla tabella esercizi potrebbe non far rileggere esercizi pubblici
+  // o del responsabile aggiunti in precedenza, facendoli sparire alla riapertura)
+  const adminSel = getAdmin()
   const { data: esSelRows } = eserciziOrdinati.length > 0
-    ? await supabase
+    ? await adminSel
         .from('esercizi')
         .select('id, titolo, tipologia, descrizione_breve, descrizione, immagine_url, video_url, pubblico, allenatore_id, durata_minuti, recupero_minuti')
         .in('id', eserciziOrdinati)
@@ -257,27 +258,19 @@ export default async function AllenamentoPage({ params }) {
     presente: r.presente,
   }))
 
-  const canEliminare = puoModificare(
-    { ruolo: profilo?.ruolo, permessiCollaboratore: profilo?.permessi_collaboratore },
-    'allenamenti'
-  )
-
   return (
     <>
-      <div className="topbar topbar-row">
-        <div>
-          <div className="eyebrow"><Link href="/calendario">Calendario</Link></div>
-          <h1>
-            {allenamento.squadra?.nome}
-            {accorpataConNome && (
-              <span style={{ fontWeight: 400, fontSize: '0.65em', color: 'var(--ink-soft)', marginLeft: 8 }}>
-                / {accorpataConNome}
-              </span>
-            )}
-            <span className="topbar-sub"> · {dataLabel}</span>
-          </h1>
-        </div>
-        {canEliminare && <EliminaAllenamentoButton id={id} />}
+      <div className="topbar">
+        <div className="eyebrow"><Link href="/calendario">Calendario</Link></div>
+        <h1>
+          {allenamento.squadra?.nome}
+          {accorpataConNome && (
+            <span style={{ fontWeight: 400, fontSize: '0.65em', color: 'var(--ink-soft)', marginLeft: 8 }}>
+              / {accorpataConNome}
+            </span>
+          )}
+          <span className="topbar-sub"> · {dataLabel}</span>
+        </h1>
       </div>
       <div className="content">
         <AllenamentoTabs

@@ -20,22 +20,46 @@ export default async function TemplateAllenamentiPage() {
 
   const ownerId = await getOwnerId(supabase, user.id)
 
-  const [{ data: templates }, { data: attributiDisponibili }] = await Promise.all([
-    supabase.from('template_allenamento')
-      .select('id, nome, descrizione, created_at, template_allenamento_esercizi(id, esercizi(titolo)), template_allenamento_attributi(attributo_id)')
-      .eq('owner_id', ownerId)
-      .order('created_at', { ascending: false }),
-    supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
-  ])
+  // Query base: garantisce sempre la lista dei template, anche se qualcosa
+  // nella parte di arricchimento (esercizi/attributi) dovesse fallire.
+  const { data: templatesBase } = await supabase
+    .from('template_allenamento')
+    .select('id, nome, descrizione, created_at')
+    .eq('owner_id', ownerId)
+    .order('created_at', { ascending: false })
 
-  const lista = (templates ?? []).map((t) => ({
-    id: t.id,
-    nome: t.nome,
-    descrizione: t.descrizione,
-    numEsercizi: t.template_allenamento_esercizi?.length ?? 0,
-    eserciziTitoli: (t.template_allenamento_esercizi ?? []).map((r) => r.esercizi?.titolo).filter(Boolean),
-    attributoIds: (t.template_allenamento_attributi ?? []).map((r) => r.attributo_id),
-  }))
+  const { data: attributiDisponibili } = await supabase
+    .from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine')
+
+  // Arricchimento: esercizi contenuti (per la ricerca) + attributi derivati
+  // dall'unione degli attributi di quegli esercizi. Se fallisce, i template
+  // restano comunque visibili, solo senza dati per ricerca/filtro.
+  let dettagliPerTemplate = {}
+  try {
+    const { data: righe } = await supabase
+      .from('template_allenamento_esercizi')
+      .select('template_id, esercizi(titolo, esercizio_attributi(attributo_id))')
+      .in('template_id', (templatesBase ?? []).map((t) => t.id))
+    for (const r of righe ?? []) {
+      const d = (dettagliPerTemplate[r.template_id] ??= { titoli: [], attributoIds: new Set() })
+      if (r.esercizi?.titolo) d.titoli.push(r.esercizi.titolo)
+      for (const a of r.esercizi?.esercizio_attributi ?? []) d.attributoIds.add(a.attributo_id)
+    }
+  } catch (_) {
+    // Migrazione esercizi/attributi non ancora presente o altro errore: si degrada senza rompere la lista.
+  }
+
+  const lista = (templatesBase ?? []).map((t) => {
+    const d = dettagliPerTemplate[t.id]
+    return {
+      id: t.id,
+      nome: t.nome,
+      descrizione: t.descrizione,
+      numEsercizi: d?.titoli.length ?? 0,
+      eserciziTitoli: d?.titoli ?? [],
+      attributoIds: d ? [...d.attributoIds] : [],
+    }
+  })
 
   return (
     <>

@@ -13,7 +13,7 @@ export default async function CouponPage() {
   if (!profilo?.supervisore) redirect('/')
 
   const { data: coupon } = await supabase.from('coupon')
-    .select('id, codice, durata_gg, attivo, created_at')
+    .select('id, codice, tipo, durata_gg, attivo, created_at, scadenza_attivazione, max_utilizzi, sconto_percento, sconto_mesi')
     .order('created_at', { ascending: false })
 
   const { data: utilizzi } = await supabase.from('coupon_utilizzi')

@@ -75,6 +75,7 @@ export async function POST(request) {
       success_url: `${origin}/abbonati?success=1`,
       cancel_url: `${origin}/abbonati?cancel=1`,
       metadata: { user_id: user.id, piano, ruolo },
+      allow_promotion_codes: true,
       ...(isLifetime ? {} : {
         subscription_data: { metadata: { user_id: user.id, piano } },
       }),

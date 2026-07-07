@@ -19,8 +19,17 @@ export async function POST(request) {
 
     // Cerca il coupon
     const { data: coupon } = await admin.from('coupon')
-      .select('id, codice, durata_gg, attivo').eq('codice', codice.trim().toUpperCase()).maybeSingle()
+      .select('id, codice, tipo, durata_gg, attivo, scadenza_attivazione, max_utilizzi')
+      .eq('codice', codice.trim().toUpperCase()).maybeSingle()
     if (!coupon || !coupon.attivo) return NextResponse.json({ error: 'Codice non valido o scaduto' }, { status: 404 })
+
+    if (coupon.tipo === 'sconto_stripe') {
+      return NextResponse.json({ error: 'Questo codice è uno sconto: inseriscilo nella pagina di pagamento al momento dell\'abbonamento, non qui.' }, { status: 400 })
+    }
+
+    if (coupon.scadenza_attivazione && new Date() > new Date(coupon.scadenza_attivazione + 'T23:59:59')) {
+      return NextResponse.json({ error: 'Il periodo per attivare questo codice è scaduto.' }, { status: 410 })
+    }
 
     // Controlla se già usato da questo utente
     const { data: gia } = await admin.from('coupon_utilizzi')
@@ -28,6 +37,16 @@ export async function POST(request) {
     if (gia) {
       const scade = new Date(gia.scade_il)
       if (scade > new Date()) return NextResponse.json({ error: 'Hai già usato questo coupon. Scade il ' + scade.toLocaleDateString('it-IT') }, { status: 409 })
+    }
+
+    // Controlla limite utilizzi (solo se non è già stato usato da questo stesso utente in passato,
+    // altrimenti un riscatto già valido non deve mai essere respinto da un limite raggiunto dopo)
+    if (!gia && coupon.max_utilizzi) {
+      const { count } = await admin.from('coupon_utilizzi')
+        .select('id', { count: 'exact', head: true }).eq('coupon_id', coupon.id)
+      if ((count ?? 0) >= coupon.max_utilizzi) {
+        return NextResponse.json({ error: 'Limite di utilizzi di questo coupon raggiunto.' }, { status: 410 })
+      }
     }
 
     // Attiva coupon

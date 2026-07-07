@@ -20,17 +20,21 @@ export default async function TemplateAllenamentiPage() {
 
   const ownerId = await getOwnerId(supabase, user.id)
 
-  const { data: templates } = await supabase
-    .from('template_allenamento')
-    .select('id, nome, descrizione, created_at, template_allenamento_esercizi(id)')
-    .eq('owner_id', ownerId)
-    .order('created_at', { ascending: false })
+  const [{ data: templates }, { data: attributiDisponibili }] = await Promise.all([
+    supabase.from('template_allenamento')
+      .select('id, nome, descrizione, created_at, template_allenamento_esercizi(id, esercizi(titolo)), template_allenamento_attributi(attributo_id)')
+      .eq('owner_id', ownerId)
+      .order('created_at', { ascending: false }),
+    supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
+  ])
 
   const lista = (templates ?? []).map((t) => ({
     id: t.id,
     nome: t.nome,
     descrizione: t.descrizione,
     numEsercizi: t.template_allenamento_esercizi?.length ?? 0,
+    eserciziTitoli: (t.template_allenamento_esercizi ?? []).map((r) => r.esercizi?.titolo).filter(Boolean),
+    attributoIds: (t.template_allenamento_attributi ?? []).map((r) => r.attributo_id),
   }))
 
   return (
@@ -52,7 +56,7 @@ export default async function TemplateAllenamentiPage() {
             potrai vedere (in sola lettura) anche i loro template dalla sezione supervisione.
           </p>
         </Guida>
-        <TemplateManager templates={lista} />
+        <TemplateManager templates={lista} attributiDisponibili={attributiDisponibili ?? []} />
       </div>
     </>
   )

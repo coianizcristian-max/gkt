@@ -1,17 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
-export default function TemplateManager({ templates }) {
+export default function TemplateManager({ templates, attributiDisponibili }) {
   const router = useRouter()
   const [showNuovo, setShowNuovo] = useState(false)
   const [nome, setNome] = useState('')
   const [descrizione, setDescrizione] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+
+  const [cerca, setCerca] = useState('')
+  const [filtroAttr, setFiltroAttr] = useState(new Set())
+  const [editId, setEditId] = useState(null)
 
   async function crea() {
     if (!nome.trim()) { setError('Inserisci un nome per il template.'); return }
@@ -34,6 +38,28 @@ export default function TemplateManager({ templates }) {
     router.refresh()
   }
 
+  function toggleFiltroAttr(id) {
+    setFiltroAttr((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }
+
+  // Ricerca: descrizione del template OPPURE titolo di uno degli esercizi contenuti.
+  // Filtro attributi: TUTTI quelli selezionati devono essere presenti sul template (AND).
+  const templatesFiltrati = useMemo(() => {
+    const q = cerca.trim().toLowerCase()
+    return templates.filter((t) => {
+      if (filtroAttr.size > 0) {
+        const attrSet = new Set(t.attributoIds ?? [])
+        const haTutti = [...filtroAttr].every((id) => attrSet.has(id))
+        if (!haTutti) return false
+      }
+      if (!q) return true
+      const inDescrizione = (t.descrizione ?? '').toLowerCase().includes(q)
+      const inNome = (t.nome ?? '').toLowerCase().includes(q)
+      const inEsercizi = (t.eserciziTitoli ?? []).some((tit) => (tit ?? '').toLowerCase().includes(q))
+      return inDescrizione || inNome || inEsercizi
+    })
+  }, [templates, cerca, filtroAttr])
+
   return (
     <div className="lista-editor">
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
@@ -55,6 +81,9 @@ export default function TemplateManager({ templates }) {
               <textarea rows="2" value={descrizione} onChange={(e) => setDescrizione(e.target.value)} />
             </div>
           </div>
+          <p className="sub-intro" style={{ marginTop: 0 }}>
+            Potrai assegnare gli attributi di ricerca dopo aver creato il template, dalla lista qui sotto.
+          </p>
           <div className="form-actions">
             <button className="btn-ghost" type="button" onClick={() => setShowNuovo(false)}>Annulla</button>
             <button className="btn" type="button" onClick={crea} disabled={busy}>
@@ -64,21 +93,155 @@ export default function TemplateManager({ templates }) {
         </div>
       )}
 
+      {/* Ricerca e filtro attributi */}
+      {templates.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <input
+            type="search"
+            value={cerca}
+            onChange={(e) => setCerca(e.target.value)}
+            placeholder="Cerca per descrizione o esercizi contenuti..."
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--linea)', fontSize: 14, background: 'var(--carta)', boxSizing: 'border-box', marginBottom: 8 }}
+          />
+          {attributiDisponibili.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginRight: 2 }}>Attributi:</span>
+              {attributiDisponibili.map((a) => (
+                <button key={a.id} type="button" onClick={() => toggleFiltroAttr(a.id)} style={{
+                  padding: '3px 10px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
+                  border: filtroAttr.has(a.id) ? '2px solid var(--campo)' : '1.5px solid var(--linea)',
+                  background: filtroAttr.has(a.id) ? 'rgba(46,158,91,0.12)' : 'var(--carta)',
+                  color: filtroAttr.has(a.id) ? 'var(--campo)' : 'var(--ink-soft)',
+                  fontWeight: filtroAttr.has(a.id) ? 700 : 400,
+                }}>
+                  {a.nome}
+                </button>
+              ))}
+              {filtroAttr.size > 0 && (
+                <button type="button" onClick={() => setFiltroAttr(new Set())} style={{
+                  padding: '3px 8px', borderRadius: 20, fontSize: 11, cursor: 'pointer',
+                  border: 'none', background: 'none', color: 'var(--ink-soft)', textDecoration: 'underline',
+                }}>
+                  Rimuovi filtri
+                </button>
+              )}
+              {filtroAttr.size > 1 && (
+                <span style={{ fontSize: 11, color: 'var(--ink-soft)' }}>(devono essere presenti tutti)</span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="elenco-blocco">
         {templates.length === 0 && !showNuovo && (
           <div className="empty">Nessun template creato. Clicca &ldquo;+ Nuovo template&rdquo; per iniziare.</div>
         )}
-        {templates.map((t) => (
-          <div key={t.id} className="lista-riga">
-            <Link href={`/template-allenamenti/${t.id}`} style={{ flex: 1, textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ fontWeight: 700 }}>{t.nome}</div>
-              {t.descrizione && <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>{t.descrizione}</div>}
-              <div style={{ fontSize: 12, color: 'var(--azzurro)', marginTop: 4 }}>{t.numEsercizi} esercizi</div>
-            </Link>
-            <button className="btn-mini btn-del" type="button" onClick={(e) => elimina(t.id, e)}>Elimina</button>
-          </div>
+        {templates.length > 0 && templatesFiltrati.length === 0 && (
+          <div className="empty">Nessun template corrisponde alla ricerca/ai filtri.</div>
+        )}
+        {templatesFiltrati.map((t) => (
+          <TemplateRiga
+            key={t.id}
+            template={t}
+            attributiDisponibili={attributiDisponibili}
+            editing={editId === t.id}
+            onEditToggle={() => setEditId(editId === t.id ? null : t.id)}
+            onElimina={elimina}
+          />
         ))}
       </div>
+    </div>
+  )
+}
+
+function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle, onElimina }) {
+  const router = useRouter()
+  const [nome, setNome] = useState(t.nome)
+  const [descrizione, setDescrizione] = useState(t.descrizione ?? '')
+  const [attrSel, setAttrSel] = useState(new Set(t.attributoIds ?? []))
+  const [busy, setBusy] = useState(false)
+
+  function toggleAttr(id) {
+    setAttrSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }
+
+  async function salva() {
+    setBusy(true)
+    const supabase = createClient()
+    await supabase.from('template_allenamento').update({
+      nome: nome.trim() || t.nome,
+      descrizione: descrizione.trim() || null,
+    }).eq('id', t.id)
+
+    await supabase.from('template_allenamento_attributi').delete().eq('template_id', t.id)
+    if (attrSel.size > 0) {
+      await supabase.from('template_allenamento_attributi').insert(
+        [...attrSel].map((attributo_id) => ({ template_id: t.id, attributo_id }))
+      )
+    }
+    setBusy(false)
+    onEditToggle()
+    router.refresh()
+  }
+
+  if (editing) {
+    return (
+      <div className="scheda" style={{ marginBottom: 10 }}>
+        <div className="form-grid">
+          <div className="field">
+            <label>Nome</label>
+            <input value={nome} onChange={(e) => setNome(e.target.value)} />
+          </div>
+          <div className="field field-full">
+            <label>Descrizione</label>
+            <textarea rows="2" value={descrizione} onChange={(e) => setDescrizione(e.target.value)} />
+          </div>
+        </div>
+        {attributiDisponibili.length > 0 && (
+          <div style={{ marginTop: 4 }}>
+            <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600 }}>Attributi (per la ricerca)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {attributiDisponibili.map((a) => (
+                <button key={a.id} type="button" onClick={() => toggleAttr(a.id)} style={{
+                  padding: '3px 10px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
+                  border: attrSel.has(a.id) ? '2px solid var(--azzurro)' : '1.5px solid var(--linea)',
+                  background: attrSel.has(a.id) ? 'rgba(10,126,194,0.1)' : 'var(--carta)',
+                  color: attrSel.has(a.id) ? 'var(--azzurro)' : 'var(--ink-soft)',
+                  fontWeight: attrSel.has(a.id) ? 700 : 400,
+                }}>
+                  {a.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="form-actions" style={{ marginTop: 12 }}>
+          <button className="btn-ghost" type="button" onClick={onEditToggle}>Annulla</button>
+          <button className="btn" type="button" onClick={salva} disabled={busy}>{busy ? 'Salvataggio...' : 'Salva'}</button>
+        </div>
+      </div>
+    )
+  }
+
+  const nomiAttr = (t.attributoIds ?? [])
+    .map((id) => attributiDisponibili.find((a) => a.id === id)?.nome)
+    .filter(Boolean)
+
+  return (
+    <div className="lista-riga">
+      <Link href={`/template-allenamenti/${t.id}`} style={{ flex: 1, textDecoration: 'none', color: 'inherit' }}>
+        <div style={{ fontWeight: 700 }}>{t.nome}</div>
+        {t.descrizione && <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>{t.descrizione}</div>}
+        <div style={{ fontSize: 12, color: 'var(--azzurro)', marginTop: 4, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <span>{t.numEsercizi} esercizi</span>
+          {nomiAttr.map((n) => (
+            <span key={n} style={{ background: 'rgba(46,158,91,0.12)', color: 'var(--campo)', padding: '1px 8px', borderRadius: 999 }}>{n}</span>
+          ))}
+        </div>
+      </Link>
+      <button className="btn-mini" type="button" onClick={(e) => { e.preventDefault(); onEditToggle() }}>✏️ Modifica</button>
+      <button className="btn-mini btn-del" type="button" onClick={(e) => onElimina(t.id, e)}>Elimina</button>
     </div>
   )
 }

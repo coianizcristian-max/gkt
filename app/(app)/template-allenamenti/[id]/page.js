@@ -31,7 +31,7 @@ export default async function TemplateDettaglioPage({ params }) {
   const supervisoreId = profiloExt?.supervisore_id ?? null
 
   const [{ data: esercizi }, { data: attributi }, { data: righeSel }] = await Promise.all([
-    supabase.from('esercizi').select('*').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
+    supabase.from('esercizi').select('*, esercizio_attributi(attributo_id)').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
     supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
     supabase.from('template_allenamento_esercizi').select('esercizio_id, ordine, esercizi(*)').eq('template_id', id).order('ordine'),
   ])
@@ -47,7 +47,7 @@ export default async function TemplateDettaglioPage({ params }) {
     if (prefRows && prefRows.length > 0) {
       const prefIds = prefRows.map((r) => r.esercizio_id)
       const { data: pubPref } = await supabase
-        .from('esercizi').select('*').eq('pubblico', true).eq('archiviato', false)
+        .from('esercizi').select('*, esercizio_attributi(attributo_id)').eq('pubblico', true).eq('archiviato', false)
         .neq('allenatore_id', ownerId).in('id', prefIds).order('titolo')
       eserciziPubbliciPreferiti = pubPref ?? []
     }
@@ -63,7 +63,7 @@ export default async function TemplateDettaglioPage({ params }) {
         .eq('supervisore_id', supervisoreId).eq('preparatore_id', user.id).eq('attivo', true).maybeSingle()
       if (rel) {
         const { data: esResp } = await admin
-          .from('esercizi').select('*').eq('allenatore_id', supervisoreId).eq('archiviato', false)
+          .from('esercizi').select('*, esercizio_attributi(attributo_id)').eq('allenatore_id', supervisoreId).eq('archiviato', false)
           .order('created_at', { ascending: false })
         eserciziResponsabile = esResp ?? []
       }

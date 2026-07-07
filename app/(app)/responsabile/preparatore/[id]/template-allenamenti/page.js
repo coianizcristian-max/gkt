@@ -12,7 +12,7 @@ export default async function SupervisioneTemplate({ params }) {
 
   const { data: templates } = await admin
     .from('template_allenamento')
-    .select('id, nome, descrizione, created_at, template_allenamento_esercizi(ordine, esercizi(titolo))')
+    .select('id, nome, descrizione, created_at, template_allenamento_esercizi(ordine, esercizi(titolo, durata_minuti, recupero_minuti))')
     .eq('owner_id', preparatoreId)
     .order('created_at', { ascending: false })
 
@@ -37,7 +37,18 @@ export default async function SupervisioneTemplate({ params }) {
               ? <p className="sub-intro">Nessun esercizio in questo template.</p>
               : (
                 <ol style={{ margin: 0, paddingLeft: 20 }}>
-                  {t.esercizi.map((r, i) => <li key={i}>{r.esercizi?.titolo ?? 'Esercizio'}</li>)}
+                  {t.esercizi.map((r, i) => (
+                    <li key={i}>
+                      {r.esercizi?.titolo ?? 'Esercizio'}
+                      {(r.esercizi?.durata_minuti || r.esercizi?.recupero_minuti) && (
+                        <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 6 }}>
+                          {r.esercizi?.durata_minuti ? `⏱ ${r.esercizi.durata_minuti}min` : ''}
+                          {r.esercizi?.durata_minuti && r.esercizi?.recupero_minuti ? ' · ' : ''}
+                          {r.esercizi?.recupero_minuti ? `↩ ${r.esercizi.recupero_minuti}min rec.` : ''}
+                        </span>
+                      )}
+                    </li>
+                  ))}
                 </ol>
               )}
           </div>

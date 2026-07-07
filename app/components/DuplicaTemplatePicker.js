@@ -39,7 +39,7 @@ export default function DuplicaTemplatePicker({ onConferma, onAnnulla }) {
     const supabase = createClient()
     const { data } = await supabase
       .from('template_allenamento_esercizi')
-      .select('ordine, esercizio_id, esercizi(titolo)')
+      .select('ordine, esercizio_id, esercizi(titolo, durata_minuti, recupero_minuti)')
       .eq('template_id', id)
       .order('ordine')
     setPreview(data ?? [])
@@ -76,9 +76,24 @@ export default function DuplicaTemplatePicker({ onConferma, onAnnulla }) {
           <h4 style={{ margin: '0 0 6px' }}>Anteprima ({preview.length} esercizi, in ordine)</h4>
           <ol style={{ margin: 0, paddingLeft: 20 }}>
             {preview.map((r) => (
-              <li key={r.esercizio_id} style={{ marginBottom: 4 }}>{r.esercizi?.titolo ?? 'Esercizio'}</li>
+              <li key={r.esercizio_id} style={{ marginBottom: 4 }}>
+                {r.esercizi?.titolo ?? 'Esercizio'}
+                {(r.esercizi?.durata_minuti || r.esercizi?.recupero_minuti) && (
+                  <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 6 }}>
+                    {r.esercizi?.durata_minuti ? `⏱ ${r.esercizi.durata_minuti}min` : ''}
+                    {r.esercizi?.durata_minuti && r.esercizi?.recupero_minuti ? ' · ' : ''}
+                    {r.esercizi?.recupero_minuti ? `↩ ${r.esercizi.recupero_minuti}min rec.` : ''}
+                  </span>
+                )}
+              </li>
             ))}
           </ol>
+          {(() => {
+            const tot = preview.reduce((s, r) => s + (parseFloat(r.esercizi?.durata_minuti) || 0) + (parseFloat(r.esercizi?.recupero_minuti) || 0), 0)
+            if (tot <= 0) return null
+            const label = tot >= 60 ? `${Math.floor(tot / 60)}h ${Math.round(tot % 60)}min` : `${Math.round(tot)} min`
+            return <p className="sub-intro" style={{ marginTop: 8 }}>⏱ Stima tempo totale: <b>{label}</b></p>
+          })()}
         </div>
       )}
 

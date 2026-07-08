@@ -4,6 +4,7 @@ import CercaAllenatoriBox from '@/app/components/CercaAllenatoriBox'
 import AreaLoginCta from '@/app/components/AreaLoginCta'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { renderTesto } from '@/lib/renderTesto'
+import { FUNZIONALITA, getGatingConfig } from '@/lib/gating'
 
 // Pagina pubblica: il contenuto (sito_sezioni) cambia solo quando viene
 // modificato da Supervisore → Sito, quindi si può mettere in cache e
@@ -39,10 +40,18 @@ function gruppaPerTipo(lista) {
 
 export default async function Home() {
   const supabase = getPublicClient()
-  const [{ data: sezioni }, { data: prezziRows }] = await Promise.all([
+  const [{ data: sezioni }, { data: prezziRows }, gatingCfg] = await Promise.all([
     supabase.from('sito_sezioni').select('*').eq('visibile', true).order('ordine'),
     supabase.from('funzionalita_config').select('chiave, label').like('chiave', 'prezzo_%'),
+    getGatingConfig(supabase),
   ])
+
+  const funzionalitaGratis = []
+  const funzionalitaPagamento = []
+  for (const [chiave, def] of Object.entries(FUNZIONALITA)) {
+    const isFree = gatingCfg.tuttoFree || gatingCfg.config[chiave]
+    ;(isFree ? funzionalitaGratis : funzionalitaPagamento).push(def.label)
+  }
 
   const prezzi = structuredClone(DEFAULT_PREZZI)
   for (const r of (prezziRows ?? [])) {
@@ -250,27 +259,41 @@ export default async function Home() {
           return (
             <div key={gi} className="landing-pricing" id="prezzi">
               <div className="landing-inner">
-                <h2 className="pricing-title">{pr.titolo || 'Prezzi semplici, senza sorprese'}</h2>
+                <h2 className="pricing-title">{pr.titolo || 'Cosa include ogni piano'}</h2>
                 <p className="pricing-sub">{pr.testo || 'Le funzionalità di base sono sempre gratuite. Sblocca tutto con un piano, disdici quando vuoi.'}</p>
+
                 <div className="pricing-grid">
                   <div className="pricing-card">
-                    <div className="pricing-card-tipo">Per allenatori e staff</div>
+                    <div className="pricing-card-tipo">Gratuito</div>
+                    <div className="pricing-card-prezzo">€0</div>
+                    <ul className="pricing-feature-list">
+                      {funzionalitaGratis.map((l) => <li key={l}><span className="pf-ok">✓</span> {l}</li>)}
+                    </ul>
+                  </div>
+
+                  <div className="pricing-card pricing-card-evidenza">
+                    <div className="pricing-card-tipo">Sblocca tutto — per allenatori e staff</div>
                     <div className="pricing-righe">
                       <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.allenatore.mensile}<small>/mese</small></b></div>
                       <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.allenatore.annuale}<small>/anno</small></b></div>
                       <div className="pricing-riga"><span>A vita</span><b>€{prezzi.allenatore.lifetime}<small> una tantum</small></b></div>
                     </div>
+                    <p className="pricing-anche">Tutto quello del piano gratuito, più:</p>
+                    <ul className="pricing-feature-list">
+                      {funzionalitaPagamento.map((l) => <li key={l}><span className="pf-ok">✓</span> {l}</li>)}
+                    </ul>
                     <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
                   </div>
-                  <div className="pricing-card">
-                    <div className="pricing-card-tipo">Per portieri</div>
-                    <div className="pricing-righe">
-                      <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.portiere.mensile}<small>/mese</small></b></div>
-                      <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.portiere.annuale}<small>/anno</small></b></div>
-                      <div className="pricing-riga"><span>A vita</span><b>€{prezzi.portiere.lifetime}<small> una tantum</small></b></div>
-                    </div>
-                    <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
+                </div>
+
+                <div className="pricing-portiere">
+                  <div className="pricing-portiere-tipo">Piano per portieri</div>
+                  <div className="pricing-righe">
+                    <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.portiere.mensile}<small>/mese</small></b></div>
+                    <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.portiere.annuale}<small>/anno</small></b></div>
+                    <div className="pricing-riga"><span>A vita</span><b>€{prezzi.portiere.lifetime}<small> una tantum</small></b></div>
                   </div>
+                  <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 14 }}>Inizia gratis</Link>
                 </div>
               </div>
             </div>

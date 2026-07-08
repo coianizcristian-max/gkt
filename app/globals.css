@@ -301,6 +301,12 @@ a { color: inherit; text-decoration: none; }
   transition: background .12s;
 }
 .link-accedi:hover { background: rgba(10,90,138,.06); }
+.landing-nav-links { display: flex; align-items: center; gap: 22px; }
+.landing-nav-links a:not(.link-accedi) { font-size: 14px; font-weight: 600; color: #4a6070; transition: color .12s; }
+.landing-nav-links a:not(.link-accedi):hover { color: var(--landing-blue-mid); }
+@media (max-width: 720px) {
+  .landing-nav-links a:not(.link-accedi) { display: none; }
+}
 
 /* ── Hero ── */
 .landing-hero {
@@ -379,6 +385,15 @@ a { color: inherit; text-decoration: none; }
 .landing-banner-inner { position: relative; z-index: 1; text-align: center; padding: 32px 20px; max-width: 700px; }
 .landing-banner h2 { color: #fff; font-size: 30px; margin: 0 0 10px; }
 .landing-banner p { color: rgba(255,255,255,.88); font-size: 17px; max-width: 640px; margin: 0; }
+
+/* ── FAQ ── */
+.landing-faq { padding: 64px 32px; background: #fff; }
+.faq-title { font-size: 28px; text-align: center; color: var(--landing-ink); margin: 0 0 28px; letter-spacing: -.01em; }
+.faq-list { max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.faq-item { background: var(--landing-bg-alt); border-radius: 10px; padding: 14px 18px; }
+.faq-item summary { cursor: pointer; font-weight: 600; font-size: 15px; color: var(--landing-ink); }
+.faq-item p { margin: 10px 0 0; color: #4a6070; font-size: 14px; line-height: 1.6; }
+@media (max-width: 640px) { .landing-faq { padding: 44px 20px; } }
 
 /* ── Solo testo ── */
 .landing-testo { padding: 64px 32px; background: #fff; }

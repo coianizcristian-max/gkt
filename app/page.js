@@ -61,6 +61,9 @@ export default async function Home() {
 
   const lista = sezioni ?? []
   const gruppi = gruppaPerTipo(lista)
+  const hasPrezzi = gruppi.some((g) => g.tipo === 'prezzi')
+  const hasSocial = gruppi.some((g) => g.tipo === 'social')
+  const hasFaq = gruppi.some((g) => g.tipo === 'faq')
 
   return (
     <div className="landing">
@@ -74,7 +77,11 @@ export default async function Home() {
             <span>Gestione portieri</span>
           </div>
         </div>
-        <nav>
+        <nav className="landing-nav-links">
+          <a href="#ricerca-allenatori">Cerca allenatore</a>
+          {hasFaq && <a href="#faq">FAQ</a>}
+          {hasSocial && <a href="#social">Social</a>}
+          {hasPrezzi && <a href="#prezzi">Prezzi</a>}
           <AreaLoginCta variant="nav" />
         </nav>
       </header>
@@ -225,7 +232,7 @@ export default async function Home() {
         } else if (tipo === 'social') {
           const soc = sezs[0]
           return (
-            <div key={gi} className="landing-social">
+            <div key={gi} className="landing-social" id="social">
               <div className="landing-inner">
                 <div className="social-box">
                   {soc.immagine_url && (
@@ -294,6 +301,23 @@ export default async function Home() {
             </div>
           )
 
+        } else if (tipo === 'faq') {
+          return (
+            <div key={gi} className="landing-faq" id="faq">
+              <div className="landing-inner">
+                <h2 className="faq-title">Domande frequenti</h2>
+                <div className="faq-list">
+                  {sezs.map((f) => (
+                    <details key={f.id} className="faq-item">
+                      <summary>{f.titolo || 'Domanda'}</summary>
+                      <p>{renderTesto(f.testo)}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )
+
         } else if (tipo === 'testo') {
           return sezs.map((t, ti) => (
             <div key={t.id} className={`landing-testo${ti % 2 === 1 ? ' bg-alt' : ''}`}>
@@ -311,7 +335,7 @@ export default async function Home() {
       })}
 
       {/* ── Sezione ricerca allenatori ── */}
-      <div className="landing-cerca">
+      <div className="landing-cerca" id="ricerca-allenatori">
         <div className="landing-inner">
           <CercaAllenatoriBox />
         </div>

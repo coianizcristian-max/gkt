@@ -87,7 +87,7 @@ export default async function Home() {
       </header>
 
       {/* ── Sezioni dal DB in ordine ── */}
-      {gruppi.map((gruppo, gi) => {
+      {(() => { let ultimoSfondo = null; return gruppi.map((gruppo, gi) => {
         // Salta sezioni senza contenuto reale (titolo di default e nessun testo/immagine)
         const sezsFiltrate = gruppo.sezioni.filter(s =>
           s.tipo === 'prezzi' || s.immagine_url || s.testo || s.link_url || s.link_url_2 || (s.titolo && s.titolo !== 'Nuova sezione')
@@ -122,11 +122,13 @@ export default async function Home() {
               </div>
             </div>
           )
+          ultimoSfondo = 'scuro'
           return h.link_url
             ? <a href={h.link_url} key={gi} style={{ display: 'block', textDecoration: 'none' }}>{section}</a>
             : section
 
         } else if (tipo === 'vantaggio') {
+          ultimoSfondo = 'alt'
           return (
             <div key={gi} className="landing-features">
               <div className="landing-inner">
@@ -148,8 +150,11 @@ export default async function Home() {
           )
 
         } else if (tipo === 'contenuto') {
-          return sezs.map((c, ci) => (
-            <div key={c.id} className={`landing-blocco${ci % 2 === 1 ? ' bg-alt' : ''}`}>
+          return sezs.map((c) => {
+            const alt = ultimoSfondo !== 'alt'
+            ultimoSfondo = alt ? 'alt' : 'bianco'
+            return (
+            <div key={c.id} className={`landing-blocco${alt ? ' bg-alt' : ''}`}>
               <div className="landing-inner">
                 <div className={`blocco ${c.foto_posizione === 'destra' ? 'blocco-rev' : ''}`}>
                   {c.immagine_url && (
@@ -164,9 +169,11 @@ export default async function Home() {
                 </div>
               </div>
             </div>
-          ))
+            )
+          })
 
         } else if (tipo === 'banner') {
+          ultimoSfondo = 'scuro'
           return sezs.map((b) => {
             const altezza = b.altezza_px ?? 300
             // Se c'è immagine mobile usiamo un <picture> con <source media>
@@ -230,6 +237,7 @@ export default async function Home() {
               : contenuto
           })
         } else if (tipo === 'social') {
+          ultimoSfondo = 'bianco'
           const soc = sezs[0]
           return (
             <div key={gi} className="landing-social" id="social">
@@ -262,6 +270,7 @@ export default async function Home() {
           )
 
         } else if (tipo === 'prezzi') {
+          ultimoSfondo = 'alt'
           const pr = sezs[0]
           return (
             <div key={gi} className="landing-pricing" id="prezzi">
@@ -302,6 +311,7 @@ export default async function Home() {
           )
 
         } else if (tipo === 'faq') {
+          ultimoSfondo = 'bianco'
           return (
             <div key={gi} className="landing-faq" id="faq">
               <div className="landing-inner">
@@ -319,8 +329,11 @@ export default async function Home() {
           )
 
         } else if (tipo === 'testo') {
-          return sezs.map((t, ti) => (
-            <div key={t.id} className={`landing-testo${ti % 2 === 1 ? ' bg-alt' : ''}`}>
+          return sezs.map((t) => {
+            const alt = ultimoSfondo !== 'alt'
+            ultimoSfondo = alt ? 'alt' : 'bianco'
+            return (
+            <div key={t.id} className={`landing-testo${alt ? ' bg-alt' : ''}`}>
               <div className="landing-inner">
                 <div className="testo-box">
                   {t.titolo && <h2>{t.titolo}</h2>}
@@ -328,11 +341,12 @@ export default async function Home() {
                 </div>
               </div>
             </div>
-          ))
+            )
+          })
 
         }
         return null
-      })}
+      }) })()}
 
       {/* ── Sezione ricerca allenatori ── */}
       <div className="landing-cerca" id="ricerca-allenatori">

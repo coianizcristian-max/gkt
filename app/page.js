@@ -269,6 +269,7 @@ export default async function Home() {
                     <ul className="pricing-feature-list">
                       {funzionalitaGratis.map((l) => <li key={l}><span className="pf-ok">✓</span> {l}</li>)}
                     </ul>
+                    <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
                   </div>
 
                   <div className="pricing-card pricing-card-evidenza">

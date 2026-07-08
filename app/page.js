@@ -168,8 +168,9 @@ export default async function Home() {
           )
 
         } else if (tipo === 'contenuto') {
-          const alt = sfondi[gi] === 'alt'
-          return sezs.map((c) => {
+          const altBase = sfondi[gi] === 'alt'
+          return sezs.map((c, ci) => {
+            const alt = ci % 2 === 0 ? altBase : !altBase
             return (
             <div key={c.id} className={`landing-blocco${alt ? ' bg-alt' : ''}`}>
               <div className="landing-inner">
@@ -342,8 +343,9 @@ export default async function Home() {
           )
 
         } else if (tipo === 'testo') {
-          const alt = sfondi[gi] === 'alt'
-          return sezs.map((t) => {
+          const altBase = sfondi[gi] === 'alt'
+          return sezs.map((t, ti) => {
+            const alt = ti % 2 === 0 ? altBase : !altBase
             return (
             <div key={t.id} className={`landing-testo${alt ? ' bg-alt' : ''}`}>
               <div className="landing-inner">

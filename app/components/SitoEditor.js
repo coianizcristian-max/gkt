@@ -17,6 +17,7 @@ const TIPI = [
   { v: 'vantaggio', l: 'Vantaggio (riquadro)' },
   { v: 'contenuto', l: 'Contenuto (blocco testo + foto)' },
   { v: 'testo', l: 'Solo testo (blocco largo, centrato)' },
+  { v: 'faq', l: 'FAQ (domanda/risposta a fisarmonica)' },
   { v: 'banner', l: 'Banner (fascia orizzontale)' },
   { v: 'social', l: 'Social (Facebook + Instagram)' },
   { v: 'prezzi', l: 'Prezzi (piani e costi, letti in automatico)' },
@@ -124,6 +125,15 @@ function SezioneCard({ sezione, onChanged }) {
         <textarea rows="5" value={s.testo ?? ''} onChange={upd('testo')} style={{ fontFamily: 'monospace', fontSize: 13 }} />
       </div>
 
+      {/* Nota esplicativa — solo per il tipo FAQ */}
+      {s.tipo === 'faq' && (
+        <div style={{ background: 'rgba(46,158,91,0.08)', border: '1px solid rgba(46,158,91,0.25)', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 13, color: 'var(--ink)' }}>
+          💡 Ogni sezione FAQ è <b>una singola domanda</b>: scrivi la domanda nel campo &quot;Titolo&quot; qui
+          sotto e la risposta nel campo &quot;Testo&quot;. Per aggiungere più domande, clicca di nuovo
+          &quot;+ FAQ&quot; in fondo alla pagina: verranno mostrate insieme, una sotto l&apos;altra.
+        </div>
+      )}
+
       {/* Nota esplicativa — solo per il tipo Prezzi */}
       {s.tipo === 'prezzi' && (
         <div style={{ background: 'rgba(10,126,194,0.08)', border: '1px solid rgba(10,126,194,0.25)', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 13, color: 'var(--ink)' }}>
@@ -191,7 +201,7 @@ function SezioneCard({ sezione, onChanged }) {
         </div>
       )}
 
-      {s.tipo !== 'testo' && s.tipo !== 'prezzi' && (
+      {s.tipo !== 'testo' && s.tipo !== 'prezzi' && s.tipo !== 'faq' && (
       <div className="sez-img">
         <div className="sez-thumb">
           {preview ? <img src={preview} alt="" /> : <span>nessuna immagine</span>}
@@ -302,6 +312,7 @@ export default function SitoEditor({ sezioni }) {
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('vantaggio')} type="button">+ Vantaggio</button>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('contenuto')} type="button">+ Contenuto</button>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('testo')} type="button">+ Solo testo</button>
+        <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('faq')} type="button">+ FAQ (una domanda)</button>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('banner')} type="button">+ Banner</button>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('social')} type="button">+ Social</button>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('prezzi')} type="button">+ Prezzi</button>

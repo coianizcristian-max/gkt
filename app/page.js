@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import CercaAllenatoriBox from '@/app/components/CercaAllenatoriBox'
 import AreaLoginCta from '@/app/components/AreaLoginCta'
+import MobileNav from '@/app/components/MobileNav'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { renderTesto } from '@/lib/renderTesto'
 import { FUNZIONALITA, getGatingConfig } from '@/lib/gating'
@@ -64,6 +65,12 @@ export default async function Home() {
   const hasPrezzi = gruppi.some((g) => g.tipo === 'prezzi')
   const hasSocial = gruppi.some((g) => g.tipo === 'social')
   const hasFaq = gruppi.some((g) => g.tipo === 'faq')
+  const navLinks = [
+    { href: '#ricerca-allenatori', label: 'Cerca Preparatore Portieri' },
+    ...(hasFaq ? [{ href: '#faq', label: 'FAQ' }] : []),
+    ...(hasSocial ? [{ href: '#social', label: 'Social' }] : []),
+    ...(hasPrezzi ? [{ href: '#prezzi', label: 'Prezzi' }] : []),
+  ]
 
   return (
     <div className="landing">
@@ -78,12 +85,13 @@ export default async function Home() {
           </div>
         </div>
         <nav className="landing-nav-links">
-          <a href="#ricerca-allenatori">Cerca allenatore</a>
+          <a href="#ricerca-allenatori">Cerca Preparatore Portieri</a>
           {hasFaq && <a href="#faq">FAQ</a>}
           {hasSocial && <a href="#social">Social</a>}
           {hasPrezzi && <a href="#prezzi">Prezzi</a>}
           <AreaLoginCta variant="nav" />
         </nav>
+        <MobileNav links={navLinks} />
       </header>
 
       {/* ── Sezioni dal DB in ordine ── */}

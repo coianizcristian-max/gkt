@@ -380,6 +380,14 @@ a { color: inherit; text-decoration: none; }
 .landing-banner h2 { color: #fff; font-size: 30px; margin: 0 0 10px; }
 .landing-banner p { color: rgba(255,255,255,.88); font-size: 17px; max-width: 640px; margin: 0; }
 
+/* ── Solo testo ── */
+.landing-testo { padding: 64px 32px; background: #fff; }
+.landing-testo.bg-alt { background: var(--landing-bg-alt); }
+.testo-box { max-width: 700px; margin: 0 auto; text-align: center; }
+.testo-box h2 { font-size: 28px; line-height: 1.25; margin-bottom: 14px; color: var(--landing-ink); letter-spacing: -.01em; }
+.testo-box p { color: #4a6070; font-size: 17px; line-height: 1.7; }
+@media (max-width: 640px) { .landing-testo { padding: 44px 20px; } }
+
 /* ── Prezzi ── */
 .landing-pricing {
   padding: 72px 32px;

@@ -74,7 +74,7 @@ export default async function Home() {
       {gruppi.map((gruppo, gi) => {
         // Salta sezioni senza contenuto reale (titolo di default e nessun testo/immagine)
         const sezsFiltrate = gruppo.sezioni.filter(s =>
-          s.immagine_url || s.testo || s.link_url || s.link_url_2 || (s.titolo && s.titolo !== 'Nuova sezione')
+          s.tipo === 'prezzi' || s.immagine_url || s.testo || s.link_url || s.link_url_2 || (s.titolo && s.titolo !== 'Nuova sezione')
         )
         if (sezsFiltrate.length === 0) return null
         const gruppoFiltrato = { ...gruppo, sezioni: sezsFiltrate }
@@ -245,37 +245,52 @@ export default async function Home() {
             </div>
           )
 
+        } else if (tipo === 'prezzi') {
+          const pr = sezs[0]
+          return (
+            <div key={gi} className="landing-pricing" id="prezzi">
+              <div className="landing-inner">
+                <h2 className="pricing-title">{pr.titolo || 'Prezzi semplici, senza sorprese'}</h2>
+                <p className="pricing-sub">{pr.testo || 'Le funzionalità di base sono sempre gratuite. Sblocca tutto con un piano, disdici quando vuoi.'}</p>
+                <div className="pricing-grid">
+                  <div className="pricing-card">
+                    <div className="pricing-card-tipo">Per allenatori e staff</div>
+                    <div className="pricing-righe">
+                      <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.allenatore.mensile}<small>/mese</small></b></div>
+                      <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.allenatore.annuale}<small>/anno</small></b></div>
+                      <div className="pricing-riga"><span>A vita</span><b>€{prezzi.allenatore.lifetime}<small> una tantum</small></b></div>
+                    </div>
+                    <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
+                  </div>
+                  <div className="pricing-card">
+                    <div className="pricing-card-tipo">Per portieri</div>
+                    <div className="pricing-righe">
+                      <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.portiere.mensile}<small>/mese</small></b></div>
+                      <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.portiere.annuale}<small>/anno</small></b></div>
+                      <div className="pricing-riga"><span>A vita</span><b>€{prezzi.portiere.lifetime}<small> una tantum</small></b></div>
+                    </div>
+                    <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+
+        } else if (tipo === 'testo') {
+          return sezs.map((t, ti) => (
+            <div key={t.id} className={`landing-testo${ti % 2 === 1 ? ' bg-alt' : ''}`}>
+              <div className="landing-inner">
+                <div className="testo-box">
+                  {t.titolo && <h2>{t.titolo}</h2>}
+                  {t.testo && <p>{renderTesto(t.testo)}</p>}
+                </div>
+              </div>
+            </div>
+          ))
+
         }
         return null
       })}
-
-      {/* ── Prezzi ── */}
-      <div className="landing-pricing" id="prezzi">
-        <div className="landing-inner">
-          <h2 className="pricing-title">Prezzi semplici, senza sorprese</h2>
-          <p className="pricing-sub">Le funzionalità di base sono sempre gratuite. Sblocca tutto con un piano, disdici quando vuoi.</p>
-          <div className="pricing-grid">
-            <div className="pricing-card">
-              <div className="pricing-card-tipo">Per allenatori e staff</div>
-              <div className="pricing-righe">
-                <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.allenatore.mensile}<small>/mese</small></b></div>
-                <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.allenatore.annuale}<small>/anno</small></b></div>
-                <div className="pricing-riga"><span>A vita</span><b>€{prezzi.allenatore.lifetime}<small> una tantum</small></b></div>
-              </div>
-              <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
-            </div>
-            <div className="pricing-card">
-              <div className="pricing-card-tipo">Per portieri</div>
-              <div className="pricing-righe">
-                <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.portiere.mensile}<small>/mese</small></b></div>
-                <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.portiere.annuale}<small>/anno</small></b></div>
-                <div className="pricing-riga"><span>A vita</span><b>€{prezzi.portiere.lifetime}<small> una tantum</small></b></div>
-              </div>
-              <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* ── Sezione ricerca allenatori ── */}
       <div className="landing-cerca">

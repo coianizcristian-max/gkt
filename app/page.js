@@ -47,10 +47,10 @@ export default async function Home() {
   ])
 
   const funzionalitaGratis = []
-  const funzionalitaPagamento = []
+  const funzionalitaTutte = []
   for (const [chiave, def] of Object.entries(FUNZIONALITA)) {
-    const isFree = gatingCfg.tuttoFree || gatingCfg.config[chiave]
-    ;(isFree ? funzionalitaGratis : funzionalitaPagamento).push(def.label)
+    funzionalitaTutte.push(def.label)
+    if (gatingCfg.config[chiave]) funzionalitaGratis.push(def.label)
   }
 
   const prezzi = structuredClone(DEFAULT_PREZZI)
@@ -278,23 +278,17 @@ export default async function Home() {
                       <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.allenatore.annuale}<small>/anno</small></b></div>
                       <div className="pricing-riga"><span>A vita</span><b>€{prezzi.allenatore.lifetime}<small> una tantum</small></b></div>
                     </div>
-                    <p className="pricing-anche">Tutto quello del piano gratuito, più:</p>
                     <ul className="pricing-feature-list">
-                      {funzionalitaPagamento.map((l) => <li key={l}><span className="pf-ok">✓</span> {l}</li>)}
+                      {funzionalitaTutte.map((l) => <li key={l}><span className="pf-ok">✓</span> {l}</li>)}
                     </ul>
                     <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
                   </div>
                 </div>
 
-                <div className="pricing-portiere">
-                  <div className="pricing-portiere-tipo">Piano per portieri</div>
-                  <div className="pricing-righe">
-                    <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.portiere.mensile}<small>/mese</small></b></div>
-                    <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.portiere.annuale}<small>/anno</small></b></div>
-                    <div className="pricing-riga"><span>A vita</span><b>€{prezzi.portiere.lifetime}<small> una tantum</small></b></div>
-                  </div>
-                  <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 14 }}>Inizia gratis</Link>
-                </div>
+                <p className="pricing-portiere-nota">
+                  Per i portieri: statistiche di base sempre gratuite. Per vedere ogni singola funzione nel
+                  dettaglio, l&apos;abbonamento costa €{prezzi.portiere.mensile}/mese, €{prezzi.portiere.annuale}/anno oppure €{prezzi.portiere.lifetime} una tantum.
+                </p>
               </div>
             </div>
           )

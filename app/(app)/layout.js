@@ -115,6 +115,7 @@ export default async function AppLayout({ children }) {
     'i-miei-preparatori': (ruoloUtente === 'allenatore' && haPreparatori) ? { href: '/i-miei-preparatori', label: '🔗 I miei preparatori' } : null,
     'contatti':      isStaff ? { href: '/contatti', label: 'Contatti ricevuti' } : null,
     'come-iniziare': { href: '/come-iniziare', label: 'Come iniziare' },
+    'faq':           { href: '/faq', label: 'Domande frequenti' },
     'archivio':      { href: '/archivio', label: 'Archivio' },
     'suggerimenti':  { href: '/suggerimenti', label: 'Suggerimenti' },
     'newsletter':    { href: '/newsletter', label: 'Newsletter' },

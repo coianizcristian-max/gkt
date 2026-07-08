@@ -49,6 +49,17 @@ export default async function CalendarioPage() {
       _tipo: 'partita',
     }))
 
+    if (!isPortiere) {
+      const partIds = partite.map((p) => p.id)
+      let partiteValutate = new Set()
+      if (partIds.length) {
+        const { data: vprows } = await supabase.from('valutazioni_partita')
+          .select('partita_id').not('voto', 'is', null).in('partita_id', partIds)
+        partiteValutate = new Set((vprows ?? []).map((r) => r.partita_id))
+      }
+      partite = partite.map((p) => ({ ...p, ha_valutazioni: partiteValutate.has(p.id) }))
+    }
+
     allenamenti = (al.data ?? []).map((a) => ({
       id: a.id,
       data: a.data,

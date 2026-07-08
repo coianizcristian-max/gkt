@@ -33,9 +33,52 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
     note: allenamento?.note ?? '',
   })
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
+  const [orarioAccorpante, setOrarioAccorpante] = useState(null) // { ora_inizio, ora_fine } | null | 'assente'
   const upd = (k) => (e) => { setF((s) => ({ ...s, [k]: e.target.value })); setDone(false) }
+
+  async function elimina() {
+    const supabase = createClient()
+    // Se altre categorie sono accorpate a questo allenamento, avvisa: perderebbero
+    // il riferimento agli esercizi (che sono gestiti solo qui).
+    const { data: dipendenti } = await supabase.from('allenamenti')
+      .select('id, squadre(nome)')
+      .eq('stagione_id', stagioneId).eq('data', f.data).eq('accorpata_con', f.squadra_id)
+    const nomiDipendenti = (dipendenti ?? []).map((d) => d.squadre?.nome).filter(Boolean)
+    const avviso = nomiDipendenti.length > 0
+      ? `\n\n⚠ Attenzione: ${nomiDipendenti.join(', ')} ${nomiDipendenti.length === 1 ? 'è accorpata' : 'sono accorpate'} a questo allenamento e ${nomiDipendenti.length === 1 ? 'perderebbe' : 'perderebbero'} l'accesso agli esercizi condivisi qui.`
+      : ''
+    if (!confirm(`Eliminare definitivamente questo allenamento? L'operazione non è reversibile.${avviso}`)) return
+    setDeleting(true)
+    const { error } = await supabase.from('allenamenti').delete().eq('id', allenamento.id)
+    if (error) { setError(error.message); setDeleting(false); return }
+    router.push('/calendario'); router.refresh()
+  }
+
+  // Se l'allenamento è accorpato a un'altra categoria, l'orario è inseparabile
+  // da quello: lo eredita sempre dall'allenamento accorpante nella stessa data.
+  useEffect(() => {
+    let annullato = false
+    async function sincronizzaOrario() {
+      if (!f.accorpata_con || !f.data) { setOrarioAccorpante(null); return }
+      const supabase = createClient()
+      const { data: acc } = await supabase.from('allenamenti')
+        .select('ora_inizio, ora_fine')
+        .eq('stagione_id', stagioneId).eq('squadra_id', f.accorpata_con).eq('data', f.data)
+        .maybeSingle()
+      if (annullato) return
+      if (acc) {
+        setOrarioAccorpante(acc)
+        setF((s) => ({ ...s, ora_inizio: acc.ora_inizio?.slice(0, 5) ?? s.ora_inizio, ora_fine: acc.ora_fine?.slice(0, 5) ?? '' }))
+      } else {
+        setOrarioAccorpante('assente')
+      }
+    }
+    sincronizzaOrario()
+    return () => { annullato = true }
+  }, [f.accorpata_con, f.data, stagioneId])
 
   async function save(e) {
     e.preventDefault()
@@ -58,6 +101,11 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
       if (isEdit) {
         const { error } = await supabase.from('allenamenti').update(payload).eq('id', allenamento.id)
         if (error) throw error
+        // Se questo allenamento è "accorpante" per altri (altre categorie accorpate a questo),
+        // propaga il nuovo orario: è la stessa seduta, non ha senso restino disallineati.
+        await supabase.from('allenamenti')
+          .update({ ora_inizio: payload.ora_inizio, ora_fine: payload.ora_fine })
+          .eq('stagione_id', stagioneId).eq('data', f.data).eq('accorpata_con', f.squadra_id)
         setDone(true); setSaving(false); router.refresh()
       } else {
         const { data, error } = await supabase.from('allenamenti')
@@ -93,9 +141,9 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></div>
         <div className="field"><label>Ora inizio</label>
-          <input type="time" value={f.ora_inizio} onChange={upd('ora_inizio')} /></div>
+          <input type="time" value={f.ora_inizio} onChange={upd('ora_inizio')} disabled={!!f.accorpata_con && orarioAccorpante && orarioAccorpante !== 'assente'} /></div>
         <div className="field"><label>Ora fine</label>
-          <input type="time" value={f.ora_fine} onChange={upd('ora_fine')} /></div>
+          <input type="time" value={f.ora_fine} onChange={upd('ora_fine')} disabled={!!f.accorpata_con && orarioAccorpante && orarioAccorpante !== 'assente'} /></div>
         <div className="field">
           <label>Accorpata con (opzionale)</label>
           <select value={f.accorpata_con} onChange={upd('accorpata_con')}>
@@ -110,6 +158,18 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
         <div className="field field-full"><label>Note</label>
           <textarea rows="2" value={f.note} onChange={upd('note')} /></div>
       </div>
+      {f.accorpata_con && orarioAccorpante && orarioAccorpante !== 'assente' && (
+        <p className="sub-intro" style={{ marginTop: 0 }}>
+          🕒 Orario preso automaticamente dall&apos;allenamento accorpante ({orarioAccorpante.ora_inizio?.slice(0, 5)}
+          {orarioAccorpante.ora_fine ? `–${orarioAccorpante.ora_fine.slice(0, 5)}` : ''}): essendo la stessa seduta, l&apos;orario è sempre lo stesso.
+        </p>
+      )}
+      {f.accorpata_con && orarioAccorpante === 'assente' && (
+        <p className="sub-intro" style={{ marginTop: 0, color: 'var(--rosso)' }}>
+          ⚠ Non trovo ancora un allenamento della categoria accorpante in questa data: imposta qui l&apos;orario provvisorio,
+          si allineerà automaticamente non appena quell&apos;allenamento viene creato con la stessa data.
+        </p>
+      )}
       {f.accorpata_con && (
         <p className="sub-intro" style={{ marginTop: 0, color: 'var(--giallo)' }}>
           ⚠ Allenamento accorpato: nel calendario apparirà con cornice gialla. I portieri della categoria ospite vedranno la scheda di questa seduta.
@@ -148,11 +208,18 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
           )}
         </div>
       )}
-      <div className="form-actions">
-        {!isEdit && <button type="button" className="btn-ghost" onClick={() => router.push('/calendario')}>Annulla</button>}
-        <button type="submit" className="btn" disabled={saving}>
-          {saving ? 'Salvataggio…' : done ? 'Salvato ✓' : (isEdit ? 'Salva allenamento' : 'Crea e inserisci valutazioni')}
-        </button>
+      <div className="form-actions" style={{ justifyContent: isEdit ? 'space-between' : 'flex-end' }}>
+        {isEdit && (
+          <button type="button" className="btn-ghost" onClick={elimina} disabled={deleting || saving} style={{ color: 'var(--rosso)', borderColor: 'var(--rosso)' }}>
+            {deleting ? 'Eliminazione...' : '🗑 Elimina allenamento'}
+          </button>
+        )}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {!isEdit && <button type="button" className="btn-ghost" onClick={() => router.push('/calendario')}>Annulla</button>}
+          <button type="submit" className="btn" disabled={saving || deleting}>
+            {saving ? 'Salvataggio…' : done ? 'Salvato ✓' : (isEdit ? 'Salva allenamento' : 'Crea e inserisci valutazioni')}
+          </button>
+        </div>
       </div>
     </form>
   )

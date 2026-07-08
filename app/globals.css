@@ -330,10 +330,10 @@ a { color: inherit; text-decoration: none; }
   position: relative;
 }
 .landing-hero[data-hasimg="1"]::before {
-  content: ''; position: absolute; inset: 0;
+  content: ''; position: absolute; inset: 0; z-index: 1;
   background: linear-gradient(135deg, rgba(13,33,55,.82) 50%, rgba(13,33,55,.55));
 }
-.landing-hero[data-hasimg="1"] .landing-inner { position: relative; }
+.landing-hero[data-hasimg="1"] .landing-inner { position: relative; z-index: 2; }
 
 /* ── Sezione vantaggi ── */
 .landing-features {
@@ -351,7 +351,8 @@ a { color: inherit; text-decoration: none; }
 }
 .feature h3 { font-size: 16px; margin-bottom: 8px; color: var(--landing-ink); }
 .feature p { font-size: 14px; color: #5a7080; line-height: 1.6; margin: 0; }
-.feature-img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 14px; }
+.feature-img-wrap { position: relative; width: 100%; height: 130px; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+.feature-img { object-fit: cover; }
 
 /* ── Sezione contenuto (testo + foto) ── */
 .landing-blocco {
@@ -378,6 +379,52 @@ a { color: inherit; text-decoration: none; }
 .landing-banner-inner { position: relative; z-index: 1; text-align: center; padding: 32px 20px; max-width: 700px; }
 .landing-banner h2 { color: #fff; font-size: 30px; margin: 0 0 10px; }
 .landing-banner p { color: rgba(255,255,255,.88); font-size: 17px; max-width: 640px; margin: 0; }
+
+/* ── Prezzi ── */
+.landing-pricing {
+  padding: 72px 32px;
+  background: var(--landing-bg-alt);
+  text-align: center;
+}
+.pricing-title { font-size: 30px; color: var(--landing-ink); margin: 0 0 8px; letter-spacing: -.01em; }
+.pricing-sub { color: #5a7080; font-size: 16px; margin: 0 0 40px; }
+.pricing-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 720px; margin: 0 auto; }
+.pricing-card {
+  background: #fff; border-radius: 16px; padding: 28px 24px;
+  box-shadow: 0 1px 4px rgba(13,33,55,.06); text-align: left;
+}
+.pricing-card-tipo { font-weight: 700; font-size: 15px; color: var(--landing-ink); margin-bottom: 16px; }
+.pricing-righe { display: flex; flex-direction: column; gap: 10px; }
+.pricing-riga { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid #eef2f5; font-size: 14px; color: #5a7080; }
+.pricing-riga:last-child { border-bottom: none; }
+.pricing-riga b { font-size: 18px; color: var(--landing-ink); font-weight: 700; }
+.pricing-riga b small { font-size: 12px; font-weight: 400; color: #8098a8; }
+@media (max-width: 640px) {
+  .pricing-grid { grid-template-columns: 1fr; }
+  .landing-pricing { padding: 48px 20px; }
+}
+
+/* ── Social ── */
+.landing-social { padding: 64px 32px; background: #fff; }
+.social-box { display: flex; gap: 40px; align-items: center; max-width: 900px; margin: 0 auto; }
+.social-img-wrap { position: relative; flex: 1; min-width: 0; height: 260px; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(13,33,55,.10); }
+.social-testo { flex: 1; min-width: 0; }
+.social-testo h2 { font-size: 26px; color: var(--landing-ink); margin: 0 0 10px; letter-spacing: -.01em; }
+.social-testo p { color: #4a6070; font-size: 16px; line-height: 1.6; margin: 0 0 20px; }
+.social-links { display: flex; gap: 12px; flex-wrap: wrap; }
+.social-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: 999px; font-weight: 600; font-size: 14px;
+  text-decoration: none; color: #fff; transition: transform .15s;
+}
+.social-btn:hover { transform: translateY(-1px); }
+.social-btn-fb { background: #1877f2; }
+.social-btn-ig { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+@media (max-width: 720px) {
+  .social-box { flex-direction: column; }
+  .social-img-wrap { width: 100%; height: 200px; }
+  .landing-social { padding: 48px 20px; }
+}
 
 /* ── Cerca allenatori ── */
 .landing-cerca {
@@ -473,50 +520,6 @@ a { color: inherit; text-decoration: none; }
 .btn-azione:hover { background: var(--azzurro-scuro); }
 .link-inline { color: var(--azzurro); font-weight: 600; }
 
-/* ===== Elimina allenamento (icona cestino in topbar) ===== */
-.btn-icon-danger {
-  flex-shrink: 0; width: 40px; height: 40px; display: grid; place-items: center;
-  border-radius: 999px; color: var(--ink-soft); background: transparent;
-  border: 1px solid var(--linea); transition: background 0.12s, color 0.12s, border-color 0.12s;
-}
-.btn-icon-danger:hover { color: var(--rosso); border-color: rgba(192,57,43,0.35); background: rgba(192,57,43,0.06); }
-.elimina-conferma {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end;
-}
-.elimina-conferma-testo { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
-.elimina-conferma-errore { font-size: 13px; color: var(--rosso); width: 100%; text-align: right; }
-.btn-danger-solid {
-  flex-shrink: 0; padding: 9px 16px; font-size: 14px; font-weight: 600;
-  color: var(--bianco); background: var(--rosso); border-radius: 999px;
-  transition: background 0.12s; border: none;
-}
-.btn-danger-solid:hover { background: #a53225; }
-.btn-danger-solid:disabled { opacity: 0.6; cursor: default; }
-
-.btn-icon-ghost {
-  flex-shrink: 0; width: 40px; height: 40px; display: grid; place-items: center;
-  border-radius: 999px; color: var(--ink-soft); background: transparent;
-  border: 1px solid var(--linea); transition: background 0.12s, color 0.12s, border-color 0.12s;
-}
-.btn-icon-ghost:hover { color: var(--azzurro); border-color: rgba(10,126,194,0.35); background: rgba(10,126,194,0.06); }
-
-.stagione-card-edit { padding: 18px; }
-.campo-label {
-  display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; color: var(--ink-soft);
-}
-.campo-label input {
-  font-family: var(--font-body), system-ui, sans-serif; font-size: 14px; font-weight: 500; color: var(--ink);
-  padding: 9px 12px; border: 1px solid var(--linea); border-radius: var(--r-sm); background: var(--bianco);
-}
-.campo-label input:focus { outline: none; border-color: var(--azzurro); }
-
-.avviso {
-  display: flex; align-items: flex-start; gap: 10px; background: rgba(232,167,44,0.12);
-  border: 1px solid rgba(232,167,44,0.5); color: var(--ink); padding: 14px 16px;
-  border-radius: var(--r-sm); font-size: 14px; line-height: 1.5; margin-bottom: 16px;
-}
-.avviso a { color: var(--azzurro-scuro); font-weight: 700; }
-
 /* ===== Card portiere: avatar + link ===== */
 .card-portiere { display: block; }
 .card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
@@ -574,8 +577,6 @@ a { color: inherit; text-decoration: none; }
 }
 .hero[data-img="1"] .hero-title, .hero[data-img="1"] .hero-lead { color: var(--bianco); }
 .hero[data-img="1"] .hero-eyebrow { color: #bfe3f6; }
-
-.feature-img { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
 
 @media (max-width: 720px) { .blocco, .blocco-rev { flex-direction: column; } }
 
@@ -812,8 +813,8 @@ a.brand { text-decoration: none; color: inherit; }
 }
 .es-tile:hover { border-color: var(--azzurro); box-shadow: var(--ombra); }
 .es-tile.selezionato { border-color: var(--azzurro); background: rgba(10,126,194,0.06); }
-.es-tile-img { width: 100%; height: 100px; overflow: hidden; }
-.es-tile-img img { width: 100%; height: 100%; object-fit: cover; }
+.es-tile-img { width: 100%; height: 100px; overflow: hidden; position: relative; }
+.es-tile-img img { object-fit: cover; }
 .es-tile-body { padding: 8px 10px; }
 .es-tile-titolo { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.3; }
 .es-tile-autore { font-size: 11px; color: var(--azzurro); margin-top: 2px; }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 export default function ProfiloModal({ allenatoreId, onClose }) {
   const [profilo, setProfilo] = useState(null)
@@ -138,11 +139,11 @@ function ProfiloVista({ profilo, esperienze, certificati, contattoGratuito, impo
       {/* Header profilo */}
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', marginBottom: 20 }}>
         <div style={{
-          width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+          width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, position: 'relative',
           background: 'var(--azzurro)', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           {profilo.foto_url
-            ? <img src={profilo.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <Image src={profilo.foto_url} alt="" fill sizes="72px" style={{ objectFit: 'cover' }} />
             : <span style={{ fontSize: 24, color: '#fff', fontWeight: 700 }}>{(profilo.nome_completo || '?').charAt(0)}</span>}
         </div>
         <div>

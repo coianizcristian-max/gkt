@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import ProfiloModal from './ProfiloModal'
 
@@ -109,7 +110,7 @@ export default function CercaAllenatori() {
             <div className="stat-head">
               <div className="stat-foto">
                 {a.foto_url
-                  ? <img src={a.foto_url} alt="" />
+                  ? <Image src={a.foto_url} alt="" fill sizes="52px" />
                   : <span>{(a.nome || '?').charAt(0)}</span>}
               </div>
               <div style={{ flex: 1 }}>

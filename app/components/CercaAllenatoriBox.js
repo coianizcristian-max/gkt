@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import ProfiloModal from '@/app/cerca-allenatori/ProfiloModal'
 
@@ -122,11 +123,11 @@ export default function CercaAllenatoriBox() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{
                       width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                      overflow: 'hidden', background: 'var(--azzurro)',
+                      overflow: 'hidden', background: 'var(--azzurro)', position: 'relative',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       {a.foto_url
-                        ? <img src={a.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ? <Image src={a.foto_url} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />
                         : <span style={{ color: '#fff', fontWeight: 700, fontSize: 17 }}>{(a.nome || '?').charAt(0)}</span>}
                     </div>
                     <div style={{ minWidth: 0 }}>

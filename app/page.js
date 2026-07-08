@@ -275,9 +275,9 @@ export default async function Home() {
                   <div className="pricing-card pricing-card-evidenza">
                     <div className="pricing-card-tipo">Sblocca tutto — per allenatori e staff</div>
                     <div className="pricing-righe">
-                      <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.allenatore.mensile}<small>/mese</small></b></div>
-                      <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.allenatore.annuale}<small>/anno</small></b></div>
-                      <div className="pricing-riga"><span>A vita</span><b>€{prezzi.allenatore.lifetime}<small> una tantum</small></b></div>
+                      <span className="pr-label">Mensile</span><span className="pr-prezzo">€{prezzi.allenatore.mensile}</span><span className="pr-unita">/mese</span>
+                      <span className="pr-label">Annuale</span><span className="pr-prezzo">€{prezzi.allenatore.annuale}</span><span className="pr-unita">/anno</span>
+                      <span className="pr-label">A vita</span><span className="pr-prezzo">€{prezzi.allenatore.lifetime}</span><span className="pr-unita">una tantum</span>
                     </div>
                     <ul className="pricing-feature-list">
                       {funzionalitaTutte.map((l) => <li key={l}><span className="pf-ok">✓</span> {l}</li>)}

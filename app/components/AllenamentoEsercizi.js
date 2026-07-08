@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
 import { useRouter } from 'next/navigation'
@@ -247,7 +248,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
                     return (
                       <div key={e.id} className={`es-tile ${selezionato ? 'selezionato' : ''}`} style={{ position: 'relative' }}>
                         <button type="button" style={{ display: 'contents' }} onClick={() => setPreview(e)}>
-                          {e.immagine_url && <div className="es-tile-img"><img src={e.immagine_url} alt="" /></div>}
+                          {e.immagine_url && <div className="es-tile-img"><Image src={e.immagine_url} alt="" fill sizes="200px" /></div>}
                           <div className="es-tile-body">
                             <div className="es-tile-titolo">{e.titolo}</div>
                             {e.autore_nome && <div className="es-tile-autore">{e.autore_nome}</div>}
@@ -382,7 +383,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
                   <span style={{ fontSize: 11, color: 'var(--azzurro)', marginLeft: 8 }}>Tocca per anteprima</span>
                 </div>
               </button>
-              {e.immagine_url && <img src={e.immagine_url} className="drag-thumb" alt="" />}
+              {e.immagine_url && <Image src={e.immagine_url} className="drag-thumb" alt="" width={44} height={44} />}
             </div>
           )
         })}

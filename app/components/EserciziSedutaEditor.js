@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -93,7 +94,7 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
               </span>
             </div>
             {e.immagine_url && (
-              <img src={e.immagine_url} className="drag-thumb" alt="" onClick={() => setOpenIdx(prev => prev === i ? null : i)} style={{ cursor: 'pointer' }} />
+              <Image src={e.immagine_url} className="drag-thumb" alt="" width={44} height={44} onClick={() => setOpenIdx(prev => prev === i ? null : i)} style={{ cursor: 'pointer' }} />
             )}
           </div>
           {/* Dettaglio inline espanso */}

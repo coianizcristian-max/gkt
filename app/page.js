@@ -1,9 +1,28 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import CercaAllenatoriBox from '@/app/components/CercaAllenatoriBox'
-import { createClient } from '@/lib/supabase/server'
+import AreaLoginCta from '@/app/components/AreaLoginCta'
+import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { renderTesto } from '@/lib/renderTesto'
 
-export const dynamic = 'force-dynamic'
+// Pagina pubblica: il contenuto (sito_sezioni) cambia solo quando viene
+// modificato da Supervisore → Sito, quindi si può mettere in cache e
+// rigenerare in background invece di interrogare il database a ogni visita.
+// NB: usiamo un client Supabase "anonimo" (non quello legato ai cookie di
+// sessione) proprio perché anche solo istanziare il client con i cookie
+// costringerebbe Next.js a trattare la pagina come dinamica, vanificando
+// la cache. Il pulsante "sei loggato?" è isolato in un componente client
+// (AreaLoginCta) che controlla la sessione nel browser.
+export const revalidate = 60
+
+const DEFAULT_PREZZI = {
+  allenatore: { mensile: '9.90', annuale: '79.00', lifetime: '199.00' },
+  portiere:   { mensile: '4.90', annuale: '39.00', lifetime: '99.00' },
+}
+
+function getPublicClient() {
+  return createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+}
 
 function gruppaPerTipo(lista) {
   const gruppi = []
@@ -19,14 +38,19 @@ function gruppaPerTipo(lista) {
 }
 
 export default async function Home() {
-  const supabase = await createClient()
-  const [{ data: sezioni }, { data: { user } }] = await Promise.all([
+  const supabase = getPublicClient()
+  const [{ data: sezioni }, { data: prezziRows }] = await Promise.all([
     supabase.from('sito_sezioni').select('*').eq('visibile', true).order('ordine'),
-    supabase.auth.getUser(),
+    supabase.from('funzionalita_config').select('chiave, label').like('chiave', 'prezzo_%'),
   ])
 
+  const prezzi = structuredClone(DEFAULT_PREZZI)
+  for (const r of (prezziRows ?? [])) {
+    const m = r.chiave.match(/^prezzo_(allenatore|portiere)_(mensile|annuale|lifetime)$/)
+    if (m && r.label) prezzi[m[1]][m[2]] = r.label
+  }
+
   const lista = sezioni ?? []
-  const loggedIn = !!user
   const gruppi = gruppaPerTipo(lista)
 
   return (
@@ -42,9 +66,7 @@ export default async function Home() {
           </div>
         </div>
         <nav>
-          {loggedIn
-            ? <Link href="/dashboard" className="link-accedi">La mia area</Link>
-            : <Link href="/login" className="link-accedi">Accedi</Link>}
+          <AreaLoginCta variant="nav" />
         </nav>
       </header>
 
@@ -52,7 +74,7 @@ export default async function Home() {
       {gruppi.map((gruppo, gi) => {
         // Salta sezioni senza contenuto reale (titolo di default e nessun testo/immagine)
         const sezsFiltrate = gruppo.sezioni.filter(s =>
-          s.immagine_url || s.testo || (s.titolo && s.titolo !== 'Nuova sezione')
+          s.immagine_url || s.testo || s.link_url || s.link_url_2 || (s.titolo && s.titolo !== 'Nuova sezione')
         )
         if (sezsFiltrate.length === 0) return null
         const gruppoFiltrato = { ...gruppo, sezioni: sezsFiltrate }
@@ -60,38 +82,26 @@ export default async function Home() {
 
         if (tipo === 'hero') {
           const h = sezs[0]
-          // Se c'è immagine mobile usa position:relative + <picture>, altrimenti background-image
+          // Se c'è immagine mobile usa <picture> nativo (necessario per servire foto
+          // diverse per dispositivo), altrimenti next/image con priority (è l'elemento
+          // LCP della pagina: la prima cosa grande che l'utente vede).
           const hasMobileHero = !!h.immagine_mobile_url
-          const bgStyle = h.immagine_url && !hasMobileHero
-            ? { backgroundImage: `url(${h.immagine_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-            : {}
           const section = (
-            <div key={gi} className="landing-hero" data-hasimg={h.immagine_url ? '1' : '0'} style={{ position: 'relative', overflow: 'hidden', ...bgStyle }}>
+            <div key={gi} className="landing-hero" data-hasimg={h.immagine_url ? '1' : '0'} style={{ position: 'relative', overflow: 'hidden' }}>
               {hasMobileHero && (
                 <picture style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
                   <source media="(max-width: 768px)" srcSet={h.immagine_mobile_url} />
                   <img src={h.immagine_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </picture>
               )}
+              {!hasMobileHero && h.immagine_url && (
+                <Image src={h.immagine_url} alt="" fill priority sizes="100vw" style={{ objectFit: 'cover', zIndex: 0 }} />
+              )}
               <div className="landing-inner">
                 <div className="hero" data-img={h.immagine_url ? '1' : '0'}>
                   {h.titolo && <h1 className="hero-title">{h.titolo}</h1>}
                   {h.testo && <p className="hero-lead">{renderTesto(h.testo)}</p>}
-                  {loggedIn ? (
-                    <Link href="/dashboard" className="cta-card">
-                      <span className="cta-text">
-                        <span className="cta-eyebrow">Area gestione</span>
-                        <strong>Entra nella tua area operativa</strong>
-                        <span className="cta-sub">Portieri · Calendario · Partite · Statistiche</span>
-                      </span>
-                      <span className="cta-arrow" aria-hidden="true">&rarr;</span>
-                    </Link>
-                  ) : (
-                    <div className="cta-guest">
-                      <Link href="/login" className="btn-hero">Accedi all&apos;area gestione</Link>
-                      <span className="cta-guest-note">Riservata allo staff tecnico e ai portieri.</span>
-                    </div>
-                  )}
+                  <AreaLoginCta variant="hero" />
                 </div>
               </div>
             </div>
@@ -107,7 +117,11 @@ export default async function Home() {
                 <div className="features">
                   {sezs.map((v) => (
                     <div className="feature" key={v.id}>
-                      {v.immagine_url && <img className="feature-img" src={v.immagine_url} alt="" />}
+                      {v.immagine_url && (
+                        <div className="feature-img-wrap">
+                          <Image className="feature-img" src={v.immagine_url} alt="" fill sizes="(max-width: 720px) 90vw, 360px" />
+                        </div>
+                      )}
                       {v.titolo && <h3>{v.titolo}</h3>}
                       {v.testo && <p>{renderTesto(v.testo)}</p>}
                     </div>
@@ -122,7 +136,11 @@ export default async function Home() {
             <div key={c.id} className={`landing-blocco${ci % 2 === 1 ? ' bg-alt' : ''}`}>
               <div className="landing-inner">
                 <div className={`blocco ${c.foto_posizione === 'destra' ? 'blocco-rev' : ''}`}>
-                  {c.immagine_url && <div className="blocco-img"><img src={c.immagine_url} alt="" /></div>}
+                  {c.immagine_url && (
+                    <div className="blocco-img">
+                      <Image src={c.immagine_url} alt="" width={1200} height={800} style={{ width: '100%', height: 'auto' }} sizes="(max-width: 720px) 90vw, 560px" />
+                    </div>
+                  )}
                   <div className="blocco-testo">
                     {c.titolo && <h2>{c.titolo}</h2>}
                     {c.testo && <p>{renderTesto(c.testo)}</p>}
@@ -195,9 +213,69 @@ export default async function Home() {
               ? <a href={b.link_url} key={b.id} style={{ display: 'block', textDecoration: 'none' }}>{contenuto}</a>
               : contenuto
           })
+        } else if (tipo === 'social') {
+          const soc = sezs[0]
+          return (
+            <div key={gi} className="landing-social">
+              <div className="landing-inner">
+                <div className="social-box">
+                  {soc.immagine_url && (
+                    <div className="social-img-wrap">
+                      <Image src={soc.immagine_url} alt="" fill sizes="(max-width: 720px) 90vw, 420px" style={{ objectFit: 'cover' }} />
+                    </div>
+                  )}
+                  <div className="social-testo">
+                    {soc.titolo && <h2>{soc.titolo}</h2>}
+                    {soc.testo && <p>{renderTesto(soc.testo)}</p>}
+                    <div className="social-links">
+                      {soc.link_url && (
+                        <a href={soc.link_url} target="_blank" rel="noopener noreferrer" className="social-btn social-btn-fb">
+                          📘 Seguici su Facebook
+                        </a>
+                      )}
+                      {soc.link_url_2 && (
+                        <a href={soc.link_url_2} target="_blank" rel="noopener noreferrer" className="social-btn social-btn-ig">
+                          📷 Seguici su Instagram
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+
         }
         return null
       })}
+
+      {/* ── Prezzi ── */}
+      <div className="landing-pricing" id="prezzi">
+        <div className="landing-inner">
+          <h2 className="pricing-title">Prezzi semplici, senza sorprese</h2>
+          <p className="pricing-sub">Le funzionalità di base sono sempre gratuite. Sblocca tutto con un piano, disdici quando vuoi.</p>
+          <div className="pricing-grid">
+            <div className="pricing-card">
+              <div className="pricing-card-tipo">Per allenatori e staff</div>
+              <div className="pricing-righe">
+                <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.allenatore.mensile}<small>/mese</small></b></div>
+                <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.allenatore.annuale}<small>/anno</small></b></div>
+                <div className="pricing-riga"><span>A vita</span><b>€{prezzi.allenatore.lifetime}<small> una tantum</small></b></div>
+              </div>
+              <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
+            </div>
+            <div className="pricing-card">
+              <div className="pricing-card-tipo">Per portieri</div>
+              <div className="pricing-righe">
+                <div className="pricing-riga"><span>Mensile</span><b>€{prezzi.portiere.mensile}<small>/mese</small></b></div>
+                <div className="pricing-riga"><span>Annuale</span><b>€{prezzi.portiere.annuale}<small>/anno</small></b></div>
+                <div className="pricing-riga"><span>A vita</span><b>€{prezzi.portiere.lifetime}<small> una tantum</small></b></div>
+              </div>
+              <Link href="/registrati" className="btn-hero" style={{ display: 'inline-block', marginTop: 18 }}>Inizia gratis</Link>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ── Sezione ricerca allenatori ── */}
       <div className="landing-cerca">

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import Guida from '@/app/components/Guida'
 
@@ -63,13 +64,10 @@ export default async function ComeIniziarePage() {
         {!isPortiere && (
           <div style={{ marginTop: 32 }}>
             <Guida titolo="Domande frequenti">
-              <p><b>Il portiere non riesce ad accedere?</b><br />Verifica che l&apos;invito sia nello stato &ldquo;consumato&rdquo; nella pagina Inviti. Se è ancora &ldquo;attivo&rdquo; il portiere non ha completato la registrazione.</p>
-              <p><b>Gli allenamenti non compaiono nel calendario?</b><br />Verifica che la stagione sia attiva e che le ricorrenze siano state generate. Controlla anche che il portiere sia iscritto alla categoria giusta.</p>
-              <p><b>Le statistiche mostrano &ldquo;—&rdquo; per tutti?</b><br />Le statistiche si calcolano dalle valutazioni inserite negli allenamenti. Se non hai ancora valutato nessun allenamento, i dati saranno vuoti.</p>
-              <p><b>Come cambio categoria a un portiere a metà stagione?</b><br />Modifica l&apos;iscrizione dalla scheda del portiere: cambia la categoria e salva. Le valutazioni precedenti restano collegate agli allenamenti originali.</p>
-              <p><b>Ho inserito allenamenti per errore, come li cancello?</b><br />Vai in Ricorrenze → sezione &ldquo;Eliminazione massiva&rdquo; in fondo alla pagina. Puoi filtrare per categoria, intervallo di date e scegliere di eliminare solo quelli senza valutazioni (tipico caso di inserimento errato).</p>
-              <p><b>Come accorpo due categorie in un unico allenamento?</b><br />Apri l&apos;allenamento nel calendario e usa il campo &ldquo;Accorpa con categoria&rdquo;: le valutazioni di entrambe le categorie appariranno nella stessa griglia.</p>
-              <p><b>La media voto del portiere nelle partite non torna?</b><br />Le amichevoli sono escluse dalla media di campionato e conteggiate separatamente. Controlla il tipo partita (campionato/amichevole) nella scheda della gara.</p>
+              <p>
+                Le domande frequenti hanno ora una loro pagina dedicata, più completa e organizzata per
+                argomento: <Link href="/faq" className="link-inline">vai a Domande frequenti →</Link>
+              </p>
             </Guida>
           </div>
         )}

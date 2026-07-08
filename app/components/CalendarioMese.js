@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const MESI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre']
@@ -9,6 +10,7 @@ const GIORNI_LONG  = ['lunedì','martedì','mercoledì','giovedì','venerdì','s
 const pad = (n) => String(n).padStart(2, '0')
 
 export default function CalendarioMese({ allenamenti, partite = [], categorie, vista = 'staff' }) {
+  const router = useRouter()
   const isPortiere = vista === 'portiere'
   const oggi = new Date()
   const [cursor, setCursor] = useState(() => new Date(oggi.getFullYear(), oggi.getMonth(), 1))
@@ -28,6 +30,10 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
 
   const daValutare = isPortiere ? [] : filtrati
     .filter((a) => !a.valutato && a.data < oggiStr)
+    .sort((a, b) => (a.data < b.data ? 1 : -1))
+
+  const partiteDaValutare = isPortiere ? [] : partite
+    .filter((p) => !p.ha_valutazioni && p.data < oggiStr)
     .sort((a, b) => (a.data < b.data ? 1 : -1))
 
   // Raggruppa allenamenti e partite per giorno del mese corrente
@@ -103,9 +109,25 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
       } catch (_) {}
     }
 
-    // Carica esercizi solo per gli allenamenti di questo giorno non ancora caricati
-    const allIds = evs.filter(e => e._tipo === 'allenamento' && !previewExtra[e.id]).map(e => e.id)
-    if (allIds.length === 0) return
+    // Carica esercizi solo per gli allenamenti di questo giorno non ancora caricati.
+    // Per un allenamento accorpato (secondario), gli esercizi vanno letti dall'allenamento
+    // "accorpante" (quello che li gestisce davvero) — risolto usando gli eventi già presenti
+    // nello stesso giorno, che includono sempre sia il primario che il secondario.
+    const daCaricare = evs.filter(e => e._tipo === 'allenamento' && !previewExtra[e.id])
+    if (daCaricare.length === 0) return
+    const idEffettivo = {}
+    for (const e of daCaricare) {
+      if (e.accorpata_con) {
+        const primario = evs.find(o =>
+          o._tipo === 'allenamento' && o.id !== e.id &&
+          (o.id === e.accorpata_con || o.squadra_id === e.accorpata_con)
+        )
+        idEffettivo[e.id] = primario ? primario.id : e.id
+      } else {
+        idEffettivo[e.id] = e.id
+      }
+    }
+    const allIds = [...new Set(Object.values(idEffettivo))]
     setLoadingExtra(true)
     try {
       const { createClient } = await import('@/lib/supabase/client')
@@ -117,7 +139,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
           .order('ordine'),
         supabase.from('allenamenti')
           .select('id, obiettivi, consuntivo')
-          .in('id', allIds),
+          .in('id', daCaricare.map(e => e.id)),
       ])
       const byAll = {}
       for (const r of (ae ?? [])) {
@@ -128,17 +150,43 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
       for (const a of (allRows ?? [])) allMap[a.id] = a
       setPreviewExtra(prev => {
         const next = { ...prev }
-        for (const id of allIds) next[id] = {
-          esercizi: byAll[id] ?? [],
-          obiettivi: allMap[id]?.obiettivi ?? null,
-          consuntivo: allMap[id]?.consuntivo ?? null,
-          totaleMinuti: (byAll[id] ?? []).reduce((tot, e) => tot + (parseFloat(e.durata_minuti)||0) + (parseFloat(e.recupero_minuti)||0), 0),
-          totaleMinuti: (byAll[id] ?? []).reduce((tot, e) => tot + (parseFloat(e.durata_minuti)||0) + (parseFloat(e.recupero_minuti)||0), 0),
+        for (const e of daCaricare) {
+          const effId = idEffettivo[e.id]
+          next[e.id] = {
+            esercizi: byAll[effId] ?? [],
+            obiettivi: allMap[e.id]?.obiettivi ?? null,
+            consuntivo: allMap[e.id]?.consuntivo ?? null,
+            totaleMinuti: (byAll[effId] ?? []).reduce((tot, ex) => tot + (parseFloat(ex.durata_minuti)||0) + (parseFloat(ex.recupero_minuti)||0), 0),
+          }
         }
         return next
       })
     } catch (_) {}
     setLoadingExtra(false)
+  }
+
+  async function eliminaAllenamento(ev) {
+    const dipendenti = (byDay[new Date(ev.data + 'T00:00:00').getDate()] ?? [])
+      .filter((o) => o._tipo === 'allenamento' && o.id !== ev.id && o.accorpata_con === ev.squadra_id)
+    const nomiDipendenti = dipendenti.map((d) => d.squadra_nome).filter(Boolean)
+    const avviso = nomiDipendenti.length > 0
+      ? `\n\n⚠ Attenzione: ${nomiDipendenti.join(', ')} ${nomiDipendenti.length === 1 ? 'è accorpata' : 'sono accorpate'} a questo allenamento e ${nomiDipendenti.length === 1 ? 'perderebbe' : 'perderebbero'} l'accesso agli esercizi condivisi qui.`
+      : ''
+    if (!confirm(`Eliminare definitivamente questo allenamento? L'operazione non è reversibile.${avviso}`)) return
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    const { error } = await supabase.from('allenamenti').delete().eq('id', ev.id)
+    if (error) { alert('Errore: ' + error.message); return }
+    router.refresh()
+  }
+
+  async function eliminaPartita(ev) {
+    if (!confirm('Eliminare definitivamente questa partita? L\'operazione non è reversibile.')) return
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    const { error } = await supabase.from('partite').delete().eq('id', ev.id)
+    if (error) { alert('Errore: ' + error.message); return }
+    router.refresh()
   }
 
   // Preview degli eventi del giorno selezionato
@@ -235,10 +283,17 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                     )
                   }
                   const cls = ev.valutato ? 'ev-verde' : (ev.data < oggiStr ? 'ev-rosso' : '')
+                  const eAccorpante = evs.some((o) => o._tipo === 'allenamento' && o.id !== ev.id && o.accorpata_con === ev.squadra_id)
+                  const bordoAccorpamento = ev.accorpata_con
+                    ? { outline: '2px solid var(--giallo)', outlineOffset: '-2px' }
+                    : eAccorpante
+                      ? { outline: '2px solid var(--campo)', outlineOffset: '-2px' }
+                      : {}
                   return (
                     <span key={ev.id}
                       className={`cal-ev ${cls}`}
-                      style={ev.accorpata_con ? { outline: '2px solid var(--giallo)', outlineOffset: '-2px' } : {}}>
+                      title={eAccorpante ? 'Categoria accorpante: qui gestisci gli esercizi condivisi' : undefined}
+                      style={bordoAccorpamento}>
                       {ev.squadra_nome}
                     </span>
                   )
@@ -299,6 +354,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                     <Link href={`/partite/${ev.id}`} className="btn-mini">
                       {passata && !ev.ha_valutazioni ? '⚠ Inserisci valutazioni →' : 'Apri partita →'}
                     </Link>
+                    <button type="button" className="btn-mini btn-del" onClick={() => eliminaPartita(ev)}>🗑 Elimina</button>
                   </div>
                 </div>
               )
@@ -315,6 +371,11 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                     {ev.accorpata_con && (
                       <div className="cal-preview-badge" style={{background:'var(--giallo)',color:'#000'}}>
                         🔗 Accorpato con {ev.accorpata_nome || '...'}
+                      </div>
+                    )}
+                    {!ev.accorpata_con && selectedEvs.some((o) => o._tipo === 'allenamento' && o.id !== ev.id && o.accorpata_con === ev.squadra_id) && (
+                      <div className="cal-preview-badge" style={{background:'var(--campo)',color:'#fff'}}>
+                        🔗 Categoria accorpante (gestisci qui gli esercizi)
                       </div>
                     )}
                     <div className="cal-preview-categoria">{ev.squadra_nome}</div>
@@ -381,6 +442,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                   <Link href={`/calendario/${ev.id}`} className="btn-mini">
                     {daVal ? 'Inserisci valutazioni →' : 'Apri allenamento →'}
                   </Link>
+                  <button type="button" className="btn-mini btn-del" onClick={() => eliminaAllenamento(ev)}>🗑 Elimina</button>
                 </div>
               </div>
             )
@@ -391,12 +453,26 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
       {/* ── Da valutare ── (in fondo, dopo la preview) */}
       {daValutare.length > 0 && (
         <div className="da-valutare" style={{ marginTop: 24 }}>
-          <h3>Da valutare ({daValutare.length})</h3>
+          <h3>Allenamenti da valutare ({daValutare.length})</h3>
           <div className="dv-list">
             {daValutare.map((a) => (
               <Link key={a.id} href={`/calendario/${a.id}`} className="dv-item">
                 <span className="dv-data">{new Date(a.data + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</span>
                 <span>{a.squadra_nome}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {partiteDaValutare.length > 0 && (
+        <div className="da-valutare" style={{ marginTop: 16 }}>
+          <h3>Partite da valutare ({partiteDaValutare.length})</h3>
+          <div className="dv-list">
+            {partiteDaValutare.map((p) => (
+              <Link key={p.id} href={`/partite/${p.id}`} className="dv-item">
+                <span className="dv-data">{new Date(p.data + 'T00:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</span>
+                <span>{p.squadra_nome} · {p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'} {p.avversario || 'Partita'}</span>
               </Link>
             ))}
           </div>

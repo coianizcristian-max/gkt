@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
+import { rateLimit } from '@/lib/rateLimit'
 
 function getAdmin() {
   return createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -14,6 +15,10 @@ export async function POST(request) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+
+    if (!rateLimit(`coupon:${user.id}`, { max: 10, windowMs: 10 * 60 * 1000 })) {
+      return NextResponse.json({ error: 'Troppi tentativi. Riprova tra qualche minuto.' }, { status: 429 })
+    }
 
     const admin = getAdmin()
 

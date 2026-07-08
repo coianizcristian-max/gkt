@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
+import { rateLimit, getClientIp } from '@/lib/rateLimit'
 
 const admin = createAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -10,6 +11,10 @@ const admin = createAdmin(
 
 export async function POST(req) {
   try {
+    if (!rateLimit(`contatto:${getClientIp(req)}`, { max: 5, windowMs: 10 * 60 * 1000 })) {
+      return NextResponse.json({ error: 'Troppe richieste. Riprova tra qualche minuto.' }, { status: 429 })
+    }
+
     const { allenatoreId, nome, email, telefono, societa, messaggio } = await req.json()
 
     // Validazione base

@@ -10,6 +10,7 @@ const TIPI = [
   { v: 'vantaggio', l: 'Vantaggio (riquadro)' },
   { v: 'contenuto', l: 'Contenuto (blocco testo + foto)' },
   { v: 'banner', l: 'Banner (fascia orizzontale)' },
+  { v: 'social', l: 'Social (Facebook + Instagram)' },
 ]
 
 function SezioneCard({ sezione, onChanged }) {
@@ -68,6 +69,7 @@ function SezioneCard({ sezione, onChanged }) {
         foto_posizione: fotoPos,
         altezza_px: s.altezza_px ? Number(s.altezza_px) : null,
         link_url: s.link_url || null,
+        link_url_2: s.link_url_2 || null,
       }).eq('id', s.id)
       if (error) throw error
       setFile(null); setDone(true); router.refresh()
@@ -121,6 +123,23 @@ function SezioneCard({ sezione, onChanged }) {
           </label>
           <input type="url" value={s.link_url ?? ''} onChange={upd('link_url')} placeholder="https://..." />
         </div>
+      )}
+
+      {/* Link Facebook/Instagram — solo per il tipo Social */}
+      {s.tipo === 'social' && (
+        <>
+          <div className="field">
+            <label>Link pagina Facebook</label>
+            <input type="url" value={s.link_url ?? ''} onChange={upd('link_url')} placeholder="https://facebook.com/..." />
+          </div>
+          <div className="field">
+            <label>Link profilo Instagram</label>
+            <input type="url" value={s.link_url_2 ?? ''} onChange={upd('link_url_2')} placeholder="https://instagram.com/..." />
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--ink-soft)', margin: '0 0 8px' }}>
+            💡 Carica come immagine una foto d&apos;anteprima carina (es. una foto di squadra o allenamento) — verrà mostrata accanto ai due pulsanti social.
+          </p>
+        </>
       )}
 
       {/* Altezza — solo per banner */}

@@ -28,10 +28,20 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
     tipo: partita?.tipo ?? 'campionato',
   })
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
   const upd = (k) => (e) => { setF((s) => ({ ...s, [k]: e.target.value })); setDone(false) }
   const num = (v) => (v === '' || v == null ? null : Number(v))
+
+  async function elimina() {
+    if (!confirm('Eliminare definitivamente questa partita? L\'operazione non è reversibile.')) return
+    setDeleting(true)
+    const supabase = createClient()
+    const { error } = await supabase.from('partite').delete().eq('id', partita.id)
+    if (error) { setError(error.message); setDeleting(false); return }
+    router.push('/partite'); router.refresh()
+  }
 
   async function save(e) {
     e.preventDefault(); setError('')
@@ -97,11 +107,18 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
         <div className="field field-full"><label>Note</label>
           <textarea rows="2" value={f.note} onChange={upd('note')} /></div>
       </div>
-      <div className="form-actions">
-        {!isEdit && <button type="button" className="btn-ghost" onClick={() => router.push('/partite')}>Annulla</button>}
-        <button type="submit" className="btn" disabled={saving}>
-          {saving ? 'Salvataggio...' : done ? 'Salvato \u2713' : (isEdit ? 'Salva partita' : 'Crea e inserisci valutazioni')}
-        </button>
+      <div className="form-actions" style={{ justifyContent: isEdit ? 'space-between' : 'flex-end' }}>
+        {isEdit && (
+          <button type="button" className="btn-ghost" onClick={elimina} disabled={deleting || saving} style={{ color: 'var(--rosso)', borderColor: 'var(--rosso)' }}>
+            {deleting ? 'Eliminazione...' : '🗑 Elimina partita'}
+          </button>
+        )}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {!isEdit && <button type="button" className="btn-ghost" onClick={() => router.push('/partite')}>Annulla</button>}
+          <button type="submit" className="btn" disabled={saving || deleting}>
+            {saving ? 'Salvataggio...' : done ? 'Salvato \u2713' : (isEdit ? 'Salva partita' : 'Crea e inserisci valutazioni')}
+          </button>
+        </div>
       </div>
     </form>
   )

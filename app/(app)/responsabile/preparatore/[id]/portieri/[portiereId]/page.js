@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -70,7 +71,7 @@ export default async function SupervisionePortiere({ params }) {
         {/* Anagrafica */}
         <div className="scheda" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
           {portiere.foto_url && (
-            <img src={portiere.foto_url} alt="" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+            <Image src={portiere.foto_url} alt="" width={80} height={80} style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
           )}
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: 18 }}>{portiere.nome} {portiere.cognome ?? ''}</div>

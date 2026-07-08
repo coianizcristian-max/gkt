@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import Guida from '@/app/components/Guida'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -117,7 +118,7 @@ export default async function ArchivioPage({ searchParams }) {
                   {lista.map((s) => (
                     <div className="stat-card" key={s.p.id}>
                       <div className="stat-head">
-                        <div className="stat-foto">{s.p.foto_url ? <img src={s.p.foto_url} alt="" /> : <span>{(s.p.nome || '?').charAt(0)}</span>}</div>
+                        <div className="stat-foto">{s.p.foto_url ? <Image src={s.p.foto_url} alt="" fill sizes="52px" /> : <span>{(s.p.nome || '?').charAt(0)}</span>}</div>
                         <div>
                           <div className="stat-nome">{s.p.nome} {s.p.cognome ?? ''}</div>
                           {s.p.numero_maglia ? <div className="stat-cat">#{s.p.numero_maglia}</div> : null}

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 function calcEta(dataNascita) {
   if (!dataNascita) return null
@@ -74,7 +75,7 @@ export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPorti
                     <div className="card-top">
                       <div className="avatar">
                         {p.foto_url
-                          ? <img src={p.foto_url} alt="" />
+                          ? <Image src={p.foto_url} alt="" fill sizes="46px" />
                           : <span>{(p.nome?.[0] ?? '') + (p.cognome?.[0] ?? '')}</span>}
                       </div>
                       <div>

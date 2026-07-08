@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Guida from '@/app/components/Guida'
 import Link from 'next/link'
 
@@ -55,7 +56,7 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, feedback
                       <Link className="stat-card" key={s.p.id} href={`/portieri/${s.p.id}/statistiche`} style={{textDecoration:'none',display:'block',cursor:'pointer'}}>
                         <div className="stat-head">
                           <div className="stat-foto">
-                            {s.p.foto_url ? <img src={s.p.foto_url} alt="" /> : <span>{(s.p.nome || '?').charAt(0)}</span>}
+                            {s.p.foto_url ? <Image src={s.p.foto_url} alt="" fill sizes="52px" /> : <span>{(s.p.nome || '?').charAt(0)}</span>}
                           </div>
                           <div>
                             <div className="stat-nome">

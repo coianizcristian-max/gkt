@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { renderTesto } from '@/lib/renderTesto'
 
+// Dopo ogni salvataggio/eliminazione, invalida subito la cache della home
+// pubblica: senza questo, la modifica potrebbe non vedersi per fino a un
+// minuto (il tempo di rigenerazione automatica della pagina).
+async function revalidateHome() {
+  try { await fetch('/api/revalidate-home', { method: 'POST' }) } catch (_) {}
+}
+
 const TIPI = [
   { v: 'hero', l: 'Hero (testata grande)' },
   { v: 'vantaggio', l: 'Vantaggio (riquadro)' },
@@ -74,7 +81,7 @@ function SezioneCard({ sezione, onChanged }) {
         link_url_2: s.link_url_2 || null,
       }).eq('id', s.id)
       if (error) throw error
-      setFile(null); setDone(true); router.refresh()
+      setFile(null); setDone(true); router.refresh(); revalidateHome()
     } catch (err) { alert('Errore: ' + (err.message || err)) }
     setBusy(false)
   }
@@ -84,6 +91,7 @@ function SezioneCard({ sezione, onChanged }) {
     const supabase = createClient()
     const { error } = await supabase.from('sito_sezioni').delete().eq('id', s.id)
     if (error) { alert('Errore: ' + error.message); return }
+    revalidateHome()
     onChanged()
   }
 
@@ -115,6 +123,16 @@ function SezioneCard({ sezione, onChanged }) {
         </label>
         <textarea rows="5" value={s.testo ?? ''} onChange={upd('testo')} style={{ fontFamily: 'monospace', fontSize: 13 }} />
       </div>
+
+      {/* Nota esplicativa — solo per il tipo Prezzi */}
+      {s.tipo === 'prezzi' && (
+        <div style={{ background: 'rgba(10,126,194,0.08)', border: '1px solid rgba(10,126,194,0.25)', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 13, color: 'var(--ink)' }}>
+          💡 In questa sezione puoi modificare <b>solo il titolo e il sottotitolo</b> qui sotto.
+          I prezzi e l&apos;elenco delle funzionalità gratuite/a pagamento vengono letti <b>automaticamente</b> da
+          Supervisore → Abbonamenti e Supervisore → Funzionalità — non sono modificabili da qui apposta,
+          così restano sempre coerenti con quello che configuri altrove senza doverli aggiornare due volte.
+        </div>
+      )}
 
       {/* Campo link — per hero e banner */}
       {(s.tipo === 'hero' || s.tipo === 'banner') && (
@@ -270,6 +288,7 @@ export default function SitoEditor({ sezioni }) {
     })
     if (error) alert('Errore: ' + error.message)
     setAdding(false)
+    revalidateHome()
     router.refresh()
   }
 

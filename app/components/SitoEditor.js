@@ -9,8 +9,10 @@ const TIPI = [
   { v: 'hero', l: 'Hero (testata grande)' },
   { v: 'vantaggio', l: 'Vantaggio (riquadro)' },
   { v: 'contenuto', l: 'Contenuto (blocco testo + foto)' },
+  { v: 'testo', l: 'Solo testo (blocco largo, centrato)' },
   { v: 'banner', l: 'Banner (fascia orizzontale)' },
   { v: 'social', l: 'Social (Facebook + Instagram)' },
+  { v: 'prezzi', l: 'Prezzi (piani e costi, letti in automatico)' },
 ]
 
 function SezioneCard({ sezione, onChanged }) {
@@ -171,6 +173,7 @@ function SezioneCard({ sezione, onChanged }) {
         </div>
       )}
 
+      {s.tipo !== 'testo' && s.tipo !== 'prezzi' && (
       <div className="sez-img">
         <div className="sez-thumb">
           {preview ? <img src={preview} alt="" /> : <span>nessuna immagine</span>}
@@ -243,6 +246,7 @@ function SezioneCard({ sezione, onChanged }) {
           )}
         </div>
       </div>
+      )}
       <div className="sez-actions">
         <button className="btn-ghost btn-del" onClick={elimina} type="button">Elimina</button>
         <button className="btn" onClick={salva} disabled={busy} type="button">
@@ -262,7 +266,7 @@ export default function SitoEditor({ sezioni }) {
     const supabase = createClient()
     const maxOrd = sezioni.reduce((m, s) => Math.max(m, s.ordine), 0)
     const { error } = await supabase.from('sito_sezioni').insert({
-      tipo, ordine: maxOrd + 1, titolo: 'Nuova sezione', testo: '', visibile: true,
+      tipo, ordine: maxOrd + 1, titolo: 'Nuova sezione', testo: '', visibile: tipo !== 'prezzi',
     })
     if (error) alert('Errore: ' + error.message)
     setAdding(false)
@@ -278,7 +282,10 @@ export default function SitoEditor({ sezioni }) {
         <span>Aggiungi sezione:</span>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('vantaggio')} type="button">+ Vantaggio</button>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('contenuto')} type="button">+ Contenuto</button>
+        <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('testo')} type="button">+ Solo testo</button>
         <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('banner')} type="button">+ Banner</button>
+        <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('social')} type="button">+ Social</button>
+        <button className="btn-ghost" disabled={adding} onClick={() => aggiungi('prezzi')} type="button">+ Prezzi</button>
       </div>
     </div>
   )

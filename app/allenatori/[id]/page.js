@@ -1,12 +1,21 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import Image from 'next/image'
+import { createClient as createPublicClient } from '@supabase/supabase-js'
 
-export const dynamic = 'force-dynamic'
+// Pagina pubblica al 100% (nessuna personalizzazione per chi è loggato), letta
+// anche dai motori di ricerca — cache di 5 minuti invece di rigenerare a ogni
+// visita. Client "anonimo" apposta per non forzare la pagina a restare dinamica
+// (vedi lo stesso ragionamento fatto per la homepage).
+export const revalidate = 300
+
+function getPublicClient() {
+  return createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+}
 
 export async function generateMetadata({ params }) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = getPublicClient()
   const { data: profilo } = await supabase
     .from('profili')
     .select('nome_completo, bio, citta, foto_url')
@@ -33,7 +42,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ProfiloAllenatorePublicPage({ params }) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = getPublicClient()
 
   const { data: profilo } = await supabase
     .from('profili')
@@ -81,9 +90,9 @@ export default async function ProfiloAllenatorePublicPage({ params }) {
 
       {/* Header */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', margin: '24px 0 28px' }}>
-        <div className="stat-foto" style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+        <div className="stat-foto" style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
           {profilo.foto_url
-            ? <img src={profilo.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <Image src={profilo.foto_url} alt="" fill sizes="80px" style={{ objectFit: 'cover' }} />
             : <span style={{ fontSize: 28 }}>{(profilo.nome_completo || '?').charAt(0)}</span>}
         </div>
         <div>

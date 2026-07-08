@@ -72,16 +72,29 @@ export default async function Home() {
     ...(hasPrezzi ? [{ href: '#prezzi', label: 'Prezzi' }] : []),
   ]
 
-  // Calcola in anticipo lo sfondo di ogni sezione, per garantire sempre uno
-  // stacco visibile sia con quella prima sia con quella dopo.
+  // Calcola in anticipo lo sfondo di ogni singola sezione (non solo di ogni
+  // gruppo), per garantire sempre uno stacco visibile con quella prima E
+  // quella dopo, anche quando ci sono più blocchi Contenuto/Testo di fila.
   const SFONDO_FISSO = { hero: 'scuro', vantaggio: 'alt', banner: 'scuro', social: 'bianco', prezzi: 'alt', faq: 'bianco' }
-  const sfondi = gruppi.map((g) => SFONDO_FISSO[g.tipo] ?? null) // null = dinamico (contenuto/testo)
-  for (let i = 0; i < sfondi.length; i++) {
-    if (sfondi[i] !== null) continue
-    const prev = i > 0 ? sfondi[i - 1] : null
-    const next = i < sfondi.length - 1 ? sfondi[i + 1] : null
+  const unita = []
+  gruppi.forEach((g, gi) => {
+    if (SFONDO_FISSO[g.tipo]) {
+      unita.push({ gi, ci: null, fisso: SFONDO_FISSO[g.tipo] })
+    } else if (g.tipo === 'contenuto' || g.tipo === 'testo') {
+      g.sezioni.forEach((_, ci) => unita.push({ gi, ci, fisso: null }))
+    }
+  })
+  for (let i = 0; i < unita.length; i++) {
+    if (unita[i].fisso) { unita[i].valore = unita[i].fisso; continue }
+    const prev = i > 0 ? unita[i - 1].valore : null
+    const next = (i < unita.length - 1 && unita[i + 1].fisso) ? unita[i + 1].fisso : null
     const candidati = ['alt', 'bianco'].filter((c) => c !== prev && c !== next)
-    sfondi[i] = candidati[0] ?? (prev === 'alt' ? 'bianco' : 'alt')
+    unita[i].valore = candidati[0] ?? (prev === 'alt' ? 'bianco' : 'alt')
+  }
+  // Mappa di comodo per leggere il valore durante il render: sfondoSezione[gi][ci ?? '_'] = 'alt' | 'bianco'
+  const sfondoSezione = {}
+  for (const u of unita) {
+    (sfondoSezione[u.gi] ??= {})[u.ci ?? '_'] = u.valore
   }
 
   return (
@@ -168,9 +181,8 @@ export default async function Home() {
           )
 
         } else if (tipo === 'contenuto') {
-          const altBase = sfondi[gi] === 'alt'
           return sezs.map((c, ci) => {
-            const alt = ci % 2 === 0 ? altBase : !altBase
+            const alt = sfondoSezione[gi][ci] === 'alt'
             return (
             <div key={c.id} className={`landing-blocco${alt ? ' bg-alt' : ''}`}>
               <div className="landing-inner">
@@ -343,9 +355,8 @@ export default async function Home() {
           )
 
         } else if (tipo === 'testo') {
-          const altBase = sfondi[gi] === 'alt'
           return sezs.map((t, ti) => {
-            const alt = ti % 2 === 0 ? altBase : !altBase
+            const alt = sfondoSezione[gi][ti] === 'alt'
             return (
             <div key={t.id} className={`landing-testo${alt ? ' bg-alt' : ''}`}>
               <div className="landing-inner">

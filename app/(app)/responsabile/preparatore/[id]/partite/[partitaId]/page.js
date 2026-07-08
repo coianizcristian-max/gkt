@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -87,12 +88,11 @@ export default async function SupervisionePartita({ params }) {
             {presenti.map(v => (
               <div key={v.portiere_id} className="lista-riga" style={{ alignItems: 'center', gap: 12 }}>
                 <div style={{
-                  width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                  width: 36, height: 36, borderRadius: '50%', flexShrink: 0, position: 'relative', overflow: 'hidden',
                   background: 'var(--azzurro-chiaro)',
-                  backgroundImage: v.portieri?.foto_url ? `url(${v.portieri.foto_url})` : 'none',
-                  backgroundSize: 'cover',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
+                  {v.portieri?.foto_url && <Image src={v.portieri.foto_url} alt="" fill sizes="36px" style={{ objectFit: 'cover' }} />}
                   {!v.portieri?.foto_url && '🧤'}
                 </div>
                 <div style={{ flex: 1 }}>

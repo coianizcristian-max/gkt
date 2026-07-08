@@ -1,5 +1,6 @@
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,12 +51,11 @@ export default async function SupervisionePortieri({ params }) {
                 return (
                   <div key={i.id} className={`lista-riga ${i.attivo ? '' : 'assente'}`} style={{ alignItems: 'center', gap: 12 }}>
                     <div style={{
-                      width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                      width: 40, height: 40, borderRadius: '50%', flexShrink: 0, position: 'relative', overflow: 'hidden',
                       background: 'var(--azzurro-chiaro)',
-                      backgroundImage: p.foto_url ? `url(${p.foto_url})` : 'none',
-                      backgroundSize: 'cover', backgroundPosition: 'center',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
                     }}>
+                      {p.foto_url && <Image src={p.foto_url} alt="" fill sizes="40px" style={{ objectFit: 'cover' }} />}
                       {!p.foto_url && '🧤'}
                     </div>
                     <div style={{ flex: 1 }}>

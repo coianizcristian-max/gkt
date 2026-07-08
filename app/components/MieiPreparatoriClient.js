@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function MieiPreparatoriClient({ preparatoriIniziali }) {
   const router = useRouter()
@@ -62,13 +63,12 @@ export default function MieiPreparatoriClient({ preparatoriIniziali }) {
           <div key={p.preparatore_id} className="lista-riga" style={{ alignItems: 'center', gap: 12 }}>
             {/* Avatar */}
             <div style={{
-              width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+              width: 44, height: 44, borderRadius: '50%', flexShrink: 0, position: 'relative', overflow: 'hidden',
               background: 'var(--azzurro-chiaro)',
-              backgroundImage: p.foto_url ? `url(${p.foto_url})` : 'none',
-              backgroundSize: 'cover', backgroundPosition: 'center',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 18,
             }}>
+              {p.foto_url && <Image src={p.foto_url} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />}
               {!p.foto_url && '👤'}
             </div>
 

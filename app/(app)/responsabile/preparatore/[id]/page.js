@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,12 +58,11 @@ export default async function SupervisionePanoramica({ params }) {
         {/* Info profilo */}
         <div className="scheda" style={{ display: 'flex', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 16 }}>
           <div style={{
-            width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+            width: 56, height: 56, borderRadius: '50%', flexShrink: 0, position: 'relative', overflow: 'hidden',
             background: 'var(--azzurro-chiaro)',
-            backgroundImage: profilo?.foto_url ? `url(${profilo.foto_url})` : 'none',
-            backgroundSize: 'cover', backgroundPosition: 'center',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
           }}>
+            {profilo?.foto_url && <Image src={profilo.foto_url} alt="" fill sizes="56px" style={{ objectFit: 'cover' }} />}
             {!profilo?.foto_url && '👤'}
           </div>
           <div style={{ flex: 1 }}>

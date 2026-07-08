@@ -72,6 +72,18 @@ export default async function Home() {
     ...(hasPrezzi ? [{ href: '#prezzi', label: 'Prezzi' }] : []),
   ]
 
+  // Calcola in anticipo lo sfondo di ogni sezione, per garantire sempre uno
+  // stacco visibile sia con quella prima sia con quella dopo.
+  const SFONDO_FISSO = { hero: 'scuro', vantaggio: 'alt', banner: 'scuro', social: 'bianco', prezzi: 'alt', faq: 'bianco' }
+  const sfondi = gruppi.map((g) => SFONDO_FISSO[g.tipo] ?? null) // null = dinamico (contenuto/testo)
+  for (let i = 0; i < sfondi.length; i++) {
+    if (sfondi[i] !== null) continue
+    const prev = i > 0 ? sfondi[i - 1] : null
+    const next = i < sfondi.length - 1 ? sfondi[i + 1] : null
+    const candidati = ['alt', 'bianco'].filter((c) => c !== prev && c !== next)
+    sfondi[i] = candidati[0] ?? (prev === 'alt' ? 'bianco' : 'alt')
+  }
+
   return (
     <div className="landing">
 
@@ -95,7 +107,7 @@ export default async function Home() {
       </header>
 
       {/* ── Sezioni dal DB in ordine ── */}
-      {(() => { let ultimoSfondo = null; return gruppi.map((gruppo, gi) => {
+      {gruppi.map((gruppo, gi) => {
         // Salta sezioni senza contenuto reale (titolo di default e nessun testo/immagine)
         const sezsFiltrate = gruppo.sezioni.filter(s =>
           s.tipo === 'prezzi' || s.immagine_url || s.testo || s.link_url || s.link_url_2 || (s.titolo && s.titolo !== 'Nuova sezione')
@@ -130,13 +142,11 @@ export default async function Home() {
               </div>
             </div>
           )
-          ultimoSfondo = 'scuro'
           return h.link_url
             ? <a href={h.link_url} key={gi} style={{ display: 'block', textDecoration: 'none' }}>{section}</a>
             : section
 
         } else if (tipo === 'vantaggio') {
-          ultimoSfondo = 'alt'
           return (
             <div key={gi} className="landing-features">
               <div className="landing-inner">
@@ -158,9 +168,8 @@ export default async function Home() {
           )
 
         } else if (tipo === 'contenuto') {
+          const alt = sfondi[gi] === 'alt'
           return sezs.map((c) => {
-            const alt = ultimoSfondo !== 'alt'
-            ultimoSfondo = alt ? 'alt' : 'bianco'
             return (
             <div key={c.id} className={`landing-blocco${alt ? ' bg-alt' : ''}`}>
               <div className="landing-inner">
@@ -181,7 +190,6 @@ export default async function Home() {
           })
 
         } else if (tipo === 'banner') {
-          ultimoSfondo = 'scuro'
           return sezs.map((b) => {
             const altezza = b.altezza_px ?? 300
             // Se c'è immagine mobile usiamo un <picture> con <source media>
@@ -245,7 +253,6 @@ export default async function Home() {
               : contenuto
           })
         } else if (tipo === 'social') {
-          ultimoSfondo = 'bianco'
           const soc = sezs[0]
           return (
             <div key={gi} className="landing-social" id="social">
@@ -278,7 +285,6 @@ export default async function Home() {
           )
 
         } else if (tipo === 'prezzi') {
-          ultimoSfondo = 'alt'
           const pr = sezs[0]
           return (
             <div key={gi} className="landing-pricing" id="prezzi">
@@ -319,7 +325,6 @@ export default async function Home() {
           )
 
         } else if (tipo === 'faq') {
-          ultimoSfondo = 'bianco'
           return (
             <div key={gi} className="landing-faq" id="faq">
               <div className="landing-inner">
@@ -337,9 +342,8 @@ export default async function Home() {
           )
 
         } else if (tipo === 'testo') {
+          const alt = sfondi[gi] === 'alt'
           return sezs.map((t) => {
-            const alt = ultimoSfondo !== 'alt'
-            ultimoSfondo = alt ? 'alt' : 'bianco'
             return (
             <div key={t.id} className={`landing-testo${alt ? ' bg-alt' : ''}`}>
               <div className="landing-inner">
@@ -354,7 +358,7 @@ export default async function Home() {
 
         }
         return null
-      }) })()}
+      })}
 
       {/* ── Sezione ricerca allenatori ── */}
       <div className="landing-cerca" id="ricerca-allenatori">

@@ -23,7 +23,7 @@ export default function StagioneSwitcher({ stagioni, stagioneCorrenteId }) {
   // Se c'è una sola stagione attiva, non serve nessun selettore: solo etichetta.
   if (stagioni.length <= 1) {
     const s = stagioni[0]
-    return s ? <span className="brand-stagione">Stagione {s.nome}</span> : null
+    return s ? <span className="brand-stagione">{s.societa_nome || `Stagione ${s.nome}`}</span> : null
   }
 
   return (

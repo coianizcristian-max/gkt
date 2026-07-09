@@ -160,7 +160,7 @@ export default async function AppLayout({ children }) {
           {logo ? <img className="brand-logo" src={logo} alt="" /> : <div className="glove">GK</div>}
           <div>
             <b>GKSeason</b>
-            {societa && <span>{societa}</span>}
+            {!isStaff && societa && <span>{societa}</span>}
             {!isStaff && stagioneNome && <span className="brand-stagione">Stagione {stagioneNome}</span>}
           </div>
         </Link>

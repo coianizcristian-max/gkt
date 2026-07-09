@@ -43,10 +43,10 @@ export default async function AppLayout({ children }) {
     vedePartite = puoVisualizzare(ctxPermessi, 'partite')
     vedeStatistiche = puoVisualizzare(ctxPermessi, 'statistiche')
 
-    if (isStaff && ownerId) {
+    if (isStaff && ownerId && stagione?.nome) {
       const { data: elencoStagioni } = await supabase
         .from('stagioni').select('id, nome, societa_nome')
-        .eq('owner_id', ownerId).eq('attiva', true)
+        .eq('owner_id', ownerId).eq('attiva', true).eq('nome', stagione.nome)
         .order('created_at', { ascending: false })
       altreStagioni = elencoStagioni ?? []
     }

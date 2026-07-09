@@ -27,17 +27,20 @@ export default function StagioneSwitcher({ stagioni, stagioneCorrenteId }) {
   }
 
   return (
-    <select
-      className="brand-stagione-switch"
-      value={stagioneCorrenteId ?? ''}
-      onChange={cambia}
-      disabled={busy}
-    >
-      {stagioni.map((s) => (
-        <option key={s.id} value={s.id}>
-          {s.societa_nome ? `${s.societa_nome} · ` : ''}{s.nome}
-        </option>
-      ))}
-    </select>
+    <div className="brand-stagione-switch-wrap">
+      <select
+        className="brand-stagione-switch"
+        value={stagioneCorrenteId ?? ''}
+        onChange={cambia}
+        disabled={busy}
+      >
+        {stagioni.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.societa_nome || s.nome}
+          </option>
+        ))}
+      </select>
+      <span className="brand-stagione-switch-arrow" aria-hidden="true">▾</span>
+    </div>
   )
 }

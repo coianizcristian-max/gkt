@@ -34,7 +34,7 @@ export default function SidebarMobile({ voci, brand }) {
         </div>
       </Link>
       {brand.isStaff && (
-        <div className="brand-switcher-wrap" style={{ margin: '-6px 0 0 44px' }}>
+        <div className="brand-switcher-wrap" style={{ margin: '-6px 0 0 0' }}>
           <StagioneSwitcher stagioni={brand.altreStagioni ?? []} stagioneCorrenteId={brand.stagioneId} />
         </div>
       )}

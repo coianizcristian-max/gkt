@@ -852,13 +852,14 @@ a.brand { text-decoration: none; color: inherit; }
 .brand-stagione-switch-wrap:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); }
 .brand-stagione-switch {
   font-size: 0.74rem; font-weight: 600; color: var(--bianco); background: transparent;
-  border: none; padding: 0; margin: 0; cursor: pointer; max-width: 150px;
+  border: none; padding: 0; margin: 0; cursor: pointer; max-width: 230px;
   font-family: inherit; -webkit-appearance: none; appearance: none;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .brand-stagione-switch:focus { outline: none; }
 .brand-stagione-switch option { color: var(--ink); }
 .brand-stagione-switch-arrow { font-size: 9px; color: var(--bianco); opacity: 0.7; pointer-events: none; }
-.brand-switcher-wrap { margin: -14px 8px 12px 48px; }
+.brand-switcher-wrap { margin: -14px 8px 12px 8px; }
 
 /* ===== Esercizi: tile grid (P10) ===== */
 .es-grid {

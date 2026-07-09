@@ -13,6 +13,36 @@ function fmtData(d) {
 export default function StagioniAllenatoreManager({ stagioni, ownerId, stagioneCorrenteId }) {
   const router = useRouter()
   const [busy, setBusy] = useState(null) // id della stagione in elaborazione
+  const [eliminaId, setEliminaId] = useState(null) // id della stagione in fase di eliminazione (mostra il pannello)
+  const [anteprima, setAnteprima] = useState(null)
+  const [nomeDigitato, setNomeDigitato] = useState('')
+  const [errore, setErrore] = useState('')
+
+  async function apriEliminazione(s) {
+    setEliminaId(s.id); setAnteprima(null); setNomeDigitato(''); setErrore('')
+    const res = await fetch('/api/elimina-stagione', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stagioneId: s.id, azione: 'anteprima' }),
+    })
+    const body = await res.json()
+    if (!res.ok) { setErrore(body.error); return }
+    setAnteprima(body)
+  }
+
+  async function confermaEliminazione(s) {
+    if (nomeDigitato.trim() !== s.nome) { setErrore('Il nome digitato non corrisponde.'); return }
+    if (!confirm(`Ultima conferma: eliminare definitivamente "${s.nome}"${s.societa_nome ? ' — ' + s.societa_nome : ''}? Non si può annullare.`)) return
+    setBusy(s.id)
+    const res = await fetch('/api/elimina-stagione', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stagioneId: s.id, azione: 'elimina', nomeConferma: nomeDigitato.trim() }),
+    })
+    const body = await res.json()
+    setBusy(null)
+    if (!res.ok) { setErrore(body.error); return }
+    setEliminaId(null)
+    router.refresh()
+  }
 
   async function passaAQuesta(id) {
     setBusy(id)
@@ -84,6 +114,9 @@ export default function StagioniAllenatoreManager({ stagioni, ownerId, stagioneC
                     {busy === s.id ? '...' : 'Riattiva'}
                   </button>
                 )}
+                <button className="btn-mini btn-del" type="button" disabled={busy === s.id} onClick={() => apriEliminazione(s)}>
+                  🗑 Elimina
+                </button>
               </div>
             </div>
 
@@ -91,6 +124,49 @@ export default function StagioniAllenatoreManager({ stagioni, ownerId, stagioneC
               <span>📅 {fmtData(s.data_inizio)} → {fmtData(s.data_fine)}</span>
               {!s.attiva && <span style={{ color: 'var(--rosso)' }}>Archiviata</span>}
             </div>
+
+            {eliminaId === s.id && (
+              <div style={{ marginTop: 14, padding: 14, background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 8 }}>
+                {errore && <div className="err" style={{ marginBottom: 10 }}>{errore}</div>}
+                {!anteprima && !errore && <p className="sub-intro" style={{ margin: 0 }}>Calcolo cosa verrà eliminato…</p>}
+                {anteprima && (
+                  <>
+                    <p style={{ margin: '0 0 10px', fontWeight: 600, color: 'var(--rosso)' }}>
+                      ⚠ Eliminando questa stagione sparirà per sempre:
+                    </p>
+                    <ul style={{ margin: '0 0 14px', paddingLeft: 20, fontSize: 14, color: 'var(--ink)' }}>
+                      <li>{anteprima.conteggi.allenamenti} allenamenti ({anteprima.conteggi.valutazioniAllenamento} valutazioni)</li>
+                      <li>{anteprima.conteggi.partite} partite ({anteprima.conteggi.valutazioniPartita} valutazioni)</li>
+                      <li>{anteprima.conteggi.iscrizioni} iscrizioni portieri</li>
+                      <li>{anteprima.conteggi.ricorrenze} ricorrenze impostate</li>
+                      <li>{anteprima.conteggi.categorieAttivate} categorie attivate per questa stagione (le categorie in sé restano, solo l&apos;attivazione qui sparisce)</li>
+                      {anteprima.conteggi.commentiReport > 0 && <li>{anteprima.conteggi.commentiReport} commenti report stagionale</li>}
+                    </ul>
+                    <p className="sub-intro" style={{ margin: '0 0 8px' }}>
+                      Per confermare, scrivi esattamente il nome della stagione: <b>{s.nome}</b>
+                    </p>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <input
+                        value={nomeDigitato}
+                        onChange={(e) => { setNomeDigitato(e.target.value); setErrore('') }}
+                        placeholder={s.nome}
+                        style={{ maxWidth: 200 }}
+                      />
+                      <button className="btn-ghost" type="button" onClick={() => { setEliminaId(null); setErrore('') }}>Annulla</button>
+                      <button
+                        className="btn"
+                        type="button"
+                        style={{ background: 'var(--rosso)', borderColor: 'var(--rosso)' }}
+                        disabled={busy === s.id || nomeDigitato.trim() !== s.nome}
+                        onClick={() => confermaEliminazione(s)}
+                      >
+                        {busy === s.id ? 'Eliminazione...' : 'Elimina definitivamente'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )
       })}

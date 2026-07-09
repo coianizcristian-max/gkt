@@ -24,10 +24,10 @@ export default async function SupervisoreFaqPage() {
       <div className="content">
         <SupervisoreNav />
         <p className="sub-intro">
-          Gestisci le domande frequenti mostrate nella pagina &ldquo;Domande frequenti&rdquo; dell&apos;area
-          riservata (allenatori/staff e portieri vedono elenchi diversi). Il campo &ldquo;Categoria&rdquo;
-          raggruppa le domande sotto lo stesso titolo — usa lo stesso testo esatto di una categoria
-          esistente per aggiungere una domanda a un gruppo già presente.
+          Le domande sono organizzate in due schede (Allenatori/staff e Portieri), e dentro ognuna in
+          categorie — usa &ldquo;+ Nuova categoria&rdquo; per crearne una nuova, oppure seleziona una
+          categoria esistente per vedere e modificare solo le sue domande. Il campo &ldquo;Posizione&rdquo;
+          decide l&apos;ordine delle domande dentro la categoria.
         </p>
         <FaqManager faq={faq ?? []} />
       </div>

@@ -18,11 +18,13 @@ export default async function StagioniPage() {
 
   const ownerId = await getOwnerId(supabase, user.id)
 
-  const { data: stagioni } = await supabase
-    .from('stagioni')
-    .select('id, nome, societa_nome, attiva, data_inizio, data_fine')
-    .eq('owner_id', ownerId)
-    .order('data_inizio', { ascending: false, nullsFirst: false })
+  const [{ data: stagioni }, { data: profiloCorrente }] = await Promise.all([
+    supabase.from('stagioni')
+      .select('id, nome, societa_nome, attiva, data_inizio, data_fine')
+      .eq('owner_id', ownerId)
+      .order('data_inizio', { ascending: false, nullsFirst: false }),
+    supabase.from('profili').select('stagione_corrente_id').eq('id', user.id).maybeSingle(),
+  ])
 
   return (
     <>
@@ -36,16 +38,20 @@ export default async function StagioniPage() {
       <div className="content">
         <Guida titolo="Come funzionano le stagioni">
           <p>
-            Ogni stagione è legata a te e alla tua società: puoi avere stagioni diverse per squadre diverse,
-            o creare una nuova stagione quando inizia un nuovo anno sportivo.
-            La stagione <strong>attiva</strong> è quella usata da calendario, portieri, partite e statistiche.
-            Puoi cambiare stagione attiva in qualsiasi momento — i dati delle altre stagioni restano conservati.
+            Puoi tenere <strong>più stagioni attive in parallelo</strong> — per esempio una per ogni società
+            con cui collabori — ognuna con le proprie categorie, calendario, portieri e statistiche
+            completamente separati. Non serve chiuderne una per lavorare su un&apos;altra.
           </p>
           <p style={{marginTop:10}}>
-            Per creare una nuova stagione (nuovo anno o nuova squadra) clicca <strong>&ldquo;+ Nuova stagione&rdquo;</strong> in alto a destra.
+            La stagione su cui stai lavorando in questo momento (la tua &ldquo;<strong>corrente</strong>&rdquo;)
+            si vede anche in alto a sinistra nel menu: usa quel selettore rapido per passare da una stagione
+            attiva all&apos;altra in qualsiasi momento, senza doverle disattivare a vicenda.
+          </p>
+          <p style={{marginTop:10}}>
+            Per creare una nuova stagione (nuovo anno o nuova società) clicca <strong>&ldquo;+ Nuova stagione&rdquo;</strong> in alto a destra.
           </p>
         </Guida>
-        <StagioniAllenatoreManager stagioni={stagioni ?? []} ownerId={ownerId} />
+        <StagioniAllenatoreManager stagioni={stagioni ?? []} ownerId={ownerId} stagioneCorrenteId={profiloCorrente?.stagione_corrente_id ?? null} />
       </div>
     </>
   )

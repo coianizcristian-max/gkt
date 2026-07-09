@@ -3,6 +3,7 @@ import NavLink from '@/app/components/NavLink'
 import VersionePopup from '@/app/components/VersionePopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
+import StagioneSwitcher from '@/app/components/StagioneSwitcher'
 import { createClient } from '@/lib/supabase/server'
 import { getGatingConfig, hasAbbonamento } from '@/lib/gating'
 import { puoVisualizzare } from '@/lib/permessi'
@@ -14,17 +15,18 @@ export default async function AppLayout({ children }) {
   const { data: { user } } = await supabase.auth.getUser()
 
   let isStaff = false, isSupervisore = false, isPortiere = false
-  let portiereId = null, societa = null, logo = null, stagioneNome = null
+  let portiereId = null, societa = null, logo = null, stagioneNome = null, stagioneId = null
   let mostraAbbonati = false
   let couponGiorni = null
   let vedePortieri = true, vedeAllenamenti = true, vedePartite = true, vedeStatistiche = true
   let ruoloUtente = null
   let haPreparatori = false
+  let altreStagioni = []
 
   if (user) {
     const { data: profilo } = await supabase
       .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore').eq('id', user.id).maybeSingle()
-    const { stagione } = await getStagioneAttiva(supabase, user.id)
+    const { stagione, ownerId } = await getStagioneAttiva(supabase, user.id)
     isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
     isSupervisore = profilo?.supervisore === true
     isPortiere = profilo?.ruolo === 'portiere'
@@ -33,12 +35,21 @@ export default async function AppLayout({ children }) {
     societa = stagione?.societa_nome ?? null
     logo = stagione?.logo_url ?? null
     stagioneNome = stagione?.nome ?? null
+    stagioneId = stagione?.id ?? null
 
     const ctxPermessi = { ruolo: profilo?.ruolo, permessiCollaboratore: profilo?.permessi_collaboratore }
     vedePortieri = puoVisualizzare(ctxPermessi, 'portieri')
     vedeAllenamenti = puoVisualizzare(ctxPermessi, 'allenamenti')
     vedePartite = puoVisualizzare(ctxPermessi, 'partite')
     vedeStatistiche = puoVisualizzare(ctxPermessi, 'statistiche')
+
+    if (isStaff && ownerId) {
+      const { data: elencoStagioni } = await supabase
+        .from('stagioni').select('id, nome, societa_nome')
+        .eq('owner_id', ownerId).eq('attiva', true)
+        .order('created_at', { ascending: false })
+      altreStagioni = elencoStagioni ?? []
+    }
 
     if (isStaff) {
       const { tuttoFree } = await getGatingConfig(supabase)
@@ -138,7 +149,7 @@ export default async function AppLayout({ children }) {
     { type: 'signout', key: 'signout' },
   ]
 
-  const brand = { href: schedaHref, logo, societa, stagioneNome }
+  const brand = { href: schedaHref, logo, societa, stagioneNome, isStaff, altreStagioni, stagioneId }
 
   return (
     <div className="shell">
@@ -150,9 +161,10 @@ export default async function AppLayout({ children }) {
           <div>
             <b>GKSeason</b>
             {societa && <span>{societa}</span>}
-            {stagioneNome && <span className="brand-stagione">Stagione {stagioneNome}</span>}
+            {!isStaff && stagioneNome && <span className="brand-stagione">Stagione {stagioneNome}</span>}
           </div>
         </Link>
+        {isStaff && <div className="brand-switcher-wrap"><StagioneSwitcher stagioni={altreStagioni} stagioneCorrenteId={stagioneId} /></div>}
         {couponGiorni != null && (
           <div style={{margin:'4px 8px 8px',padding:'6px 10px',background:'rgba(232,167,44,0.15)',borderRadius:'var(--r-sm)',fontSize:12,color:'var(--giallo)',fontWeight:600,lineHeight:1.3}}>
             🎟 Periodo gratuito: {couponGiorni} gg rimasti

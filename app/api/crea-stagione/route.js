@@ -17,12 +17,11 @@ export async function POST(request) {
 
   const ownerId = await getOwnerId(supabase, user.id)
 
-  // 1. Se la nuova stagione deve essere attiva, disattiva le precedenti
-  if (renderAttiva) {
-    await supabase.from('stagioni').update({ attiva: false }).eq('owner_id', ownerId)
-  }
-
-  // 2. Crea la nuova stagione
+  // Non disattiviamo più le altre stagioni: possono restare "attiva" in
+  // parallelo (una per club/società diversa). "renderAttiva" ora significa
+  // "passa subito a lavorare su questa" (aggiorna solo il puntatore personale
+  // di chi la crea), non più "disattiva tutte le altre".
+  // 1. Crea la nuova stagione (sempre attiva: chi la crea la sta usando)
   const { data: stagione, error: stagErr } = await supabase
     .from('stagioni')
     .insert({
@@ -30,13 +29,18 @@ export async function POST(request) {
       societa_nome: societa || null,
       data_inizio: dataInizio || null,
       data_fine: dataFine || null,
-      attiva: renderAttiva,
+      attiva: true,
       owner_id: ownerId,
     })
     .select('id')
     .single()
 
   if (stagErr) return NextResponse.json({ error: stagErr.message }, { status: 500 })
+
+  // 2. Se richiesto, l'utente che la crea passa subito a lavorare su questa
+  if (renderAttiva) {
+    await supabase.from('profili').update({ stagione_corrente_id: stagione.id }).eq('id', user.id)
+  }
 
   // 3. Crea le categorie
   if (Array.isArray(categorie) && categorie.length > 0) {

@@ -156,22 +156,22 @@ function FaqRiga({ f, onChanged }) {
   }
 
   return (
-    <div className="scheda" style={{ marginBottom: 10 }}>
-      <div className="form-grid">
-        <div className="field" style={{ maxWidth: 90 }}>
+    <div className="scheda" style={{ marginBottom: 8, padding: '14px 18px' }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', marginBottom: 12 }}>
+        <div className="field" style={{ margin: 0, width: 80, flexShrink: 0 }}>
           <label>Posizione</label>
           <input type="number" value={ordine} onChange={(e) => { setOrdine(e.target.value); setDone(false) }} />
         </div>
-        <div className="field field-full">
+        <div className="field" style={{ margin: 0, flex: 1 }}>
           <label>Domanda</label>
           <input value={domanda} onChange={(e) => { setDomanda(e.target.value); setDone(false) }} />
         </div>
-        <div className="field field-full">
-          <label>Risposta</label>
-          <textarea rows="3" value={risposta} onChange={(e) => { setRisposta(e.target.value); setDone(false) }} />
-        </div>
       </div>
-      <div className="form-actions">
+      <div className="field" style={{ margin: 0 }}>
+        <label>Risposta</label>
+        <textarea rows="2" value={risposta} onChange={(e) => { setRisposta(e.target.value); setDone(false) }} />
+      </div>
+      <div className="form-actions" style={{ marginTop: 10 }}>
         <button className="btn-ghost btn-del" onClick={elimina} type="button">Elimina</button>
         <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? 'Salvataggio...' : done ? 'Salvato ✓' : 'Salva'}</button>
       </div>

@@ -23,7 +23,7 @@ export default function StagioneSwitcher({ stagioni, stagioneCorrenteId }) {
   // Se c'è una sola stagione attiva, non serve nessun selettore: solo etichetta.
   if (stagioni.length <= 1) {
     const s = stagioni[0]
-    return s ? <span className="brand-stagione">{s.societa_nome || `Stagione ${s.nome}`}</span> : null
+    return s ? <span className="brand-stagione">{s.societa_nome ? `${s.nome} · ${s.societa_nome}` : s.nome}</span> : null
   }
 
   return (
@@ -36,7 +36,7 @@ export default function StagioneSwitcher({ stagioni, stagioneCorrenteId }) {
       >
         {stagioni.map((s) => (
           <option key={s.id} value={s.id}>
-            {s.societa_nome || s.nome}
+            {s.societa_nome ? `${s.nome} · ${s.societa_nome}` : s.nome}
           </option>
         ))}
       </select>

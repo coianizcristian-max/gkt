@@ -58,7 +58,7 @@ export default function SetupWizard({ anniDisponibili, ownerId, redirectAfter = 
                 checked={renderAttiva}
                 onChange={(e) => setRenderAttiva(e.target.checked)}
               />
-              Rendi questa stagione attiva subito (disattiva quella corrente)
+              Passa subito a lavorare su questa stagione
             </label>
           )}
 
@@ -229,8 +229,9 @@ export default function SetupWizard({ anniDisponibili, ownerId, redirectAfter = 
         </p>
 
         {renderAttiva && isNuova && (
-          <div className="err" style={{ marginTop: 12, background: 'rgba(232,167,44,0.12)', borderColor: 'var(--giallo)', color: 'var(--giallo)' }}>
-            ⚠ La stagione corrente verrà disattivata e sostituita da questa nuova.
+          <div className="err" style={{ marginTop: 12, background: 'rgba(10,126,194,0.10)', borderColor: 'var(--azzurro)', color: 'var(--azzurro)' }}>
+            ℹ️ Passerai subito a lavorare su questa stagione. Quella attuale resta comunque attiva: potrai
+            tornarci quando vuoi dal selettore in alto a sinistra.
           </div>
         )}
 

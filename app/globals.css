@@ -844,6 +844,13 @@ button.sub-nav-link { background: none; border: none; border-bottom: 2px solid t
 /* Brand cliccabile + stagione */
 a.brand { text-decoration: none; color: inherit; }
 .brand-stagione { display: block; font-size: 0.72rem; color: var(--ink-soft); }
+.brand-stagione-switch {
+  display: block; font-size: 0.72rem; color: var(--ink-soft); background: transparent;
+  border: none; padding: 0; margin: 0; cursor: pointer; max-width: 160px;
+  font-family: inherit; -webkit-appearance: none; appearance: none;
+}
+.brand-stagione-switch:hover { color: var(--azzurro); text-decoration: underline; }
+.brand-switcher-wrap { margin: -14px 8px 12px 48px; }
 
 /* ===== Esercizi: tile grid (P10) ===== */
 .es-grid {

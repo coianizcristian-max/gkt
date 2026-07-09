@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import StagioneSwitcher from '@/app/components/StagioneSwitcher'
 
 function MobileNavLink({ href, children, onClick }) {
   const pathname = usePathname()
@@ -29,9 +30,14 @@ export default function SidebarMobile({ voci, brand }) {
           : <div className="glove">GK</div>}
         <div>
           <b>{brand.societa || 'GKSeason'}</b>
-          {brand.stagioneNome && <span>{brand.stagioneNome}</span>}
+          {!brand.isStaff && brand.stagioneNome && <span>{brand.stagioneNome}</span>}
         </div>
       </Link>
+      {brand.isStaff && (
+        <div className="brand-switcher-wrap" style={{ margin: '-6px 0 0 44px' }}>
+          <StagioneSwitcher stagioni={brand.altreStagioni ?? []} stagioneCorrenteId={brand.stagioneId} />
+        </div>
+      )}
       <button
         type="button"
         className={`hamburger ${open ? 'open' : ''}`}

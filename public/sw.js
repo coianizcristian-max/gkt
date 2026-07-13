@@ -1,5 +1,5 @@
 // GKT Service Worker — cache-first per risorse statiche, network-first per API
-const CACHE_NAME = 'gkt-v1'
+const CACHE_NAME = 'gkt-v2'
 const STATIC_ASSETS = [
   '/',
   '/dashboard',
@@ -35,6 +35,22 @@ self.addEventListener('fetch', (e) => {
   // Risorse statiche (_next/static) → cache-first
   if (url.pathname.startsWith('/_next/static/')) {
     e.respondWith(
+      caches.match(e.request).then(cached =>
+        cached || fetch(e.request).then(res => {
+          const clone = res.clone()
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone))
+          return res
+        })
+      )
+    )
+    return
+  }
+
+  // Pagine app → network-first con fallback cache
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
+  )
+})    e.respondWith(
       caches.match(e.request).then(cached =>
         cached || fetch(e.request).then(res => {
           const clone = res.clone()

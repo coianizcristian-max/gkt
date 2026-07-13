@@ -5,9 +5,15 @@ export const dynamic = 'force-dynamic'
 
 export default async function NewsletterPage() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   const { data: invii } = await supabase.from('newsletter_invii')
     .select('id, titolo, contenuto, inviata_il, pubblicata')
     .eq('pubblicata', true).order('inviata_il', { ascending: false })
+
+  if (user) {
+    await supabase.from('profili').update({ newsletter_vista_il: new Date().toISOString() }).eq('id', user.id)
+  }
 
   const ultima = invii?.[0]
   const archivio = invii?.slice(1) ?? []

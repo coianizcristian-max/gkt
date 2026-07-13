@@ -133,9 +133,10 @@ function EditorSezione({ sezione, idx, onUpdate, onRemove }) {
 }
 
 // ─── Editor newsletter ───────────────────────────────────────────────────────
-function EditorNL({ onSaved, onCancel }) {
-  const [titolo, setTitolo] = useState('')
-  const [sezioni, setSezioni] = useState([{ tipo: 'testo', testo: '' }])
+function EditorNL({ newsletter, onSaved, onCancel }) {
+  const isEdit = !!newsletter
+  const [titolo, setTitolo] = useState(newsletter?.titolo ?? '')
+  const [sezioni, setSezioni] = useState(newsletter?.contenuto ?? [{ tipo: 'testo', testo: '' }])
   const [preview, setPreview] = useState(false)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
@@ -148,11 +149,19 @@ function EditorNL({ onSaved, onCancel }) {
     if (!titolo.trim()) { setErr('Inserisci il titolo'); return }
     setBusy(true); setErr('')
     const supabase = createClient()
-    const { error } = await supabase.from('newsletter_invii').insert({
-      titolo: titolo.trim(), contenuto: sezioni, pubblicata,
-      inviata_il: pubblicata ? new Date().toISOString() : null,
-    })
-    if (error) { setErr(error.message); setBusy(false); return }
+    if (isEdit) {
+      const payload = { titolo: titolo.trim(), contenuto: sezioni }
+      // Se stai pubblicando una bozza per la prima volta, imposta anche la data di invio
+      if (pubblicata && !newsletter.pubblicata) { payload.pubblicata = true; payload.inviata_il = new Date().toISOString() }
+      const { error } = await supabase.from('newsletter_invii').update(payload).eq('id', newsletter.id)
+      if (error) { setErr(error.message); setBusy(false); return }
+    } else {
+      const { error } = await supabase.from('newsletter_invii').insert({
+        titolo: titolo.trim(), contenuto: sezioni, pubblicata,
+        inviata_il: pubblicata ? new Date().toISOString() : null,
+      })
+      if (error) { setErr(error.message); setBusy(false); return }
+    }
     setBusy(false); if (onSaved) onSaved()
   }
 
@@ -168,7 +177,13 @@ function EditorNL({ onSaved, onCancel }) {
 
       {!preview ? (
         <div className="scheda">
-          <h3 style={{ marginTop: 0 }}>Nuova newsletter</h3>
+          <h3 style={{ marginTop: 0 }}>{isEdit ? `Modifica: ${newsletter.titolo}` : 'Nuova newsletter'}</h3>
+          {isEdit && newsletter.pubblicata && (
+            <p className="sub-intro" style={{ marginTop: 0 }}>
+              ℹ️ Questa newsletter è già pubblicata (inviata il {new Date(newsletter.inviata_il).toLocaleDateString('it-IT')}).
+              Modificarla aggiorna il contenuto che tutti vedono, ma non la rimanda come "nuova".
+            </p>
+          )}
           <div className="field">
             <label>Titolo *</label>
             <input value={titolo} onChange={(e) => setTitolo(e.target.value)} placeholder="es. Aggiornamenti di marzo 2026" style={{ fontSize: 16, fontWeight: 600 }} />
@@ -195,25 +210,27 @@ function EditorNL({ onSaved, onCancel }) {
           </div>
 
           <div className="form-actions">
-            {onCancel && <button type="button" className="btn-ghost" onClick={onCancel}>Annulla</button>}
-            <button type="button" className="btn-ghost" onClick={() => salva(false)} disabled={busy}>Salva bozza</button>
+            {onCancel && <button type="button" className="btn-ghost" onClick={onCancel}>{isEdit ? 'Chiudi' : 'Annulla'}</button>}
+            {!(isEdit && newsletter.pubblicata) && (
+              <button type="button" className="btn-ghost" onClick={() => salva(false)} disabled={busy}>Salva bozza</button>
+            )}
             <button type="button" className="btn" onClick={() => salva(true)} disabled={busy}>
-              {busy ? 'Pubblicazione...' : '📤 Pubblica'}
+              {busy ? 'Salvataggio...' : (isEdit ? (newsletter.pubblicata ? '💾 Salva modifiche' : '📤 Pubblica') : '📤 Pubblica')}
             </button>
           </div>
         </div>
       ) : (
         <div>
-          <p className="sub-intro" style={{ marginBottom: 16 }}>Anteprima di come apparirà la newsletter agli iscritti.</p>
+          <p className="sub-intro" style={{ marginBottom: 16 }}>Anteprima di come appare la newsletter agli iscritti.</p>
           <NewsletterRender
             titolo={titolo || 'Titolo newsletter'}
             sezioni={sezioni}
-            dataStr={new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+            dataStr={new Date(newsletter?.inviata_il ?? Date.now()).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
           />
           <div className="form-actions" style={{ marginTop: 16 }}>
             <button type="button" className="btn-ghost" onClick={() => setPreview(false)}>← Torna all'editor</button>
             <button type="button" className="btn" onClick={() => salva(true)} disabled={busy}>
-              {busy ? 'Pubblicazione...' : '📤 Pubblica ora'}
+              {busy ? 'Salvataggio...' : (isEdit ? '💾 Salva' : '📤 Pubblica ora')}
             </button>
           </div>
         </div>
@@ -226,6 +243,7 @@ function EditorNL({ onSaved, onCancel }) {
 export default function NewsletterManager({ invii, iscritti }) {
   const router = useRouter()
   const [crea, setCrea] = useState(false)
+  const [modificaId, setModificaId] = useState(null)
 
   async function pubblica(id) {
     const supabase = createClient()
@@ -240,28 +258,40 @@ export default function NewsletterManager({ invii, iscritti }) {
   }
 
   const totIscritti = iscritti.filter((i) => i.attivo).length
+  const newsletterInModifica = modificaId ? invii.find((n) => n.id === modificaId) : null
 
   return (
     <div className="lista-editor">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <p className="sub-intro" style={{ margin: 0 }}><b>{totIscritti}</b> iscritti attivi.</p>
-        {!crea && <button className="btn-azione" type="button" onClick={() => setCrea(true)}>+ Nuova newsletter</button>}
+        {!crea && !modificaId && <button className="btn-azione" type="button" onClick={() => setCrea(true)}>+ Nuova newsletter</button>}
       </div>
 
       {crea && <EditorNL onSaved={() => { setCrea(false); router.refresh() }} onCancel={() => setCrea(false)} />}
+      {newsletterInModifica && (
+        <EditorNL
+          newsletter={newsletterInModifica}
+          onSaved={() => { setModificaId(null); router.refresh() }}
+          onCancel={() => setModificaId(null)}
+        />
+      )}
 
       <div className="elenco-blocco">
         <h3>Newsletter pubblicate</h3>
         {invii.length === 0 && <p className="sub-intro">Nessuna newsletter creata.</p>}
         {invii.map((n) => (
           <div key={n.id} className={`lista-riga ${n.pubblicata ? '' : 'assente'}`}>
-            <div style={{ flex: 1 }}>
+            <button
+              type="button"
+              onClick={() => { setModificaId(n.id); setCrea(false) }}
+              style={{ flex: 1, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
               <div style={{ fontWeight: 600 }}>{n.titolo}</div>
               <small style={{ color: 'var(--ink-soft)' }}>
                 {n.pubblicata ? `✅ ${new Date(n.inviata_il).toLocaleDateString('it-IT')}` : '📝 Bozza'}
-                {' · '}{(n.contenuto ?? []).length} sezioni
+                {' · '}{(n.contenuto ?? []).length} sezioni · 👁 visualizza/modifica
               </small>
-            </div>
+            </button>
             {!n.pubblicata && <button type="button" className="btn-mini" onClick={() => pubblica(n.id)}>Pubblica</button>}
             <button type="button" className="btn-mini btn-del" onClick={() => elimina(n.id)}>Elimina</button>
           </div>

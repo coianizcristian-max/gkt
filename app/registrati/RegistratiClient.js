@@ -19,6 +19,9 @@ export default function RegistratiClient({ token, datiInvito }) {
   const nomeBloccato = !!datiInvito?.nomeCompleto
   const emailBloccata = !!datiInvito?.email
   const tokenInvalido = token && !datiInvito
+  // Selezione ruolo: solo per chi arriva senza invito (auto-registrazione).
+  // Chi ha un invito ha già il ruolo deciso dal link, non deve scegliere.
+  const [ruoloScelto, setRuoloScelto] = useState(datiInvito ? 'invitato' : null)
 
   async function handleSignup(e) {
     e.preventDefault()
@@ -125,6 +128,41 @@ export default function RegistratiClient({ token, datiInvito }) {
           </div>
         )}
 
+        {/* Selezione ruolo — solo per auto-registrazione (senza invito) */}
+        {!datiInvito && !tokenInvalido && ruoloScelto !== 'allenatore' && (
+          <div style={{ marginBottom: 8 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Chi sei?</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setRuoloScelto('allenatore')}
+                style={{ width: '100%' }}
+              >
+                🧤 Sono un allenatore / preparatore
+              </button>
+              <button
+                type="button"
+                className={ruoloScelto === 'portiere' ? 'btn' : 'btn-ghost'}
+                onClick={() => setRuoloScelto('portiere')}
+                style={{ width: '100%' }}
+              >
+                🥅 Sono un portiere
+              </button>
+            </div>
+
+            {ruoloScelto === 'portiere' && (
+              <div className="ok-msg" style={{ marginTop: 14, textAlign: 'left', lineHeight: 1.5 }}>
+                <b>Sei un portiere?</b> Il tuo account viene creato tramite un <b>link di invito
+                personale</b> che ti manda il tuo preparatore: chiedigli di generarlo dalla sua area
+                (sezione &ldquo;Inviti&rdquo;) e di inviartelo. Registrandoti con quel link, il tuo
+                profilo sarà collegato automaticamente ai tuoi allenamenti, valutazioni e statistiche.
+              </div>
+            )}
+          </div>
+        )}
+
+        {(ruoloScelto === 'allenatore' || ruoloScelto === 'invitato') && (
         <form onSubmit={handleSignup}>
           {error && <div className="err">{error}</div>}
           {msg && <div className="ok-msg">{msg}</div>}
@@ -172,6 +210,7 @@ export default function RegistratiClient({ token, datiInvito }) {
             {loading ? 'Creazione…' : 'Crea account'}
           </button>
         </form>
+        )}
         <p className="login-alt">
           Hai già un account? <Link href="/login">Accedi</Link>
         </p>

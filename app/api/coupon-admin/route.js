@@ -79,6 +79,7 @@ export async function POST(request) {
     durata_gg: Number(body.durata_gg) || 30,
     scadenza_attivazione: scadenza_attivazione || null,
     max_utilizzi: max_utilizzi ? Number(max_utilizzi) : null,
+    target_abbonamento: ['tutti', 'abbonati', 'non_abbonati'].includes(body.target_abbonamento) ? body.target_abbonamento : 'tutti',
     attivo: true,
   })
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

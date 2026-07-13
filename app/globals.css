@@ -78,6 +78,12 @@ a { color: inherit; text-decoration: none; }
 }
 .nav-link:hover { background: rgba(255,255,255,0.06); color: var(--bianco); }
 .nav-link.active { background: var(--azzurro); color: var(--bianco); }
+.nav-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  background: var(--rosso); color: var(--bianco);
+  font-size: 11px; font-weight: 700; line-height: 1;
+}
 
 .sidebar-foot { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
 .signout {

@@ -22,10 +22,11 @@ export default async function AppLayout({ children }) {
   let ruoloUtente = null
   let haPreparatori = false
   let altreStagioni = []
+  let newsletterNonLette = 0
 
   if (user) {
     const { data: profilo } = await supabase
-      .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore').eq('id', user.id).maybeSingle()
+      .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore, newsletter_vista_il').eq('id', user.id).maybeSingle()
     const { stagione, ownerId } = await getStagioneAttiva(supabase, user.id)
     isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
     isSupervisore = profilo?.supervisore === true
@@ -36,6 +37,12 @@ export default async function AppLayout({ children }) {
     logo = stagione?.logo_url ?? null
     stagioneNome = stagione?.nome ?? null
     stagioneId = stagione?.id ?? null
+
+    const { count: nCount } = await supabase
+      .from('newsletter_invii').select('id', { count: 'exact', head: true })
+      .eq('pubblicata', true)
+      .gt('inviata_il', profilo?.newsletter_vista_il ?? '1970-01-01')
+    newsletterNonLette = nCount ?? 0
 
     const ctxPermessi = { ruolo: profilo?.ruolo, permessiCollaboratore: profilo?.permessi_collaboratore }
     vedePortieri = puoVisualizzare(ctxPermessi, 'portieri')
@@ -129,7 +136,7 @@ export default async function AppLayout({ children }) {
     'faq':           { href: '/faq', label: 'Domande frequenti' },
     'archivio':      { href: '/archivio', label: 'Archivio' },
     'suggerimenti':  { href: '/suggerimenti', label: 'Suggerimenti' },
-    'newsletter':    { href: '/newsletter', label: 'Newsletter' },
+    'newsletter':    { href: '/newsletter', label: newsletterNonLette > 0 ? <>Newsletter <span className="nav-badge">{newsletterNonLette}</span></> : 'Newsletter' },
     'account':       { href: '/account', label: '👤 Account' },
     'supervisore':   isSupervisore ? { href: '/supervisore', label: 'Supervisore' } : null,
     'abbonati':      mostraAbbonati ? { href: '/abbonati', label: '🔓 Abbonati' } : null,

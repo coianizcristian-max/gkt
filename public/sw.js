@@ -1,8 +1,10 @@
-// GKT Service Worker — cache-first per risorse statiche, network-first per API
+// GKT Service Worker — v3
+// Gestisce SOLO la cache delle risorse statiche (script, stili, icone).
+// Le navigazioni tra pagine NON vengono mai intercettate: viaggiano
+// normalmente come su qualsiasi sito. Questo elimina alla radice i
+// problemi di pagine "mezze morte" servite da cache/intercettazioni fallite.
 const CACHE_NAME = 'gkt-v3'
 const STATIC_ASSETS = [
-  '/',
-  '/dashboard',
   '/manifest.json',
   '/icons/icon-192x192.svg',
   '/icons/icon-512x512.svg',
@@ -27,12 +29,13 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url)
 
-  // API Supabase e route /api/* → sempre network, mai cache
-  if (url.hostname.includes('supabase') || url.pathname.startsWith('/api/')) {
-    return
-  }
+  // Navigazioni tra pagine → MAI intercettate: gestione normale del browser
+  if (e.request.mode === 'navigate') return
 
-  // Risorse statiche (_next/static) → cache-first
+  // API e Supabase → sempre rete, mai cache
+  if (url.hostname.includes('supabase') || url.pathname.startsWith('/api/')) return
+
+  // Risorse statiche di Next (hanno nomi univoci per versione: sicure da cachare)
   if (url.pathname.startsWith('/_next/static/')) {
     e.respondWith(
       caches.match(e.request).then(cached =>
@@ -43,23 +46,6 @@ self.addEventListener('fetch', (e) => {
         })
       )
     )
-    return
   }
-
-  // Pagine app → network-first con fallback cache.
-  // Garantisce SEMPRE una risposta valida: pagina in cache, oppure la home
-  // in cache, oppure una risposta "offline" esplicita — mai un valore vuoto
-  // (che il browser rifiuta con "Failed to convert value to 'Response'").
-  e.respondWith(
-    fetch(e.request).catch(() =>
-      caches.match(e.request).then((cached) =>
-        cached || caches.match('/').then((home) =>
-          home || new Response('Sei offline e questa pagina non è disponibile. Riprova quando torni connesso.', {
-            status: 503,
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-          })
-        )
-      )
-    )
-  )
+  // Tutto il resto: gestione normale del browser (nessun respondWith)
 })

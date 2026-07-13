@@ -178,7 +178,7 @@ export default async function AppLayout({ children }) {
           </div>
         )}
         {voci.filter(v => v.href && v.href !== '/').map((v) => (
-          <NavLink key={v.href} href={v.href}>{v.label}</NavLink>
+          <NavLink key={v.href} href={v.href} extraClass={v.href === '/supervisore' ? 'nav-link-supervisore' : ''}>{v.label}</NavLink>
         ))}
         <div className="sidebar-foot">
           <Link href="/" className="nav-link nav-sito">↗ Vai al sito</Link>

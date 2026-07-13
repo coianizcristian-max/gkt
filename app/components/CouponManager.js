@@ -11,6 +11,7 @@ export default function CouponManager({ coupon, utilizziPerCoupon }) {
   const [maxUtilizzi, setMaxUtilizzi] = useState('')
   const [scontoPercento, setScontoPercento] = useState(20)
   const [scontoMesi, setScontoMesi] = useState(3)
+  const [targetAbbonamento, setTargetAbbonamento] = useState('tutti')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
 
@@ -22,6 +23,7 @@ export default function CouponManager({ coupon, utilizziPerCoupon }) {
       payload.durata_gg = durata
       payload.scadenza_attivazione = scadenzaAttivazione || null
       payload.max_utilizzi = maxUtilizzi ? Number(maxUtilizzi) : null
+      payload.target_abbonamento = targetAbbonamento
     } else {
       payload.sconto_percento = Number(scontoPercento)
       payload.sconto_mesi = Number(scontoMesi)
@@ -84,6 +86,17 @@ export default function CouponManager({ coupon, utilizziPerCoupon }) {
             </div>
           )}
 
+          {tipo === 'accesso_gratuito' && (
+            <div className="field">
+              <label>Per chi vale</label>
+              <select value={targetAbbonamento} onChange={(e) => setTargetAbbonamento(e.target.value)}>
+                <option value="tutti">Tutti</option>
+                <option value="abbonati">Solo chi ha già un abbonamento attivo</option>
+                <option value="non_abbonati">Solo chi non ha ancora un abbonamento</option>
+              </select>
+            </div>
+          )}
+
           {tipo === 'sconto_stripe' && (
             <>
               <div className="field">
@@ -134,6 +147,9 @@ export default function CouponManager({ coupon, utilizziPerCoupon }) {
                     : `${c.durata_gg} giorni · usato da ${utilizzi.length} utenti (${attivi} ancora attivi)`}
                   {c.max_utilizzi ? ` · limite ${c.max_utilizzi} utilizzi` : ''}
                   {c.scadenza_attivazione ? ` · attivabile fino al ${new Date(c.scadenza_attivazione).toLocaleDateString('it-IT')}${scadutaAttivazione ? ' (scaduto)' : ''}` : ''}
+                  {c.tipo === 'accesso_gratuito' && c.target_abbonamento && c.target_abbonamento !== 'tutti'
+                    ? ` · solo per ${c.target_abbonamento === 'abbonati' ? 'chi è già abbonato' : 'chi non è ancora abbonato'}`
+                    : ''}
                 </small>
               </div>
               <button className={`toggle-switch sm ${c.attivo ? 'on' : ''}`} type="button"

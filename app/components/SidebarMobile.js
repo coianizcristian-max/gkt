@@ -5,11 +5,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import StagioneSwitcher from '@/app/components/StagioneSwitcher'
 
-function MobileNavLink({ href, children, onClick }) {
+function MobileNavLink({ href, children, onClick, extraClass = '' }) {
   const pathname = usePathname()
   const active = pathname === href || pathname.startsWith(href + '/')
   return (
-    <Link href={href} className={`mob-nav-link ${active ? 'active' : ''}`} onClick={onClick}>
+    <Link href={href} className={`mob-nav-link ${active ? 'active' : ''} ${extraClass}`} onClick={onClick}>
       {children}
     </Link>
   )
@@ -59,7 +59,7 @@ export default function SidebarMobile({ voci, brand }) {
                   <button type="submit" className="mob-nav-link mob-signout">Esci</button>
                 </form>
               ) : (
-                <MobileNavLink key={v.href} href={v.href} onClick={() => setOpen(false)}>
+                <MobileNavLink key={v.href} href={v.href} onClick={() => setOpen(false)} extraClass={v.href === '/supervisore' ? 'mob-nav-link-supervisore' : ''}>
                   {v.label}
                 </MobileNavLink>
               )

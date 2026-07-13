@@ -1,5 +1,5 @@
 // GKT Service Worker — cache-first per risorse statiche, network-first per API
-const CACHE_NAME = 'gkt-v2'
+const CACHE_NAME = 'gkt-v3'
 const STATIC_ASSETS = [
   '/',
   '/dashboard',
@@ -46,8 +46,20 @@ self.addEventListener('fetch', (e) => {
     return
   }
 
-  // Pagine app → network-first con fallback cache
+  // Pagine app → network-first con fallback cache.
+  // Garantisce SEMPRE una risposta valida: pagina in cache, oppure la home
+  // in cache, oppure una risposta "offline" esplicita — mai un valore vuoto
+  // (che il browser rifiuta con "Failed to convert value to 'Response'").
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    fetch(e.request).catch(() =>
+      caches.match(e.request).then((cached) =>
+        cached || caches.match('/').then((home) =>
+          home || new Response('Sei offline e questa pagina non è disponibile. Riprova quando torni connesso.', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+          })
+        )
+      )
+    )
   )
 })

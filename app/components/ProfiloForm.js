@@ -31,7 +31,19 @@ export default function ProfiloForm({ profilo, userId }) {
   const mkDel = (arr, setArr) => (i) => { setArr(arr.filter((_, idx) => idx !== i)); setDone(false) }
 
   async function salva() {
-    setBusy(true); setError('')
+    setError('')
+    // Campi obbligatori: senza indirizzo completo la geocodifica non parte
+    // e l'allenatore non compare nella ricerca per zona.
+    const mancanti = []
+    if (!f.nome_completo?.trim()) mancanti.push('Nome completo')
+    if (!f.via?.trim()) mancanti.push('Via')
+    if (!f.citta?.trim()) mancanti.push('Città')
+    if (!f.cap?.trim()) mancanti.push('CAP')
+    if (mancanti.length) {
+      setError(`Compila i campi obbligatori: ${mancanti.join(', ')}.`)
+      return
+    }
+    setBusy(true)
     const supabase = createClient()
     try {
       let foto_url = profilo?.foto_url ?? null
@@ -75,16 +87,20 @@ export default function ProfiloForm({ profilo, userId }) {
   return (
     <div className="scheda">
       {error && <div className="err">{error}</div>}
+      <p className="sub-intro" style={{ marginTop: 0, marginBottom: 12, fontSize: 13 }}>
+        I campi con * sono obbligatori: l&apos;indirizzo serve a calcolare la tua posizione
+        e a farti trovare dalle società della tua zona.
+      </p>
       <div className="scheda-foto">
         <div className="foto-box">{preview ? <img src={preview} alt="" /> : <span className="foto-ph">Nessuna foto</span>}</div>
         <label className="foto-upload">{preview ? 'Cambia foto' : 'Carica foto'}<input type="file" accept="image/*" onChange={onFile} hidden /></label>
       </div>
       <div className="form-grid">
-        <div className="field"><label>Nome completo</label><input value={f.nome_completo} onChange={upd('nome_completo')} /></div>
+        <div className="field"><label>Nome completo *</label><input value={f.nome_completo} onChange={upd('nome_completo')} required /></div>
         <div className="field"><label>Telefono</label><input value={f.telefono} onChange={upd('telefono')} /></div>
-        <div className="field"><label>Via</label><input value={f.via} onChange={upd('via')} /></div>
-        <div className="field"><label>Citta</label><input value={f.citta} onChange={upd('citta')} placeholder="usata per la ricerca" /></div>
-        <div className="field"><label>CAP</label><input value={f.cap} onChange={upd('cap')} /></div>
+        <div className="field"><label>Via *</label><input value={f.via} onChange={upd('via')} required /></div>
+        <div className="field"><label>Citta *</label><input value={f.citta} onChange={upd('citta')} placeholder="usata per la ricerca" required /></div>
+        <div className="field"><label>CAP *</label><input value={f.cap} onChange={upd('cap')} required /></div>
         <div className="field field-full">
           <div style={{ background: 'var(--carta)', border: '1px solid var(--linea)', borderRadius: 10, padding: 12, display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'center' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, margin: 0 }}>

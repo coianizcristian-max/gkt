@@ -18,7 +18,7 @@ export default async function DashboardPage() {
   if (!user) redirect('/login')
 
   const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id, nome_visualizzato, nome_completo').eq('id', user.id).maybeSingle()
+    .from('profili').select('ruolo, portiere_id, nome_visualizzato, nome_completo, via, citta, cap').eq('id', user.id).maybeSingle()
 
   // I portieri hanno già la loro scheda come "home" — qui reindirizziamo
   if (profilo?.ruolo === 'portiere' && profilo.portiere_id) {
@@ -44,7 +44,14 @@ export default async function DashboardPage() {
   let haPortieri = false
   let haAllenamenti = false
   const nomeProfilo = (profilo?.nome_visualizzato || profilo?.nome_completo || '').trim()
-  const haProfiloCompilato = !!nomeProfilo
+  // Il profilo è "completo" quando ha i campi che servono davvero: nome e indirizzo.
+  // Senza via/città/CAP la geocodifica non parte e non si compare nella ricerca per zona.
+  const haProfiloCompilato = !!(
+    profilo?.nome_completo?.trim() &&
+    profilo?.via?.trim() &&
+    profilo?.citta?.trim() &&
+    profilo?.cap?.trim()
+  )
 
   if (stagione) {
     const [allRows, parRows, couponRow, catRow, iscrRow] = await Promise.all([
@@ -199,7 +206,7 @@ export default async function DashboardPage() {
     {
       ok: haProfiloCompilato,
       titolo: 'Completa il tuo profilo',
-      desc: 'Aggiungi nome, foto e bio per apparire nella ricerca pubblica degli allenatori.',
+      desc: 'Aggiungi nome e indirizzo (via, città, CAP): servono a farti trovare dalle società della tua zona.',
       href: '/profilo',
     },
   ]

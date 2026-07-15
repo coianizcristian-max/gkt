@@ -14,7 +14,7 @@ export default async function PortieriPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id, permessi_collaboratore, nome_completo, foto_url').eq('id', user?.id).maybeSingle()
+    .from('profili').select('ruolo, portiere_id, permessi_collaboratore, nome_completo, foto_url, via, citta, cap').eq('id', user?.id).maybeSingle()
   if (profilo?.ruolo === 'portiere' && profilo.portiere_id) {
     redirect(`/portieri/${profilo.portiere_id}`)
   }
@@ -32,7 +32,12 @@ export default async function PortieriPage() {
   let haCategorie = false
   let haPortieri = false
   let haAllenamenti = false
-  const haProfiloCompilato = !!(profilo?.nome_completo && profilo.nome_completo.trim())
+  const haProfiloCompilato = !!(
+    profilo?.nome_completo?.trim() &&
+    profilo?.via?.trim() &&
+    profilo?.citta?.trim() &&
+    profilo?.cap?.trim()
+  )
   if (stagione) {
     const [sq, isc, allen, cat] = await Promise.all([
       supabase.from('squadre').select('id, nome, ordine').eq('owner_id', ownerId).order('ordine'),
@@ -128,7 +133,7 @@ export default async function PortieriPage() {
             {
               ok: haProfiloCompilato,
               titolo: 'Completa il tuo profilo',
-              desc: 'Aggiungi nome, foto e bio per apparire nella ricerca pubblica degli allenatori.',
+              desc: 'Aggiungi nome e indirizzo (via, città, CAP): servono a farti trovare dalle società della tua zona.',
               href: '/profilo',
             },
           ]} />

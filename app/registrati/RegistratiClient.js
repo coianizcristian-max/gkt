@@ -98,7 +98,12 @@ export default function RegistratiClient({ token, datiInvito }) {
     } else {
       // Email di conferma richiesta
       trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: true })
-      setMsg("Account creato! Controlla la tua email per confermare l'indirizzo, poi accedi.")
+      setMsg(
+        `Account creato! Ti abbiamo inviato una mail di conferma a ${email.trim()}. ` +
+        'Apri il link che trovi dentro per attivare l\u2019account, poi accedi. ' +
+        'Non la vedi? Controlla lo spam o la cartella promozioni: a volte finisce l\u00ec. ' +
+        'Se l\u2019indirizzo qui sopra \u00e8 sbagliato, ripeti la registrazione con quello giusto.'
+      )
       setLoading(false)
     }
   }

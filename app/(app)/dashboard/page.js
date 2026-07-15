@@ -204,8 +204,56 @@ export default async function DashboardPage() {
     },
   ]
 
-  // ── Primo accesso: senza stagione la dashboard non ha nulla da mostrare.
-  //    Al suo posto diamo solo i passi da fare, così la strada è una sola. ──
+  // ── Blocchi standard della dashboard: riusati sia a regime sia al primo accesso
+  //    (lì restano vuoti, ma fanno vedere all'utente dove sta andando). ──
+  const blocchiStandard = (
+    <>
+      <div className="dash-grid">
+        {/* Prossimo allenamento */}
+        <div className="scheda" style={{ maxWidth: 'none' }}>
+          <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>📅 Prossimo allenamento</h3>
+          {prossimoAllenamento ? (
+            <Link href={`/calendario/${prossimoAllenamento.id}`} className="link-inline" style={{ display: 'block' }}>
+              <div style={{ fontWeight: 700, fontSize: 16 }}>{prossimoAllenamento.squadra?.nome}</div>
+              <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
+                {prossimoAllenamento.data === oggiStr ? 'Oggi' : fmtData(prossimoAllenamento.data)}
+                {prossimoAllenamento.ora_inizio ? ` · ${fmtOra(prossimoAllenamento.ora_inizio)}` : ''}
+              </div>
+            </Link>
+          ) : (
+            <p className="sub-intro" style={{ margin: 0 }}>Nessun allenamento programmato.</p>
+          )}
+        </div>
+
+        {/* Partite imminenti */}
+        <div className="scheda" style={{ maxWidth: 'none' }}>
+          <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>⚽ Partite nei prossimi 7 giorni</h3>
+          {partiteImminenti.length === 0 ? (
+            <p className="sub-intro" style={{ margin: 0 }}>Nessuna partita in programma.</p>
+          ) : partiteImminenti.map((p) => (
+            <Link key={p.id} href={`/partite/${p.id}`} className="dv-item" style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>{p.squadre?.nome ? `${p.squadre.nome} · ` : ''}{p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'} {p.avversario || '—'}</span>
+              <span className="dv-data">{fmtData(p.data)}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Link rapidi */}
+      <div className="scheda" style={{ marginTop: 16, maxWidth: 'none' }}>
+        <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>Accesso rapido</h3>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link href="/portieri" className="btn-ghost" style={{ fontSize: 13 }}>👥 Portieri</Link>
+          <Link href="/calendario" className="btn-ghost" style={{ fontSize: 13 }}>📅 Calendario</Link>
+          <Link href="/partite" className="btn-ghost" style={{ fontSize: 13 }}>⚽ Partite</Link>
+          <Link href="/statistiche" className="btn-ghost" style={{ fontSize: 13 }}>📊 Statistiche</Link>
+        </div>
+      </div>
+    </>
+  )
+
+  // ── Primo accesso: senza stagione mostriamo i passi da fare in cima,
+  //    e sotto le finestre standard (vuote) per far vedere dove si arriva. ──
   if (profilo?.ruolo === 'allenatore' && !stagione) {
     return (
       <>
@@ -219,6 +267,9 @@ export default async function DashboardPage() {
             gli altri si sbloccano da soli man mano.
           </p>
           <OnboardingChecklist checks={checksOnboarding} />
+
+          {blocchiStandard}
+
           <div className="scheda" style={{ marginTop: 16, maxWidth: 'none' }}>
             <h3 style={{ marginTop: 0, marginBottom: 6, fontSize: 14 }}>Hai bisogno di una mano?</h3>
             <p className="sub-intro" style={{ margin: 0 }}>
@@ -308,47 +359,7 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        <div className="dash-grid">
-          {/* Prossimo allenamento */}
-          <div className="scheda" style={{ maxWidth: 'none' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>📅 Prossimo allenamento</h3>
-            {prossimoAllenamento ? (
-              <Link href={`/calendario/${prossimoAllenamento.id}`} className="link-inline" style={{ display: 'block' }}>
-                <div style={{ fontWeight: 700, fontSize: 16 }}>{prossimoAllenamento.squadra?.nome}</div>
-                <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
-                  {prossimoAllenamento.data === oggiStr ? 'Oggi' : fmtData(prossimoAllenamento.data)}
-                  {prossimoAllenamento.ora_inizio ? ` · ${fmtOra(prossimoAllenamento.ora_inizio)}` : ''}
-                </div>
-              </Link>
-            ) : (
-              <p className="sub-intro" style={{ margin: 0 }}>Nessun allenamento programmato.</p>
-            )}
-          </div>
-
-          {/* Partite imminenti */}
-          <div className="scheda" style={{ maxWidth: 'none' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>⚽ Partite nei prossimi 7 giorni</h3>
-            {partiteImminenti.length === 0 ? (
-              <p className="sub-intro" style={{ margin: 0 }}>Nessuna partita in programma.</p>
-            ) : partiteImminenti.map((p) => (
-              <Link key={p.id} href={`/partite/${p.id}`} className="dv-item" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>{p.squadre?.nome ? `${p.squadre.nome} · ` : ''}{p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'} {p.avversario || '—'}</span>
-                <span className="dv-data">{fmtData(p.data)}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Link rapidi */}
-        <div className="scheda" style={{ marginTop: 16, maxWidth: 'none' }}>
-          <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>Accesso rapido</h3>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Link href="/portieri" className="btn-ghost" style={{ fontSize: 13 }}>👥 Portieri</Link>
-            <Link href="/calendario" className="btn-ghost" style={{ fontSize: 13 }}>📅 Calendario</Link>
-            <Link href="/partite" className="btn-ghost" style={{ fontSize: 13 }}>⚽ Partite</Link>
-            <Link href="/statistiche" className="btn-ghost" style={{ fontSize: 13 }}>📊 Statistiche</Link>
-          </div>
-        </div>
+        {blocchiStandard}
 
       </div>
     </>

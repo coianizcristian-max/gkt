@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Guida from '@/app/components/Guida'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
@@ -17,7 +18,7 @@ export default async function DashboardPage() {
   if (!user) redirect('/login')
 
   const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id, nome_visualizzato').eq('id', user.id).maybeSingle()
+    .from('profili').select('ruolo, portiere_id, nome_visualizzato, nome_completo').eq('id', user.id).maybeSingle()
 
   // I portieri hanno già la loro scheda come "home" — qui reindirizziamo
   if (profilo?.ruolo === 'portiere' && profilo.portiere_id) {
@@ -38,8 +39,15 @@ export default async function DashboardPage() {
   let partiteImminenti = []
   let coupon = null
 
+  // ── Stato configurazione iniziale (per la checklist di onboarding) ──
+  let haCategorie = false
+  let haPortieri = false
+  let haAllenamenti = false
+  const nomeProfilo = (profilo?.nome_visualizzato || profilo?.nome_completo || '').trim()
+  const haProfiloCompilato = !!nomeProfilo
+
   if (stagione) {
-    const [allRows, parRows, couponRow] = await Promise.all([
+    const [allRows, parRows, couponRow, catRow, iscrRow] = await Promise.all([
       supabase.from('allenamenti')
         .select('id, data, ora_inizio, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id).order('data'),
@@ -48,7 +56,13 @@ export default async function DashboardPage() {
         .eq('stagione_id', stagione.id).order('data'),
       supabase.from('coupon_utilizzi').select('scade_il').eq('utente_id', user.id)
         .gt('scade_il', new Date().toISOString()).order('scade_il', { ascending: false }).limit(1).maybeSingle(),
+      supabase.from('stagione_categorie').select('id').eq('stagione_id', stagione.id).limit(1),
+      supabase.from('iscrizioni').select('portieri(attivo)').eq('stagione_id', stagione.id),
     ])
+
+    haCategorie = (catRow.data ?? []).length > 0
+    haPortieri = (iscrRow.data ?? []).some((i) => i.portieri?.attivo)
+    haAllenamenti = (allRows.data ?? []).length > 0
 
     const allenamenti = allRows.data ?? []
     const partiteRows = parRows.data ?? []
@@ -155,11 +169,73 @@ export default async function DashboardPage() {
   const totDaValutare = daValutareAllenamenti.length + daValutarePartite.length
   const couponGiorni = coupon ? Math.ceil((new Date(coupon.scade_il) - new Date()) / (1000 * 60 * 60 * 24)) : null
 
+  const saluto = `Ciao${nomeProfilo ? `, ${nomeProfilo.split(' ')[0]}` : ''} 👋`
+
+  const checksOnboarding = [
+    {
+      ok: !!stagione,
+      titolo: 'Configura la tua stagione',
+      desc: 'Seleziona l\u2019anno e imposta societ\u00e0, date e categorie.',
+      href: '/setup',
+    },
+    {
+      ok: haCategorie,
+      titolo: 'Almeno una categoria',
+      desc: 'Aggiungi le categorie (Under 15, Under 17…) alla stagione.',
+      href: '/categorie',
+    },
+    {
+      ok: haPortieri,
+      titolo: 'Portieri iscritti',
+      desc: 'Aggiungi i tuoi portieri e iscrivili a una categoria.',
+      href: '/portieri/nuovo',
+    },
+    {
+      ok: haAllenamenti,
+      titolo: 'Crea gli allenamenti',
+      desc: 'Vai in Ricorrenze: imposta i giorni fissi di allenamento per ogni categoria e genera tutto il calendario in un click.',
+      href: '/ricorrenze',
+    },
+    {
+      ok: haProfiloCompilato,
+      titolo: 'Completa il tuo profilo',
+      desc: 'Aggiungi nome, foto e bio per apparire nella ricerca pubblica degli allenatori.',
+      href: '/profilo',
+    },
+  ]
+
+  // ── Primo accesso: senza stagione la dashboard non ha nulla da mostrare.
+  //    Al suo posto diamo solo i passi da fare, così la strada è una sola. ──
+  if (profilo?.ruolo === 'allenatore' && !stagione) {
+    return (
+      <>
+        <div className="topbar">
+          <div className="eyebrow">Benvenuto in GKSeason</div>
+          <h1>{saluto}</h1>
+        </div>
+        <div className="content">
+          <p className="sub-intro" style={{ marginBottom: 16 }}>
+            Bastano pochi minuti per avere la tua stagione pronta. Parti dal primo passo:
+            gli altri si sbloccano da soli man mano.
+          </p>
+          <OnboardingChecklist checks={checksOnboarding} />
+          <div className="scheda" style={{ marginTop: 16, maxWidth: 'none' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 6, fontSize: 14 }}>Hai bisogno di una mano?</h3>
+            <p className="sub-intro" style={{ margin: 0 }}>
+              Nella sezione <Link href="/come-iniziare" className="link-inline">Come iniziare</Link> trovi
+              la guida completa, oppure scrivici dai <Link href="/contatti" className="link-inline">Contatti</Link>.
+            </p>
+          </div>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       <div className="topbar">
         <div className="eyebrow">Stagione {stagione?.nome ?? '—'}</div>
-        <h1>Ciao{profilo?.nome_visualizzato ? `, ${profilo.nome_visualizzato.split(' ')[0]}` : ''} 👋</h1>
+        <h1>{saluto}</h1>
       </div>
       <div className="content">
 
@@ -180,6 +256,8 @@ export default async function DashboardPage() {
             o un obiettivo con scadenza superata non ancora raggiunto.
           </p>
         </Guida>
+
+        {profilo?.ruolo === 'allenatore' && <OnboardingChecklist checks={checksOnboarding} />}
 
         {/* Widget principale: cosa devo fare oggi */}
         {totDaValutare > 0 && (
@@ -202,7 +280,7 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {totDaValutare === 0 && (
+        {totDaValutare === 0 && haAllenamenti && (
           <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--campo)', maxWidth: 'none' }}>
             <p style={{ margin: 0, color: 'var(--campo)', fontWeight: 600 }}>✓ Tutto valutato, sei in pari!</p>
           </div>

@@ -131,18 +131,19 @@ export default async function ProfiloAllenatorePublicPage({ params }) {
         </div>
       )}
 
-      {/* Contatto — dati nascosti dietro fee */}
+      {/* Contatto — dati dietro fee. Usa .paywall-banner, lo stesso pattern gia'
+          usato altrove nel sito: senza quelle classi il .btn resta a width:100%
+          (regola globale) e schiaccia il testo a una parola per riga.
+          Il prezzo e' in <strong> e non in <b> perche' .paywall-text b e' display:block. */}
       <div className="scheda" style={{ marginBottom: 0 }}>
         <h2 style={{ margin: '0 0 10px', fontSize: 16 }}>Contatta questo allenatore</h2>
-        <div style={{ background: 'var(--carta)', border: '1px solid var(--linea)', borderRadius: 'var(--r)', padding: '16px 20px', display: 'flex', gap: 16, alignItems: 'center' }}>
-          <div style={{ fontSize: 28 }}>🔒</div>
-          <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontWeight: 600 }}>Numero di telefono ed email riservati</p>
-            <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--ink-soft)' }}>
-              Per vedere i contatti diretti di questo allenatore è richiesto un contributo di <b>€ {importoFee}</b>.
-            </p>
+        <div className="paywall-banner">
+          <div className="paywall-icon">🔒</div>
+          <div className="paywall-text">
+            <b>Numero di telefono ed email riservati</b>
+            <p>Per vedere i contatti diretti di questo allenatore è richiesto un contributo di <strong>€ {importoFee}</strong>.</p>
           </div>
-          <Link href={`/allenatori/${id}/contatto`} className="btn" style={{ flexShrink: 0 }}>
+          <Link href={`/allenatori/${id}/contatto`} className="btn paywall-cta">
             Sblocca contatti
           </Link>
         </div>

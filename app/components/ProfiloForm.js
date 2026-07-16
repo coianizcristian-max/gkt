@@ -124,7 +124,22 @@ export default function ProfiloForm({ profilo, userId }) {
             <span style={{ color: 'var(--ink-soft)', fontSize: '0.85rem', flexBasis: '100%' }}>Se "Disponibile" e attivo, le societa entro il tuo range (calcolato dalla tua citta) possono trovarti.</span>
           </div>
         </div>
-        <div className="field field-full"><label>Bio</label><textarea rows="3" value={f.bio} onChange={upd('bio')} /></div>
+        <div className="field field-full">
+          <label>Bio</label>
+          {!f.bio?.trim() && (
+            <div style={{ background: '#fff7e6', border: '1px solid #f0c36d', borderRadius: 8,
+                          padding: '10px 12px', marginBottom: 8, fontSize: 13, lineHeight: 1.5 }}>
+              <b>La tua bio è vuota.</b> È la prima cosa che leggono le società e i genitori
+              quando ti trovano nella ricerca: un profilo senza bio viene quasi sempre saltato.
+              Bastano 3-4 righe — da quanto alleni, con quali categorie, come lavori.
+            </div>
+          )}
+          <textarea rows="5" value={f.bio} onChange={upd('bio')}
+            placeholder="Es. Alleno portieri da 8 anni, dalla Scuola Calcio agli Allievi. Lavoro molto sulla tecnica di base, sulle uscite alte e sul gioco con i piedi." />
+          <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+            {(f.bio || '').trim().length} caratteri — consigliati almeno 200.
+          </span>
+        </div>
       </div>
       <ListaEditabile titolo="Esperienze" items={esperienze}
         onSet={mkSet(esperienze, setEsperienze)} onAdd={mkAdd(esperienze, setEsperienze)} onDel={mkDel(esperienze, setEsperienze)}

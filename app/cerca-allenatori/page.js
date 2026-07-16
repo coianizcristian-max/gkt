@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import ProfiloModal from './ProfiloModal'
 
@@ -100,17 +101,19 @@ export default function CercaAllenatori() {
         const km = a.distanza_km != null ? a.distanza_km : a.dist
         const kmLabel = (km != null && km < 500) ? ' · ' + Math.round(km) + ' km' : ''
         return (
-          <button
-            key={a.id}
-            type="button"
-            onClick={() => setSelezionato(a)}
-            className="allenatore-card"
-            style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-          >
+          <div
+                key={a.id}
+                className="allenatore-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelezionato(a)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelezionato(a) } }}
+                style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
             <div className="stat-head">
               <div className="stat-foto">
                 {a.foto_url
-                  ? <Image src={a.foto_url} alt="" fill sizes="52px" />
+                  ? <Image src={a.foto_url} alt={a.nome || 'Allenatore'} fill sizes="52px" />
                   : <span>{(a.nome || '?').charAt(0)}</span>}
               </div>
               <div style={{ flex: 1 }}>
@@ -119,7 +122,13 @@ export default function CercaAllenatori() {
                   {a.citta ? a.citta.toUpperCase() : ''}{kmLabel}
                 </div>
               </div>
-              <span style={{ fontSize: 13, color: 'var(--azzurro)', fontWeight: 600 }}>Vedi profilo →</span>
+              <Link
+                  href={`/allenatori/${a.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ fontSize: 13, color: 'var(--azzurro)', fontWeight: 600, textDecoration: 'none' }}
+                >
+                  Vedi profilo →
+                </Link>
             </div>
             {a.bio && (
               <p style={{ margin: '10px 0 0', color: 'var(--ink-soft)', fontSize: 14, lineHeight: 1.5,
@@ -127,7 +136,7 @@ export default function CercaAllenatori() {
                 {a.bio}
               </p>
             )}
-          </button>
+          </div>
         )
       })}
 

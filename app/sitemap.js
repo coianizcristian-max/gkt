@@ -13,21 +13,31 @@ export default async function sitemap() {
 
   try {
     const supabase = await createClient()
-    const { data: allenatori } = await supabase
+    // NB: la tabella profili NON ha updated_at, ha solo created_at.
+    // Prima qui si leggeva updated_at: PostgREST rispondeva errore, data restava null,
+    // e la sitemap pubblicava solo le pagine statiche. In silenzio, perche' l'errore
+    // non veniva mai controllato. Da qui il controllo esplicito su error.
+    const { data: allenatori, error } = await supabase
       .from('profili')
-      .select('id, updated_at')
+      .select('id, created_at')
       .in('ruolo', ['allenatore', 'staff'])
       .eq('disponibile', true)
 
+    if (error) {
+      console.error('[sitemap] errore lettura profili:', error.message)
+      return staticPages
+    }
+
     const dynamicPages = (allenatori ?? []).map((a) => ({
       url: `${baseUrl}/allenatori/${a.id}`,
-      lastModified: a.updated_at ? new Date(a.updated_at) : new Date(),
+      lastModified: a.created_at ? new Date(a.created_at) : new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     }))
 
     return [...staticPages, ...dynamicPages]
-  } catch {
+  } catch (e) {
+    console.error('[sitemap] eccezione:', e)
     return staticPages
   }
 }

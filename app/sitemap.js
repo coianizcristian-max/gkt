@@ -1,4 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createPublicClient } from '@supabase/supabase-js'
+
+// La sitemap la genera il server SENZA nessun utente loggato. Il client di
+// @/lib/supabase/server si autentica coi cookie di sessione: qui non ce ne sono,
+// quindi girava come anon e le RLS su profili restituivano zero righe. Nota bene:
+// zero righe, non un errore — per questo il fallimento era invisibile e la sitemap
+// pubblicava solo le 5 pagine statiche. Si passa dalla RPC elenco_allenatori_pubblici
+// (SECURITY DEFINER), che espone solo id e created_at: nessun dato personale.
+function getPublicClient() {
+  return createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+}
 
 export default async function sitemap() {
   const baseUrl = 'https://www.gkseason.it'
@@ -12,19 +22,11 @@ export default async function sitemap() {
   ]
 
   try {
-    const supabase = await createClient()
-    // NB: la tabella profili NON ha updated_at, ha solo created_at.
-    // Prima qui si leggeva updated_at: PostgREST rispondeva errore, data restava null,
-    // e la sitemap pubblicava solo le pagine statiche. In silenzio, perche' l'errore
-    // non veniva mai controllato. Da qui il controllo esplicito su error.
-    const { data: allenatori, error } = await supabase
-      .from('profili')
-      .select('id, created_at')
-      .in('ruolo', ['allenatore', 'staff'])
-      .eq('disponibile', true)
+    const supabase = getPublicClient()
+    const { data: allenatori, error } = await supabase.rpc('elenco_allenatori_pubblici')
 
     if (error) {
-      console.error('[sitemap] errore lettura profili:', error.message)
+      console.error('[sitemap] RPC elenco_allenatori_pubblici:', error.message)
       return staticPages
     }
 

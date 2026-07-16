@@ -3,24 +3,33 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 
-// Pagina pubblica al 100% (nessuna personalizzazione per chi è loggato), letta
-// anche dai motori di ricerca — cache di 5 minuti invece di rigenerare a ogni
-// visita. Client "anonimo" apposta per non forzare la pagina a restare dinamica
-// (vedi lo stesso ragionamento fatto per la homepage).
+// Pagina pubblica al 100% (nessuna personalizzazione per chi e' loggato), letta
+// anche dai motori di ricerca — cache di 5 minuti invece di rigenerare a ogni visita.
 export const revalidate = 300
 
 function getPublicClient() {
   return createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 }
 
+// ATTENZIONE, storia di questo file: prima qui si faceva .from('profili').select(...)
+// con il client anonimo. Ma le RLS non permettono ad anon di leggere profili: la
+// select tornava zero righe SENZA errore, quindi scattava notFound() e la pagina
+// rispondeva 404 a tutti — utenti sloggati e Googlebot compresi. Ora si passa dalla
+// RPC profilo_allenatore_pubblico (SECURITY DEFINER), che restituisce solo i campi
+// pubblici. Il telefono NON e' fra questi: resta dietro il paywall.
+async function getProfiloPubblico(id) {
+  const supabase = getPublicClient()
+  const { data, error } = await supabase.rpc('profilo_allenatore_pubblico', { p_id: id })
+  if (error) {
+    console.error('[allenatore] RPC profilo_allenatore_pubblico:', error.message)
+    return null
+  }
+  return data?.[0] ?? null
+}
+
 export async function generateMetadata({ params }) {
   const { id } = await params
-  const supabase = getPublicClient()
-  const { data: profilo } = await supabase
-    .from('profili')
-    .select('nome_completo, bio, citta, foto_url')
-    .eq('id', id)
-    .maybeSingle()
+  const profilo = await getProfiloPubblico(id)
 
   if (!profilo) return { title: 'Allenatore non trovato' }
 
@@ -32,6 +41,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `${nome}${profilo.citta ? ' — ' + profilo.citta : ''}`,
     description: desc,
+    alternates: { canonical: `/allenatori/${id}` },
     openGraph: {
       title: `${nome} | Preparatore portieri`,
       description: desc,
@@ -42,27 +52,14 @@ export async function generateMetadata({ params }) {
 
 export default async function ProfiloAllenatorePublicPage({ params }) {
   const { id } = await params
+  const profilo = await getProfiloPubblico(id)
+
+  // La RPC filtra gia' per ruolo allenatore/staff: se torna una riga, e' valida.
+  if (!profilo) notFound()
+
   const supabase = getPublicClient()
 
-  const { data: profilo } = await supabase
-    .from('profili')
-    .select('id, nome_completo, bio, foto_url, citta, esperienze, certificati, disponibile, ruolo')
-    .eq('id', id)
-    .maybeSingle()
-
-  // Nota: il filtro "disponibile" è già applicato dalla RPC cerca_allenatori che genera i risultati.
-  // Qui controlliamo solo che il profilo esista e sia di tipo corretto, per evitare falsi 404
-  // quando il campo disponibile non è stato impostato esplicitamente nel DB.
-  if (!profilo || (profilo.ruolo !== 'allenatore' && profilo.ruolo !== 'staff')) notFound()
-
-  // Fee contatto dal config supervisore
-  const { data: feeRow } = await supabase
-    .from('funzionalita_config')
-    .select('free')
-    .eq('chiave', 'contatto_allenatore')
-    .maybeSingle()
-  const feeAmount = feeRow?.free ?? null // null = feature non configurata
-
+  // funzionalita_config e' leggibile da anon, qui il client normale va bene.
   const { data: feeImporto } = await supabase
     .from('funzionalita_config')
     .select('label')
@@ -72,11 +69,12 @@ export default async function ProfiloAllenatorePublicPage({ params }) {
 
   const esperienze = Array.isArray(profilo.esperienze) ? profilo.esperienze.filter(Boolean) : []
   const certificati = Array.isArray(profilo.certificati) ? profilo.certificati.filter(Boolean) : []
+  const nome = profilo.nome_completo || 'Allenatore'
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Person',
-    name: profilo.nome_completo || 'Allenatore',
+    name: nome,
     jobTitle: 'Preparatore portieri',
     address: profilo.citta ? { '@type': 'PostalAddress', addressLocality: profilo.citta, addressCountry: 'IT' } : undefined,
     description: profilo.bio || undefined,
@@ -92,11 +90,11 @@ export default async function ProfiloAllenatorePublicPage({ params }) {
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', margin: '24px 0 28px' }}>
         <div className="stat-foto" style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
           {profilo.foto_url
-            ? <Image src={profilo.foto_url} alt="" fill sizes="80px" style={{ objectFit: 'cover' }} />
-            : <span style={{ fontSize: 28 }}>{(profilo.nome_completo || '?').charAt(0)}</span>}
+            ? <Image src={profilo.foto_url} alt={`${nome}, preparatore portieri${profilo.citta ? ' a ' + profilo.citta : ''}`} fill sizes="80px" style={{ objectFit: 'cover' }} />
+            : <span style={{ fontSize: 28 }}>{nome.charAt(0)}</span>}
         </div>
         <div>
-          <h1 style={{ margin: 0, fontSize: 24 }}>{profilo.nome_completo || 'Allenatore'}</h1>
+          <h1 style={{ margin: 0, fontSize: 24 }}>{nome}</h1>
           {profilo.citta && (
             <p style={{ margin: '6px 0 0', color: 'var(--ink-soft)', display: 'flex', alignItems: 'center', gap: 4 }}>
               📍 {profilo.citta}

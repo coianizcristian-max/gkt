@@ -23,6 +23,7 @@ export default async function AppLayout({ children }) {
   let haPreparatori = false
   let altreStagioni = []
   let newsletterNonLette = 0
+  let contattiNonLetti = 0
 
   if (user) {
     const { data: profilo } = await supabase
@@ -43,6 +44,18 @@ export default async function AppLayout({ children }) {
       .eq('pubblicata', true)
       .gt('inviata_il', profilo?.newsletter_vista_il ?? '1970-01-01')
     newsletterNonLette = nCount ?? 0
+
+    // Badge contatti ricevuti: stesso principio della newsletter, ma qui il flag
+    // "letto" e' per singolo messaggio, non una data di ultima visita. I record
+    // vecchi possono avere letto = null: vanno contati come non letti, come fa
+    // gia' la pagina /contatti con !m.letto.
+    if (isStaff) {
+      const { count: cCount } = await supabase
+        .from('messaggi_contatto').select('id', { count: 'exact', head: true })
+        .eq('allenatore_id', user.id)
+        .or('letto.is.null,letto.eq.false')
+      contattiNonLetti = cCount ?? 0
+    }
 
     const ctxPermessi = { ruolo: profilo?.ruolo, permessiCollaboratore: profilo?.permessi_collaboratore }
     vedePortieri = puoVisualizzare(ctxPermessi, 'portieri')
@@ -131,7 +144,7 @@ export default async function AppLayout({ children }) {
     'categorie':     isStaff ? { href: '/categorie', label: 'Le mie categorie' } : null,
     'inviti':        isStaff ? { href: '/inviti', label: 'Inviti' } : null,
     'i-miei-preparatori': (ruoloUtente === 'allenatore' && haPreparatori) ? { href: '/i-miei-preparatori', label: '🔗 I miei preparatori' } : null,
-    'contatti':      isStaff ? { href: '/contatti', label: 'Contatti ricevuti' } : null,
+    'contatti':      isStaff ? { href: '/contatti', label: contattiNonLetti > 0 ? <>Contatti ricevuti <span className="nav-badge">{contattiNonLetti}</span></> : 'Contatti ricevuti' } : null,
     'come-iniziare': { href: '/come-iniziare', label: 'Come iniziare' },
     'faq':           { href: '/faq', label: 'Domande frequenti' },
     'archivio':      { href: '/archivio', label: 'Archivio' },

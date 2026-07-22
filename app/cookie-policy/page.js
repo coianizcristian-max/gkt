@@ -37,6 +37,7 @@ export default function CookiePolicy() {
             <thead><tr><th>Nome</th><th>Fornitore</th><th>Scopo</th><th>Durata</th></tr></thead>
             <tbody>
               <tr><td>ph_*</td><td>PostHog (EU)</td><td>Analytics anonimizzato: pagine visitate, funnel di utilizzo, performance</td><td>1 anno</td></tr>
+              <tr><td>_fbp</td><td>Meta (Facebook)</td><td>Meta Pixel: misurazione dell'efficacia delle campagne pubblicitarie (attivo solo dopo il consenso)</td><td>3 mesi</td></tr>
             </tbody>
           </table>
         </section>

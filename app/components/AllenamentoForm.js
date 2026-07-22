@@ -215,7 +215,7 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
           </button>
         )}
         <div style={{ display: 'flex', gap: 8 }}>
-          {!isEdit && <button type="button" className="btn-ghost" onClick={() => router.push('/calendario')}>Annulla</button>}
+          {!isEdit && <button type="button" className="btn-ghost" onClick={() => { if (window.history.length > 1) router.back(); else router.push('/calendario') }}>Annulla</button>}
           <button type="submit" className="btn" disabled={saving || deleting}>
             {saving ? 'Salvataggio…' : done ? 'Salvato ✓' : (isEdit ? 'Salva allenamento' : 'Crea e inserisci valutazioni')}
           </button>

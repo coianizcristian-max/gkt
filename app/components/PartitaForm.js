@@ -114,7 +114,7 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
           </button>
         )}
         <div style={{ display: 'flex', gap: 8 }}>
-          {!isEdit && <button type="button" className="btn-ghost" onClick={() => router.push('/partite')}>Annulla</button>}
+          {!isEdit && <button type="button" className="btn-ghost" onClick={() => { if (window.history.length > 1) router.back(); else router.push('/partite') }}>Annulla</button>}
           <button type="submit" className="btn" disabled={saving || deleting}>
             {saving ? 'Salvataggio...' : done ? 'Salvato \u2713' : (isEdit ? 'Salva partita' : 'Crea e inserisci valutazioni')}
           </button>

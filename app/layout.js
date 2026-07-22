@@ -18,6 +18,7 @@ const inter = Inter({
 
 export const metadata = {
   metadataBase: new URL('https://www.gkseason.it'),
+  other: { 'facebook-domain-verification': 'iv44yskhavej225hs3k6o4wz8mnz23' },
   title: {
     default: 'GKSeason — Gestionale Allenamento Portieri',
     template: '%s | GKSeason',

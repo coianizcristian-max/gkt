@@ -78,6 +78,10 @@ function TracciaClickCTA() {
           pagina_corrente: window.location.pathname,
         })
       })
+      // Segnala a Meta l'intenzione di registrarsi (evento standard Lead)
+      if (href && href.includes('/registrati')) {
+        import('@/app/components/MetaPixel').then((m) => m.trackMetaEvento('Lead')).catch(() => {})
+      }
     }
     document.addEventListener('click', handleClick, true)
     return () => document.removeEventListener('click', handleClick, true)

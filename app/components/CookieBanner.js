@@ -28,6 +28,8 @@ export default function CookieBanner() {
     if (typeof window !== 'undefined' && window.__posthogOptOut) {
       window.__posthogOptOut = false
     }
+    // Notifica gli script di tracking (es. Meta Pixel) che il consenso è arrivato
+    try { window.dispatchEvent(new Event('gkt-consenso-accettato')) } catch {}
   }
 
   function rifiuta() {

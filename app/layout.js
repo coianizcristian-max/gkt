@@ -3,6 +3,7 @@ import './globals.css'
 import PostHogProvider from '@/app/components/PostHogProvider'
 import CookieBanner from '@/app/components/CookieBanner'
 import MetaPixel from '@/app/components/MetaPixel'
+import AttribuzioneUtm from '@/app/components/AttribuzioneUtm'
 import PwaInstaller from '@/app/components/PwaInstaller'
 
 const barlow = Barlow({
@@ -65,7 +66,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="it" className={`${barlow.variable} ${inter.variable}`}>
-      <body><PostHogProvider>{children}</PostHogProvider><CookieBanner /><MetaPixel /><PwaInstaller /></body>
+      <body><PostHogProvider>{children}</PostHogProvider><CookieBanner /><MetaPixel /><AttribuzioneUtm /><PwaInstaller /></body>
     </html>
   )
 }

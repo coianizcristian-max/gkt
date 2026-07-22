@@ -97,8 +97,21 @@ export default async function Home() {
     (sfondoSezione[u.gi] ??= {})[u.ci ?? '_'] = u.valore
   }
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'GKSeason',
+    url: 'https://www.gkseason.it',
+    applicationCategory: 'SportsApplication',
+    operatingSystem: 'Web',
+    description: "Piattaforma per preparatori dei portieri: calendario allenamenti, valutazioni, statistiche, esercizi e gestione squadra in un'unica app.",
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR', description: 'Gratis con promo lancio' },
+    inLanguage: 'it',
+  }
+
   return (
     <div className="landing">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* ── Navbar fissa ── */}
       <header className="landing-top">

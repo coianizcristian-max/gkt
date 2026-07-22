@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { trackMetaEvento } from '@/app/components/MetaPixel'
+import { leggiAttribuzione } from '@/app/components/AttribuzioneUtm'
 
 export default function RegistratiClient({ token, datiInvito }) {
   const router = useRouter()
@@ -93,13 +94,13 @@ export default function RegistratiClient({ token, datiInvito }) {
 
     if (data.session) {
       // Sessione immediata (email confirm disabilitata): vai all'app
-      trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: false })
+      trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: false, ...(leggiAttribuzione() || {}) })
       trackMetaEvento('CompleteRegistration')
       router.push('/dashboard')
       router.refresh()
     } else {
       // Email di conferma richiesta
-      trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: true })
+      trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: true, ...(leggiAttribuzione() || {}) })
       trackMetaEvento('CompleteRegistration')
       setMsg(
         `Account creato! Ti abbiamo inviato una mail di conferma a ${email.trim()}. ` +

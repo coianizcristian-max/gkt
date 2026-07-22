@@ -107,7 +107,12 @@ export default async function CalendarioPage() {
           <div className="eyebrow">Stagione {stagione?.nome ?? '—'}</div>
           <h1>Calendario</h1>
         </div>
-        {!isPortiere && <Link href="/calendario/nuovo" className="btn-azione">+ Nuovo allenamento</Link>}
+        {!isPortiere && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Link href="/calendario/nuovo" className="btn-azione">+ Nuovo allenamento</Link>
+            <Link href="/partite/nuova" className="btn-azione" style={{ textAlign: 'center' }}>+ Nuova partita</Link>
+          </div>
+        )}
       </div>
       <div className="content">
         {!isPortiere && (

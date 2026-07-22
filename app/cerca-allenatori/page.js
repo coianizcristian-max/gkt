@@ -19,6 +19,7 @@ export default function CercaAllenatori() {
   const [citta, setCitta] = useState('')
   const [cap, setCap] = useState('')
   const [provincia, setProvincia] = useState('')
+  const [raggio, setRaggio] = useState('50')
   const [risultati, setRisultati] = useState(null)
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
@@ -45,6 +46,13 @@ export default function CercaAllenatori() {
   }
 
   const onKey = (e) => { if (e.key === 'Enter') cerca() }
+
+  const filtrati = risultati && raggio !== 'all'
+    ? risultati.filter((a) => {
+        const km = a.distanza_km != null ? a.distanza_km : a.dist
+        return km != null && km <= Number(raggio)
+      })
+    : risultati
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: '32px 20px' }}>
@@ -82,6 +90,17 @@ export default function CercaAllenatori() {
           maxLength={30}
           style={{ flex: 1, padding: '11px 14px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: 16 }}
         />
+        <select
+          value={raggio}
+          onChange={(e) => setRaggio(e.target.value)}
+          style={{ flexShrink: 0, width: 110, padding: '11px 8px', border: '1px solid var(--linea)', borderRadius: 8, fontSize: 16, background: '#fff' }}
+        >
+          <option value="10">10 km</option>
+          <option value="30">30 km</option>
+          <option value="50">50 km</option>
+          <option value="100">100 km</option>
+          <option value="all">Ovunque</option>
+        </select>
         <button className="btn" onClick={cerca} disabled={loading} type="button" style={{ flexShrink: 0, minWidth: 100 }}>
           {loading ? 'Cerco...' : 'Cerca'}
         </button>
@@ -91,13 +110,15 @@ export default function CercaAllenatori() {
       </p>
 
       {msg && <p style={{ color: 'var(--rosso, #c0392b)', marginBottom: 12 }}>{msg}</p>}
-      {risultati && risultati.length === 0 && (
-        <p style={{ color: 'var(--ink-soft)' }}>Nessun allenatore disponibile trovato per questa zona.</p>
+      {filtrati && filtrati.length === 0 && (
+        <p style={{ color: 'var(--ink-soft)' }}>
+          Nessun allenatore trovato{raggio !== 'all' ? ' entro ' + raggio + ' km. Prova ad allargare il raggio di ricerca.' : ' per questa zona.'}
+        </p>
       )}
-      {risultati && risultati.length > 0 && (
-        <p style={{ color: 'var(--ink-soft)', marginBottom: 12 }}>{risultati.length} allenatori trovati:</p>
+      {filtrati && filtrati.length > 0 && (
+        <p style={{ color: 'var(--ink-soft)', marginBottom: 12 }}>{filtrati.length} allenatori trovati:</p>
       )}
-      {risultati && risultati.map((a) => {
+      {filtrati && filtrati.map((a) => {
         const km = a.distanza_km != null ? a.distanza_km : a.dist
         const kmLabel = (km != null && km < 500) ? ' · ' + Math.round(km) + ' km' : ''
         return (

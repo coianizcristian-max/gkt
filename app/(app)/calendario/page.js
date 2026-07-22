@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
 import CalendarioMese from '@/app/components/CalendarioMese'
+import CalendarioAzioni from '@/app/components/CalendarioAzioni'
 import Guida from '@/app/components/Guida'
 
 export const dynamic = 'force-dynamic'
@@ -107,18 +107,13 @@ export default async function CalendarioPage() {
           <div className="eyebrow">Stagione {stagione?.nome ?? '—'}</div>
           <h1>Calendario</h1>
         </div>
-        {!isPortiere && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <Link href="/calendario/nuovo" className="btn-azione">+ Nuovo allenamento</Link>
-            <Link href="/partite/nuova" className="btn-azione" style={{ textAlign: 'center' }}>+ Nuova partita</Link>
-          </div>
-        )}
+        {!isPortiere && <CalendarioAzioni />}
       </div>
       <div className="content">
         {!isPortiere && (
           <Guida titolo="Come usare il calendario">
             <p>
-              Clicca sul <strong>numero del giorno</strong> per creare un nuovo allenamento in quella data.
+              Clicca sul <strong>numero del giorno</strong> per creare un nuovo allenamento in quella data. Puoi anche <strong>selezionare un giorno qualsiasi</strong> (anche vuoto): i pulsanti <strong>+ Nuovo allenamento</strong> e <strong>+ Nuova partita</strong> in alto useranno quella data.
               Gli allenamenti in <b style={{color:'#2e9e5b'}}>verde</b> sono già valutati, in <b style={{color:'#c0392b'}}>rosso</b> sono da valutare.
               Le partite appaiono in <b style={{color:'#7c3aed'}}>viola</b>: scuro se già passate, chiaro se future. Clicca su qualsiasi blocco per aprirlo.
             </p>

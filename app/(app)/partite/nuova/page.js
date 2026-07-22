@@ -6,7 +6,9 @@ import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
-export default async function NuovaPartitaPage() {
+export default async function NuovaPartitaPage({ searchParams }) {
+  const sp = await searchParams
+  const defaultData = sp?.data ?? ''
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user?.id).maybeSingle()
@@ -33,7 +35,7 @@ export default async function NuovaPartitaPage() {
       </div>
       <div className="content">
         {stagione && categorie.length > 0
-          ? <PartitaForm categorie={categorie} stagioneId={stagione.id} avversari={avversari} />
+          ? <PartitaForm categorie={categorie} stagioneId={stagione.id} avversari={avversari} defaultData={defaultData} />
           : <div className="empty">Imposta prima una stagione attiva e almeno una categoria.</div>}
       </div>
     </>

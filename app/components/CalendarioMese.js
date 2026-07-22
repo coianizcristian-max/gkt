@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -27,6 +27,13 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const oggiStr = `${oggi.getFullYear()}-${pad(oggi.getMonth() + 1)}-${pad(oggi.getDate())}`
 
   const filtrati = allenamenti.filter((a) => !filtro || a.squadra_id === filtro)
+
+  // Notifica la data selezionata (per precompilare "Nuovo allenamento"/"Nuova partita")
+  useEffect(() => {
+    const detail = selectedDay ? `${year}-${pad(month + 1)}-${pad(selectedDay)}` : null
+    window.dispatchEvent(new CustomEvent('cal-giorno-selezionato', { detail }))
+    return () => window.dispatchEvent(new CustomEvent('cal-giorno-selezionato', { detail: null }))
+  }, [selectedDay, year, month])
 
   const daValutare = isPortiere ? [] : filtrati
     .filter((a) => !a.valutato && a.data < oggiStr)
@@ -80,7 +87,6 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   // Click su cella: toggle selezione e carica esercizi lazy
   async function handleCellClick(day) {
     const evs = byDay[day] ?? []
-    if (evs.length === 0) return
     if (selectedDay === day) { setSelectedDay(null); return }
     setSelectedDay(day)
 
@@ -244,14 +250,13 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
             return 0
           })
           const isSelected = selectedDay === day
-          const hasEvs = evs.length > 0
 
           return (
             <div
               key={i}
               className={`cal-cell ${isOggi(day) ? 'oggi' : ''} ${isSelected ? 'cal-cell-selected' : ''}`}
-              onClick={hasEvs ? () => handleCellClick(day) : undefined}
-              style={hasEvs ? { cursor: 'pointer' } : {}}
+              onClick={() => handleCellClick(day)}
+              style={{ cursor: 'pointer' }}
             >
               {isPortiere
                 ? <span className="cal-day">{day}</span>
@@ -313,6 +318,12 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
             </h3>
             <button className="cal-preview-close" type="button" onClick={() => setSelectedDay(null)}>✕</button>
           </div>
+
+          {selectedEvs.length === 0 && (
+            <p style={{ color: 'var(--ink-soft)', fontSize: 14, margin: '4px 0 0' }}>
+              Nessun evento in questo giorno.{!isPortiere && ' I pulsanti + Nuovo allenamento e + Nuova partita in alto useranno questa data.'}
+            </p>
+          )}
 
           {selectedEvs.map((ev) => {
             if (ev._tipo === 'partita') {

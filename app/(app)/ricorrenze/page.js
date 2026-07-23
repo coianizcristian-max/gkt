@@ -24,8 +24,10 @@ export default async function RicorrenzePage() {
   if (stagione) {
     const [cat, ric, ricPar] = await Promise.all([
       supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-      supabase.from('ricorrenze_stagionali').select('*').eq('stagione_id', stagione.id),
-      supabase.from('ricorrenze_partite_stagionali').select('*').eq('stagione_id', stagione.id),
+      supabase.from('ricorrenze_stagionali').select('*').eq('stagione_id', stagione.id)
+        .order('giorno_settimana').order('ora_inizio'),
+      supabase.from('ricorrenze_partite_stagionali').select('*').eq('stagione_id', stagione.id)
+        .order('giorno_settimana').order('data_inizio_ric'),
     ])
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
     ricorrenze = ric.data ?? []

@@ -4,7 +4,7 @@ import VersionePopup from '@/app/components/VersionePopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
 import StagioneSwitcher from '@/app/components/StagioneSwitcher'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getUser } from '@/lib/supabase/server'
 import { getGatingConfig, hasAbbonamento } from '@/lib/gating'
 import { puoVisualizzare } from '@/lib/permessi'
 import { getStagioneAttiva } from '@/lib/tenant'
@@ -12,7 +12,7 @@ import IdentificaUtenteTracking from '@/app/components/IdentificaUtenteTracking'
 
 export default async function AppLayout({ children }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
 
   let isStaff = false, isSupervisore = false, isPortiere = false
   let portiereId = null, societa = null, logo = null, stagioneNome = null, stagioneId = null

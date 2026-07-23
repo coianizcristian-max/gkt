@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getUser } from '@/lib/supabase/server'
 import Guida from '@/app/components/Guida'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
@@ -11,12 +11,19 @@ export const dynamic = 'force-dynamic'
 
 export default async function RicorrenzePage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
   const { stagione } = await getStagioneAttiva(supabase, user.id)
+
+  // Il gating non dipende dalla stagione: partiva solo dopo il blocco sotto,
+  // qui viene lanciato subito e atteso solo quando serve.
+  const gatingPromise = Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user.id),
+  ])
 
   let categorie = []
   let ricorrenze = []
@@ -34,10 +41,7 @@ export default async function RicorrenzePage() {
     ricorrenzePartite = ricPar.data ?? []
   }
 
-  const [gatingCfg, abbAttivo] = await Promise.all([
-    getGatingConfig(supabase),
-    hasAbbonamento(supabase, user.id),
-  ])
+  const [gatingCfg, abbAttivo] = await gatingPromise
   const canRicorrenze = isUnlocked('ricorrenze_genera', gatingCfg, abbAttivo)
 
   return (

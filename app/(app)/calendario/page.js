@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getUser } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
 import CalendarioMese from '@/app/components/CalendarioMese'
 import CalendarioAzioni from '@/app/components/CalendarioAzioni'
@@ -8,12 +8,16 @@ export const dynamic = 'force-dynamic'
 
 export default async function CalendarioPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
-  const isPortiere = profilo?.ruolo === 'portiere'
+  const user = await getUser()
 
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  // profilo e stagione dipendono solo da user.id, non l'uno dall'altro: nessun
+  // redirect qui li separa (a differenza di dashboard/ricorrenze), quindi si
+  // possono lanciare insieme senza rischi.
+  const [{ data: profilo }, { stagione }] = await Promise.all([
+    supabase.from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle(),
+    getStagioneAttiva(supabase, user?.id),
+  ])
+  const isPortiere = profilo?.ruolo === 'portiere'
 
   let allenamenti = []
   let partite = []
@@ -49,17 +53,6 @@ export default async function CalendarioPage() {
       _tipo: 'partita',
     }))
 
-    if (!isPortiere) {
-      const partIds = partite.map((p) => p.id)
-      let partiteValutate = new Set()
-      if (partIds.length) {
-        const { data: vprows } = await supabase.from('valutazioni_partita')
-          .select('partita_id').not('voto', 'is', null).in('partita_id', partIds)
-        partiteValutate = new Set((vprows ?? []).map((r) => r.partita_id))
-      }
-      partite = partite.map((p) => ({ ...p, ha_valutazioni: partiteValutate.has(p.id) }))
-    }
-
     allenamenti = (al.data ?? []).map((a) => ({
       id: a.id,
       data: a.data,
@@ -73,15 +66,31 @@ export default async function CalendarioPage() {
     }))
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
 
+    const partIds = partite.map((p) => p.id)
     const allIds = allenamenti.map((a) => a.id)
+
+    // Query indipendenti (partite dello staff / allenamenti valutati): prima
+    // giravano una dopo l'altra, ora in parallelo.
+    const [vprowsRes, vRes] = await Promise.all([
+      (!isPortiere && partIds.length)
+        ? supabase.from('valutazioni_partita').select('partita_id').not('voto', 'is', null).in('partita_id', partIds)
+        : Promise.resolve({ data: [] }),
+      isPortiere
+        ? ((allIds.length && profilo?.portiere_id)
+          ? supabase.from('valutazioni').select('allenamento_id, presente, voto_portiere').eq('portiere_id', profilo.portiere_id).in('allenamento_id', allIds)
+          : Promise.resolve({ data: [] }))
+        : (allIds.length
+          ? supabase.from('valutazioni').select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allIds)
+          : Promise.resolve({ data: [] })),
+    ])
+
+    if (!isPortiere) {
+      const partiteValutate = new Set((vprowsRes.data ?? []).map((r) => r.partita_id))
+      partite = partite.map((p) => ({ ...p, ha_valutazioni: partiteValutate.has(p.id) }))
+    }
+
     if (isPortiere) {
-      let mie = []
-      if (allIds.length && profilo?.portiere_id) {
-        const { data } = await supabase.from('valutazioni')
-          .select('allenamento_id, presente, voto_portiere')
-          .eq('portiere_id', profilo.portiere_id).in('allenamento_id', allIds)
-        mie = data ?? []
-      }
+      const mie = vRes.data ?? []
       const byAll = {}
       for (const v of mie) byAll[v.allenamento_id] = v
       allenamenti = allenamenti.map((a) => ({
@@ -90,12 +99,7 @@ export default async function CalendarioPage() {
         ha_voto: byAll[a.id]?.voto_portiere != null,
       }))
     } else {
-      let valutati = new Set()
-      if (allIds.length) {
-        const { data: vrows } = await supabase.from('valutazioni')
-          .select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allIds)
-        valutati = new Set((vrows ?? []).map((r) => r.allenamento_id))
-      }
+      const valutati = new Set((vRes.data ?? []).map((r) => r.allenamento_id))
       allenamenti = allenamenti.map((a) => ({ ...a, valutato: valutati.has(a.id) || a.nessuna_valutazione }))
     }
   }

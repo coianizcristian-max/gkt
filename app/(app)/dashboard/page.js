@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Guida from '@/app/components/Guida'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getUser } from '@/lib/supabase/server'
 import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import { getStagioneAttiva } from '@/lib/tenant'
 
@@ -14,7 +14,7 @@ function fmtOra(t) { return t ? t.slice(0, 5) : '' }
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) redirect('/login')
 
   const { data: profilo } = await supabase
@@ -53,8 +53,15 @@ export default async function DashboardPage() {
     profilo?.cap?.trim()
   )
 
+  // ── Portieri da attenzionare: assenze ripetute, calo rendimento, obiettivi in ritardo ──
+  let portieriAttenzione = []
+
   if (stagione) {
-    const [allRows, parRows, couponRow, catRow, iscrRow] = await Promise.all([
+    // Le 5 query di questo primo batch sono indipendenti tra loro (dipendono solo
+    // da stagione.id / user.id): eseguirle in sequenza sprecava 5 round-trip.
+    // La query "iscrizioni" serve sia per haPortieri sia per l'elenco portieri
+    // usato piu' sotto: prima erano due query separate con select diversi.
+    const [allRows, parRows, couponRow, catRow, iscrRows] = await Promise.all([
       supabase.from('allenamenti')
         .select('id, data, ora_inizio, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id).order('data'),
@@ -64,21 +71,27 @@ export default async function DashboardPage() {
       supabase.from('coupon_utilizzi').select('scade_il').eq('utente_id', user.id)
         .gt('scade_il', new Date().toISOString()).order('scade_il', { ascending: false }).limit(1).maybeSingle(),
       supabase.from('stagione_categorie').select('id').eq('stagione_id', stagione.id).limit(1),
-      supabase.from('iscrizioni').select('portieri(attivo)').eq('stagione_id', stagione.id),
+      supabase.from('iscrizioni').select('portiere_id, portieri(id, nome, cognome, attivo)').eq('stagione_id', stagione.id),
     ])
 
     haCategorie = (catRow.data ?? []).length > 0
-    haPortieri = (iscrRow.data ?? []).some((i) => i.portieri?.attivo)
+    haPortieri = (iscrRows.data ?? []).some((i) => i.portieri?.attivo)
     haAllenamenti = (allRows.data ?? []).length > 0
 
     const allenamenti = allRows.data ?? []
     const partiteRows = parRows.data ?? []
     const allenIds = allenamenti.map((a) => a.id)
     const partitaIds = partiteRows.map((p) => p.id)
+    const portieriList = (iscrRows.data ?? []).map((r) => r.portieri).filter(Boolean)
+    const portiereIds = portieriList.map((p) => p.id)
 
-    const [valRows, valParRows] = await Promise.all([
+    // Anche questo secondo batch e' indipendente al suo interno: valRows/valParRows
+    // servono ai blocchi "da valutare", valPortRows/obRows al blocco "da attenzionare".
+    const [valRows, valParRows, valPortRows, obRows] = await Promise.all([
       allenIds.length ? supabase.from('valutazioni').select('allenamento_id').in('allenamento_id', allenIds) : Promise.resolve({ data: [] }),
       partitaIds.length ? supabase.from('valutazioni_partita').select('partita_id').eq('presente', true).in('partita_id', partitaIds) : Promise.resolve({ data: [] }),
+      portiereIds.length ? supabase.from('valutazioni').select('portiere_id, allenamento_id, presente, voto').in('portiere_id', portiereIds).in('allenamento_id', allenIds) : Promise.resolve({ data: [] }),
+      portiereIds.length ? supabase.from('obiettivi').select('portiere_id, scadenza, stato').in('portiere_id', portiereIds) : Promise.resolve({ data: [] }),
     ])
 
     const valutatiSet = new Set((valRows.data ?? []).map((v) => v.allenamento_id))
@@ -106,34 +119,17 @@ export default async function DashboardPage() {
       .slice(0, 5)
 
     coupon = couponRow.data
-  }
-
-  // ── Portieri da attenzionare: assenze ripetute, calo rendimento, obiettivi in ritardo ──
-  let portieriAttenzione = []
-  if (stagione) {
-    const { data: iscrRows } = await supabase.from('iscrizioni')
-      .select('portiere_id, portieri(id, nome, cognome)').eq('stagione_id', stagione.id)
-    const portieriList = (iscrRows ?? []).map((r) => r.portieri).filter(Boolean)
-    const portiereIds = portieriList.map((p) => p.id)
 
     if (portiereIds.length) {
-      const allenIds = (await supabase.from('allenamenti').select('id, data').eq('stagione_id', stagione.id)).data ?? []
       const dataByAllen = {}
-      for (const a of allenIds) dataByAllen[a.id] = a.data
-
-      const { data: valRows } = await supabase.from('valutazioni')
-        .select('portiere_id, allenamento_id, presente, voto')
-        .in('portiere_id', portiereIds).in('allenamento_id', allenIds.map((a) => a.id))
-
-      const { data: obRows } = await supabase.from('obiettivi')
-        .select('portiere_id, scadenza, stato').in('portiere_id', portiereIds)
+      for (const a of allenamenti) dataByAllen[a.id] = a.data
 
       const motiviPerPortiere = {}
       const aggiungiMotivo = (pid, motivo) => (motiviPerPortiere[pid] ??= []).push(motivo)
 
       // Raggruppa valutazioni per portiere, ordinate per data allenamento
       const valByPortiere = {}
-      for (const v of valRows ?? []) {
+      for (const v of valPortRows.data ?? []) {
         const data = dataByAllen[v.allenamento_id]
         if (!data) continue
         ;(valByPortiere[v.portiere_id] ??= []).push({ ...v, data })
@@ -161,7 +157,7 @@ export default async function DashboardPage() {
       }
 
       // Obiettivi in ritardo: scadenza superata e non raggiunto
-      for (const o of obRows ?? []) {
+      for (const o of obRows.data ?? []) {
         if (o.scadenza && o.scadenza < oggiStr && o.stato !== 'raggiunto') {
           aggiungiMotivo(o.portiere_id, 'Obiettivo in ritardo')
         }

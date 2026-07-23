@@ -31,6 +31,14 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
     setGen('working')
     const supabase = createClient()
     try {
+      // Rileggo le ricorrenze fresche dal DB: la lista passata dalla pagina
+      // può essere vecchia se l'utente ha appena salvato una riga (router.refresh è asincrono)
+      const { data: ricFresh } = await supabase
+        .from('ricorrenze_stagionali').select('*')
+        .eq('stagione_id', stagione.id)
+      const ricAttive = ricFresh ?? ricorrenze
+      if (!ricAttive.length) { setGen('Aggiungi almeno una ricorrenza.'); return }
+
       const stagStart = new Date(stagione.data_inizio + 'T00:00:00')
       const stagEnd   = new Date(stagione.data_fine   + 'T00:00:00')
 
@@ -44,7 +52,7 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
       // Piano: per ogni data, quali categorie hanno allenamento e con quale ricorrenza
       // piano[ds][squadra_id] = ricorrenza
       const piano = {}
-      for (const r of ricorrenze) {
+      for (const r of ricAttive) {
         const dow    = r.giorno_settimana % 7
         const rStart = r.data_inizio_ric ? new Date(r.data_inizio_ric + 'T00:00:00') : new Date(stagStart)
         const rEnd   = r.data_fine_ric   ? new Date(r.data_fine_ric   + 'T00:00:00') : new Date(stagEnd)

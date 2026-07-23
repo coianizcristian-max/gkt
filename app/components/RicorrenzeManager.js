@@ -36,7 +36,7 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
 
       // Leggo tutti gli allenamenti esistenti
       const { data: existing } = await supabase
-        .from('allenamenti').select('id, data, squadra_id, ora_inizio, accorpata_con')
+        .from('allenamenti').select('id, data, squadra_id, ora_inizio, ora_fine, accorpata_con')
         .eq('stagione_id', stagione.id)
       const existMap = {}
       for (const a of (existing ?? [])) existMap[a.squadra_id + '|' + a.data] = a
@@ -70,14 +70,16 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
 
           const key      = squadraId + '|' + ds
           const esistente = existMap[key]
-          const oraTarget = r.ora_inizio || '18:00'
+          const oraTarget     = r.ora_inizio || '18:00'
+          const oraFineTarget = r.ora_fine || null
 
           if (esistente) {
-            const oraChanged = oraTarget !== (esistente.ora_inizio || '18:00')
-            const accChanged = accorpataCon !== (esistente.accorpata_con ?? null)
-            if (oraChanged || accChanged) toUpdate.push({ id: esistente.id, ora_inizio: oraTarget, accorpata_con: accorpataCon })
+            const oraChanged  = oraTarget !== (esistente.ora_inizio || '18:00')
+            const fineChanged = oraFineTarget !== (esistente.ora_fine ?? null)
+            const accChanged  = accorpataCon !== (esistente.accorpata_con ?? null)
+            if (oraChanged || fineChanged || accChanged) toUpdate.push({ id: esistente.id, ora_inizio: oraTarget, ora_fine: oraFineTarget, accorpata_con: accorpataCon })
           } else {
-            toInsert.push({ stagione_id: stagione.id, squadra_id: squadraId, data: ds, ora_inizio: oraTarget, accorpata_con: accorpataCon })
+            toInsert.push({ stagione_id: stagione.id, squadra_id: squadraId, data: ds, ora_inizio: oraTarget, ora_fine: oraFineTarget, accorpata_con: accorpataCon })
           }
         }
       }
@@ -91,7 +93,7 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
       let aggiornati = 0
       for (const u of toUpdate) {
         const { error } = await supabase.from('allenamenti')
-          .update({ ora_inizio: u.ora_inizio, accorpata_con: u.accorpata_con }).eq('id', u.id)
+          .update({ ora_inizio: u.ora_inizio, ora_fine: u.ora_fine, accorpata_con: u.accorpata_con }).eq('id', u.id)
         if (!error) aggiornati++
       }
 

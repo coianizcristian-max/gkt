@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getUser } from '@/lib/supabase/server'
 import PartitaForm from '@/app/components/PartitaForm'
 import ValutazioniPartita from '@/app/components/ValutazioniPartita'
 import PaywallBanner from '@/app/components/PaywallBanner'
@@ -11,13 +11,13 @@ export const dynamic = 'force-dynamic'
 export default async function PartitaPage({ params }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
 
-  const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
-
-  const { data: partita } = await supabase
-    .from('partite').select('*, squadre(nome)').eq('id', id).maybeSingle()
+  // profilo e partita sono indipendenti (la seconda dipende solo da :id).
+  const [{ data: profilo }, { data: partita }] = await Promise.all([
+    supabase.from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle(),
+    supabase.from('partite').select('*, squadre(nome)').eq('id', id).maybeSingle(),
+  ])
   if (!partita) notFound()
 
   const dataLabel = new Date(partita.data + 'T00:00:00')
@@ -25,14 +25,16 @@ export default async function PartitaPage({ params }) {
 
   // ── VISTA PORTIERE: solo i propri dati, sola lettura ────────────────────────
   if (profilo?.ruolo === 'portiere') {
-    // Un portiere può vedere solo le partite della propria categoria
-    const { data: isc } = await supabase.from('iscrizioni')
-      .select('squadra_id').eq('stagione_id', partita.stagione_id).eq('portiere_id', profilo.portiere_id).maybeSingle()
+    // isc e miaVal sono letture indipendenti; isc gate l'accesso (notFound se
+    // la partita non e' della propria categoria) ma miaVal non ha effetti
+    // collaterali, quindi lanciarla in parallelo non cambia il comportamento.
+    const [{ data: isc }, { data: miaVal }] = await Promise.all([
+      supabase.from('iscrizioni')
+        .select('squadra_id').eq('stagione_id', partita.stagione_id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
+      supabase.from('valutazioni_partita').select('presente, voto, punti, note')
+        .eq('partita_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
+    ])
     if (!isc || isc.squadra_id !== partita.squadra_id) notFound()
-
-    const { data: miaVal } = await supabase
-      .from('valutazioni_partita').select('presente, voto, punti, note')
-      .eq('partita_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle()
 
     return (
       <>
@@ -67,19 +69,25 @@ export default async function PartitaPage({ params }) {
   }
 
   // ── VISTA STAFF: gestione completa ──────────────────────────────────────────
-  const [{ data: catRows }, { data: iscr }, { data: vals }, { data: scalaRows }, { data: puntiRows }, { data: avvRows }] = await Promise.all([
-    supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', partita.stagione_id),
-    supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
-      .eq('stagione_id', partita.stagione_id).eq('squadra_id', partita.squadra_id),
-    supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, note').eq('partita_id', id),
-    supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
-    supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'punti_partita').eq('attivo', true).order('ordine'),
-    supabase.from('squadre_avversarie').select('nome').eq('stagione_id', partita.stagione_id),
-  ])
-
-  const [gatingCfg, abbAttivo] = await Promise.all([
-    getGatingConfig(supabase),
-    hasAbbonamento(supabase, user?.id),
+  // Il gating non dipende dai dati di partita: prima girava dopo il batch
+  // sottostante, ora in parallelo con esso.
+  const [
+    [{ data: catRows }, { data: iscr }, { data: vals }, { data: scalaRows }, { data: puntiRows }, { data: avvRows }],
+    [gatingCfg, abbAttivo],
+  ] = await Promise.all([
+    Promise.all([
+      supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', partita.stagione_id),
+      supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
+        .eq('stagione_id', partita.stagione_id).eq('squadra_id', partita.squadra_id),
+      supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, note').eq('partita_id', id),
+      supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
+      supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'punti_partita').eq('attivo', true).order('ordine'),
+      supabase.from('squadre_avversarie').select('nome').eq('stagione_id', partita.stagione_id),
+    ]),
+    Promise.all([
+      getGatingConfig(supabase),
+      hasAbbonamento(supabase, user?.id),
+    ]),
   ])
   const canValPartita = isUnlocked('valutazioni_partita', gatingCfg, abbAttivo)
 

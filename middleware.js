@@ -6,6 +6,18 @@ const PROTETTE = ['/dashboard', '/portieri', '/calendario', '/partite', '/statis
 const PUBBLICHE = ['/', '/login', '/auth', '/cerca-allenatori', '/allenatori', '/registrati', '/suggerimenti', '/newsletter']
 
 export async function middleware(request) {
+  const path = request.nextUrl.pathname
+  const isProtected = PROTETTE.some((p) => path === p || path.startsWith(p + '/'))
+  const isLogin = path.startsWith('/login')
+
+  // Il risultato di getUser() serve solo per le due redirect qui sotto: se il
+  // percorso non e' ne' protetto ne' /login, nessuna delle due puo' scattare,
+  // quindi evitiamo del tutto la chiamata (e la relativa richiesta di rete
+  // verso l'Auth server quando esiste una sessione).
+  if (!isProtected && !isLogin) {
+    return NextResponse.next({ request })
+  }
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -33,16 +45,13 @@ export async function middleware(request) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const path = request.nextUrl.pathname
-  const isProtected = PROTETTE.some((p) => path === p || path.startsWith(p + '/'))
-
   if (!user && isProtected) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  if (user && path.startsWith('/login')) {
+  if (user && isLogin) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getUser } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
 function getAdmin() {
@@ -21,20 +21,26 @@ export const dynamic = 'force-dynamic'
 export default async function AllenamentoPage({ params }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
 
-  const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
-
-  const { data: allenamento } = await supabase
-    .from('allenamenti').select('*, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('id', id).maybeSingle()
+  // profilo e allenamento sono indipendenti (il secondo dipende solo da :id):
+  // prima giravano in sequenza.
+  const [{ data: profilo }, { data: allenamento }] = await Promise.all([
+    supabase.from('profili').select('ruolo, portiere_id, supervisore_id').eq('id', user?.id).maybeSingle(),
+    supabase.from('allenamenti').select('*, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('id', id).maybeSingle(),
+  ])
   if (!allenamento) notFound()
 
-  // Risolvi accorpata_con: può contenere squadra_id (vecchia) o allenamento_id (nuova)
+  // Risolvi accorpata_con: può contenere squadra_id (vecchia) o allenamento_id (nuova).
+  // I due "primi tentativi" (checkAll, squadraAcc) sono indipendenti tra loro.
   let accorpataConAllenamentoId = null
+  let accorpataConNome = null
   if (allenamento.accorpata_con) {
-    const { data: checkAll } = await supabase
-      .from('allenamenti').select('id').eq('id', allenamento.accorpata_con).maybeSingle()
+    const [{ data: checkAll }, { data: squadraAcc }] = await Promise.all([
+      supabase.from('allenamenti').select('id').eq('id', allenamento.accorpata_con).maybeSingle(),
+      supabase.from('squadre').select('nome').eq('id', allenamento.accorpata_con).maybeSingle(),
+    ])
+
     if (checkAll) {
       accorpataConAllenamentoId = checkAll.id
     } else {
@@ -46,15 +52,7 @@ export default async function AllenamentoPage({ params }) {
         .maybeSingle()
       if (altroAll) accorpataConAllenamentoId = altroAll.id
     }
-  }
 
-
-  // Nome della categoria accorpata per la testata
-  let accorpataConNome = null
-  if (allenamento.accorpata_con) {
-    // accorpata_con può essere squadra_id o allenamento_id
-    const { data: squadraAcc } = await supabase
-      .from('squadre').select('nome').eq('id', allenamento.accorpata_con).maybeSingle()
     if (squadraAcc) {
       accorpataConNome = squadraAcc.nome
     } else if (accorpataConAllenamentoId) {
@@ -136,6 +134,51 @@ export default async function AllenamentoPage({ params }) {
   const canEsercizi = isUnlocked('esercizi_allenamento', gatingCfg, abbAttivo)
   const canFeedback = isUnlocked('feedback_allenatore', gatingCfg, abbAttivo)
 
+  // Esercizi del responsabile (se il preparatore e' collegato): non dipende da
+  // nessuna delle 9 query sotto, solo da profilo.supervisore_id (gia' in mano).
+  // Prima partiva dopo l'intero batch sottostante e i suoi passi interni erano
+  // sequenziali; ora gira in parallelo e i suoi due passi indipendenti (esResp,
+  // profResp) sono un Promise.all.
+  async function caricaEserciziResponsabile(supervisoreId) {
+    if (!supervisoreId) return []
+    try {
+      const admin = getAdmin()
+      const { data: rel } = await admin
+        .from('relazioni_supervisione').select('id')
+        .eq('supervisore_id', supervisoreId).eq('preparatore_id', user.id).eq('attivo', true).maybeSingle()
+      if (!rel) return []
+      const [{ data: esResp }, { data: profResp }] = await Promise.all([
+        admin.from('esercizi')
+          .select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, esercizio_attributi(attributo_id)')
+          .eq('allenatore_id', supervisoreId).eq('archiviato', false).order('titolo'),
+        admin.from('profili').select('nome_completo').eq('id', supervisoreId).maybeSingle(),
+      ])
+      const nomeResp = profResp?.nome_completo ?? 'Responsabile'
+      return (esResp ?? []).map(e => ({ ...e, autore_nome: nomeResp, profili: { ruolo: 'allenatore' } }))
+    } catch (_) {
+      return []
+    }
+  }
+
+  const [bigBatch, eserciziResponsabile] = await Promise.all([
+    Promise.all([
+      supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
+      supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
+        .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
+      supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
+      supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
+      supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
+      supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, profili(ruolo), esercizio_attributi(attributo_id)').order('titolo'),
+      supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),
+      supabase.from('valutazioni')
+        .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
+        .eq('allenamento_id', id)
+        .not('feedback_portiere', 'is', null)
+        .order('created_at', { ascending: false }),
+      supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
+    ]),
+    caricaEserciziResponsabile(profilo?.supervisore_id ?? null),
+  ])
   const [
     { data: catRows },
     { data: iscr },
@@ -146,31 +189,27 @@ export default async function AllenamentoPage({ params }) {
     { data: aeRows },
     { data: feedbackRows },
     { data: attrRows },
-  ] = await Promise.all([
-    supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
-    supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
-      .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
-    supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
-    supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
-    supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
-    supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, profili(ruolo), esercizio_attributi(attributo_id)').order('titolo'),
-    supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),
-    supabase.from('valutazioni')
-      .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
-      .eq('allenamento_id', id)
-      .not('feedback_portiere', 'is', null)
-      .order('created_at', { ascending: false }),
-    supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
-  ])
+  ] = bigBatch
 
-  // Carica nomi allenatori per gli esercizi (per mostrare autore)
   const allenatoreIds = [...new Set((libRows ?? []).map((e) => e.allenatore_id).filter(Boolean))]
-  let nomiAllenatori = {}
-  if (allenatoreIds.length) {
-    const { data: profRows } = await supabase
-      .from('profili').select('id, nome_visualizzato').in('id', allenatoreIds)
-    for (const p of profRows ?? []) nomiAllenatori[p.id] = p.nome_visualizzato
-  }
+  const eserciziOrdinati = (aeRows ?? []).sort((a, b) => a.ordine - b.ordine).map((r) => r.esercizio_id)
+  const adminSel = getAdmin()
+
+  // Nomi allenatori (per l'autore in libreria) ed esercizi gia' selezionati
+  // (client admin, serve a rileggere esercizi pubblici/del responsabile anche
+  // se la RLS su "esercizi" non li farebbe rivedere) sono query indipendenti.
+  const [{ data: profRows }, { data: esSelRows }] = await Promise.all([
+    allenatoreIds.length
+      ? supabase.from('profili').select('id, nome_visualizzato').in('id', allenatoreIds)
+      : Promise.resolve({ data: [] }),
+    eserciziOrdinati.length > 0
+      ? adminSel.from('esercizi')
+          .select('id, titolo, tipologia, descrizione_breve, descrizione, immagine_url, video_url, pubblico, allenatore_id, durata_minuti, recupero_minuti')
+          .in('id', eserciziOrdinati)
+      : Promise.resolve({ data: [] }),
+  ])
+  const nomiAllenatori = {}
+  for (const p of profRows ?? []) nomiAllenatori[p.id] = p.nome_visualizzato
 
   const tutti = (libRows ?? []).map((e) => ({
     ...e,
@@ -179,60 +218,12 @@ export default async function AllenamentoPage({ params }) {
   const libreriaMia = tutti.filter((e) => e.allenatore_id === user?.id)
   const libreriaPubblica = tutti.filter((e) => e.pubblico && e.allenatore_id !== user?.id)
 
-
-  // Ordine esercizi dell'allenamento (per selezionatiIniziali)
-  const eserciziOrdinati = (aeRows ?? []).sort((a, b) => a.ordine - b.ordine).map((r) => r.esercizio_id)
-
-  // Carica gli esercizi già selezionati nell'allenamento con una query separata
-  // (client admin: il collegamento è già autorizzato tramite allenamento_esercizi,
-  // ma la RLS sulla tabella esercizi potrebbe non far rileggere esercizi pubblici
-  // o del responsabile aggiunti in precedenza, facendoli sparire alla riapertura)
-  const adminSel = getAdmin()
-  const { data: esSelRows } = eserciziOrdinati.length > 0
-    ? await adminSel
-        .from('esercizi')
-        .select('id, titolo, tipologia, descrizione_breve, descrizione, immagine_url, video_url, pubblico, allenatore_id, durata_minuti, recupero_minuti')
-        .in('id', eserciziOrdinati)
-    : { data: [] }
   const eserciziSelezionati = (esSelRows ?? []).map((e) => ({ ...e, autore_nome: null }))
 
   // Aggiungi esercizi già selezionati non presenti in libreria (es. di altri allenatori)
   const idNellaLibreria = new Set(tutti.map((e) => e.id))
   const eserciziExtra = eserciziSelezionati.filter((e) => !idNellaLibreria.has(e.id))
   const libreriaPubblicaConExtra = [...libreriaPubblica, ...eserciziExtra]
-
-  // Carica esercizi del responsabile se il preparatore è collegato
-  let eserciziResponsabile = []
-  try {
-    const { data: profiloExt } = await supabase
-      .from('profili').select('supervisore_id').eq('id', user.id).maybeSingle()
-    const supervisoreId = profiloExt?.supervisore_id ?? null
-    if (supervisoreId) {
-      const admin = getAdmin()
-      const { data: rel } = await admin
-        .from('relazioni_supervisione').select('id')
-        .eq('supervisore_id', supervisoreId).eq('preparatore_id', user.id).eq('attivo', true).maybeSingle()
-      if (rel) {
-        const { data: esResp } = await admin
-          .from('esercizi')
-          .select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, esercizio_attributi(attributo_id)')
-          .eq('allenatore_id', supervisoreId)
-          .eq('archiviato', false)
-          .order('titolo')
-        // Aggiunge nome responsabile come autore e li mette nella libreria pubblica
-        const { data: profResp } = await admin
-          .from('profili').select('nome_completo').eq('id', supervisoreId).maybeSingle()
-        const nomeResp = profResp?.nome_completo ?? 'Responsabile'
-        eserciziResponsabile = (esResp ?? []).map(e => ({
-          ...e,
-          autore_nome: nomeResp,
-          profili: { ruolo: 'allenatore' },
-        }))
-      }
-    }
-  } catch (_) {}
-
-  // eserciziResponsabile passati come prop separata a AllenamentoEsercizi
 
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)

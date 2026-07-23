@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getUser } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
 import Guida from '@/app/components/Guida'
 import StatisticheClient from './StatisticheClient'
@@ -7,12 +7,14 @@ export const dynamic = 'force-dynamic'
 
 export default async function StatistichePage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
-  const isPortiere = profilo?.ruolo === 'portiere'
+  const user = await getUser()
 
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  // profilo e stagione dipendono solo da user.id, senza redirect tra i due.
+  const [{ data: profilo }, { stagione }] = await Promise.all([
+    supabase.from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle(),
+    getStagioneAttiva(supabase, user?.id),
+  ])
+  const isPortiere = profilo?.ruolo === 'portiere'
 
   if (!stagione) {
     return (

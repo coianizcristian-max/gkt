@@ -198,7 +198,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   // Preview degli eventi del giorno selezionato
   const selectedEvs = selectedDay ? (byDay[selectedDay] ?? []).sort((a, b) => {
     if (a._tipo !== b._tipo) return a._tipo === 'allenamento' ? -1 : 1
-    return 0
+    return (a.ora_inizio ?? '').localeCompare(b.ora_inizio ?? '')
   }) : []
 
   const selectedDateStr = selectedDay ? fmt(selectedDay) : null
@@ -247,7 +247,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
           if (!day) return <div key={i} className="cal-cell empty" />
           const evs = (byDay[day] ?? []).sort((a, b) => {
             if (a._tipo !== b._tipo) return a._tipo === 'allenamento' ? -1 : 1
-            return 0
+            return (a.ora_inizio ?? '').localeCompare(b.ora_inizio ?? '')
           })
           const isSelected = selectedDay === day
 

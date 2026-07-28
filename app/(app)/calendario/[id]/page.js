@@ -163,7 +163,7 @@ export default async function AllenamentoPage({ params }) {
   const [bigBatch, eserciziResponsabile] = await Promise.all([
     Promise.all([
       supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
-      supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
+      supabase.from('iscrizioni').select('id, portieri(id, nome, cognome)')
         .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
       supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
       supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
@@ -227,7 +227,34 @@ export default async function AllenamentoPage({ params }) {
 
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
-  const portieri = (iscr ?? []).map((r) => r.portieri).filter(Boolean)
+
+  // Infortuni che coprono la data dell'allenamento (aperti o chiusi ma ancora
+  // in corso alla data D): D >= data_inizio AND (data_fine IS NULL OR data_fine >= D).
+  const iscrIds = (iscr ?? []).map((r) => r.id).filter(Boolean)
+  let infortuniRows = []
+  if (iscrIds.length) {
+    const { data: infData } = await supabase.from('infortuni')
+      .select('id, iscrizione_id, data_inizio')
+      .in('iscrizione_id', iscrIds)
+      .lte('data_inizio', allenamento.data)
+      .or(`data_fine.is.null,data_fine.gte.${allenamento.data}`)
+    infortuniRows = infData ?? []
+  }
+  const infByIscr = {}
+  for (const x of infortuniRows) infByIscr[x.iscrizione_id] = x
+
+  const portieri = (iscr ?? [])
+    .filter((r) => r.portieri)
+    .map((r) => {
+      const inf = infByIscr[r.id]
+      return {
+        ...r.portieri,
+        iscrizione_id: r.id,
+        infortunato: !!inf,
+        infortunioId: inf?.id ?? null,
+        infortunioDal: inf?.data_inizio ?? null,
+      }
+    })
     .sort((a, b) => `${a.nome}`.localeCompare(`${b.nome}`))
 
   const valIniziali = {}
@@ -272,7 +299,7 @@ export default async function AllenamentoPage({ params }) {
             !canValutare ? (
               <PaywallBanner label="Valutazioni allenamento" wrap>
                 <ValutazioniAllenamento
-                  allenamentoId={id} portieri={portieri} parametri={parametri ?? []}
+                  allenamentoId={id} allenamentoData={allenamento.data} portieri={portieri} parametri={parametri ?? []}
                   valIniziali={valIniziali} punteggiIniziali={punteggiIniziali}
                   scalaVoti={scalaVoti} allenamentoNessuno={allenamento.nessuna_valutazione ?? false}
                 />
@@ -280,6 +307,7 @@ export default async function AllenamentoPage({ params }) {
             ) : portieri.length > 0 ? (
               <ValutazioniAllenamento
                 allenamentoId={id}
+                allenamentoData={allenamento.data}
                 portieri={portieri}
                 parametri={parametri ?? []}
                 valIniziali={valIniziali}

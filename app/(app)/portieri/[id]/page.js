@@ -35,7 +35,7 @@ export default async function SchedaPortierePage({ params }) {
     stagione
       ? Promise.all([
           supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-          supabase.from('iscrizioni').select('squadra_id, numero_maglia')
+          supabase.from('iscrizioni').select('id, squadra_id, numero_maglia')
             .eq('stagione_id', stagione.id).eq('portiere_id', id).maybeSingle(),
         ])
       : Promise.resolve(null),
@@ -53,6 +53,15 @@ export default async function SchedaPortierePage({ params }) {
     const [cat, isc] = catIscRes
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
     iscrizione = isc.data
+  }
+
+  // Infortunio aperto (senza data_fine) per l'iscrizione della stagione attiva.
+  let infortunioAperto = null
+  if (iscrizione?.id) {
+    const { data: infA } = await supabase.from('infortuni')
+      .select('id, data_inizio, data_rientro_prevista')
+      .eq('iscrizione_id', iscrizione.id).is('data_fine', null).maybeSingle()
+    infortunioAperto = infA ?? null
   }
 
   const [{ data: attributiDef }, { data: attributiRows }, { data: tagRows }, { data: tagVoci }] = attributiBatch
@@ -110,6 +119,7 @@ export default async function SchedaPortierePage({ params }) {
             soloPortiere={soloPortiere}
             attributiDef={attributiDef ?? []}
             attributiValori={attributiValori}
+            infortunioAperto={infortunioAperto}
           />
         ) : (
           <div className="empty">Imposta prima una stagione attiva e almeno una categoria.</div>

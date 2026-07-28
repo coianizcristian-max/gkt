@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId, piedi = [], soloPortiere = false, attributiDef = [], attributiValori = {} }) {
+export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId, piedi = [], soloPortiere = false, attributiDef = [], attributiValori = {}, infortunioAperto = null }) {
   const router = useRouter()
   const isEdit = !!portiere
   const [attrVal, setAttrVal] = useState(() => {
@@ -32,6 +32,47 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
   const [fotoPreview, setFotoPreview] = useState(portiere?.foto_url ?? null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  // ── Infortunio ────────────────────────────────────────────────────────────
+  const oggi = new Date().toISOString().slice(0, 10)
+  const [inf, setInf] = useState(infortunioAperto)
+  const [infOpen, setInfOpen] = useState(false)
+  const [infStart, setInfStart] = useState(oggi)
+  const [infRientro, setInfRientro] = useState('')
+  const [infFine, setInfFine] = useState(oggi)
+  const [infBusy, setInfBusy] = useState(false)
+  const [infErr, setInfErr] = useState('')
+  const fmt = (d) => (d ? new Date(d + 'T00:00:00').toLocaleDateString('it-IT') : '')
+
+  async function registraInfortunio() {
+    if (!iscrizione?.id) return
+    setInfErr(''); setInfBusy(true)
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.from('infortuni').insert({
+        iscrizione_id: iscrizione.id,
+        data_inizio: infStart || oggi,
+        data_rientro_prevista: infRientro || null,
+      }).select('id, data_inizio, data_rientro_prevista').single()
+      if (error) throw error
+      setInf(data); setInfOpen(false)
+      router.refresh()
+    } catch (err) { setInfErr(err.message || "Errore nel salvataggio dell'infortunio.") }
+    setInfBusy(false)
+  }
+
+  async function terminaInfortunio() {
+    if (!inf?.id) return
+    setInfErr(''); setInfBusy(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('infortuni').update({ data_fine: infFine || oggi }).eq('id', inf.id)
+      if (error) throw error
+      setInf(null)
+      router.refresh()
+    } catch (err) { setInfErr(err.message || "Errore nella chiusura dell'infortunio.") }
+    setInfBusy(false)
+  }
 
   const upd = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }))
   const tornaIndietro = () => router.push(soloPortiere && portiere ? `/portieri/${portiere.id}` : '/portieri')
@@ -137,6 +178,49 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
     <form className="scheda" onSubmit={save}>
       {error && <div className="err">{error}</div>}
       {soloPortiere && <p className="sub-intro">Puoi aggiornare i tuoi dati (recapiti, misure, foto…). Nome, cognome e categoria sono gestiti dallo staff.</p>}
+
+      {/* ── Stato infortunio (solo staff, richiede un'iscrizione) ── */}
+      {!soloPortiere && iscrizione?.id && (
+        <div style={{ border: '1px solid var(--line, #e5e7eb)', borderRadius: 10, padding: 12, marginBottom: 14, background: inf ? '#fff4f4' : 'var(--bg-soft, #fafafa)' }}>
+          {inf ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 700, color: '#c0392b' }}>🩹 Infortunato</span>
+              <span style={{ color: 'var(--ink-soft)' }}>
+                dal {fmt(inf.data_inizio)}{inf.data_rientro_prevista ? ` · rientro previsto ${fmt(inf.data_rientro_prevista)}` : ''}
+              </span>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+                <label style={{ fontSize: 12, color: 'var(--ink-soft)' }}>Rientro</label>
+                <input type="date" value={infFine} onChange={(e) => setInfFine(e.target.value)} />
+                <button type="button" className="btn-mini" disabled={infBusy} onClick={terminaInfortunio}>
+                  {infBusy ? '…' : 'Termina infortunio'}
+                </button>
+              </div>
+            </div>
+          ) : infOpen ? (
+            <div style={{ display: 'grid', gap: 8 }}>
+              <div style={{ fontWeight: 700 }}>Registra un infortunio</div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'end' }}>
+                <div className="field"><label>Inizio</label>
+                  <input type="date" value={infStart} onChange={(e) => setInfStart(e.target.value)} /></div>
+                <div className="field"><label>Rientro previsto (opzionale)</label>
+                  <input type="date" value={infRientro} onChange={(e) => setInfRientro(e.target.value)} /></div>
+                <button type="button" className="btn" disabled={infBusy || !infStart} onClick={registraInfortunio}>
+                  {infBusy ? 'Salvataggio…' : 'Registra'}
+                </button>
+                <button type="button" className="btn-ghost" onClick={() => setInfOpen(false)}>Annulla</button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ color: 'var(--ink-soft)' }}>Disponibile</span>
+              <button type="button" className="btn-mini" style={{ marginLeft: 'auto' }} onClick={() => setInfOpen(true)}>
+                Segna infortunio
+              </button>
+            </div>
+          )}
+          {infErr && <div className="err" style={{ marginTop: 8 }}>{infErr}</div>}
+        </div>
+      )}
 
       <div className="scheda-foto">
         <div className="foto-box">

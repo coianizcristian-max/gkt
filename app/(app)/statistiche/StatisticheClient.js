@@ -68,7 +68,7 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, feedback
                         <div className="stat-rows">
                           <div className="stat-block">
                             <h4>Allenamenti</h4>
-                            <div className="stat-line"><span>Presenze</span><b>{s.presenze}/{s.totAllen}</b></div>
+                            <div className="stat-line"><span>Presenze</span><b>{s.presenze}/{s.disponibili ?? s.totAllen}{s.persi > 0 ? ` \u00b7 \ud83e\ude79${s.persi}` : ''}</b></div>
                             <div className="stat-line"><span>Media voto</span><b>{fmt(s.mediaA)}</b></div>
                           </div>
                           <div className="stat-block">

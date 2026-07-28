@@ -1,4 +1,5 @@
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { infortuniPerPortiere } from '@/lib/infortuni'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +27,7 @@ export default async function SupervisioneStatistiche({ params }) {
     admin.from('iscrizioni')
       .select('portiere_id, squadra_id, portieri(id, nome, cognome)')
       .eq('stagione_id', stagione.id).eq('attivo', true),
-    admin.from('allenamenti').select('id, squadra_id').eq('stagione_id', stagione.id),
+    admin.from('allenamenti').select('id, squadra_id, data').eq('stagione_id', stagione.id),
     admin.from('partite').select('id, gol_subiti, squadra_id').eq('stagione_id', stagione.id),
   ])
 
@@ -40,6 +41,8 @@ export default async function SupervisioneStatistiche({ params }) {
     valutazioni = val ?? []
   }
 
+  const persiByPortiere = await infortuniPerPortiere(admin, stagione.id, allen ?? [])
+
   // Calcola stats per portiere
   const portieri = (iscr ?? []).map(i => {
     const p = i.portieri
@@ -49,13 +52,17 @@ export default async function SupervisioneStatistiche({ params }) {
     const votiArr = valPor.filter(v => v.voto != null).map(v => v.voto)
     const mediaVoto = votiArr.length > 0 ? (votiArr.reduce((a, b) => a + b, 0) / votiArr.length).toFixed(1) : '—'
     const totAllen = (allen ?? []).filter(a => a.squadra_id === i.squadra_id).length
-    const percPresenza = totAllen > 0 ? Math.round((presenze / totAllen) * 100) : 0
+    const persi = persiByPortiere[p.id] ?? 0
+    const disponibili = Math.max(0, totAllen - persi)
+    const percPresenza = disponibili > 0 ? Math.round((presenze / disponibili) * 100) : 0
 
     return {
       id: p.id,
       nome: `${p.nome} ${p.cognome ?? ''}`.trim(),
       presenze,
       totAllen,
+      disponibili,
+      persi,
       percPresenza,
       mediaVoto,
     }
@@ -100,7 +107,7 @@ export default async function SupervisioneStatistiche({ params }) {
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600 }}>{p.nome}</div>
                 <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-                  {p.presenze}/{p.totAllen} allenamenti ({p.percPresenza}%)
+                  {p.presenze}/{p.disponibili} allenamenti ({p.percPresenza}%){p.persi > 0 ? ` \u00b7 \ud83e\ude79 ${p.persi}` : ''}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>

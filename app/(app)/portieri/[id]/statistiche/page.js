@@ -28,7 +28,7 @@ export default async function StatistichePortierePage({ params }) {
   const { stagione } = await getStagioneAttiva(supabase, user?.id)
   const { data: iscrizione } = stagione
     ? await supabase.from('iscrizioni')
-        .select('squadra_id, squadre(nome)')
+        .select('id, squadra_id, squadre(nome)')
         .eq('stagione_id', stagione.id).eq('portiere_id', id).maybeSingle()
     : { data: null }
 
@@ -102,6 +102,15 @@ export default async function StatistichePortierePage({ params }) {
 
     vAll = (va.data ?? []).map((v) => ({ ...v, data: allenByDate[v.allenamento_id] }))
       .sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
+    // Infortuni del portiere in stagione: marca le sessioni cadute in un periodo di stop
+    let _infortuni = []
+    if (iscrizione?.id) {
+      const { data: _inf } = await supabase.from('infortuni')
+        .select('data_inizio, data_fine').eq('iscrizione_id', iscrizione.id)
+      _infortuni = _inf ?? []
+    }
+    const _inInfortunio = (d) => !!d && _infortuni.some((w) => w.data_inizio <= d && (w.data_fine == null || w.data_fine >= d))
+    vAll = vAll.map((v) => ({ ...v, infortunato: _inInfortunio(v.data) }))
     // Unisce valutazioni_partita con i dati di partite (gol_subiti, tipo, data ecc)
     vPar = (vp.data ?? []).map((v) => ({
       ...v,
@@ -122,13 +131,16 @@ export default async function StatistichePortierePage({ params }) {
 
   // ── Calcoli allenamenti ──────────────────────────────────────────────────
   const presenzeA = vAll.filter((v) => v.presente).length
+  const infortunatiA = vAll.filter((v) => v.infortunato).length
   const totA = vAll.length
+  const disponibiliA = Math.max(0, totA - infortunatiA)
   const votiA = vAll.filter((v) => v.presente && v.voto != null).map((v) => Number(v.voto))
   const mediaA = votiA.length ? votiA.reduce((s, x) => s + x, 0) / votiA.length : null
 
   // Streak
   let streakMax = 0, streakAttuale = 0, curStreak = 0
   for (const v of vAll) {
+    if (v.infortunato) continue
     if (v.presente) { curStreak++; streakMax = Math.max(streakMax, curStreak) }
     else curStreak = 0
   }
@@ -196,7 +208,7 @@ export default async function StatistichePortierePage({ params }) {
   }
   const mediaParam = (arr) => arr.length ? arr.reduce((s, x) => s + x, 0) / arr.length : null
 
-  const pctPresenza = totA ? Math.round(presenzeA / totA * 100) : null
+  const pctPresenza = disponibiliA ? Math.round(presenzeA / disponibiliA * 100) : null
 
   // Trend partite: confronto prima metà / seconda metà delle partite di campionato con voto
   let trendPartite = null
@@ -286,9 +298,9 @@ export default async function StatistichePortierePage({ params }) {
         {/* KPI */}
         <div className="stat-kpi-grid">
           {[
-            [presenzeA + '/' + totA, 'Presenze', 'var(--ink)'],
+            [presenzeA + '/' + disponibiliA, 'Presenze', 'var(--ink)'],
             [fmt(mediaA, 2), 'Media voto', 'var(--azzurro)'],
-            [pctPresenza != null ? pctPresenza + '%' : '—', '% presenze', pctPresenza >= 80 ? 'var(--campo)' : pctPresenza >= 60 ? 'var(--giallo)' : 'var(--rosso)'],
+            [pctPresenza != null ? pctPresenza + '%' : '—', '% disponib.', pctPresenza >= 80 ? 'var(--campo)' : pctPresenza >= 60 ? 'var(--giallo)' : 'var(--rosso)'],
             [cleanSheet, 'Clean sheet', 'var(--campo)'],
           ].map(([v, l, c], i) => (
             <div key={i} className="stat-kpi">
@@ -334,6 +346,7 @@ export default async function StatistichePortierePage({ params }) {
               )}
               <div className="stat-line"><span>Voto migliore</span><b style={{ color: 'var(--campo)' }}>{fmt(votoMax, 2)}</b></div>
               <div className="stat-line"><span>Voto peggiore</span><b style={{ color: 'var(--rosso)' }}>{fmt(votoMin, 2)}</b></div>
+              {infortunatiA > 0 && <div className="stat-line"><span>🩹 Allenamenti persi (infortunio)</span><b>{infortunatiA}</b></div>}
             </div>
             <div className="stat-block">
               <div className="stat-line"><span>🔥 Serie attuale</span><b>{streakAttuale > 0 ? streakAttuale + ' cons.' : 'Interrotta'}</b></div>

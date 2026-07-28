@@ -2,6 +2,7 @@ import { createClient, getUser } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
 import Guida from '@/app/components/Guida'
 import StatisticheClient from './StatisticheClient'
+import { infortuniPerPortiere } from '@/lib/infortuni'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,6 +72,8 @@ export default async function StatistichePage() {
     .filter(Boolean)
     .sort((a, b) => (catNome[a.squadra_id] || '').localeCompare(catNome[b.squadra_id] || '') || `${a.nome}`.localeCompare(`${b.nome}`))
 
+  const persiByPortiere = await infortuniPerPortiere(supabase, stagione.id, allen ?? [])
+
   const stats = portieri.map((p) => {
     const va = vAllBy[p.id] ?? []
     const presenze = va.filter((x) => x.presente).length
@@ -84,7 +87,9 @@ export default async function StatistichePage() {
     const cleanSheet = vpCamp.filter((x) => golSubitiByPartita[x.partita_id] === 0).length
     const punti = vp.reduce((s, x) => s + (x.punti != null ? Number(x.punti) : 0), 0)
     const nPartite = vpCamp.length
-    return { p, totAllen: totAllenByCat[p.squadra_id] ?? 0, presenze, mediaA, mediaP, nPartite, cleanSheet, punti }
+    const persi = persiByPortiere[p.id] ?? 0
+    const disponibili = Math.max(0, (totAllenByCat[p.squadra_id] ?? 0) - persi)
+    return { p, totAllen: totAllenByCat[p.squadra_id] ?? 0, disponibili, persi, presenze, mediaA, mediaP, nPartite, cleanSheet, punti }
   })
 
   // Statistiche feedback (P14)

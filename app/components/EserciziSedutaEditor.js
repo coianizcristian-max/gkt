@@ -48,6 +48,27 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
     setDone(false)
   }
 
+  // Rimuove UN esercizio da QUESTA seduta. Delete sempre con filtri espliciti
+  // (allenamento_id + esercizio_id): tocca solo la riga di collegamento di questa
+  // seduta, non l'esercizio in libreria e nessun'altra seduta.
+  async function rimuovi(e) {
+    if (!confirm(`Rimuovere "${e.titolo}" da questa seduta? L'esercizio resta nella tua libreria.`)) return
+    setBusy(true)
+    const supabase = createClient()
+    try {
+      const { error } = await supabase
+        .from('allenamento_esercizi')
+        .delete()
+        .eq('allenamento_id', allenamentoId)
+        .eq('esercizio_id', e.id)
+      if (error) throw error
+      setLista(prev => prev.filter(x => x.id !== e.id))
+      setOpenIdx(null)
+      router.refresh()
+    } catch (err) { alert('Errore: ' + err.message) }
+    setBusy(false)
+  }
+
   async function salva() {
     setBusy(true)
     const supabase = createClient()
@@ -113,6 +134,11 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
             {e.immagine_url && (
               <Image src={e.immagine_url} className="drag-thumb" alt="" width={44} height={44} onClick={() => setOpenIdx(prev => prev === i ? null : i)} style={{ cursor: 'pointer' }} />
             )}
+            <button type="button" className="reorder-btn" aria-label="Rimuovi dalla seduta" title="Rimuovi dalla seduta"
+              onClick={() => rimuovi(e)} disabled={busy}
+              style={{ color: 'var(--rosso)', borderColor: 'rgba(192,57,43,0.3)', width: 30, height: 44, fontSize: 14, flexShrink: 0 }}>
+              ✕
+            </button>
           </div>
           {/* Dettaglio inline espanso */}
           {openIdx === i && (

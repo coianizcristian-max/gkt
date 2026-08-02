@@ -916,6 +916,18 @@ a.brand { text-decoration: none; color: inherit; }
 .drag-handle { font-size: 18px; color: var(--ink-soft); flex-shrink: 0; }
 .drag-info { flex: 1; font-size: 14px; display: flex; flex-direction: column; gap: 2px; }
 .drag-thumb { width: 44px; height: 44px; border-radius: var(--r-sm); object-fit: cover; flex-shrink: 0; }
+.reorder-arrows { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+.reorder-btn {
+  border: 1px solid var(--linea); background: var(--bianco); color: var(--ink-soft);
+  border-radius: var(--r-sm); width: 30px; height: 22px; line-height: 1; font-size: 11px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  touch-action: manipulation;
+}
+.reorder-btn:hover:not(:disabled) { border-color: var(--azzurro); color: var(--azzurro); }
+.reorder-btn:disabled { opacity: 0.3; cursor: default; }
+@media (max-width: 720px) {
+  .reorder-btn { width: 40px; height: 32px; font-size: 13px; } /* target di tocco piu' ampio su tablet/telefono */
+}
 
 /* ===== Vista portiere: esercizi seduta riquadri (P10 portiere) ===== */
 .es-seduta-grid { display: flex; flex-direction: column; gap: 8px; }

@@ -17,6 +17,9 @@ export default function StagioniAllenatoreManager({ stagioni, ownerId, stagioneC
   const [anteprima, setAnteprima] = useState(null)
   const [nomeDigitato, setNomeDigitato] = useState('')
   const [errore, setErrore] = useState('')
+  const [modificaId, setModificaId] = useState(null) // id della stagione in fase di modifica
+  const [form, setForm] = useState({ nome: '', societaNome: '', dataInizio: '', dataFine: '' })
+  const [erroreMod, setErroreMod] = useState('')
 
   async function apriEliminazione(s) {
     setEliminaId(s.id); setAnteprima(null); setNomeDigitato(''); setErrore('')
@@ -41,6 +44,38 @@ export default function StagioniAllenatoreManager({ stagioni, ownerId, stagioneC
     setBusy(null)
     if (!res.ok) { setErrore(body.error); return }
     setEliminaId(null)
+    router.refresh()
+  }
+
+  function apriModifica(s) {
+    setEliminaId(null); setModificaId(s.id); setErroreMod('')
+    setForm({
+      nome: s.nome ?? '',
+      societaNome: s.societa_nome ?? '',
+      dataInizio: s.data_inizio ?? '',
+      dataFine: s.data_fine ?? '',
+    })
+  }
+
+  async function salvaModifica(s) {
+    if (!form.nome.trim()) { setErroreMod('Il nome della stagione è obbligatorio.'); return }
+    if (form.dataInizio && form.dataFine && form.dataFine < form.dataInizio) {
+      setErroreMod('La data di fine non può essere precedente a quella di inizio.'); return
+    }
+    setBusy(s.id); setErroreMod('')
+    const res = await fetch(`/api/stagioni/${s.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: form.nome.trim(),
+        societaNome: form.societaNome.trim(),
+        dataInizio: form.dataInizio || null,
+        dataFine: form.dataFine || null,
+      }),
+    })
+    const body = await res.json().catch(() => ({}))
+    setBusy(null)
+    if (!res.ok) { setErroreMod(body.error || 'Errore durante il salvataggio.'); return }
+    setModificaId(null)
     router.refresh()
   }
 
@@ -114,6 +149,9 @@ export default function StagioniAllenatoreManager({ stagioni, ownerId, stagioneC
                     {busy === s.id ? '...' : 'Riattiva'}
                   </button>
                 )}
+                <button className="btn-mini btn-ghost" type="button" disabled={busy === s.id} onClick={() => apriModifica(s)}>
+                  ✎ Modifica
+                </button>
                 <button className="btn-mini btn-del" type="button" disabled={busy === s.id} onClick={() => apriEliminazione(s)}>
                   🗑 Elimina
                 </button>
@@ -124,6 +162,44 @@ export default function StagioniAllenatoreManager({ stagioni, ownerId, stagioneC
               <span>📅 {fmtData(s.data_inizio)} → {fmtData(s.data_fine)}</span>
               {!s.attiva && <span style={{ color: 'var(--rosso)' }}>Archiviata</span>}
             </div>
+
+            {modificaId === s.id && (
+              <div style={{ marginTop: 14, padding: 14, background: 'var(--carta)', border: '1px solid var(--linea)', borderRadius: 8 }}>
+                {erroreMod && <div className="err" style={{ marginBottom: 10 }}>{erroreMod}</div>}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, fontWeight: 600 }}>
+                    Nome stagione
+                    <input value={form.nome}
+                      onChange={(e) => { setForm((f) => ({ ...f, nome: e.target.value })); setErroreMod('') }}
+                      placeholder="Es. 2025-26" />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, fontWeight: 600 }}>
+                    Società <span style={{ fontWeight: 400, color: 'var(--ink-soft)' }}>(facoltativa)</span>
+                    <input value={form.societaNome}
+                      onChange={(e) => setForm((f) => ({ ...f, societaNome: e.target.value }))}
+                      placeholder="Nome del club" />
+                  </label>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, fontWeight: 600 }}>
+                      Inizio
+                      <input type="date" value={form.dataInizio}
+                        onChange={(e) => setForm((f) => ({ ...f, dataInizio: e.target.value }))} />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, fontWeight: 600 }}>
+                      Fine
+                      <input type="date" value={form.dataFine}
+                        onChange={(e) => setForm((f) => ({ ...f, dataFine: e.target.value }))} />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                    <button className="btn-ghost" type="button" onClick={() => { setModificaId(null); setErroreMod('') }}>Annulla</button>
+                    <button className="btn" type="button" disabled={busy === s.id || !form.nome.trim()} onClick={() => salvaModifica(s)}>
+                      {busy === s.id ? 'Salvataggio...' : 'Salva modifiche'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {eliminaId === s.id && (
               <div style={{ marginTop: 14, padding: 14, background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 8 }}>

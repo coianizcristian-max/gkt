@@ -330,6 +330,16 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange }) {
     onOrdineChange(newOrd)
   }
 
+  // Riordino con le frecce (funziona ovunque, anche su tablet/telefono dove
+  // il drag & drop nativo HTML5 non parte sul tocco).
+  function moveItem(from, to) {
+    if (to < 0 || to >= ordine.length) return
+    const newOrd = [...ordine]
+    const [moved] = newOrd.splice(from, 1)
+    newOrd.splice(to, 0, moved)
+    onOrdineChange(newOrd)
+  }
+
   const stimaMinuti = ordine.reduce((tot, eid) => {
     const e = byId[eid]; if (!e) return tot
     return tot + (parseFloat(e.durata_minuti) || 0) + (parseFloat(e.recupero_minuti) || 0)
@@ -354,6 +364,12 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange }) {
               onDragOver={(ev) => onDragOver(ev, i)}
               onDrop={onDrop}>
               <span className="drag-handle">⠿</span>
+              <div className="reorder-arrows">
+                <button type="button" className="reorder-btn" aria-label="Sposta su"
+                  disabled={i === 0} onClick={() => moveItem(i, i - 1)}>▲</button>
+                <button type="button" className="reorder-btn" aria-label="Sposta giù"
+                  disabled={i === ordine.length - 1} onClick={() => moveItem(i, i + 1)}>▼</button>
+              </div>
               <button type="button" onClick={() => setPreview(e)} style={{ display: 'contents', cursor: 'pointer' }}>
                 <div className="drag-info">
                   <b>{e.titolo}</b>
@@ -368,7 +384,10 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange }) {
                   <span style={{ fontSize: 11, color: 'var(--azzurro)', marginLeft: 8 }}>Tocca per anteprima</span>
                 </div>
               </button>
-              {e.immagine_url && <Image src={e.immagine_url} className="drag-thumb" alt="" width={44} height={44} />}
+              {e.immagine_url && (
+                <img src={e.immagine_url} className="drag-thumb" alt="" width={44} height={44}
+                  loading="lazy" onError={(ev) => { ev.currentTarget.style.display = 'none' }} />
+              )}
             </div>
           )
         })}

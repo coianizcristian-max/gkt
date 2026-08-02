@@ -37,6 +37,17 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
   }
   function onDrop() { setDragIdx(null) }
 
+  // Riordino con le frecce: funziona ovunque, anche su tablet/telefono dove
+  // il drag & drop nativo HTML5 non parte sul tocco.
+  function moveItem(from, to) {
+    if (to < 0 || to >= lista.length) return
+    const nuova = [...lista]
+    const [item] = nuova.splice(from, 1)
+    nuova.splice(to, 0, item)
+    setLista(nuova)
+    setDone(false)
+  }
+
   async function salva() {
     setBusy(true)
     const supabase = createClient()
@@ -74,6 +85,12 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
             onDragEnd={() => setDragIdx(null)}
           >
             <span className="drag-handle" title="Trascina per riordinare">⠿</span>
+            <div className="reorder-arrows">
+              <button type="button" className="reorder-btn" aria-label="Sposta su"
+                disabled={i === 0} onClick={() => moveItem(i, i - 1)}>▲</button>
+              <button type="button" className="reorder-btn" aria-label="Sposta giù"
+                disabled={i === lista.length - 1} onClick={() => moveItem(i, i + 1)}>▼</button>
+            </div>
             <span style={{ fontSize: 12, color: 'var(--ink-soft)', width: 22, flexShrink: 0 }}>{i + 1}.</span>
             <div
               className="drag-info"

@@ -16,9 +16,8 @@ function EsercizioPopup({ esercizio, onClose, onOpenSchema }) {
           <span key={t} className="stat-cat" style={{ marginBottom: 4, marginRight: 4, display: 'inline-block' }}>{t}</span>
         ))}
         {esercizio.schema_json && onOpenSchema && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8, marginBottom: 12 }}>
+          <div style={{ marginTop: 8, marginBottom: 12 }}>
             <button className="btn" type="button" onClick={() => onOpenSchema(esercizio, 'view')}>🖼️ Visualizza schema</button>
-            <button className="btn-ghost" type="button" onClick={() => onOpenSchema(esercizio, 'edit')}>✏️ Modifica schema</button>
           </div>
         )}
         {esercizio.immagine_url && (
@@ -129,7 +128,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
           allenatoreId={allenatoreId}
           onSaved={() => { setEditing(null); router.refresh() }}
           onCancel={() => setEditing(null)}
-          onEditSchema={(es) => setLavagna({ mode: 'edit', esercizio: es })}
+          onEditSchema={(es, onResult) => setLavagna({ mode: 'edit', esercizio: es, onResult })}
         />
         {lavagna && (
           <LavagnaEsercizioModal
@@ -137,6 +136,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
             esercizio={lavagna.esercizio || null}
             allenatoreId={allenatoreId}
             tipologie={tipologie}
+            onResult={lavagna.onResult}
             onSaved={() => { setLavagna(null); router.refresh() }}
             onClose={() => setLavagna(null)}
           />
@@ -333,6 +333,8 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
   const [attributiSel, setAttributiSel] = useState(new Set(esercizio?.attributi?.map(a => a.attributo_id) ?? []))
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(esercizio?.immagine_url ?? '')
+  const [imgUrl, setImgUrl] = useState(esercizio?.immagine_url ?? null)
+  const [schemaJson, setSchemaJson] = useState(esercizio?.schema_json ?? null)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
@@ -368,7 +370,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
     setBusy(true); setError('')
     const supabase = createClient()
     try {
-      let immagine_url = esercizio?.immagine_url ?? null
+      let immagine_url = imgUrl
       if (file) {
         const ext = file.name.split('.').pop()
         const path = `esercizi/${allenatoreId}/${Date.now()}.${ext}`
@@ -381,7 +383,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
         tipologia: f.tipologie?.[0] || null,  // retrocompatibilità
         tipologie: f.tipologie ?? [],
         descrizione_breve: f.descrizione_breve || null, descrizione: f.descrizione || null,
-        note: f.note || null, video_url: f.video_url || null, immagine_url, pubblico: !!f.pubblico,
+        note: f.note || null, video_url: f.video_url || null, immagine_url, schema_json: schemaJson, pubblico: !!f.pubblico,
         durata_minuti: f.durata_minuti !== '' ? parseFloat(f.durata_minuti) : null,
         recupero_minuti: f.recupero_minuti !== '' ? parseFloat(f.recupero_minuti) : null,
       }
@@ -503,9 +505,16 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
       </div>
       {isEdit && onEditSchema && (
         <div style={{ margin: '6px 0 14px', paddingTop: 12, borderTop: '1px solid var(--line, #e4ebef)' }}>
-          <button type="button" className="btn-azione" onClick={() => onEditSchema(esercizio)}>
-            {esercizio?.schema_json ? '✏️ Modifica lo schema con la lavagna' : '🎨 Aggiungi uno schema con la lavagna'}
+          <button type="button" className="btn-azione" onClick={() => onEditSchema({ ...esercizio, schema_json: schemaJson, immagine_url: imgUrl, titolo: f.titolo }, (res) => {
+            setSchemaJson(res.schema); setImgUrl(res.immagine_url); setPreview(res.immagine_url || '')
+            if (res.name) setF((st) => ({ ...st, titolo: res.name }))
+            setDone(false)
+          })}>
+            {schemaJson ? '✏️ Modifica lo schema con la lavagna' : '🎨 Aggiungi uno schema con la lavagna'}
           </button>
+          <span style={{ marginLeft: 10, fontSize: 12.5, color: 'var(--ink-soft, #7f8f9b)' }}>
+            (poi premi <strong>Salva</strong> qui sotto per confermare)
+          </span>
         </div>
       )}
       <div className="form-actions">

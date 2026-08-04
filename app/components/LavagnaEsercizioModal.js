@@ -17,7 +17,7 @@ function dataUrlToBlob(dataUrl) {
  * mode = 'create' : disegna un nuovo esercizio, poi compila i campi e salva
  * mode = 'view'   : rivede (sola lettura) lo schema di un esercizio esistente
  */
-export default function LavagnaEsercizioModal({ mode = 'create', esercizio = null, allenatoreId, tipologie = [], onSaved, onClose }) {
+export default function LavagnaEsercizioModal({ mode = 'create', esercizio = null, allenatoreId, tipologie = [], onResult, onSaved, onClose }) {
   const iframeRef = useRef(null)
   const [fase, setFase] = useState('disegno') // 'disegno' | 'dettagli' | 'salvataggio'
   const [dati, setDati] = useState(null)       // { name, schema, immagine_url }
@@ -52,13 +52,19 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
         setFase('salvataggio')
         try {
           const supabase = createClient()
-          let immagine_url = esercizio.immagine_url || null
+          let immagine_url = esercizio?.immagine_url || null
           if (d.thumbnail) {
             const blob = dataUrlToBlob(d.thumbnail)
             const path = `esercizi/${allenatoreId}/lavagna-${Date.now()}.png`
             const { error: upErr } = await supabase.storage.from('sito').upload(path, blob, { upsert: true, contentType: 'image/png' })
             if (upErr) throw upErr
             immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
+          }
+          if (onResult) {
+            // Aperta dalla scheda: restituisce i dati, il salvataggio lo fa la scheda (un solo save, niente conflitti)
+            onResult({ schema: d.schema, immagine_url, name: d.name })
+            if (onClose) onClose()
+            return
           }
           const { data, error: updErr } = await supabase.from('esercizi')
             .update({ schema_json: d.schema, immagine_url, titolo: d.name.trim() })
@@ -97,7 +103,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
     }
     window.addEventListener('message', onMsg)
     return () => window.removeEventListener('message', onMsg)
-  }, [mode, esercizio, allenatoreId])
+  }, [mode, esercizio, allenatoreId, onResult, onClose, onSaved])
 
   async function salvaEsercizio() {
     if (!dati) return

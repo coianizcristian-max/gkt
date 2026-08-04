@@ -1106,7 +1106,7 @@ function makeThumb(cb){
     inp.style.borderColor=""; inp.style.boxShadow="";
     makeThumb(thumb=>{ try{ parent.postMessage({type:"gk-save", name, schema:state, thumbnail:thumb}, "*"); }catch(e){} });
   }
-  if(embed){ setTimeout(()=>{ try{ parent.postMessage({type:"gk-ready"}, "*"); }catch(e){} }, 120); }
+  if(embed || view){ setTimeout(()=>{ try{ parent.postMessage({type:"gk-ready"}, "*"); }catch(e){} }, 120); }
 })();
 </script>
 </body>

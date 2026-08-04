@@ -1141,6 +1141,7 @@ function makeThumb(cb){
     }
   }
   function saveExercise(){
+    if(typeof commitTextEdit==="function") commitTextEdit(); // conferma un eventuale testo in modifica
     const inp=document.getElementById("exerciseName");
     const name=inp.value.trim();
     if(!name){ inp.style.borderColor="#e5484d"; inp.style.boxShadow="0 0 0 3px rgba(229,72,77,.28)"; inp.focus();

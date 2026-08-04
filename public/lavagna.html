@@ -365,6 +365,8 @@ function showHint(html){ hintEl.innerHTML=html; hintEl.style.opacity=html?"1":"0
 /* ---------------- Pitch rendering ---------------- */
 let _lastLandscape=false;
 function isLandscape(){ return state.pitch!=="area" && window.innerWidth>=820; }
+function gkHomePos(){ const M=34, p=PITCHES[state.pitch]; return isLandscape() ? {x:M+36, y:p.w/2} : {x:p.w/2, y:M+36}; }
+function repositionDefaultGK(){ const gk=state.objects.find(o=>o.id==="gk0"); if(gk){ const h=gkHomePos(); gk.x=h.x; gk.y=h.y; } }
 function drawPitch(){
   const p=PITCHES[state.pitch];
   const land=isLandscape(); _lastLandscape=land;
@@ -493,7 +495,7 @@ function fitBoard(){
   board.style.width=Math.round(w)+"px";
   board.style.height=Math.round(h)+"px";
 }
-function onResize(){ if(isLandscape()!==_lastLandscape){ drawPitch(); render(); } else { fitBoard(); } }
+function onResize(){ if(isLandscape()!==_lastLandscape){ repositionDefaultGK(); drawPitch(); render(); } else { fitBoard(); } }
 window.addEventListener("resize", onResize);
 window.addEventListener("load", fitBoard);
 requestAnimationFrame(fitBoard);
@@ -686,7 +688,7 @@ function penBounds(o){
 }
 
 /* ---------------- Interaction ---------------- */
-let drag=null, drawing=null, lineStart=null, movedSinceStart=false;
+let drag=null, drawing=null, lineStart=null, movedSinceStart=false, textJustCommitted=0;
 
 function evtClient(evt){
   if(evt.touches && evt.touches.length) return evt.touches[0];
@@ -733,7 +735,11 @@ function onDown(e){
   }
 
   if(ELEMENT_TOOLS.has(tool)){ placeElement(tool,p); return; }
-  if(tool==="text"){ createText(p); return; }
+  if(tool==="text"){
+    if(textEditor.style.display!=="none"){ commitTextEdit(); return; }
+    if(Date.now()-textJustCommitted<300) return;
+    createText(p); return;
+  }
   if(tool==="pen"){ drawing={type:"pen", pts:[[r2(p.x),r2(p.y)]]}; capture(e); return; }
   if(LINE_TOOLS.has(tool)){ lineTap(p); capture(e); return; }
 }
@@ -814,7 +820,7 @@ board.addEventListener("click", e=>{
   lastTap=Date.now(); lastTapX=c.clientX; lastTapY=c.clientY;
   const p=svgPoint(e);
   if(ELEMENT_TOOLS.has(tool)) placeElement(tool,p);
-  else if(tool==="text") createText(p);
+  else if(tool==="text"){ if(textEditor.style.display!=="none"){ commitTextEdit(); } else if(Date.now()-textJustCommitted>=300){ createText(p); } }
   else if(LINE_TOOLS.has(tool)) lineTap(p);
 });
 
@@ -876,6 +882,7 @@ function commitTextEdit(){
   const v=textEditor.value.trim();
   textEditor.style.display="none";
   if(o){ if(!v){ state.objects=state.objects.filter(x=>x.id!==id); } else { o.text=v; } pushHistory(); render(); }
+  textJustCommitted=Date.now();
 }
 function cancelTextEdit(){
   const id=textEditor.dataset.id; const o=state.objects.find(x=>x.id===id);
@@ -956,7 +963,7 @@ function updateHistoryButtons(){
 
 /* ---------------- Top bar actions ---------------- */
 document.querySelectorAll(".seg [data-pitch]").forEach(b=>b.addEventListener("click",()=>{
-  state.pitch=b.dataset.pitch; syncPitchButtons(); drawPitch(); render(); pushHistory();
+  state.pitch=b.dataset.pitch; syncPitchButtons(); repositionDefaultGK(); drawPitch(); render(); pushHistory();
 }));
 function syncPitchButtons(){ document.querySelectorAll(".seg [data-pitch]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.pitch===state.pitch?"true":"false")); }
 
@@ -1070,7 +1077,8 @@ function init(){
   drawPitch();
   // seed a goalkeeper on the line for a nicer first impression
   const p=PITCHES[state.pitch];
-  state.objects.push({id:nid(),type:"player",color:COLORS.gk,label:"P",x:p.w/2,y:70});
+  const h0=gkHomePos();
+  state.objects.push({id:"gk0",type:"player",color:COLORS.gk,label:"P",x:h0.x,y:h0.y});
   render(); renderPanel(); pushHistory();
   selectTool("select");
   showHint("Scegli uno strumento a sinistra e <b>clicca sul campo</b> per iniziare.");

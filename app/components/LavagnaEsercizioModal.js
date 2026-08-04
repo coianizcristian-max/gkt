@@ -32,6 +32,25 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
   })
   const upd = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }))
 
+  // Se non passati come prop (es. dalla sezione Allenamento) li recupera da solo
+  const [resolvedAllenatoreId, setResolvedAllenatoreId] = useState(allenatoreId ?? null)
+  const [tipList, setTipList] = useState(tipologie ?? [])
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      const supabase = createClient()
+      if (!allenatoreId) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (alive) setResolvedAllenatoreId(user?.id ?? null)
+      }
+      if (!tipologie || tipologie.length === 0) {
+        const { data } = await supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('stato', 'attivo').order('ordine')
+        if (alive && data) setTipList(data.map((r) => r.valore))
+      }
+    })()
+    return () => { alive = false }
+  }, [allenatoreId, tipologie])
+
   const src = mode === 'view' ? '/lavagna.html?mode=view' : '/lavagna.html?embed=1'
 
   useEffect(() => {
@@ -55,7 +74,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
           let immagine_url = esercizio?.immagine_url || null
           if (d.thumbnail) {
             const blob = dataUrlToBlob(d.thumbnail)
-            const path = `esercizi/${allenatoreId}/lavagna-${Date.now()}.png`
+            const path = `esercizi/${resolvedAllenatoreId}/lavagna-${Date.now()}.png`
             const { error: upErr } = await supabase.storage.from('sito').upload(path, blob, { upsert: true, contentType: 'image/png' })
             if (upErr) throw upErr
             immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
@@ -86,7 +105,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
           let immagine_url = null
           if (d.thumbnail) {
             const blob = dataUrlToBlob(d.thumbnail)
-            const path = `esercizi/${allenatoreId}/lavagna-${Date.now()}.png`
+            const path = `esercizi/${resolvedAllenatoreId}/lavagna-${Date.now()}.png`
             const { error: upErr } = await supabase.storage.from('sito').upload(path, blob, {
               upsert: true, contentType: 'image/png',
             })
@@ -103,7 +122,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
     }
     window.addEventListener('message', onMsg)
     return () => window.removeEventListener('message', onMsg)
-  }, [mode, esercizio, allenatoreId, onResult, onClose, onSaved])
+  }, [mode, esercizio, allenatoreId, resolvedAllenatoreId, onResult, onClose, onSaved])
 
   async function salvaEsercizio() {
     if (!dati) return
@@ -112,7 +131,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
     try {
       const supabase = createClient()
       const payload = {
-        allenatore_id: allenatoreId,
+        allenatore_id: resolvedAllenatoreId,
         titolo: dati.name.trim(),
         schema_json: dati.schema,
         immagine_url: dati.immagine_url,
@@ -193,7 +212,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
                 <label>Tipologia</label>
                 <select value={f.tipologia} onChange={upd('tipologia')}>
                   <option value="">—</option>
-                  {tipologie.map((t) => <option key={t} value={t}>{t}</option>)}
+                  {tipList.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div className="field">

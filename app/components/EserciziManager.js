@@ -129,7 +129,18 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
           allenatoreId={allenatoreId}
           onSaved={() => { setEditing(null); router.refresh() }}
           onCancel={() => setEditing(null)}
+          onEditSchema={(es) => setLavagna({ mode: 'edit', esercizio: es })}
         />
+        {lavagna && (
+          <LavagnaEsercizioModal
+            mode={lavagna.mode}
+            esercizio={lavagna.esercizio || null}
+            allenatoreId={allenatoreId}
+            tipologie={tipologie}
+            onSaved={() => { setLavagna(null); router.refresh() }}
+            onClose={() => setLavagna(null)}
+          />
+        )}
       </div>
     )
   }
@@ -306,7 +317,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
   )
 }
 
-function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allenatoreId, onSaved, onCancel }) {
+function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allenatoreId, onSaved, onCancel, onEditSchema }) {
   const isEdit = !!esercizio
   const [f, setF] = useState({
     titolo: esercizio?.titolo ?? '',
@@ -490,6 +501,13 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
           </label>
         </div>
       </div>
+      {isEdit && onEditSchema && (
+        <div style={{ margin: '6px 0 14px', paddingTop: 12, borderTop: '1px solid var(--line, #e4ebef)' }}>
+          <button type="button" className="btn-azione" onClick={() => onEditSchema(esercizio)}>
+            {esercizio?.schema_json ? '✏️ Modifica lo schema con la lavagna' : '🎨 Aggiungi uno schema con la lavagna'}
+          </button>
+        </div>
+      )}
       <div className="form-actions">
         {onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
         {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Archivia</button>}

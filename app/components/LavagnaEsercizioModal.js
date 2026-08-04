@@ -51,7 +51,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
     return () => { alive = false }
   }, [allenatoreId, tipologie])
 
-  const src = mode === 'view' ? '/lavagna.html?mode=view' : '/lavagna.html?embed=1'
+  const src = (mode === 'view' ? '/lavagna.html?mode=view' : '/lavagna.html?embed=1') + '&v=7'
 
   useEffect(() => {
     async function onMsg(ev) {

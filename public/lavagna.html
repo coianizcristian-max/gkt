@@ -197,6 +197,10 @@
   body.viewmode .body{grid-template-columns:minmax(0,1fr)}
   body.viewmode header{justify-content:flex-start}
   body.viewmode svg#board{cursor:default}
+  body.embed #exportBtn, body.embed #saveBtn, body.embed #openBtn{display:none !important}
+  body.embed .titlewrap{display:flex !important}
+  body.embed #exerciseName{width:min(340px,44vw)}
+  body.embed .toolbar-top{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -1089,6 +1093,7 @@ function makeThumb(cb){
     if(d.type==="gk-load"){ loadSchema(d.schema, d.name); }
   });
   if(embed && !view){
+    document.body.classList.add("embed");
     const bar=document.querySelector(".toolbar-top");
     if(bar){
       const btn=document.createElement("button");

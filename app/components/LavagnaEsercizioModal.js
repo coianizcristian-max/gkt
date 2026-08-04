@@ -109,24 +109,23 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
   const wide = fase === 'disegno' || mode === 'view'
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(6,16,24,.66)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2vh 2vw' }}>
       <div
-        className="modal-box"
-        style={{ maxWidth: wide ? 1100 : 620, width: '96%', padding: 0, overflow: 'hidden' }}
         onClick={(e) => e.stopPropagation()}
+        style={{ width: wide ? '96vw' : 'min(680px,96vw)', maxWidth: wide ? 1240 : 680, height: wide ? '94vh' : 'auto', maxHeight: '94vh', background: '#fff', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 60px rgba(0,0,0,.4)' }}
       >
-        <div className="modal-header" style={{ padding: '14px 18px', borderBottom: '1px solid var(--line, #e4ebef)' }}>
-          <h3 style={{ margin: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderBottom: '1px solid #e4ebef', flex: 'none' }}>
+          <h3 style={{ margin: 0, fontSize: 17 }}>
             {mode === 'view'
               ? `Schema — ${esercizio?.titolo || 'Esercizio'}`
               : fase === 'dettagli' ? 'Completa l’esercizio' : 'Crea esercizio con la lavagna'}
           </h3>
-          <button className="modal-close" onClick={onClose} type="button">✕</button>
+          <button onClick={onClose} type="button" aria-label="Chiudi" style={{ border: 0, background: 'transparent', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>✕</button>
         </div>
 
         {/* FASE DISEGNO / VISTA — la lavagna in un iframe */}
         {(fase === 'disegno' || mode === 'view') && (
-          <div style={{ height: 'min(74vh, 720px)', background: '#0d1620' }}>
+          <div style={{ flex: 1, minHeight: 0, background: '#0d1620' }}>
             <iframe
               ref={iframeRef}
               src={src}
@@ -138,7 +137,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
 
         {/* FASE DETTAGLI — compila i restanti campi dell’esercizio */}
         {fase !== 'disegno' && mode === 'create' && (
-          <div style={{ padding: '18px' }}>
+          <div style={{ padding: '18px', overflowY: 'auto' }}>
             {error && <div className="err" style={{ marginBottom: 12 }}>{error}</div>}
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap' }}>
               {dati?.immagine_url && (

@@ -48,6 +48,30 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
           )
         }
       }
+      if (d.type === 'gk-save' && mode === 'edit') {
+        setFase('salvataggio')
+        try {
+          const supabase = createClient()
+          let immagine_url = esercizio.immagine_url || null
+          if (d.thumbnail) {
+            const blob = dataUrlToBlob(d.thumbnail)
+            const path = `esercizi/${allenatoreId}/lavagna-${Date.now()}.png`
+            const { error: upErr } = await supabase.storage.from('sito').upload(path, blob, { upsert: true, contentType: 'image/png' })
+            if (upErr) throw upErr
+            immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
+          }
+          const { data, error: updErr } = await supabase.from('esercizi')
+            .update({ schema_json: d.schema, immagine_url, titolo: d.name.trim() })
+            .eq('id', esercizio.id)
+            .select('id, titolo, tipologia, descrizione_breve, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, schema_json')
+            .single()
+          if (updErr) throw updErr
+          if (onSaved) onSaved(data)
+        } catch (err) {
+          alert('Errore nel salvataggio delle modifiche: ' + err.message)
+          setFase('disegno')
+        }
+      }
       if (d.type === 'gk-save' && mode === 'create') {
         setError('')
         setFase('salvataggio')
@@ -118,7 +142,9 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
           <h3 style={{ margin: 0, fontSize: 17 }}>
             {mode === 'view'
               ? `Schema — ${esercizio?.titolo || 'Esercizio'}`
-              : fase === 'dettagli' ? 'Completa l’esercizio' : 'Crea esercizio con la lavagna'}
+              : mode === 'edit'
+                ? `Modifica schema — ${esercizio?.titolo || 'Esercizio'}`
+                : fase === 'dettagli' ? 'Completa l’esercizio' : 'Crea esercizio con la lavagna'}
           </h3>
           <button onClick={onClose} type="button" aria-label="Chiudi" style={{ border: 0, background: 'transparent', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>✕</button>
         </div>

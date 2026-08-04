@@ -16,9 +16,10 @@ function EsercizioPopup({ esercizio, onClose, onOpenSchema }) {
           <span key={t} className="stat-cat" style={{ marginBottom: 4, marginRight: 4, display: 'inline-block' }}>{t}</span>
         ))}
         {esercizio.schema_json && onOpenSchema && (
-          <button className="btn" type="button" style={{ marginTop: 8, marginBottom: 12 }} onClick={() => onOpenSchema(esercizio)}>
-            🖼️ Apri lo schema della lavagna
-          </button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8, marginBottom: 12 }}>
+            <button className="btn" type="button" onClick={() => onOpenSchema(esercizio, 'view')}>🖼️ Visualizza schema</button>
+            <button className="btn-ghost" type="button" onClick={() => onOpenSchema(esercizio, 'edit')}>✏️ Modifica schema</button>
+          </div>
         )}
         {esercizio.immagine_url && (
           <img src={esercizio.immagine_url} alt="" style={{ width: '100%', borderRadius: 'var(--r)', marginBottom: 14, maxHeight: 280, objectFit: 'cover' }} />
@@ -135,7 +136,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
 
   return (
     <div className="lista-editor">
-      {popup && <EsercizioPopup esercizio={popup} onClose={() => setPopup(null)} onOpenSchema={(es) => { setPopup(null); setLavagna({ mode: 'view', esercizio: es }) }} />}
+      {popup && <EsercizioPopup esercizio={popup} onClose={() => setPopup(null)} onOpenSchema={(es, m) => { setPopup(null); setLavagna({ mode: m || 'view', esercizio: es }) }} />}
       {lavagna && (
         <LavagnaEsercizioModal
           mode={lavagna.mode}

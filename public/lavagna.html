@@ -604,8 +604,10 @@ function buildObject(o){
       const g=el("g",{transform:`translate(${o.x} ${o.y})`});
       const lines=(o.text||"Testo").split("\n");
       const lh=22, startY=-((lines.length-1)/2)*lh;
+      const maxLen=Math.max(4,...lines.map(l=>l.length));
+      const wR=Math.min(640,Math.max(90,maxLen*11)), hR=Math.max(30,lines.length*lh+8);
       const tspans=lines.map((ln,i)=>`<tspan x="0" y="${(startY+i*lh).toFixed(1)}">${escapeXml(ln||" ")}</tspan>`).join("");
-      g.innerHTML=`<text text-anchor="middle" dominant-baseline="middle" font-family="Archivo,system-ui,sans-serif" font-weight="700" font-size="20" fill="#0d1620" stroke="#fff" stroke-width="4" style="paint-order:stroke">${tspans}</text>`;
+      g.innerHTML=`<rect x="${(-wR/2).toFixed(1)}" y="${(-hR/2).toFixed(1)}" width="${wR}" height="${hR}" fill="transparent"/><text text-anchor="middle" dominant-baseline="middle" font-family="Archivo,system-ui,sans-serif" font-weight="700" font-size="20" fill="#0d1620" stroke="#fff" stroke-width="4" style="paint-order:stroke">${tspans}</text>`;
       return g;
     }
     case "pen":{
@@ -689,6 +691,7 @@ function penBounds(o){
 
 /* ---------------- Interaction ---------------- */
 let drag=null, drawing=null, lineStart=null, movedSinceStart=false, textJustCommitted=0;
+let clickHist={id:null,t:0}, pendingEdit=null, dragMoved=false, downPt={x:0,y:0};
 
 function evtClient(evt){
   if(evt.touches && evt.touches.length) return evt.touches[0];
@@ -724,13 +727,17 @@ function onDown(e){
     }
     if(targetObj){
       const o=state.objects.find(x=>x.id===targetObj.getAttribute("data-id"));
+      const now=Date.now();
+      pendingEdit=(o && o.id===clickHist.id && now-clickHist.t<350) ? o : null;
+      clickHist={id:o?o.id:null, t:now};
+      dragMoved=false; downPt=p;
       setSelected(o.id);
       if(o.type==="line"){ drag={mode:"line-move", o, start:p, orig:{x1:o.x1,y1:o.y1,x2:o.x2,y2:o.y2}}; }
       else if(o.type==="pen"){ drag={mode:"pen-move", o, start:p, orig:o.d}; }
       else { drag={mode:"move", o, dx:p.x-o.x, dy:p.y-o.y}; }
       targetObj.classList.add("dragging");
       capture(e);
-    } else { setSelected(null); }
+    } else { setSelected(null); pendingEdit=null; clickHist={id:null,t:0}; }
     return;
   }
 
@@ -748,6 +755,7 @@ function onMove(e){
   if(!drag && !drawing) return;
   const p=svgPoint(e);
   if(drag){
+    if(!dragMoved && Math.hypot(p.x-downPt.x,p.y-downPt.y)>4){ dragMoved=true; pendingEdit=null; }
     if(drag.mode==="move"){ drag.o.x=r2(p.x-drag.dx); drag.o.y=r2(p.y-drag.dy); render(); }
     else if(drag.mode==="endpoint"){ if(drag.which==="1"){drag.o.x1=r2(p.x);drag.o.y1=r2(p.y);}else{drag.o.x2=r2(p.x);drag.o.y2=r2(p.y);} render(); }
     else if(drag.mode==="line-move"){ const ddx=p.x-drag.start.x, ddy=p.y-drag.start.y; drag.o.x1=r2(drag.orig.x1+ddx);drag.o.y1=r2(drag.orig.y1+ddy);drag.o.x2=r2(drag.orig.x2+ddx);drag.o.y2=r2(drag.orig.y2+ddy); render(); }
@@ -760,7 +768,19 @@ function onMove(e){
   }
 }
 function onUp(e){
-  if(drag){ document.querySelectorAll(".dragging").forEach(x=>x.classList.remove("dragging")); pushHistory(); drag=null; render(); return; }
+  if(drag){
+    document.querySelectorAll(".dragging").forEach(x=>x.classList.remove("dragging"));
+    const pe=pendingEdit, moved=dragMoved; drag=null; pendingEdit=null;
+    if(moved){ pushHistory(); render(); }
+    else {
+      render();
+      if(pe){
+        if(pe.type==="text"){ editTextObject(pe); }
+        else if(pe.type==="player"){ const v=prompt("Numero / sigla del giocatore (max 3):", pe.label||""); if(v!==null){ pe.label=v.slice(0,3); pushHistory(); render(); } }
+      }
+    }
+    return;
+  }
   if(drawing){
     if(drawing.type==="pen"){
       if(drawing.pts.length>1){ state.objects.push({id:nid(),type:"pen",d:ptsToPath(drawing.pts),color:"#fff2cc"}); pushHistory(); }
@@ -824,13 +844,9 @@ board.addEventListener("click", e=>{
   else if(LINE_TOOLS.has(tool)) lineTap(p);
 });
 
-board.addEventListener("dblclick",e=>{
-  if(window.__ro) return;
-  const targetObj=e.target.closest("[data-id]"); if(!targetObj) return;
-  const o=state.objects.find(x=>x.id===targetObj.getAttribute("data-id")); if(!o) return;
-  if(o.type==="player"){ const v=prompt("Numero / sigla del giocatore (max 3):", o.label||""); if(v!==null){ o.label=v.slice(0,3); pushHistory(); render(); } }
-  if(o.type==="text"){ editTextObject(o); }
-});
+// Il doppio clic (modifica testo / rinomina giocatore) è gestito in onUp con rilevamento proprio,
+// perché il ridisegno degli oggetti impedisce all'evento nativo "dblclick" di scattare.
+
 
 function previewLine(d){
   const ov=board.querySelector("#overlay"); ov.innerHTML="";

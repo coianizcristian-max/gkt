@@ -44,7 +44,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
         if (alive) setResolvedAllenatoreId(user?.id ?? null)
       }
       if (!tipologie || tipologie.length === 0) {
-        const { data } = await supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('stato', 'attivo').order('ordine')
+        const { data } = await supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('attivo', true).order('ordine')
         if (alive && data) setTipList(data.map((r) => r.valore))
       }
     })()

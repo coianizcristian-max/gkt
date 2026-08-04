@@ -90,20 +90,21 @@
 
   /* ---------- Left rail ---------- */
   .rail{
-    width:96px; background:linear-gradient(180deg,var(--rail),#0f1c29);
-    border-right:1px solid rgba(255,255,255,.06); padding:12px 8px 20px;
-    overflow-y:auto; display:flex; flex-direction:column; gap:4px;
+    width:150px; background:linear-gradient(180deg,var(--rail),#0f1c29);
+    border-right:1px solid rgba(255,255,255,.06); padding:12px 7px 20px;
+    overflow-y:auto; display:flex; flex-direction:column; gap:2px;
   }
   .rail::-webkit-scrollbar{width:8px}
   .rail::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px}
-  .rail-group{margin-bottom:6px}
+  .rail-group{display:grid; grid-template-columns:1fr 1fr; gap:3px; margin-bottom:6px}
   .rail-group h2{
+    grid-column:1 / -1;
     font-family:var(--display); font-size:9.5px; font-weight:700; letter-spacing:.16em;
-    text-transform:uppercase; color:#5f7382; margin:8px 6px 6px; text-align:center;
+    text-transform:uppercase; color:#5f7382; margin:8px 6px 5px; text-align:center;
   }
   .tool{
     width:100%; border:0; background:transparent; color:#b7c6d0; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:5px;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
     padding:8px 2px 7px; border-radius:11px; transition:.13s; position:relative;
   }
   .tool:hover{background:rgba(255,255,255,.06); color:#fff}
@@ -174,20 +175,22 @@
 
   /* inline text editor */
   #textEditor{position:absolute;z-index:40;display:none;font-family:var(--display);font-weight:700;
-    border:2px solid var(--accent);border-radius:6px;padding:2px 8px;background:#fff;color:#0d1620;
-    font-size:16px;outline:none;box-shadow:var(--shadow)}
+    border:2px solid var(--accent);border-radius:6px;padding:4px 8px;background:#fff;color:#0d1620;
+    font-size:16px;line-height:1.3;outline:none;box-shadow:var(--shadow);resize:both;
+    min-width:150px;max-width:70vw;white-space:pre;overflow:auto;text-align:center}
 
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   @keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
   .pop{transform-box:fill-box;transform-origin:center;animation:pop .28s cubic-bezier(.34,1.56,.64,1)}
 
   /* Responsive */
-  @media (max-width:1040px){ .panel{width:200px} .rail{width:84px} }
+  @media (max-width:1040px){ .panel{width:200px} .rail{width:140px} }
   @media (max-width:840px){
     .titlewrap{display:none}
     .panel{display:none}
     .body{grid-template-columns:auto minmax(0,1fr)}
     .rail{width:76px}
+    .rail-group{grid-template-columns:1fr}
     header{overflow-x:auto; gap:10px}
     .brand small{display:none}
     .hint{white-space:normal; text-align:center; font-size:11.5px; max-width:86%}
@@ -257,7 +260,7 @@
       <div class="board-shell">
         <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
       </div>
-      <input id="textEditor" spellcheck="false" />
+      <textarea id="textEditor" spellcheck="false" rows="2"></textarea>
       <div class="hint" id="hint"></div>
     </div>
 
@@ -276,7 +279,7 @@ const rail=document.getElementById("rail");
 const textEditor=document.getElementById("textEditor");
 
 /* ---------------- Model ---------------- */
-const COLORS={ gk:"#12b886", a:"#2f6df6", b:"#e5484d", ball:"#ffffff", cone:"#ff8c1a", pole:"#ffd21a", mann:"#64748b" };
+const COLORS={ gk:"#12b886", a:"#2f6df6", b:"#e5484d", ball:"#ffffff", cone:"#ff8c1a", pole:"#ffd21a", mann:"#64748b", mister:"#1f2937" };
 let state={ objects:[], pitch:"area" };
 let selectedId=null;
 let tool="select";
@@ -301,6 +304,7 @@ const TOOLS=[
   {group:"Elementi", items:[
     {id:"gk", label:"Portiere", hint:"Clicca per posizionare il <b>portiere</b>.", icon:()=>iPlayer(COLORS.gk,"P")},
     {id:"a", label:"Compagno", hint:"Clicca per posizionare un <b>compagno</b>. Doppio clic per il numero.", icon:()=>iPlayer(COLORS.a)},
+    {id:"mister", label:"Mister", hint:"Clicca per posizionare il <b>mister/allenatore</b>.", icon:()=>iPlayer(COLORS.mister,"M")},
     {id:"b", label:"Avversario", hint:"Clicca per posizionare un <b>avversario</b>.", icon:()=>iPlayer(COLORS.b)},
     {id:"ball", label:"Palla", hint:"Clicca per posizionare una <b>palla</b>.", icon:iBall},
     {id:"cone", label:"Cono", hint:"Clicca per posizionare un <b>cono</b>.", icon:iCone},
@@ -325,7 +329,7 @@ const TOOLS=[
   ]}
 ];
 const LINE_TOOLS=new Set(["run","pass","drive","shot"]);
-const ELEMENT_TOOLS=new Set(["gk","a","b","ball","cone","pole","mann","minigoal","ring","ostacolo","capriola","giro","parata","uscita","uscitabassa"]);
+const ELEMENT_TOOLS=new Set(["gk","a","b","mister","ball","cone","pole","mann","minigoal","ring","ostacolo","capriola","giro","parata","uscita","uscitabassa"]);
 
 /* ---------------- Build left rail ---------------- */
 TOOLS.forEach(g=>{
@@ -359,8 +363,12 @@ function findTool(id){ for(const g of TOOLS) for(const t of g.items) if(t.id===i
 function showHint(html){ hintEl.innerHTML=html; hintEl.style.opacity=html?"1":"0"; }
 
 /* ---------------- Pitch rendering ---------------- */
+let _lastLandscape=false;
+function isLandscape(){ return state.pitch!=="area" && window.innerWidth>=820; }
 function drawPitch(){
-  const p=PITCHES[state.pitch]; board.setAttribute("viewBox",`0 0 ${p.w} ${p.h}`);
+  const p=PITCHES[state.pitch];
+  const land=isLandscape(); _lastLandscape=land;
+  board.setAttribute("viewBox", land ? `0 0 ${p.h} ${p.w}` : `0 0 ${p.w} ${p.h}`);
   const W=p.w, H=p.h, M=34; // margin
   const line="#f6fbf7", lw=3.2, lop=0.9;
   let defs=`
@@ -408,7 +416,7 @@ function drawPitch(){
       <marker id="ahRun" markerWidth="9" markerHeight="9" refX="6.5" refY="4.2" orient="auto"><path d="M0.5 0.6 L8 4.2 L0.5 7.8" fill="none" stroke="#fff2cc" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>
       <marker id="ahSolid" markerWidth="10" markerHeight="10" refX="6" refY="4.5" orient="auto"><path d="M0.5 0.6 L9 4.5 L0.5 8.4 Z" fill="#fff2cc"/></marker>
     </defs>`;
-  let g=`<g><rect x="0" y="0" width="${W}" height="${H}" fill="url(#turf)"/>`;
+  let g=`<g${land?` transform="translate(0 ${W}) rotate(-90)"`:""}><rect x="0" y="0" width="${W}" height="${H}" fill="url(#turf)"/>`;
   const bands=Math.max(10, Math.round(H/52)), bh=H/bands;
   for(let i=0;i<bands;i++){
     g+=`<rect x="0" y="${(i*bh).toFixed(1)}" width="${W}" height="${bh.toFixed(1)}" fill="${i%2?'rgba(255,255,255,.06)':'rgba(0,0,0,.055)'}"/>`;
@@ -479,16 +487,17 @@ function fitBoard(){
   if(sh<80){ sh=window.innerHeight-64; }
   const availW=Math.max(160, sw - pad*2);
   const availH=Math.max(160, sh - pad*2 - 4);
-  const p=PITCHES[state.pitch], ratio=p.w/p.h;
+  const p=PITCHES[state.pitch], ratio=isLandscape() ? p.h/p.w : p.w/p.h;
   let w=availW, h=w/ratio;
   if(h>availH){ h=availH; w=h*ratio; }
   board.style.width=Math.round(w)+"px";
   board.style.height=Math.round(h)+"px";
 }
-window.addEventListener("resize", fitBoard);
+function onResize(){ if(isLandscape()!==_lastLandscape){ drawPitch(); render(); } else { fitBoard(); } }
+window.addEventListener("resize", onResize);
 window.addEventListener("load", fitBoard);
 requestAnimationFrame(fitBoard);
-if("ResizeObserver" in window){ try{ new ResizeObserver(()=>fitBoard()).observe(document.getElementById("stage")); }catch(e){} }
+if("ResizeObserver" in window){ try{ new ResizeObserver(()=>onResize()).observe(document.getElementById("stage")); }catch(e){} }
 function netPath(x,y,w,h,step){
   let d="";
   for(let i=0;i<=w;i+=step){ d+=`M${x+i} ${y} L${x+i} ${y+h} `; }
@@ -591,8 +600,10 @@ function buildObject(o){
     }
     case "text":{
       const g=el("g",{transform:`translate(${o.x} ${o.y})`});
-      const t=escapeXml(o.text||"Testo");
-      g.innerHTML=`<text text-anchor="middle" dominant-baseline="middle" font-family="Archivo,system-ui,sans-serif" font-weight="700" font-size="20" fill="#0d1620" stroke="#fff" stroke-width="4" paint-order="stroke" style="paint-order:stroke">${t}</text>`;
+      const lines=(o.text||"Testo").split("\n");
+      const lh=22, startY=-((lines.length-1)/2)*lh;
+      const tspans=lines.map((ln,i)=>`<tspan x="0" y="${(startY+i*lh).toFixed(1)}">${escapeXml(ln||" ")}</tspan>`).join("");
+      g.innerHTML=`<text text-anchor="middle" dominant-baseline="middle" font-family="Archivo,system-ui,sans-serif" font-weight="700" font-size="20" fill="#0d1620" stroke="#fff" stroke-width="4" style="paint-order:stroke">${tspans}</text>`;
       return g;
     }
     case "pen":{
@@ -662,7 +673,7 @@ function drawSelection(o,overlay){
 }
 function objBounds(o){
   const s={ player:18, ball:12, cone:14, pole:20, mann:24, minigoal:26, ring:17, ostacolo:16, capriola:15, giro:14, parata:15, uscita:17, uscitabassa:17, text:60, pen:0 };
-  if(o.type==="text") return {x:o.x-42,y:o.y-16,w:84,h:32};
+  if(o.type==="text"){ const lines=(o.text||"Testo").split("\n"); const maxLen=Math.max(4,...lines.map(l=>l.length)); const w=Math.min(620,Math.max(84,maxLen*11)); const h=Math.max(32,lines.length*22+10); return {x:o.x-w/2,y:o.y-h/2,w,h}; }
   if(o.type==="pen"){ return penBounds(o); }
   const r=s[o.type]||16;
   return {x:o.x-r, y:o.y-r-(o.type==="cone"||o.type==="mann"||o.type==="pole"?6:0), w:r*2, h:r*2+ (o.type==="cone"?10:0)};
@@ -836,6 +847,7 @@ function placeElement(t,p){
   if(t==="gk") o={id:nid(),type:"player",color:COLORS.gk,label:"P",x:r2(p.x),y:r2(p.y)};
   else if(t==="a") o={id:nid(),type:"player",color:COLORS.a,label:"",x:r2(p.x),y:r2(p.y)};
   else if(t==="b") o={id:nid(),type:"player",color:COLORS.b,label:"",x:r2(p.x),y:r2(p.y)};
+  else if(t==="mister") o={id:nid(),type:"player",color:COLORS.mister,label:"M",x:r2(p.x),y:r2(p.y)};
   else o={id:nid(),type:t,x:r2(p.x),y:r2(p.y)};
   state.objects.push(o); pushHistory(); render();
   const node=board.querySelector(`[data-id="${o.id}"]`); if(node){ node.classList.add("pop"); node.addEventListener("animationend",()=>node.classList.remove("pop"),{once:true}); }
@@ -852,10 +864,11 @@ function editTextObject(o,isNew){
   textEditor.style.left=(sp.x-stage.left-60)+"px";
   textEditor.style.top=(sp.y-stage.top-16)+"px";
   textEditor.value=o.text||"";
+  textEditor.rows=Math.max(2,(o.text||"").split("\n").length);
   textEditor.dataset.id=o.id; textEditor.dataset.new=isNew?"1":"";
   setTimeout(()=>{textEditor.focus(); textEditor.select();},10);
 }
-textEditor.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault(); commitTextEdit();} if(e.key==="Escape"){cancelTextEdit();} });
+textEditor.addEventListener("keydown",e=>{ if(e.key==="Escape"){e.preventDefault(); cancelTextEdit();} e.stopPropagation(); });
 textEditor.addEventListener("blur",commitTextEdit);
 function commitTextEdit(){
   if(textEditor.style.display==="none") return;

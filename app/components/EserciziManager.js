@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import LavagnaEsercizioModal from '@/app/components/LavagnaEsercizioModal'
 
 // Popup dettaglio esercizio
-function EsercizioPopup({ esercizio, onClose }) {
+function EsercizioPopup({ esercizio, onClose, onOpenSchema }) {
   return (
     <div className="popup-overlay" onClick={onClose}>
       <div className="popup-box" onClick={(e) => e.stopPropagation()}>
@@ -14,6 +15,11 @@ function EsercizioPopup({ esercizio, onClose }) {
         {((esercizio.tipologie?.length ? esercizio.tipologie : (esercizio.tipologia ? [esercizio.tipologia] : []))).map(t => (
           <span key={t} className="stat-cat" style={{ marginBottom: 4, marginRight: 4, display: 'inline-block' }}>{t}</span>
         ))}
+        {esercizio.schema_json && onOpenSchema && (
+          <button className="btn" type="button" style={{ marginTop: 8, marginBottom: 12 }} onClick={() => onOpenSchema(esercizio)}>
+            🖼️ Apri lo schema della lavagna
+          </button>
+        )}
         {esercizio.immagine_url && (
           <img src={esercizio.immagine_url} alt="" style={{ width: '100%', borderRadius: 'var(--r)', marginBottom: 14, maxHeight: 280, objectFit: 'cover' }} />
         )}
@@ -60,6 +66,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
   const router = useRouter()
   const [editing, setEditing] = useState(null)
   const [popup, setPopup] = useState(null)
+  const [lavagna, setLavagna] = useState(null) // {mode:'create'|'view', esercizio?}
   const [tabAttivo, setTabAttivo] = useState(null)
   const [sezione, setSezione] = useState('miei') // 'miei' | 'pubblici' | 'scopri' | 'responsabile'
   const [esPublici, setEsPublici] = useState(null) // null=non caricati
@@ -128,7 +135,17 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
 
   return (
     <div className="lista-editor">
-      {popup && <EsercizioPopup esercizio={popup} onClose={() => setPopup(null)} />}
+      {popup && <EsercizioPopup esercizio={popup} onClose={() => setPopup(null)} onOpenSchema={(es) => { setPopup(null); setLavagna({ mode: 'view', esercizio: es }) }} />}
+      {lavagna && (
+        <LavagnaEsercizioModal
+          mode={lavagna.mode}
+          esercizio={lavagna.esercizio || null}
+          allenatoreId={allenatoreId}
+          tipologie={tipologie}
+          onSaved={() => { setLavagna(null); router.refresh() }}
+          onClose={() => setLavagna(null)}
+        />
+      )}
 
       {/* Selettore sezione */}
       <div className="sub-nav" style={{ marginBottom: 16 }}>
@@ -171,7 +188,8 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
 
       {/* Azioni — solo nella sezione miei */}
       {sezione === 'miei' && sezione !== 'responsabile' && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+          <button className="btn-azione" type="button" onClick={() => setLavagna({ mode: 'create' })}>🎨 Crea con la lavagna</button>
           <button className="btn-azione" onClick={() => setEditing('new')} type="button">+ Nuovo esercizio</button>
         </div>
       )}

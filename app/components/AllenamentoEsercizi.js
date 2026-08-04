@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
+import LavagnaEsercizioModal from '@/app/components/LavagnaEsercizioModal'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -58,6 +59,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
   const [soloPref, setSoloPref] = useState(false)
   const [tipologiaAttiva, setTipologiaAttiva] = useState(null)
   const [showNuovoModal, setShowNuovoModal] = useState(false)
+  const [showLavagna, setShowLavagna] = useState(false)
   const [preferiti, setPreferiti] = useState(new Set())
   const [preview, setPreview] = useState(null)
   const [cerca, setCerca] = useState('')
@@ -160,7 +162,10 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
 
       {/* Bottone crea nuovo esercizio */}
       {fonte === 'mia' && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+          <button className="btn" type="button" onClick={() => setShowLavagna(true)}>
+            🎨 Crea al volo con la lavagna
+          </button>
           <button className="btn" type="button" onClick={() => setShowNuovoModal(true)}>
             ✏️ Crea nuovo esercizio
           </button>
@@ -304,6 +309,17 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
             setShowNuovoModal(false)
           }}
           onClose={() => setShowNuovoModal(false)}
+        />
+      )}
+      {showLavagna && (
+        <LavagnaEsercizioModal
+          mode="create"
+          onSaved={(esercizio) => {
+            libreriaMia.push(esercizio)
+            onToggle(esercizio.id)
+            setShowLavagna(false)
+          }}
+          onClose={() => setShowLavagna(false)}
         />
       )}
     </>

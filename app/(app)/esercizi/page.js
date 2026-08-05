@@ -34,7 +34,7 @@ export default async function EserciziPage() {
   const supervisoreId = profiloExt?.supervisore_id ?? null
 
   const [{ data: esercizi }, { data: tip }, { data: attributi }] = await Promise.all([
-    supabase.from('esercizi').select('*').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
+    supabase.from('esercizi').select('*, esercizio_attributi(attributo_id)').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
     supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('attivo', true).order('ordine'),
     supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
   ])
@@ -50,7 +50,7 @@ export default async function EserciziPage() {
       const prefIds = prefRows.map((r) => r.esercizio_id)
       const { data: pubPref } = await supabase
         .from('esercizi')
-        .select('*')
+        .select('*, esercizio_attributi(attributo_id)')
         .eq('pubblico', true)
         .eq('archiviato', false)
         .neq('allenatore_id', ownerId)
@@ -78,7 +78,7 @@ export default async function EserciziPage() {
       if (rel) {
         const { data: esResp } = await admin
           .from('esercizi')
-          .select('*')
+          .select('*, esercizio_attributi(attributo_id)')
           .eq('allenatore_id', supervisoreId)
           .eq('archiviato', false)
           .order('created_at', { ascending: false })

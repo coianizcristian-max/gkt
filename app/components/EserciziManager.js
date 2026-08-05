@@ -330,7 +330,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
     durata_minuti: esercizio?.durata_minuti ?? '',
     recupero_minuti: esercizio?.recupero_minuti ?? '',
   })
-  const [attributiSel, setAttributiSel] = useState(new Set(esercizio?.attributi?.map(a => a.attributo_id) ?? []))
+  const [attributiSel, setAttributiSel] = useState(new Set(esercizio?.esercizio_attributi?.map(a => a.attributo_id) ?? []))
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(esercizio?.immagine_url ?? '')
   const [imgUrl, setImgUrl] = useState(esercizio?.immagine_url ?? null)
@@ -398,11 +398,13 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
         esercizioId = ins.id
       }
       // Salva attributi
-      await supabase.from('esercizio_attributi').delete().eq('esercizio_id', esercizioId)
+      const { error: delAttrErr } = await supabase.from('esercizio_attributi').delete().eq('esercizio_id', esercizioId)
+      if (delAttrErr) throw delAttrErr
       if (attributiSel.size > 0) {
-        await supabase.from('esercizio_attributi').insert(
+        const { error: insAttrErr } = await supabase.from('esercizio_attributi').insert(
           [...attributiSel].map(aId => ({ esercizio_id: esercizioId, attributo_id: aId }))
         )
+        if (insAttrErr) throw insAttrErr
       }
       setDone(true); setBusy(false); if (onSaved) onSaved()
     } catch (err) { setError(err.message); setBusy(false) }

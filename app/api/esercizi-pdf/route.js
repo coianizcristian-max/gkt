@@ -84,8 +84,8 @@ export async function GET(request) {
                 {e.note && <Text style={s.cardNote}>Note: {e.note}</Text>}
                 {(e.durata_minuti || e.recupero_minuti) && (
                   <View style={s.tempi}>
-                    {e.durata_minuti && <Text style={s.tempoLabel}>⏱ Durata: {e.durata_minuti} min</Text>}
-                    {e.recupero_minuti && <Text style={s.tempoLabel}>↩ Recupero: {e.recupero_minuti} min</Text>}
+                    {e.durata_minuti && <Text style={s.tempoLabel}>Durata: {e.durata_minuti} min</Text>}
+                    {e.recupero_minuti && <Text style={s.tempoLabel}>Recupero: {e.recupero_minuti} min</Text>}
                   </View>
                 )}
               </View>
@@ -97,7 +97,7 @@ export async function GET(request) {
         {stimaLabel && (
           <View style={s.totale}>
             <View>
-              <Text style={s.totaleLabel}>⏱ Durata stimata totale: {stimaLabel}</Text>
+              <Text style={s.totaleLabel}>Durata stimata totale: {stimaLabel}</Text>
               <Text style={s.totaleSub}>Somma durata + recupero degli esercizi con tempi impostati</Text>
             </View>
           </View>

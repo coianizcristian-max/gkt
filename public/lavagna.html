@@ -338,6 +338,7 @@ const TOOLS=[
 ];
 const LINE_TOOLS=new Set(["run","pass","drive","shot","rilancio","nastro"]);
 const ELEMENT_TOOLS=new Set(["gk","a","b","mister","ball","cone","pole","mann","minigoal","ring","ostacolo","scaletta","pesi","pallinetennis","racchetta","capriola","giro","parata","uscita","uscitabassa","duello","cross"]);
+const ROTATABLE=new Set(["scaletta","racchetta","minigoal","pole","mann","ostacolo","pesi","cross"]);
 
 /* ---------------- Build left rail ---------------- */
 TOOLS.forEach(g=>{
@@ -523,7 +524,7 @@ function render(){
   layer.innerHTML=""; overlay.innerHTML="";
   state.objects.forEach(o=>{
     const el=buildObject(o);
-    if(el){ el.setAttribute("data-id",o.id); el.classList.add("obj"); layer.appendChild(el); }
+    if(el){ if(o.rot && ROTATABLE.has(o.type)) el.setAttribute("transform",`translate(${o.x} ${o.y}) rotate(${o.rot})`); el.setAttribute("data-id",o.id); el.classList.add("obj"); layer.appendChild(el); }
   });
   if(selectedId){
     const o=state.objects.find(x=>x.id===selectedId);
@@ -736,6 +737,12 @@ function drawSelection(o,overlay){
   const b=objBounds(o);
   const r=el("rect",{x:b.x-6,y:b.y-6,width:b.w+12,height:b.h+12,rx:8,fill:"none",stroke:"#ff8c1a","stroke-width":2,"stroke-dasharray":"6 5"});
   overlay.appendChild(r);
+  if(ROTATABLE.has(o.type)){
+    const d=(b.h/2)+22, rad=((o.rot||0))*Math.PI/180;
+    const hx=r2(o.x + d*Math.sin(rad)), hy=r2(o.y - d*Math.cos(rad));
+    overlay.appendChild(el("line",{x1:o.x,y1:o.y,x2:hx,y2:hy,stroke:"#ff8c1a","stroke-width":1.6,"stroke-dasharray":"3 3"}));
+    overlay.appendChild(el("circle",{cx:hx,cy:hy,r:8,fill:"#fff",stroke:"#ff8c1a","stroke-width":2.5,class:"rot-handle","data-id":o.id}));
+  }
 }
 function objBounds(o){
   const s={ player:18, ball:12, cone:14, pole:20, mann:24, minigoal:26, ring:17, ostacolo:16, scaletta:30, pesi:20, pallinetennis:16, racchetta:16, capriola:15, giro:14, parata:15, uscita:17, uscitabassa:17, duello:18, cross:18, text:60, pen:0 };
@@ -781,6 +788,12 @@ function onDown(e){
   const targetObj=e.target.closest && e.target.closest("[data-id]");
 
   if(tool==="select"){
+    const rotH=e.target.closest && e.target.closest(".rot-handle");
+    if(rotH){
+      const o=state.objects.find(x=>x.id===rotH.getAttribute("data-id"));
+      if(o){ dragMoved=false; downPt=p; drag={mode:"rotate", o}; capture(e); }
+      return;
+    }
     const handle=e.target.closest && e.target.closest(".handle");
     if(handle){
       const o=state.objects.find(x=>x.id===handle.getAttribute("data-id"));
@@ -822,6 +835,7 @@ function onMove(e){
     else if(drag.mode==="endpoint"){ if(drag.which==="1"){drag.o.x1=r2(p.x);drag.o.y1=r2(p.y);}else{drag.o.x2=r2(p.x);drag.o.y2=r2(p.y);} render(); }
     else if(drag.mode==="line-move"){ const ddx=p.x-drag.start.x, ddy=p.y-drag.start.y; drag.o.x1=r2(drag.orig.x1+ddx);drag.o.y1=r2(drag.orig.y1+ddy);drag.o.x2=r2(drag.orig.x2+ddx);drag.o.y2=r2(drag.orig.y2+ddy); render(); }
     else if(drag.mode==="pen-move"){ const ddx=p.x-drag.start.x, ddy=p.y-drag.start.y; drag.o.d=translatePath(drag.orig,ddx,ddy); render(); }
+    else if(drag.mode==="rotate"){ let deg=Math.atan2(p.y-drag.o.y,p.x-drag.o.x)*180/Math.PI+90; deg=(deg%360+360)%360; if(!(e&&e.shiftKey)) deg=Math.round(deg/15)*15; drag.o.rot=Math.round(deg*10)/10; render(); }
     return;
   }
   if(drawing){
@@ -992,6 +1006,7 @@ function renderPanel(){
     const names={ball:"Palla",cone:"Cono",pole:"Paletto",mann:"Sagoma",minigoal:"Porta piccola",ring:"Cerchio",scaletta:"Scaletta",pesi:"Stazione pesi",pallinetennis:"Palline tennis",racchetta:"Racchetta",duello:"1 vs 1",cross:"Cross",text:"Testo",pen:"Tratto",line:"Movimento"};
     html+=`<section><h3>${names[sel.type]||"Elemento"}</h3>`;
     if(sel.type==="text"){ html+=`<div class="field"><label>Testo</label><input id="textInput" value="${escapeAttr(sel.text||"")}"/></div>`; }
+    if(ROTATABLE.has(sel.type)){ html+=`<div class="field"><label>Rotazione</label><div style="display:flex; gap:6px; flex-wrap:wrap"><button class="btn-mini" data-rot="-45" type="button">-45\u00b0</button><button class="btn-mini" data-rot="45" type="button">+45\u00b0</button><button class="btn-mini" data-rot="0" type="button">Azzera</button></div><div class="tips" style="margin-top:6px">Oppure trascina la <b>maniglia arancione</b> sopra l'elemento per ruotare liberamente.</div></div>`; }
     html+=`<button class="btn-danger" id="delBtn">${trash()} Elimina</button></section>`;
   } else {
     html+=`<section><h3>Legenda</h3><div class="legend">
@@ -1017,6 +1032,7 @@ function renderPanel(){
   const li=document.getElementById("labelInput"); if(li) li.addEventListener("input",()=>{ sel.label=li.value.slice(0,3); render(); }), li&&li.addEventListener("change",pushHistory);
   const ti=document.getElementById("textInput"); if(ti){ ti.addEventListener("input",()=>{ sel.text=ti.value; render(); }); ti.addEventListener("change",pushHistory); }
   panel.querySelectorAll(".swatch").forEach(s=>s.addEventListener("click",()=>{ sel.color=s.dataset.color; pushHistory(); render(); renderPanel(); }));
+  panel.querySelectorAll("[data-rot]").forEach(btn=>btn.addEventListener("click",()=>{ const v=+btn.getAttribute("data-rot"); sel.rot = v===0 ? 0 : ((((sel.rot||0)+v)%360)+360)%360; sel.rot=Math.round(sel.rot*10)/10; pushHistory(); render(); renderPanel(); }));
 }
 function swatch(color,title,cur){ return `<button class="swatch" data-color="${color}" title="${title}" style="background:${color}" aria-pressed="${cur===color}"></button>`; }
 function legRow(svg,label){ return `<div class="row">${svg}<span>${label}</span></div>`; }
@@ -1195,7 +1211,13 @@ function makeThumb(cb){
   const view=params.get("mode")==="view";
   if(view){ document.body.classList.add("viewmode"); window.__ro=true; setTimeout(fitBoard,50); }
   function loadSchema(schema,name){
-    try{ if(schema){ state=schema; document.getElementById("exerciseName").value=name||""; selectedId=null; syncPitchButtons(); drawPitch(); render(); renderPanel(); pushHistory(); } }catch(e){}
+    try{ if(schema){ state=schema;
+      if(!Array.isArray(state.objects)) state.objects=[];
+      if(!state.pitch) state.pitch="area";
+      // Riprende il contatore degli id dal massimo gia' presente nello schema,
+      // cosi' i nuovi elementi non collidono con quelli salvati in precedenza.
+      let _mx=0; for(const o of state.objects){ const m=/^o(\d+)$/.exec(o.id||""); if(m) _mx=Math.max(_mx,+m[1]); } uid=_mx+1;
+      document.getElementById("exerciseName").value=name||""; selectedId=null; syncPitchButtons(); drawPitch(); render(); renderPanel(); pushHistory(); } }catch(e){}
   }
   window.addEventListener("message",ev=>{
     const d=ev.data||{};

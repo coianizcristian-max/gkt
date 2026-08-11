@@ -1,155 +1,25 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { consumaInvito } from '@/lib/consumaInvito'
 
-// Client admin con service_role per operazioni privilegiate
-function getAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  )
-}
-
+// La logica vera sta in lib/consumaInvito.js (condivisa con /auth/callback).
+// Qui verifichiamo solo che chi chiama sia autenticato e passiamo il SUO
+// utente: così l'invito viene sempre applicato all'account loggato che fa
+// la richiesta, mai a un altro.
 export async function POST(request) {
   try {
     const { token } = await request.json()
-    if (!token) return NextResponse.json({ error: 'Token mancante' }, { status: 400 })
 
-    // Verifica che l'utente sia autenticato
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
 
-    const admin = getAdmin()
-
-    // ── SICUREZZA (rete anti-dirottamento) ────────────────────────────
-    // Un invito 'portiere' o 'collaboratore' NON deve mai poter declassare
-    // un account che è già un allenatore o che possiede stagioni proprie.
-    // Senza questo controllo, consumare un invito mentre si è ancora loggati
-    // con un altro account (es. l'allenatore che prova il proprio invito, o
-    // il flusso con conferma-email in cui la sessione del nuovo utente non è
-    // ancora attiva) sovrascriverebbe il profilo dell'utente loggato a
-    // 'portiere', legandolo al portiere invitato.
-    {
-      const { data: bodyInvito } = await admin
-        .from('inviti').select('tipo').eq('token', token).maybeSingle()
-      const tipoInv = bodyInvito?.tipo ?? null
-      if (tipoInv === 'portiere' || tipoInv === 'collaboratore') {
-        const { data: profiloEsistente } = await admin
-          .from('profili').select('ruolo').eq('id', user.id).maybeSingle()
-        const { count: stagioniPossedute } = await admin
-          .from('stagioni').select('id', { count: 'exact', head: true }).eq('owner_id', user.id)
-        if (profiloEsistente?.ruolo === 'allenatore' || (stagioniPossedute ?? 0) > 0) {
-          return NextResponse.json({
-            error: "Questo account è già un allenatore e non può essere collegato come portiere o collaboratore. Esci e registrati/accedi con un account nuovo per usare l'invito.",
-          }, { status: 409 })
-        }
-      }
+    const res = await consumaInvito(token, user)
+    if (res.error) {
+      return NextResponse.json({ error: res.error }, { status: res.status })
     }
-
-    // Leggi l'invito
-    const { data: invito, error: invErr } = await admin
-      .from('inviti')
-      .select('id, tipo, stato, portiere_id, stagione_id, permessi')
-      .eq('token', token)
-      .maybeSingle()
-
-    if (invErr || !invito) return NextResponse.json({ error: 'Invito non trovato' }, { status: 404 })
-    if (invito.stato !== 'attivo') return NextResponse.json({ error: 'Invito non più valido' }, { status: 410 })
-
-    // Risali all'allenatore proprietario della stagione collegata all'invito
-    let allenatoreOwnerId = null
-    if (invito.stagione_id) {
-      const { data: stagioneRow } = await admin.from('stagioni').select('owner_id').eq('id', invito.stagione_id).maybeSingle()
-      allenatoreOwnerId = stagioneRow?.owner_id ?? null
-    }
-
-    // ── RAMO 1: invito per PORTIERE ───────────────────────────────────
-    if (invito.tipo === 'portiere') {
-      await admin.from('profili').upsert({
-        id: user.id,
-        ruolo: 'portiere',
-        portiere_id: invito.portiere_id ?? null,
-        allenatore_id: allenatoreOwnerId,
-      }, { onConflict: 'id' })
-
-      await admin.from('inviti').update({
-        stato: 'consumato',
-        consumato_da: user.id,
-        consumato_il: new Date().toISOString(),
-      }).eq('id', invito.id)
-    }
-
-    // ── RAMO 2: invito per COLLABORATORE (staff) ──────────────────────
-    else if (invito.tipo === 'collaboratore') {
-      await admin.from('profili').upsert({
-        id: user.id,
-        ruolo: 'staff',
-        permessi_collaboratore: invito.permessi ?? {},
-        allenatore_id: allenatoreOwnerId,
-      }, { onConflict: 'id' })
-
-      await admin.from('inviti').update({
-        stato: 'consumato',
-        consumato_da: user.id,
-        consumato_il: new Date().toISOString(),
-      }).eq('id', invito.id)
-    }
-
-    // ── RAMO 3: invito per PREPARATORE (supervisione) ─────────────────
-    // Il preparatore mantiene il suo ruolo 'allenatore' e la sua autonomia.
-    // Si crea solo la relazione responsabile → preparatore.
-    else if (invito.tipo === 'preparatore') {
-      if (!allenatoreOwnerId) {
-        return NextResponse.json({ error: 'Invito non valido: nessuna stagione collegata' }, { status: 422 })
-      }
-
-      // Impedisci che un allenatore si colleghi a se stesso
-      if (allenatoreOwnerId === user.id) {
-        return NextResponse.json({ error: 'Non puoi collegarti a te stesso' }, { status: 422 })
-      }
-
-      // Assicura che il profilo del preparatore esista (potrebbe non esserci ancora)
-      const { data: profiloPre } = await admin.from('profili').select('id, ruolo').eq('id', user.id).maybeSingle()
-      if (!profiloPre) {
-        await admin.from('profili').insert({ id: user.id, ruolo: 'allenatore' })
-      }
-
-      // Crea (o riattiva) la relazione di supervisione
-      const { error: relErr } = await admin.from('relazioni_supervisione').upsert({
-        supervisore_id: allenatoreOwnerId,
-        preparatore_id: user.id,
-        attivo: true,
-        invito_id: invito.id,
-        revocato_il: null,
-      }, { onConflict: 'supervisore_id,preparatore_id' })
-
-      if (relErr) {
-        console.error('relazioni_supervisione upsert error:', relErr)
-        return NextResponse.json({ error: 'Errore nel creare la relazione' }, { status: 500 })
-      }
-
-      // Aggiorna supervisore_id nel profilo del preparatore
-      await admin.from('profili').update({
-        supervisore_id: allenatoreOwnerId,
-      }).eq('id', user.id)
-
-      // Marca l'invito come consumato
-      await admin.from('inviti').update({
-        stato: 'consumato',
-        consumato_da: user.id,
-        consumato_il: new Date().toISOString(),
-      }).eq('id', invito.id)
-    }
-
-    else {
-      return NextResponse.json({ error: 'Tipo invito non riconosciuto' }, { status: 400 })
-    }
-
-    return NextResponse.json({ ok: true, tipo: invito.tipo })
-
+    return NextResponse.json({ ok: true, tipo: res.tipo })
   } catch (err) {
-    console.error('consuma-invito error:', err)
+    console.error('consuma-invito route error:', err)
     return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
   }
 }

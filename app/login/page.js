@@ -26,6 +26,27 @@ export default function LoginPage() {
       return
     }
     trackEvento('login_riuscito')
+
+    // Se l'utente porta un invito ancora da collegare nei metadati (tipico:
+    // ha aperto il link di conferma email in un browser diverso da quello di
+    // registrazione, quindi il collegamento automatico in /auth/callback non è
+    // scattato), consumalo ORA che è autenticato come SÉ STESSO. Sicuro: agisce
+    // solo sul proprio account e solo se il token è presente.
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const invToken = user?.user_metadata?.invito_token
+      if (invToken) {
+        await fetch('/api/consuma-invito', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: invToken }),
+        })
+        await supabase.auth.updateUser({ data: { invito_token: null } })
+      }
+    } catch (err) {
+      console.warn('consuma-invito post-login:', err)
+    }
+
     router.push('/dashboard')
     router.refresh()
   }

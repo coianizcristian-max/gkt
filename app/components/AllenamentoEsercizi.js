@@ -373,8 +373,16 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url; a.download = `allenamento-esercizi.pdf`
-      a.click(); URL.revokeObjectURL(url)
+      a.href = url
+      a.download = `allenamento-esercizi.pdf`
+      a.rel = 'noopener'
+      // Su iOS Safari l'anchor deve stare nel DOM perché .click() funzioni.
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      // NON revocare subito: su mobile il download potrebbe non aver ancora
+      // finito di leggere il blob e il file uscirebbe troncato.
+      setTimeout(() => URL.revokeObjectURL(url), 60000)
     } catch (err) { alert('Errore generazione PDF: ' + err.message) }
     setPdfBusy(false)
   }

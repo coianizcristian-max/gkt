@@ -22,6 +22,31 @@ export async function POST(request) {
 
     const admin = getAdmin()
 
+    // ── SICUREZZA (rete anti-dirottamento) ────────────────────────────
+    // Un invito 'portiere' o 'collaboratore' NON deve mai poter declassare
+    // un account che è già un allenatore o che possiede stagioni proprie.
+    // Senza questo controllo, consumare un invito mentre si è ancora loggati
+    // con un altro account (es. l'allenatore che prova il proprio invito, o
+    // il flusso con conferma-email in cui la sessione del nuovo utente non è
+    // ancora attiva) sovrascriverebbe il profilo dell'utente loggato a
+    // 'portiere', legandolo al portiere invitato.
+    {
+      const { data: bodyInvito } = await admin
+        .from('inviti').select('tipo').eq('token', token).maybeSingle()
+      const tipoInv = bodyInvito?.tipo ?? null
+      if (tipoInv === 'portiere' || tipoInv === 'collaboratore') {
+        const { data: profiloEsistente } = await admin
+          .from('profili').select('ruolo').eq('id', user.id).maybeSingle()
+        const { count: stagioniPossedute } = await admin
+          .from('stagioni').select('id', { count: 'exact', head: true }).eq('owner_id', user.id)
+        if (profiloEsistente?.ruolo === 'allenatore' || (stagioniPossedute ?? 0) > 0) {
+          return NextResponse.json({
+            error: "Questo account è già un allenatore e non può essere collegato come portiere o collaboratore. Esci e registrati/accedi con un account nuovo per usare l'invito.",
+          }, { status: 409 })
+        }
+      }
+    }
+
     // Leggi l'invito
     const { data: invito, error: invErr } = await admin
       .from('inviti')

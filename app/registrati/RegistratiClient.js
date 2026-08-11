@@ -44,7 +44,7 @@ export default function RegistratiClient({ token, datiInvito }) {
       email: email.trim(),
       password,
       options: {
-        data: { nome_completo: nome.trim() },
+        data: { nome_completo: nome.trim(), ...(token && datiInvito ? { invito_token: token } : {}) },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/benvenuto`,
       },
     })
@@ -74,8 +74,16 @@ export default function RegistratiClient({ token, datiInvito }) {
       )
     }
 
-    // Se c'è un token invito valido, consumalo subito (collegamento portiere/collaboratore)
-    if (token && datiInvito && data.user) {
+    // Consuma l'invito SOLO se il nuovo utente è già autenticato come sé stesso.
+    // Questo accade quando la conferma-email è DISATTIVATA: signUp apre subito
+    // la sessione del nuovo utente (data.session esiste ed è la sua).
+    // Se la conferma-email è ATTIVA, data.session è null e nel browser potrebbe
+    // esserci ancora la sessione di un ALTRO account (es. l'allenatore che prova
+    // il proprio invito): consumare adesso dirotterebbe quell'account.
+    // In quel caso NON facciamo nulla qui: il token è salvato nei metadati
+    // (options.data.invito_token) e verrà consumato in /auth/callback dopo la
+    // conferma email, quando la sessione sarà con certezza quella dell'invitato.
+    if (token && datiInvito && data.user && data.session && data.session.user?.id === data.user.id) {
       try {
         const res = await fetch('/api/consuma-invito', {
           method: 'POST',
@@ -83,7 +91,7 @@ export default function RegistratiClient({ token, datiInvito }) {
           body: JSON.stringify({ token }),
         })
         if (!res.ok) {
-          const body = await res.json()
+          const body = await res.json().catch(() => ({}))
           console.warn('consuma-invito:', body.error)
           // Non blocchiamo la registrazione per questo — l'utente è già creato
         }

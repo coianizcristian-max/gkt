@@ -63,7 +63,7 @@ export default async function DashboardPage() {
     // usato piu' sotto: prima erano due query separate con select diversi.
     const [allRows, parRows, couponRow, catRow, iscrRows] = await Promise.all([
       supabase.from('allenamenti')
-        .select('id, data, ora_inizio, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
+        .select('id, data, ora_inizio, nessuna_valutazione, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id).order('data'),
       supabase.from('partite')
         .select('id, data, avversario, casa, tipo, squadre(nome)')
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
     // Anche questo secondo batch e' indipendente al suo interno: valRows/valParRows
     // servono ai blocchi "da valutare", valPortRows/obRows al blocco "da attenzionare".
     const [valRows, valParRows, valPortRows, obRows] = await Promise.all([
-      allenIds.length ? supabase.from('valutazioni').select('allenamento_id').in('allenamento_id', allenIds) : Promise.resolve({ data: [] }),
+      allenIds.length ? supabase.from('valutazioni').select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allenIds) : Promise.resolve({ data: [] }),
       partitaIds.length ? supabase.from('valutazioni_partita').select('partita_id').eq('presente', true).in('partita_id', partitaIds) : Promise.resolve({ data: [] }),
       portiereIds.length ? supabase.from('valutazioni').select('portiere_id, allenamento_id, presente, voto').in('portiere_id', portiereIds).in('allenamento_id', allenIds) : Promise.resolve({ data: [] }),
       portiereIds.length ? supabase.from('obiettivi').select('portiere_id, scadenza, stato').in('portiere_id', portiereIds) : Promise.resolve({ data: [] }),
@@ -100,7 +100,7 @@ export default async function DashboardPage() {
 
     // Allenamenti passati senza valutazione
     daValutareAllenamenti = allenamenti
-      .filter((a) => a.data < oggiStr && !valutatiSet.has(a.id))
+      .filter((a) => a.data < oggiStr && !valutatiSet.has(a.id) && !a.nessuna_valutazione)
       .sort((a, b) => b.data.localeCompare(a.data))
       .slice(0, 8)
 

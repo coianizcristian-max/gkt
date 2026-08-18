@@ -71,8 +71,11 @@ export default async function StatistichePortierePage({ params }) {
   let partiteRows = []
 
   if (stagione) {
+    // "Oggi" nel fuso italiano (Europe/Rome), non in UTC (vedi nota in statistiche/page.js).
+    // .lte include anche oggi, così una seduta fatta oggi conta subito.
+    const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
     const { data: allenamenti } = await supabase.from('allenamenti')
-      .select('id, data, squadra_id').eq('stagione_id', stagione.id).lt('data', new Date().toISOString().slice(0, 10)).order('data')
+      .select('id, data, squadra_id').eq('stagione_id', stagione.id).lte('data', oggiRoma).order('data')
     const allenIds = (allenamenti ?? []).map((a) => a.id)
     const allenByDate = {}
     for (const a of allenamenti ?? []) allenByDate[a.id] = a.data
@@ -80,7 +83,7 @@ export default async function StatistichePortierePage({ params }) {
     // Partite con gol_subiti (campo della tabella partite, non valutazioni_partita)
     const { data: par } = await supabase.from('partite')
       .select('id, data, tipo, gol_subiti, gol_fatti, avversario, casa')
-      .eq('stagione_id', stagione.id).lt('data', new Date().toISOString().slice(0, 10)).order('data')
+      .eq('stagione_id', stagione.id).lte('data', oggiRoma).order('data')
     partiteRows = par ?? []
     const partIds = partiteRows.map((p) => p.id)
     const partiteByID = {}

@@ -17,10 +17,7 @@ export default async function SchedaPortierePage({ params }) {
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
-  // Le tre letture seguenti sono indipendenti tra loro (girano tutte solo dopo
-  // il controllo di accesso sopra, quindi nessun rischio sull'eventuale
-  // scrittura di fallback dentro getStagioneAttiva).
-  const [{ data: piediVoci }, { stagione }, { data: portiere }] = await Promise.all([
+  const [{ data: piediVoci }, { stagione: selezionata, ownerId }, { data: portiere }] = await Promise.all([
     supabase.from('elenco_voci').select('valore').eq('elenco', 'piede').eq('attivo', true).order('ordine'),
     getStagioneAttiva(supabase, user?.id),
     supabase.from('portieri').select('*').eq('id', id).maybeSingle(),
@@ -28,16 +25,51 @@ export default async function SchedaPortierePage({ params }) {
   const piedi = (piediVoci ?? []).map((v) => v.valore)
   if (!portiere) notFound()
 
-  // Blocco categorie/iscrizione (solo se c'e' una stagione) e blocco attributi/tag
-  // (sempre) sono indipendenti l'uno dall'altro: prima giravano in due stadi
-  // sequenziali, ora in un solo Promise.all.
-  const [catIscRes, attributiBatch] = await Promise.all([
+  // ── Stagione della SCHEDA = quella in cui il portiere è ISCRITTO ───────────
+  // Un coach può avere più stagioni attive insieme (più società). La scheda NON
+  // deve seguire ciecamente la stagione selezionata in alto: se il portiere è di
+  // un'altra stagione, scriverci sopra creerebbe un'iscrizione fantasma in quella
+  // selezionata (upsert su portiere_id+stagione_id → INSERT). Regola:
+  //   1) se il portiere è iscritto nella stagione SELEZIONATA → usa quella;
+  //   2) altrimenti la stagione attiva più recente dove è davvero iscritto;
+  //   3) se non è iscritto in nessuna stagione attiva → usa la selezionata
+  //      (caso "nuova iscrizione" volontaria in questa stagione).
+  let stagione = null
+  let iscrizione = null
+  if (ownerId) {
+    const { data: stagioniAttive } = await supabase
+      .from('stagioni').select('*')
+      .eq('owner_id', ownerId).eq('attiva', true)
+      .order('created_at', { ascending: false })
+    const attive = stagioniAttive ?? []
+    const attiveIds = attive.map((s) => s.id)
+
+    let iscrizioniPortiere = []
+    if (attiveIds.length) {
+      const { data: iscr } = await supabase
+        .from('iscrizioni').select('id, squadra_id, numero_maglia, stagione_id')
+        .eq('portiere_id', id).in('stagione_id', attiveIds)
+      iscrizioniPortiere = iscr ?? []
+    }
+
+    const selId = selezionata?.id
+    if (selId && iscrizioniPortiere.some((i) => i.stagione_id === selId)) {
+      stagione = attive.find((s) => s.id === selId) ?? selezionata
+      iscrizione = iscrizioniPortiere.find((i) => i.stagione_id === selId) ?? null
+    } else if (iscrizioniPortiere.length) {
+      const s = attive.find((st) => iscrizioniPortiere.some((i) => i.stagione_id === st.id))
+      stagione = s ?? null
+      iscrizione = s ? (iscrizioniPortiere.find((i) => i.stagione_id === s.id) ?? null) : null
+    } else {
+      stagione = selezionata ?? null
+      iscrizione = null
+    }
+  }
+
+  // Categorie della stagione risolta + attributi/tag (indipendenti tra loro).
+  const [catRes, attributiBatch] = await Promise.all([
     stagione
-      ? Promise.all([
-          supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-          supabase.from('iscrizioni').select('id, squadra_id, numero_maglia')
-            .eq('stagione_id', stagione.id).eq('portiere_id', id).maybeSingle(),
-        ])
+      ? supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id)
       : Promise.resolve(null),
     Promise.all([
       supabase.from('attributi_definizioni').select('*').eq('attivo', true).order('ordine'),
@@ -48,14 +80,11 @@ export default async function SchedaPortierePage({ params }) {
   ])
 
   let categorie = []
-  let iscrizione = null
-  if (catIscRes) {
-    const [cat, isc] = catIscRes
-    categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
-    iscrizione = isc.data
+  if (catRes && catRes.data) {
+    categorie = catRes.data.map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
   }
 
-  // Infortunio aperto (senza data_fine) per l'iscrizione della stagione attiva.
+  // Infortunio aperto (senza data_fine) per l'iscrizione risolta.
   let infortunioAperto = null
   if (iscrizione?.id) {
     const { data: infA } = await supabase.from('infortuni')

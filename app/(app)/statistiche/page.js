@@ -26,13 +26,19 @@ export default async function StatistichePage() {
     )
   }
 
+  // "Oggi" nel fuso italiano (Europe/Rome), non in UTC: altrimenti dopo mezzanotte
+  // e prima delle 02:00 (ora legale) toISOString() darebbe ancora la data di ieri e
+  // le sedute di oggi/ieri sparirebbero dalle statistiche. .lte include anche oggi,
+  // così un allenamento fatto oggi conta subito (esclusi solo quelli futuri generati).
+  const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
+
   const [{ data: iscr }, { data: cats }, { data: allen }, { data: part }] = await Promise.all([
     supabase.from('iscrizioni')
       .select('portiere_id, squadra_id, numero_maglia, portieri(id, nome, cognome, foto_url)')
       .eq('stagione_id', stagione.id),
     supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-    supabase.from('allenamenti').select('id, squadra_id, data').eq('stagione_id', stagione.id).lt('data', new Date().toISOString().slice(0, 10)),
-    supabase.from('partite').select('id, squadra_id, gol_subiti, tipo').eq('stagione_id', stagione.id).lt('data', new Date().toISOString().slice(0, 10)),
+    supabase.from('allenamenti').select('id, squadra_id, data').eq('stagione_id', stagione.id).lte('data', oggiRoma),
+    supabase.from('partite').select('id, squadra_id, gol_subiti, tipo').eq('stagione_id', stagione.id).lte('data', oggiRoma),
   ])
 
   const allenIds = (allen ?? []).map((a) => a.id)

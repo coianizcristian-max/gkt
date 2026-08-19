@@ -62,8 +62,16 @@ export default async function StatistichePage() {
 
   const catNome = {}
   for (const r of cats ?? []) if (r.squadre) catNome[r.squadre.id] = r.squadre.nome
+  // Denominatore presenze = allenamenti EFFETTIVAMENTE SVOLTI/VALUTATI della categoria
+  // (quelli con almeno una valutazione salvata), non tutte le sedute generate a calendario.
+  // Così la lista coach coincide col tab del singolo portiere (es. 1/1, non 1/3 con 2 sedute
+  // solo generate dalla ricorrenza e mai valutate).
+  const allenValutatiSet = new Set((vAll ?? []).map((v) => v.allenamento_id))
   const totAllenByCat = {}
-  for (const a of allen ?? []) totAllenByCat[a.squadra_id] = (totAllenByCat[a.squadra_id] ?? 0) + 1
+  for (const a of allen ?? []) {
+    if (!allenValutatiSet.has(a.id)) continue
+    totAllenByCat[a.squadra_id] = (totAllenByCat[a.squadra_id] ?? 0) + 1
+  }
   const golSubitiByPartita = {}
   const tipoPartita = {}
   for (const p of part ?? []) { golSubitiByPartita[p.id] = p.gol_subiti; tipoPartita[p.id] = p.tipo }

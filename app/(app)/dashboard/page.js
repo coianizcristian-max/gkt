@@ -28,10 +28,14 @@ export default async function DashboardPage() {
 
   const { stagione } = await getStagioneAttiva(supabase, user.id)
 
-  const oggi = new Date()
-  const oggiStr = oggi.toISOString().slice(0, 10)
-  const tra7gg = new Date(oggi); tra7gg.setDate(tra7gg.getDate() + 7)
-  const tra7ggStr = tra7gg.toISOString().slice(0, 10)
+  // "Oggi" nel fuso italiano (Europe/Rome), NON in UTC: con toISOString() tra mezzanotte
+  // e le ~02:00 (ora legale) la data risultava ancora quella di ieri, e le sedute odierne
+  // non comparivano come "da valutare"/"prossime". È la radice del vecchio bug "tutto valutato".
+  const oggiStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
+  // +7 giorni sulla data (ancorati a mezzogiorno UTC per evitare problemi di confine giorno)
+  const tra7ggDate = new Date(oggiStr + 'T12:00:00Z')
+  tra7ggDate.setUTCDate(tra7ggDate.getUTCDate() + 7)
+  const tra7ggStr = tra7ggDate.toISOString().slice(0, 10)
 
   let daValutareAllenamenti = []
   let daValutarePartite = []

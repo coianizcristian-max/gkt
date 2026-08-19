@@ -399,10 +399,10 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                 <div className="cal-preview-stato">
                   {ev.nessuna_valutazione
                     ? <span style={{color:'var(--campo)'}}>✓ Nessuna valutazione prevista</span>
-                    : daVal
-                      ? <span style={{color:'var(--rosso)'}}>⚠ Da valutare</span>
-                      : passato
-                        ? <span style={{color:'var(--campo)'}}>✓ Valutato</span>
+                    : ev.valutato
+                      ? <span style={{color:'var(--campo)'}}>✓ Valutato</span>
+                      : daVal
+                        ? <span style={{color:'var(--rosso)'}}>⚠ Da valutare</span>
                         : <span style={{color:'var(--ink-soft)'}}>Programmato</span>}
                 </div>
                 {/* Obiettivi e consuntivo */}

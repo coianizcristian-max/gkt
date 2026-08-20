@@ -109,7 +109,13 @@ export default async function DashboardPage() {
       .slice(0, 8)
 
     // Prossimo allenamento futuro (incluso oggi)
-    prossimoAllenamento = allenamenti.find((a) => a.data >= oggiStr) ?? null
+    // "Prossimo allenamento" = la prima seduta non ancora iniziata, considerando anche
+    // l'ORA (non solo la data): altrimenti a sera propone ancora una seduta di oggi mattina
+    // già svolta. Ora corrente nel fuso italiano.
+    const oraRomaHM = new Date().toLocaleTimeString('it-IT', { timeZone: 'Europe/Rome', hour12: false }).slice(0, 5)
+    prossimoAllenamento = allenamenti
+      .filter((a) => a.data > oggiStr || (a.data === oggiStr && (a.ora_inizio ?? '99:99').slice(0, 5) > oraRomaHM))
+      .sort((a, b) => a.data.localeCompare(b.data) || (a.ora_inizio ?? '').localeCompare(b.ora_inizio ?? ''))[0] ?? null
 
     // Partite nei prossimi 7 giorni
     partiteImminenti = partite

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { SelettoreCollegamenti, TrendObiettivo } from '@/app/components/ObiettivoCollegamenti'
+import ObiettivoMisurazioni from '@/app/components/ObiettivoMisurazioni'
 
 const STATI = ['aperto', 'raggiunto', 'sospeso']
 
@@ -221,6 +222,7 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
         />
       )}
       {isEdit && <SottoObiettivi obiettivoId={obiettivo.id} sotto={sotto} onChanged={onSaved} />}
+      {isEdit && <ObiettivoMisurazioni obiettivoId={obiettivo.id} eserciziTutti={eserciziTutti} />}
       {!isEdit && <p className="sub-intro">Salva l&rsquo;obiettivo per aggiungere i sotto-obiettivi.</p>}
     </div>
   )

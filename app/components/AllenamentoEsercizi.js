@@ -365,26 +365,27 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
     ? stimaMinuti >= 60 ? `${Math.floor(stimaMinuti / 60)}h ${Math.round(stimaMinuti % 60)}min` : `${Math.round(stimaMinuti)} min`
     : null
 
-  async function esportaPdf() {
+  function esportaPdf() {
+    // Download robusto cross-device: apriamo direttamente l'endpoint, che risponde
+    // con `Content-Disposition: attachment`. Il browser scarica il file nativamente,
+    // senza il giro blob + URL.createObjectURL che su Android (certe versioni di
+    // Chrome / Android System WebView) a volte non salva alcun file. Funziona anche
+    // dentro la PWA installata e su desktop; essendo same-origin la richiesta porta
+    // i cookie di sessione, quindi l'auth passa regolarmente.
     setPdfBusy(true)
     try {
-      const res = await fetch(`/api/esercizi-pdf?allenamento=${allenamentoId}`)
-      if (!res.ok) throw new Error(await res.text())
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url
-      a.download = `allenamento-esercizi.pdf`
+      a.href = `/api/esercizi-pdf?allenamento=${allenamentoId}`
+      a.download = 'allenamento-esercizi.pdf'
       a.rel = 'noopener'
-      // Su iOS Safari l'anchor deve stare nel DOM perché .click() funzioni.
       document.body.appendChild(a)
       a.click()
       a.remove()
-      // NON revocare subito: su mobile il download potrebbe non aver ancora
-      // finito di leggere il blob e il file uscirebbe troncato.
-      setTimeout(() => URL.revokeObjectURL(url), 60000)
-    } catch (err) { alert('Errore generazione PDF: ' + err.message) }
-    setPdfBusy(false)
+    } catch (err) {
+      alert('Errore apertura PDF: ' + err.message)
+    }
+    // Feedback breve: da qui il download prosegue nativamente nel browser.
+    setTimeout(() => setPdfBusy(false), 1500)
   }
 
   if (ordine.length === 0) {

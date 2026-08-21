@@ -14,9 +14,17 @@ const DIREZIONI = [
   { v: 'basso', label: 'più basso è meglio' },
 ]
 
+// ─── Stili inline (niente classi con bordi/ombre annidate) ────────────────────
+const S = {
+  box:     { border: '1px solid var(--linea)', borderRadius: 'var(--r-sm)', background: 'var(--bianco)', padding: 12, marginBottom: 10 },
+  ctrl:    { width: '100%', boxSizing: 'border-box', padding: '8px 10px', border: '1px solid var(--linea)', borderRadius: 'var(--r-sm)', font: 'inherit', fontSize: 14, background: 'var(--bianco)' },
+  field:   { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'var(--ink-soft)', flex: '1 1 120px', minWidth: 0 },
+  rowWrap: { display: 'flex', flexWrap: 'wrap', gap: 10 },
+  btnRow:  { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' },
+}
+
 const oggiRoma = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
 
-// Formatta il valore di una rilevazione in base al tipo di test
 function fmtValore(test, r) {
   if (test.tipo_misura === 'su_totale') {
     const tot = r.tentativi ?? 0
@@ -27,7 +35,6 @@ function fmtValore(test, r) {
   return `${r.valore ?? '—'}${test.unita ? ' ' + test.unita : ''}`
 }
 
-// Data della prossima misurazione prevista (ultima + cadenza); null se non applicabile
 function prossimaMisura(test, ril) {
   if (!test.cadenza_giorni || ril.length === 0) return null
   const d = new Date(ril[0].data + 'T12:00:00Z') // ril ordinate desc per data
@@ -92,11 +99,10 @@ export default function ObiettivoMisurazioni({ obiettivoId, eserciziTutti = [] }
   )
 }
 
-// ─── Blocco di un singolo test (config + storico + aggiungi rilevazione) ──────
+// ─── Blocco di un singolo test ───────────────────────────────────────────────
 function TestBlocco({ test, ril, onChanged }) {
   const [aggiungo, setAggiungo] = useState(false)
   const tipoLabel = TIPI.find((t) => t.v === test.tipo_misura)?.label ?? test.tipo_misura
-
   const prossima = prossimaMisura(test, ril)
   const scaduta = prossima && prossima <= oggiRoma()
 
@@ -108,11 +114,11 @@ function TestBlocco({ test, ril, onChanged }) {
   }
 
   return (
-    <div className="obiettivo-card" style={{ marginBottom: 10 }}>
+    <div style={{ ...S.box, borderLeft: '3px solid var(--azzurro)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div style={{ fontWeight: 700 }}>{test.nome}</div>
-          <div className="sub-intro" style={{ margin: 0 }}>
+          <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
             {tipoLabel}
             {test.cadenza_giorni ? ` · ogni ${test.cadenza_giorni} gg` : ''}
             {test.target != null ? ` · target ${test.target}${test.unita ? ' ' + test.unita : ''}` : ''}
@@ -128,7 +134,7 @@ function TestBlocco({ test, ril, onChanged }) {
       )}
 
       {ril.length > 0 && (
-        <div style={{ marginTop: 8 }}>
+        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {ril.map((r) => (
             <RilevazioneRiga key={r.id} test={test} r={r} onChanged={onChanged} />
           ))}
@@ -136,21 +142,15 @@ function TestBlocco({ test, ril, onChanged }) {
       )}
 
       {aggiungo ? (
-        <NuovaRilevazione
-          test={test}
-          onDone={() => { setAggiungo(false); onChanged() }}
-          onCancel={() => setAggiungo(false)}
-        />
+        <NuovaRilevazione test={test} onDone={() => { setAggiungo(false); onChanged() }} onCancel={() => setAggiungo(false)} />
       ) : (
-        <button className="btn-mini" type="button" style={{ marginTop: 8 }} onClick={() => setAggiungo(true)}>
-          + Aggiungi rilevazione
-        </button>
+        <button className="btn-mini" type="button" style={{ marginTop: 10 }} onClick={() => setAggiungo(true)}>+ Aggiungi rilevazione</button>
       )}
     </div>
   )
 }
 
-// ─── Riga di una rilevazione già registrata ──────────────────────────────────
+// ─── Riga di una rilevazione registrata ──────────────────────────────────────
 function RilevazioneRiga({ test, r, onChanged }) {
   async function elimina() {
     const supabase = createClient()
@@ -158,10 +158,10 @@ function RilevazioneRiga({ test, r, onChanged }) {
     onChanged()
   }
   return (
-    <div className="lista-riga" style={{ alignItems: 'center' }}>
-      <span style={{ minWidth: 92, fontVariantNumeric: 'tabular-nums' }}>{r.data}</span>
-      <span style={{ flex: 1, fontWeight: 600 }}>{fmtValore(test, r)}</span>
-      {r.note && <span className="sub-intro" style={{ margin: 0, flex: 2 }}>{r.note}</span>}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px', borderTop: '1px solid var(--linea)' }}>
+      <span style={{ minWidth: 88, fontSize: 13, fontVariantNumeric: 'tabular-nums', color: 'var(--ink-soft)' }}>{r.data}</span>
+      <span style={{ flex: 1, fontWeight: 700, minWidth: 0 }}>{fmtValore(test, r)}</span>
+      {r.note && <span style={{ flex: 2, fontSize: 12, color: 'var(--ink-soft)', minWidth: 0 }}>{r.note}</span>}
       <button className="btn-mini btn-del" type="button" onClick={elimina}>Elimina</button>
     </div>
   )
@@ -194,22 +194,23 @@ function NuovaRilevazione({ test, onDone, onCancel }) {
   }
 
   return (
-    <div className="lista-riga" style={{ flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-      <label className="lista-ord">Data<input type="date" value={data} onChange={(e) => setData(e.target.value)} /></label>
-      {suTotale ? (
-        <>
-          <label className="lista-ord">Riusciti<input type="number" style={{ width: 70 }} value={riusciti} onChange={(e) => setRiusciti(e.target.value)} /></label>
-          <label className="lista-ord">Tentativi<input type="number" style={{ width: 70 }} value={tentativi} onChange={(e) => setTentativi(e.target.value)} /></label>
-        </>
-      ) : (
-        <label className="lista-ord">
-          Valore{test.unita ? ` (${test.unita})` : ''}
-          <input type="number" step="any" style={{ width: 90 }} value={valore} onChange={(e) => setValore(e.target.value)} />
-        </label>
-      )}
-      <input className="lista-nome" style={{ flex: 1, minWidth: 120 }} placeholder="Note (facoltative)" value={note} onChange={(e) => setNote(e.target.value)} />
-      <button className="btn-mini" type="button" onClick={salva} disabled={busy}>Salva</button>
-      <button className="btn-mini btn-del" type="button" onClick={onCancel}>Annulla</button>
+    <div style={{ ...S.box, marginTop: 10, marginBottom: 0 }}>
+      <div style={S.rowWrap}>
+        <label style={S.field}>Data<input style={S.ctrl} type="date" value={data} onChange={(e) => setData(e.target.value)} /></label>
+        {suTotale ? (
+          <>
+            <label style={S.field}>Riusciti<input style={S.ctrl} type="number" value={riusciti} onChange={(e) => setRiusciti(e.target.value)} /></label>
+            <label style={S.field}>Tentativi<input style={S.ctrl} type="number" value={tentativi} onChange={(e) => setTentativi(e.target.value)} /></label>
+          </>
+        ) : (
+          <label style={S.field}>Valore{test.unita ? ` (${test.unita})` : ''}<input style={S.ctrl} type="number" step="any" value={valore} onChange={(e) => setValore(e.target.value)} /></label>
+        )}
+      </div>
+      <label style={{ ...S.field, marginTop: 8 }}>Note (facoltative)<input style={S.ctrl} value={note} onChange={(e) => setNote(e.target.value)} /></label>
+      <div style={S.btnRow}>
+        <button className="btn-mini" type="button" onClick={salva} disabled={busy}>Salva rilevazione</button>
+        <button className="btn-mini btn-del" type="button" onClick={onCancel}>Annulla</button>
+      </div>
     </div>
   )
 }
@@ -246,36 +247,39 @@ function NuovoTest({ obiettivoId, eserciziTutti = [], ordine, onDone, onCancel }
   }
 
   return (
-    <div className="obiettivo-card" style={{ marginTop: 8 }}>
-      <div className="lista-riga" style={{ flexWrap: 'wrap', gap: 8 }}>
-        <input className="lista-nome" style={{ flex: 1, minWidth: 160 }} placeholder="Nome test (es. Salti ostacoli di fila)" value={nome} onChange={(e) => setNome(e.target.value)} />
-        <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
+    <div style={{ ...S.box, borderLeft: '3px solid var(--azzurro)' }}>
+      <label style={{ ...S.field, marginBottom: 8 }}>
+        Nome del test
+        <input style={S.ctrl} placeholder="es. Salti ostacoli di fila" value={nome} onChange={(e) => setNome(e.target.value)} />
+      </label>
+      <label style={{ ...S.field, marginBottom: 8 }}>
+        Tipo di misura
+        <select style={S.ctrl} value={tipo} onChange={(e) => setTipo(e.target.value)}>
           {TIPI.map((t) => <option key={t.v} value={t.v}>{t.label}</option>)}
         </select>
-      </div>
-      <div className="lista-riga" style={{ flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+      </label>
+      <div style={S.rowWrap}>
         {tipo !== 'su_totale' && (
-          <label className="lista-ord">Unità<input style={{ width: 80 }} placeholder="cm, sec…" value={unita} onChange={(e) => setUnita(e.target.value)} /></label>
+          <label style={S.field}>Unità<input style={S.ctrl} placeholder="cm, sec…" value={unita} onChange={(e) => setUnita(e.target.value)} /></label>
         )}
-        <label className="lista-ord">Migliore
-          <select value={direzione} onChange={(e) => setDirezione(e.target.value)}>
+        <label style={S.field}>Migliore
+          <select style={S.ctrl} value={direzione} onChange={(e) => setDirezione(e.target.value)}>
             {DIREZIONI.map((d) => <option key={d.v} value={d.v}>{d.label}</option>)}
           </select>
         </label>
-        <label className="lista-ord">Ogni (giorni)<input type="number" style={{ width: 70 }} placeholder="14" value={cadenza} onChange={(e) => setCadenza(e.target.value)} /></label>
-        <label className="lista-ord">Target<input type="number" step="any" style={{ width: 80 }} value={target} onChange={(e) => setTarget(e.target.value)} /></label>
+        <label style={S.field}>Ogni (giorni)<input style={S.ctrl} type="number" placeholder="14" value={cadenza} onChange={(e) => setCadenza(e.target.value)} /></label>
+        <label style={S.field}>Target<input style={S.ctrl} type="number" step="any" value={target} onChange={(e) => setTarget(e.target.value)} /></label>
       </div>
       {eserciziTutti.length > 0 && (
-        <div className="lista-riga" style={{ marginTop: 6 }}>
-          <label className="lista-ord" style={{ flex: 1 }}>Esercizio collegato (facoltativo)
-            <select value={esercizioId} onChange={(e) => setEsercizioId(e.target.value)}>
-              <option value="">— nessuno —</option>
-              {eserciziTutti.map((es) => <option key={es.id} value={es.id}>{es.nome ?? es.titolo ?? es.id}</option>)}
-            </select>
-          </label>
-        </div>
+        <label style={{ ...S.field, marginTop: 8 }}>
+          Esercizio collegato (facoltativo)
+          <select style={S.ctrl} value={esercizioId} onChange={(e) => setEsercizioId(e.target.value)}>
+            <option value="">— nessuno —</option>
+            {eserciziTutti.map((es) => <option key={es.id} value={es.id}>{es.nome ?? es.titolo ?? es.id}</option>)}
+          </select>
+        </label>
       )}
-      <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+      <div style={S.btnRow}>
         <button className="btn-mini" type="button" onClick={salva} disabled={busy}>Crea test</button>
         <button className="btn-mini btn-del" type="button" onClick={onCancel}>Annulla</button>
       </div>

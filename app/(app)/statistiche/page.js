@@ -49,7 +49,7 @@ export default async function StatistichePage() {
       ? supabase.from('valutazioni').select('portiere_id, presente, voto, allenamento_id').in('allenamento_id', allenIds)
       : Promise.resolve({ data: [] }),
     partIds.length
-      ? supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, partita_id').in('partita_id', partIds)
+      ? supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, gol_subiti, partita_id').in('partita_id', partIds)
       : Promise.resolve({ data: [] }),
     allenIds.length
       ? supabase.from('valutazioni')
@@ -98,7 +98,7 @@ export default async function StatistichePage() {
     const vpCamp = vp.filter((x) => x.presente && tipoPartita[x.partita_id] !== 'amichevole')
     const votiP = vpCamp.filter((x) => x.voto != null).map((x) => Number(x.voto))
     const mediaP = votiP.length ? votiP.reduce((s, x) => s + x, 0) / votiP.length : null
-    const cleanSheet = vpCamp.filter((x) => golSubitiByPartita[x.partita_id] === 0).length
+    const cleanSheet = vpCamp.filter((x) => (x.gol_subiti ?? golSubitiByPartita[x.partita_id]) === 0).length
     const punti = vp.reduce((s, x) => s + (x.punti != null ? Number(x.punti) : 0), 0)
     const nPartite = vpCamp.length
     const persi = persiByPortiere[p.id] ?? 0

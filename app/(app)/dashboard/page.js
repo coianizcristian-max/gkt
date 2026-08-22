@@ -41,6 +41,7 @@ export default async function DashboardPage() {
   let daValutarePartite = []
   let prossimoAllenamento = null
   let partiteImminenti = []
+  let misurazioniDaFare = []
   let coupon = null
 
   // ── Stato configurazione iniziale (per la checklist di onboarding) ──
@@ -176,6 +177,56 @@ export default async function DashboardPage() {
       portieriAttenzione = portieriList
         .filter((p) => motiviPerPortiere[p.id]?.length > 0)
         .map((p) => ({ ...p, motivi: motiviPerPortiere[p.id] }))
+    }
+
+    // ── Misurazioni oggettive da fare (test con cadenza, prossima <= oggi) ──
+    if (portiereIds.length) {
+      const { data: obMis } = await supabase
+        .from('obiettivi').select('id, titolo, portiere_id')
+        .in('portiere_id', portiereIds).eq('stagione_id', stagione.id)
+      const obById = {}
+      for (const o of obMis ?? []) obById[o.id] = o
+      const obIds = (obMis ?? []).map((o) => o.id)
+      if (obIds.length) {
+        const { data: testRows } = await supabase
+          .from('obiettivo_test')
+          .select('id, nome, unita, tipo_misura, cadenza_giorni, data_inizio, obiettivo_id')
+          .not('cadenza_giorni', 'is', null).in('obiettivo_id', obIds)
+        const tests = testRows ?? []
+        if (tests.length) {
+          const tIds = tests.map((t) => t.id)
+          const { data: rilRows } = await supabase
+            .from('obiettivo_rilevazioni').select('test_id, data, valore, riusciti, tentativi')
+            .in('test_id', tIds).order('data', { ascending: false })
+          const ultimaByTest = {}
+          for (const r of rilRows ?? []) if (!ultimaByTest[r.test_id]) ultimaByTest[r.test_id] = r
+          const nomePortiere = {}
+          for (const p of portieriList) nomePortiere[p.id] = `${p.nome ?? ''} ${p.cognome ?? ''}`.trim()
+          misurazioniDaFare = tests.map((t) => {
+            const ob = obById[t.obiettivo_id]
+            if (!ob) return null
+            const ult = ultimaByTest[t.id]
+            const base = ult?.data ?? t.data_inizio
+            if (!base) return null
+            const d = new Date(base + 'T12:00:00Z')
+            d.setUTCDate(d.getUTCDate() + t.cadenza_giorni)
+            const prossima = d.toISOString().slice(0, 10)
+            let ultimoValore = null
+            if (ult) {
+              if (t.tipo_misura === 'su_totale') {
+                const tot = ult.tentativi ?? 0
+                const ok = ult.riusciti ?? ult.valore ?? 0
+                ultimoValore = `${ok}/${tot}${tot ? ` (${Math.round((ok / tot) * 100)}%)` : ''}`
+              } else {
+                ultimoValore = `${ult.valore ?? '—'}${t.unita ? ' ' + t.unita : ''}`
+              }
+            }
+            return { testId: t.id, testNome: t.nome, obiettivo: ob.titolo ?? '', portiereId: ob.portiere_id, portiere: nomePortiere[ob.portiere_id] ?? '', prossima, ultimoValore }
+          }).filter((x) => x && x.prossima <= oggiStr)
+            .sort((a, b) => a.prossima.localeCompare(b.prossima))
+            .slice(0, 10)
+        }
+      }
     }
   }
 
@@ -366,6 +417,25 @@ export default async function DashboardPage() {
                       {m}
                     </span>
                   ))}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {misurazioniDaFare.length > 0 && (
+          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--azzurro)', maxWidth: 'none' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--azzurro)' }}>
+              📏 {misurazioniDaFare.length} {misurazioniDaFare.length === 1 ? 'misurazione da fare' : 'misurazioni da fare'}
+            </h3>
+            {misurazioniDaFare.map((m) => (
+              <Link key={m.testId} href={`/portieri/${m.portiereId}/obiettivi`} className="dv-item" style={{ display: 'block' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <span style={{ fontWeight: 600 }}>📏 {m.testNome}</span>
+                  <span className="dv-data">{fmtData(m.prossima)}</span>
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>
+                  {m.portiere} · obiettivo: {m.obiettivo}{m.ultimoValore ? ` · ultima misura: ${m.ultimoValore}` : ''}
                 </div>
               </Link>
             ))}

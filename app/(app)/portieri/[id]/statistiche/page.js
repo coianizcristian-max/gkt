@@ -97,7 +97,7 @@ export default async function StatistichePortierePage({ params }) {
         : Promise.resolve({ data: [] }),
       partIds.length
         ? supabase.from('valutazioni_partita')
-            .select('partita_id, presente, voto, punti')
+            .select('partita_id, presente, voto, punti, gol_subiti')
             .eq('portiere_id', id).in('partita_id', partIds)
         : Promise.resolve({ data: [] }),
       supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
@@ -114,11 +114,13 @@ export default async function StatistichePortierePage({ params }) {
     }
     const _inInfortunio = (d) => !!d && _infortuni.some((w) => w.data_inizio <= d && (w.data_fine == null || w.data_fine >= d))
     vAll = vAll.map((v) => ({ ...v, infortunato: _inInfortunio(v.data) }))
-    // Unisce valutazioni_partita con i dati di partite (gol_subiti, tipo, data ecc)
-    vPar = (vp.data ?? []).map((v) => ({
-      ...v,
-      ...partiteByID[v.partita_id],
-    }))
+    // Unisce valutazioni_partita con i dati di partite (tipo, data ecc).
+    // gol_subiti: usa il valore PER PORTIERE se presente, altrimenti il totale
+    // squadra della partita (retrocompatibilità con le partite già inserite).
+    vPar = (vp.data ?? []).map((v) => {
+      const par = partiteByID[v.partita_id] ?? {}
+      return { ...v, ...par, gol_subiti: v.gol_subiti ?? par.gol_subiti ?? null }
+    })
     parametri = pm.data ?? []
 
     const { data: vAllFull } = await supabase.from('valutazioni')

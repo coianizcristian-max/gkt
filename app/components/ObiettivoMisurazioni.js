@@ -36,8 +36,10 @@ function fmtValore(test, r) {
 }
 
 function prossimaMisura(test, ril) {
-  if (!test.cadenza_giorni || ril.length === 0) return null
-  const d = new Date(ril[0].data + 'T12:00:00Z') // ril ordinate desc per data
+  if (!test.cadenza_giorni) return null
+  const base = ril.length ? ril[0].data : test.data_inizio // ril ordinate desc per data
+  if (!base) return null
+  const d = new Date(base + 'T12:00:00Z')
   d.setUTCDate(d.getUTCDate() + test.cadenza_giorni)
   return d.toISOString().slice(0, 10)
 }
@@ -219,6 +221,7 @@ function NuovaRilevazione({ test, onDone, onCancel }) {
 function NuovoTest({ obiettivoId, eserciziTutti = [], ordine, onDone, onCancel }) {
   const [nome, setNome] = useState('')
   const [tipo, setTipo] = useState('valore')
+  const [dataInizio, setDataInizio] = useState(oggiRoma())
   const [unita, setUnita] = useState('')
   const [direzione, setDirezione] = useState('alto')
   const [cadenza, setCadenza] = useState('')
@@ -235,6 +238,7 @@ function NuovoTest({ obiettivoId, eserciziTutti = [], ordine, onDone, onCancel }
       tipo_misura: tipo,
       unita: tipo === 'su_totale' ? null : (unita.trim() || null),
       direzione,
+      data_inizio: dataInizio || null,
       cadenza_giorni: cadenza === '' ? null : Number(cadenza),
       target: target === '' ? null : Number(target),
       esercizio_id: esercizioId || null,
@@ -268,6 +272,7 @@ function NuovoTest({ obiettivoId, eserciziTutti = [], ordine, onDone, onCancel }
           </select>
         </label>
         <label style={S.field}>Ogni (giorni)<input style={S.ctrl} type="number" placeholder="14" value={cadenza} onChange={(e) => setCadenza(e.target.value)} /></label>
+        <label style={S.field}>Inizio dal<input style={S.ctrl} type="date" value={dataInizio} onChange={(e) => setDataInizio(e.target.value)} /></label>
         <label style={S.field}>Target<input style={S.ctrl} type="number" step="any" value={target} onChange={(e) => setTarget(e.target.value)} /></label>
       </div>
       {eserciziTutti.length > 0 && (

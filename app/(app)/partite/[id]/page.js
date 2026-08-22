@@ -31,10 +31,14 @@ export default async function PartitaPage({ params }) {
     const [{ data: isc }, { data: miaVal }] = await Promise.all([
       supabase.from('iscrizioni')
         .select('squadra_id').eq('stagione_id', partita.stagione_id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
-      supabase.from('valutazioni_partita').select('presente, voto, punti, note')
+      supabase.from('valutazioni_partita').select('presente, voto, punti, note, gol_subiti')
         .eq('partita_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
     ])
     if (!isc || isc.squadra_id !== partita.squadra_id) notFound()
+
+    // Gol subiti del portiere: il suo valore se compilato, altrimenti il totale
+    // squadra (fallback per le partite già inserite senza dato per-portiere).
+    const mieiGol = miaVal?.gol_subiti ?? partita.gol_subiti ?? null
 
     return (
       <>
@@ -60,6 +64,7 @@ export default async function PartitaPage({ params }) {
             <div className="scheda">
               {miaVal.voto != null && <div className="stat-line"><span>Voto</span><b>{miaVal.voto}</b></div>}
               {miaVal.punti != null && <div className="stat-line"><span>Punti portati</span><b>{miaVal.punti}</b></div>}
+              {mieiGol != null && <div className="stat-line"><span>Gol subiti</span><b>{mieiGol}{mieiGol === 0 ? ' · porta inviolata' : ''}</b></div>}
               {miaVal.note && <p style={{ marginTop: 10, fontSize: 13, color: 'var(--ink-soft)' }}>{miaVal.note}</p>}
             </div>
           )}

@@ -16,6 +16,7 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, val
         presente: v ? v.presente : false,
         voto: v?.voto ?? '',
         punti: v?.punti ?? '',
+        gol_subiti: v?.gol_subiti ?? '',
         note: v?.note ?? '',
       }
     })
@@ -26,6 +27,12 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, val
   const setRow = (i, patch) => { setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r))); setDone(false) }
   const num = (v) => (v === '' || v == null ? null : Number(v))
 
+  // Spia (non bloccante): la somma dei gol subiti dei portieri convocati deve
+  // coincidere col totale squadra registrato sulla partita.
+  const sommaGolPortieri = rows.reduce((s, r) => s + (r.presente && r.gol_subiti !== '' && r.gol_subiti != null ? Number(r.gol_subiti) : 0), 0)
+  const qualcheGolInserito = rows.some((r) => r.presente && r.gol_subiti !== '' && r.gol_subiti != null)
+  const golNonCombaciano = golSubiti != null && qualcheGolInserito && sommaGolPortieri !== golSubiti
+
   async function salvaTutto() {
     setSaving(true); setError(''); setDone(false)
     const supabase = createClient()
@@ -33,7 +40,7 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, val
       for (const r of rows) {
         const { error } = await supabase.from('valutazioni_partita').upsert({
           partita_id: partitaId, portiere_id: r.portiere_id,
-          presente: r.presente, voto: num(r.voto), punti: num(r.punti), note: r.note || null,
+          presente: r.presente, voto: num(r.voto), punti: num(r.punti), gol_subiti: num(r.gol_subiti), note: r.note || null,
         }, { onConflict: 'partita_id,portiere_id' })
         if (error) throw error
       }
@@ -48,6 +55,11 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, val
       <div className="val-nessuno">
         {cleanSheet ? 'Clean sheet: porta inviolata (0 gol subiti)' : `Gol subiti: ${golSubiti ?? '\u2014'}`}
       </div>
+      {golNonCombaciano && (
+        <div className="val-nessuno" style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', fontWeight: 600 }}>
+          {'\u26A0'} La somma dei gol subiti dei portieri ({sommaGolPortieri}) non coincide con il totale squadra ({golSubiti}).
+        </div>
+      )}
       {rows.map((r, i) => (
         <div className={`val-card ${r.presente ? '' : 'assente'}`} key={r.portiere_id}>
           <div className="val-head">
@@ -75,6 +87,10 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, val
                   <option value="">&mdash;</option>
                   {puntiOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
+              </div>
+              <div className="val-par">
+                <label>Gol subiti</label>
+                <input type="number" min="0" value={r.gol_subiti} onChange={(e) => setRow(i, { gol_subiti: e.target.value })} />
               </div>
               <div className="field"><label>Note</label>
                 <textarea rows="2" value={r.note} onChange={(e) => setRow(i, { note: e.target.value })} /></div>

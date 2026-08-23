@@ -194,17 +194,27 @@ export default async function StatistichePortierePage({ params }) {
 
   // ── Calcoli partite ──────────────────────────────────────────────────────
   // presente=true significa che il portiere ha giocato (era in campo)
-  const parCamp = vPar.filter((v) => v.tipo !== 'amichevole' && v.tipo !== 'torneo' && v.presente)
+  // Campionato ora ESCLUDE la coppa (prima le sommava insieme): tre gruppi distinti.
+  const parCamp = vPar.filter((v) => v.tipo !== 'amichevole' && v.tipo !== 'torneo' && v.tipo !== 'coppa' && v.presente)
   const parCoppa = vPar.filter((v) => v.tipo === 'coppa' && v.presente)
   const parAm = vPar.filter((v) => v.tipo === 'amichevole' && v.presente)
   const mediaVotiPar = (arr) => {
     const vv = arr.filter((v) => v.voto != null).map((v) => Number(v.voto))
     return vv.length ? vv.reduce((s, x) => s + x, 0) / vv.length : null
   }
-  // gol_subiti viene da partiteByID[partita_id].gol_subiti (tabella partite)
-  const cleanSheet = parCamp.filter((v) => v.gol_subiti === 0).length
-  const cleanSheetCoppa = parCoppa.filter((v) => v.gol_subiti === 0).length
-  const puntiTot = vPar.reduce((s, v) => s + (v.punti != null ? Number(v.punti) : 0), 0)
+  // Gol subiti per gruppo (gol_subiti è già per-portiere, con fallback al totale squadra).
+  const golStats = (arr) => {
+    const conGol = arr.filter((v) => v.gol_subiti != null)
+    const tot = conGol.reduce((s, v) => s + Number(v.gol_subiti), 0)
+    return { tot, media: conGol.length ? tot / conGol.length : null, cs: conGol.filter((v) => Number(v.gol_subiti) === 0).length }
+  }
+  const gsCamp = golStats(parCamp)
+  const gsCoppa = golStats(parCoppa)
+  const gsAm = golStats(parAm)
+  const puntiGruppo = (arr) => arr.reduce((s, v) => s + (v.punti != null ? Number(v.punti) : 0), 0)
+  const cleanSheet = gsCamp.cs
+  const cleanSheetCoppa = gsCoppa.cs
+  const puntiTot = puntiGruppo(parCamp)
 
   // Per caratteristica
   const perParametro = {}
@@ -376,17 +386,28 @@ export default async function StatistichePortierePage({ params }) {
               <h4 style={{ margin: '0 0 8px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-soft)' }}>Campionato</h4>
               <div className="stat-line"><span>Partite giocate</span><b>{parCamp.length}</b></div>
               <div className="stat-line"><span>Media voto</span><b style={{ color: 'var(--azzurro)' }}>{fmt(mediaVotiPar(parCamp))}</b></div>
-              <div className="stat-line"><span>Clean sheet</span><b style={{ color: 'var(--campo)' }}>{cleanSheet}</b></div>
-              <div className="stat-line"><span>Punti totali</span><b>{fmt(puntiTot, 0)}</b></div>
+              <div className="stat-line"><span>Gol subiti</span><b>{gsCamp.tot}</b></div>
+              <div className="stat-line"><span>Gol subiti / partita</span><b>{fmt(gsCamp.media, 2)}</b></div>
+              <div className="stat-line"><span>Clean sheet</span><b style={{ color: 'var(--campo)' }}>{gsCamp.cs}</b></div>
+              <div className="stat-line"><span>Punti totali</span><b>{fmt(puntiGruppo(parCamp), 0)}</b></div>
             </div>
             <div className="stat-block">
               <h4 style={{ margin: '0 0 8px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-soft)' }}>Coppa</h4>
               <div className="stat-line"><span>Partite giocate</span><b>{parCoppa.length}</b></div>
-              <div className="stat-line"><span>Media voto</span><b>{fmt(mediaVotiPar(parCoppa))}</b></div>
-              <div className="stat-line"><span>Clean sheet</span><b style={{ color: 'var(--campo)' }}>{cleanSheetCoppa}</b></div>
-              <h4 style={{ margin: '12px 0 8px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-soft)' }}>Amichevoli</h4>
+              <div className="stat-line"><span>Media voto</span><b style={{ color: 'var(--azzurro)' }}>{fmt(mediaVotiPar(parCoppa))}</b></div>
+              <div className="stat-line"><span>Gol subiti</span><b>{gsCoppa.tot}</b></div>
+              <div className="stat-line"><span>Gol subiti / partita</span><b>{fmt(gsCoppa.media, 2)}</b></div>
+              <div className="stat-line"><span>Clean sheet</span><b style={{ color: 'var(--campo)' }}>{gsCoppa.cs}</b></div>
+              <div className="stat-line"><span>Punti totali</span><b>{fmt(puntiGruppo(parCoppa), 0)}</b></div>
+            </div>
+            <div className="stat-block">
+              <h4 style={{ margin: '0 0 8px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--ink-soft)' }}>Amichevoli</h4>
               <div className="stat-line"><span>Partite giocate</span><b>{parAm.length}</b></div>
-              <div className="stat-line"><span>Media voto</span><b>{fmt(mediaVotiPar(parAm))}</b></div>
+              <div className="stat-line"><span>Media voto</span><b style={{ color: 'var(--azzurro)' }}>{fmt(mediaVotiPar(parAm))}</b></div>
+              <div className="stat-line"><span>Gol subiti</span><b>{gsAm.tot}</b></div>
+              <div className="stat-line"><span>Gol subiti / partita</span><b>{fmt(gsAm.media, 2)}</b></div>
+              <div className="stat-line"><span>Clean sheet</span><b style={{ color: 'var(--campo)' }}>{gsAm.cs}</b></div>
+              <div className="stat-line"><span>Punti totali</span><b>{fmt(puntiGruppo(parAm), 0)}</b></div>
             </div>
           </div>
         </div>

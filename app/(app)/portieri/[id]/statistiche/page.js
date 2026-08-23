@@ -7,6 +7,7 @@ import IndiceCrescita from '@/app/components/IndiceCrescita'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { calcolaIndiceCrescita } from '@/lib/indiceCrescita'
 import { getStagioneAttiva } from '@/lib/tenant'
+import ConfrontoPortieri from '@/app/components/ConfrontoPortieri'
 
 export const dynamic = 'force-dynamic'
 
@@ -309,6 +310,7 @@ export default async function StatistichePortierePage({ params }) {
       </div>
       <div className="content">
         {navLinks}
+        {soloPortiere && <ConfrontoPortieri stagioneId={stagione.id} titolo="Confronto squadra" />}
 
         {/* KPI */}
         <div className="stat-kpi-grid">

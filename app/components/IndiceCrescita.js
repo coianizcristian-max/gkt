@@ -1,7 +1,7 @@
 import { interpretaIndice } from '@/lib/indiceCrescita'
 
-export default function IndiceCrescita({ score, dettagli }) {
-  const info = interpretaIndice(score)
+export default function IndiceCrescita({ score, dettagli, provvisorio = false }) {
+  const info = interpretaIndice(score, provvisorio)
   const pct = score ?? 0
   const circonferenza = 2 * Math.PI * 42
   const offset = circonferenza - (pct / 100) * circonferenza
@@ -26,6 +26,7 @@ export default function IndiceCrescita({ score, dettagli }) {
         </div>
         <div style={{ flex: 1, minWidth: 180 }}>
           <div style={{ fontWeight: 700, fontSize: 15, color: info.colore, marginBottom: 8 }}>{info.label}</div>
+          {provvisorio && <div style={{ fontSize: 11, color: 'var(--ink-soft)', marginBottom: 8 }}>Il punteggio si stabilizza con più allenamenti e valutazioni.</div>}
           <div style={{ fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.7 }}>
             {dettagli.map((d) => (
               <div key={d.label} style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>

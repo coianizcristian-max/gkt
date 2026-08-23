@@ -2,6 +2,7 @@ import { createClient, getUser } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
 import Guida from '@/app/components/Guida'
 import StatisticheClient from './StatisticheClient'
+import ConfrontoPortieri from '@/app/components/ConfrontoPortieri'
 import { infortuniPerPortiere } from '@/lib/infortuni'
 
 export const dynamic = 'force-dynamic'
@@ -145,6 +146,7 @@ export default async function StatistichePage() {
             usa la sezione <a href="/archivio" className="link-inline">Archivio</a>.
           </p>
         </Guida>
+        <ConfrontoPortieri stagioneId={stagione.id} titolo="Confronto portieri" />
         <StatisticheClient
           stats={stats}
           categorieOrd={categorieOrd}

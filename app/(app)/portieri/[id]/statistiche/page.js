@@ -237,12 +237,26 @@ export default async function StatistichePortierePage({ params }) {
   }
 
   // Obiettivi: percentuale completati (stato = 'raggiunto')
-  const { data: obiettiviRows } = await supabase.from('obiettivi').select('stato').eq('portiere_id', id)
+  const { data: obiettiviRows } = await supabase.from('obiettivi').select('stato, scadenza').eq('portiere_id', id)
   let pctObiettivi = null
   if (obiettiviRows && obiettiviRows.length > 0) {
-    const completati = obiettiviRows.filter((o) => o.stato === 'raggiunto').length
-    pctObiettivi = Math.round((completati / obiettiviRows.length) * 100)
+    const oggiStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
+    // Solo gli obiettivi "in gioco": raggiunti, oppure con scadenza già passata.
+    // Quelli aperti e non ancora scaduti NON penalizzano l'indice.
+    const rilevanti = obiettiviRows.filter((o) => o.stato === 'raggiunto' || (o.scadenza && o.scadenza <= oggiStr))
+    if (rilevanti.length > 0) {
+      const completati = rilevanti.filter((o) => o.stato === 'raggiunto').length
+      pctObiettivi = Math.round((completati / rilevanti.length) * 100)
+    }
   }
+
+  // Presenze per l'INDICE: contano solo con un minimo di sedute, così un 100% su
+  // uno o due allenamenti non gonfia il punteggio (il % mostrato a video resta intero).
+  const pctPresenzeIndice = disponibiliA >= 3 ? pctPresenza : null
+  // Indice "provvisorio" finché il segnale è scarso: meno di 2 componenti reali
+  // e meno di 6 allenamenti valutati.
+  const componentiRealiIndice = [pctObiettivi, trend, trendPartite, pctPresenzeIndice].filter((x) => x != null).length
+  const indiceProvvisorio = componentiRealiIndice < 2 && disponibiliA < 6
 
   // ── Dati per grafici (passati al client component) ───────────────────────
   const oggi = new Date().toISOString().slice(0, 10)
@@ -328,11 +342,12 @@ export default async function StatistichePortierePage({ params }) {
         </div>
 
         <IndiceCrescita
+          provvisorio={indiceProvvisorio}
           score={calcolaIndiceCrescita({
             pctObiettiviCompletati: pctObiettivi,
             trendAllenamenti: trend,
             trendPartite: trendPartite,
-            pctPresenze: pctPresenza,
+            pctPresenze: pctPresenzeIndice,
           })}
           dettagli={[
             { label: 'Obiettivi completati', peso: 40, valore: pctObiettivi, display: pctObiettivi != null ? pctObiettivi + '%' : null },

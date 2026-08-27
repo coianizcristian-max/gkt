@@ -206,6 +206,22 @@ function parseDataCella(v) {
   return null
 }
 
+// Ora in formato HH:MM. Accetta stringa "18:30"/"18.30", Date (celle orario Excel
+// convertite con cellDates) e numero (frazione di giornata Excel: 0.5 = 12:00).
+function parseOra(v) {
+  if (v == null || v === '') return null
+  if (v instanceof Date) return `${pad(v.getHours())}:${pad(v.getMinutes())}`
+  if (typeof v === 'number') {
+    let mins = Math.round(v * 24 * 60)
+    mins = ((mins % 1440) + 1440) % 1440
+    return `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`
+  }
+  const s = String(v).trim()
+  const m = s.match(/^(\d{1,2})[:.](\d{2})/)
+  if (m) return `${pad(Number(m[1]))}:${m[2]}`
+  return null
+}
+
 function parseCasaTrasferta(v) {
   const s = String(v ?? '').trim().toLowerCase()
   if (s === 'casa') return true
@@ -235,30 +251,57 @@ function ImportExcel({ stagione, categorie }) {
       const rows = XLSX.utils.sheet_to_json(sheet, { defval: null })
 
       const supabase = createClient()
+      // Mappa data -> id delle partite già presenti per questa categoria: serve a
+      // decidere se INSERIRE (data nuova) o AGGIORNARE (data già presente), così
+      // ricaricare il file NON crea doppioni ma aggiorna i dati eventualmente cambiati.
       const { data: existing } = await supabase
-        .from('partite').select('id, data, squadra_id').eq('stagione_id', stagione.id).eq('squadra_id', squadraId)
-      const existSet = new Set((existing ?? []).map((p) => p.data))
+        .from('partite').select('id, data').eq('stagione_id', stagione.id).eq('squadra_id', squadraId)
+      const existById = new Map()
+      for (const p of existing ?? []) if (!existById.has(p.data)) existById.set(p.data, p.id)
 
-      const toInsert = []
+      // Raccogliamo le partite-obiettivo (andata + ritorno) da ogni riga; l'ultima
+      // riga vince in caso di date duplicate nel file.
+      const targetByData = new Map()
       const righeSaltate = []
       rows.forEach((row, idx) => {
         const dataAndata = parseDataCella(row['Data andata'])
         const dataRitorno = parseDataCella(row['Data ritorno'])
         const casaAndata = parseCasaTrasferta(row['Casa o trasferta (andata)'])
         const avversario = row['Squadra avversaria'] ? String(row['Squadra avversaria']).trim() : null
+        const oraRitrovo = parseOra(row['Ora ritrovo'])
+        const oraInizio = parseOra(row['Ora inizio'])
 
         if (!dataAndata && !dataRitorno) return // riga vuota, ignorata silenziosamente
         if (!dataAndata || casaAndata === null || !avversario) {
           righeSaltate.push(idx + 2) // +2 = numero riga reale nel foglio (1 header + 1-based)
           return
         }
-        if (!existSet.has(dataAndata)) {
-          toInsert.push({ stagione_id: stagione.id, squadra_id: squadraId, data: dataAndata, avversario, casa: casaAndata, tipo: 'campionato' })
-        }
-        if (dataRitorno && !existSet.has(dataRitorno)) {
-          toInsert.push({ stagione_id: stagione.id, squadra_id: squadraId, data: dataRitorno, avversario, casa: !casaAndata, tipo: 'campionato' })
+        targetByData.set(dataAndata, {
+          data: dataAndata, avversario, casa: casaAndata, tipo: 'campionato',
+          ora_ritrovo: oraRitrovo, ora_inizio: oraInizio,
+        })
+        if (dataRitorno) {
+          targetByData.set(dataRitorno, {
+            data: dataRitorno, avversario, casa: !casaAndata, tipo: 'campionato',
+            ora_ritrovo: oraRitrovo, ora_inizio: oraInizio,
+          })
         }
       })
+
+      const toInsert = []
+      const toUpdate = [] // { id, patch }
+      for (const t of targetByData.values()) {
+        const existingId = existById.get(t.data)
+        const campi = {
+          avversario: t.avversario, casa: t.casa, tipo: t.tipo,
+          ora_ritrovo: t.ora_ritrovo, ora_inizio: t.ora_inizio,
+        }
+        if (existingId) {
+          toUpdate.push({ id: existingId, patch: campi })
+        } else {
+          toInsert.push({ stagione_id: stagione.id, squadra_id: squadraId, data: t.data, ...campi })
+        }
+      }
 
       let inseriti = 0
       for (let i = 0; i < toInsert.length; i += 200) {
@@ -267,7 +310,14 @@ function ImportExcel({ stagione, categorie }) {
         inseriti += Math.min(200, toInsert.length - i)
       }
 
-      setRisultato({ inseriti, saltate: righeSaltate })
+      let aggiornate = 0
+      for (const u of toUpdate) {
+        const { error } = await supabase.from('partite').update(u.patch).eq('id', u.id)
+        if (error) throw error
+        aggiornate += 1
+      }
+
+      setRisultato({ inseriti, aggiornate, saltate: righeSaltate })
       router.refresh()
     } catch (err) {
       setErrore('Errore: ' + err.message)
@@ -282,6 +332,8 @@ function ImportExcel({ stagione, categorie }) {
         Scarica il template, compilalo con il calendario ufficiale (andata e ritorno), poi caricalo qui
         selezionando la categoria: l&apos;app crea automaticamente sia le partite di andata (con i dati
         inseriti) sia quelle di ritorno, invertendo casa/trasferta e usando la stessa squadra avversaria.
+        Puoi anche indicare <b>ora di ritrovo</b> e <b>ora di inizio</b>. Se ricarichi il file dopo aver
+        corretto qualcosa, le partite già presenti in quelle date <b>vengono aggiornate</b>, non duplicate.
       </p>
       <div style={{ marginBottom: 16 }}>
         <a href="/templates/calendario-partite-template.xlsx" download className="btn-ghost">
@@ -291,7 +343,7 @@ function ImportExcel({ stagione, categorie }) {
       {errore && <div className="err" style={{ marginBottom: 12 }}>{errore}</div>}
       {risultato && (
         <div className="ok-msg" style={{ marginBottom: 12 }}>
-          ✅ Create {risultato.inseriti} partite.
+          ✅ {risultato.inseriti} nuove, {risultato.aggiornate} aggiornate.
           {risultato.saltate.length > 0 && (
             <> ⚠ Righe saltate per dati incompleti: {risultato.saltate.join(', ')}.</>
           )}

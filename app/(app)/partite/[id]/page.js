@@ -22,6 +22,10 @@ export default async function PartitaPage({ params }) {
 
   const dataLabel = new Date(partita.data + 'T00:00:00')
     .toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const orarioLabel = [
+    partita.ora_ritrovo ? `ritrovo ${partita.ora_ritrovo.slice(0, 5)}` : null,
+    partita.ora_inizio ? `inizio ${partita.ora_inizio.slice(0, 5)}` : null,
+  ].filter(Boolean).join(' · ')
 
   // ── VISTA PORTIERE: solo i propri dati, sola lettura ────────────────────────
   if (profilo?.ruolo === 'portiere') {
@@ -47,7 +51,7 @@ export default async function PartitaPage({ params }) {
           <h1>{partita.squadre?.nome}<span className="topbar-sub"> · {partita.casa ? 'Casa' : 'Trasferta'} vs {partita.avversario || '—'}</span></h1>
         </div>
         <div className="content">
-          <p className="sub-intro">{dataLabel}</p>
+          <p className="sub-intro">{dataLabel}{orarioLabel ? ` · ${orarioLabel}` : ''}</p>
           {partita.gol_fatti != null && partita.gol_subiti != null && (
             <div className="scheda" style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 24, fontWeight: 800, textAlign: 'center' }}>
@@ -112,7 +116,7 @@ export default async function PartitaPage({ params }) {
         <h1>{partita.squadre?.nome}<span className="topbar-sub"> · {partita.casa ? 'Casa' : 'Trasferta'} vs {partita.avversario || '—'}</span></h1>
       </div>
       <div className="content">
-        <p className="sub-intro">{dataLabel}</p>
+        <p className="sub-intro">{dataLabel}{orarioLabel ? ` · ${orarioLabel}` : ''}</p>
         <PartitaForm partita={partita} categorie={categorie} stagioneId={partita.stagione_id} avversari={avversari} />
         <h2 className="sezione-titolo">Valutazioni</h2>
         {!canValPartita

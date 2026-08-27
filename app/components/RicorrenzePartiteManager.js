@@ -268,8 +268,10 @@ function ImportExcel({ stagione, categorie }) {
         const dataRitorno = parseDataCella(row['Data ritorno'])
         const casaAndata = parseCasaTrasferta(row['Casa o trasferta (andata)'])
         const avversario = row['Squadra avversaria'] ? String(row['Squadra avversaria']).trim() : null
-        const oraRitrovo = parseOra(row['Ora ritrovo'])
-        const oraInizio = parseOra(row['Ora inizio'])
+        const oraRitrovoA = parseOra(row['Ora ritrovo andata'] ?? row['Ora ritrovo'])
+        const oraInizioA = parseOra(row['Ora inizio andata'] ?? row['Ora inizio'])
+        const oraRitrovoR = parseOra(row['Ora ritrovo ritorno'] ?? row['Ora ritrovo'])
+        const oraInizioR = parseOra(row['Ora inizio ritorno'] ?? row['Ora inizio'])
 
         if (!dataAndata && !dataRitorno) return // riga vuota, ignorata silenziosamente
         if (!dataAndata || casaAndata === null || !avversario) {
@@ -278,12 +280,12 @@ function ImportExcel({ stagione, categorie }) {
         }
         targetByData.set(dataAndata, {
           data: dataAndata, avversario, casa: casaAndata, tipo: 'campionato',
-          ora_ritrovo: oraRitrovo, ora_inizio: oraInizio,
+          ora_ritrovo: oraRitrovoA, ora_inizio: oraInizioA,
         })
         if (dataRitorno) {
           targetByData.set(dataRitorno, {
             data: dataRitorno, avversario, casa: !casaAndata, tipo: 'campionato',
-            ora_ritrovo: oraRitrovo, ora_inizio: oraInizio,
+            ora_ritrovo: oraRitrovoR, ora_inizio: oraInizioR,
           })
         }
       })
@@ -332,7 +334,7 @@ function ImportExcel({ stagione, categorie }) {
         Scarica il template, compilalo con il calendario ufficiale (andata e ritorno), poi caricalo qui
         selezionando la categoria: l&apos;app crea automaticamente sia le partite di andata (con i dati
         inseriti) sia quelle di ritorno, invertendo casa/trasferta e usando la stessa squadra avversaria.
-        Puoi anche indicare <b>ora di ritrovo</b> e <b>ora di inizio</b>. Se ricarichi il file dopo aver
+        Puoi indicare gli orari separati per andata e ritorno (ritrovo e inizio di ciascuna). Se ricarichi il file dopo aver
         corretto qualcosa, le partite già presenti in quelle date <b>vengono aggiornate</b>, non duplicate.
       </p>
       <div style={{ marginBottom: 16 }}>

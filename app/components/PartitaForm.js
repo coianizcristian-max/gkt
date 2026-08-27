@@ -5,6 +5,60 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
 
+// Autocomplete "avversario" custom: input di testo SEMPRE editabile (la tastiera
+// non viene mai bloccata) + lista suggerimenti sotto al campo, filtrata mentre
+// scrivi e selezionabile al tocco. Sostituisce <input list> + <datalist> nativo,
+// che su iPad copriva il campo e impediva di digitare.
+function AvversarioInput({ value, onChange, suggestions = [] }) {
+  const [open, setOpen] = useState(false)
+  const q = (value || '').trim().toLowerCase()
+  const matches = q
+    ? suggestions.filter((s) => s && s.toLowerCase().includes(q) && s.toLowerCase() !== q).slice(0, 8)
+    : []
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 120)}
+        autoComplete="off"
+        placeholder="Nome squadra avversaria"
+      />
+      {open && matches.length > 0 && (
+        <ul
+          style={{
+            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30,
+            margin: '4px 0 0', padding: 4, listStyle: 'none',
+            background: 'var(--bianco, #fff)', border: '1px solid var(--bordo, #e2e2e2)',
+            borderRadius: 'var(--r-sm, 8px)', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            maxHeight: 220, overflowY: 'auto',
+          }}
+        >
+          {matches.map((m) => (
+            <li key={m}>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { onChange(m); setOpen(false) }}
+                style={{
+                  display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
+                  padding: '8px 10px', border: 'none', background: 'transparent',
+                  borderRadius: 6, fontSize: 15, color: 'var(--ink, #1a1a1a)',
+                }}
+              >
+                {m}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 export default function PartitaForm({ partita, categorie, stagioneId, avversari = [], defaultData }) {
   const router = useRouter()
   const isEdit = !!partita
@@ -22,6 +76,8 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
     squadra_id: partita?.squadra_id ?? (categorie[0]?.id ?? ''),
     avversario: partita?.avversario ?? '',
     casa: partita?.casa ?? true,
+    ora_ritrovo: (partita?.ora_ritrovo ?? '').slice(0, 5),
+    ora_inizio: (partita?.ora_inizio ?? '').slice(0, 5),
     gol_fatti: partita?.gol_fatti ?? '',
     gol_subiti: partita?.gol_subiti ?? '',
     note: partita?.note ?? '',
@@ -52,6 +108,7 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
     const avv = f.avversario?.trim() || null
     const payload = {
       data: f.data, squadra_id: f.squadra_id, avversario: avv, casa: !!f.casa,
+      ora_ritrovo: f.ora_ritrovo || null, ora_inizio: f.ora_inizio || null,
       gol_fatti: num(f.gol_fatti), gol_subiti: num(f.gol_subiti), note: f.note || null, tipo: f.tipo,
     }
     try {
@@ -84,15 +141,20 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></div>
         <div className="field"><label>Avversario</label>
-          <input list="avversari-list" value={f.avversario} onChange={upd('avversario')} />
-          <datalist id="avversari-list">
-            {avversari.map((a) => <option key={a} value={a} />)}
-          </datalist></div>
+          <AvversarioInput
+            value={f.avversario}
+            onChange={(v) => { setF((s) => ({ ...s, avversario: v })); setDone(false) }}
+            suggestions={avversari}
+          /></div>
         <div className="field"><label>Dove</label>
           <select value={f.casa ? '1' : '0'} onChange={(e) => { setF((s) => ({ ...s, casa: e.target.value === '1' })); setDone(false) }}>
             <option value="1">Casa</option>
             <option value="0">Trasferta</option>
           </select></div>
+        <div className="field"><label>Ora ritrovo</label>
+          <input type="time" value={f.ora_ritrovo} onChange={upd('ora_ritrovo')} /></div>
+        <div className="field"><label>Ora inizio</label>
+          <input type="time" value={f.ora_inizio} onChange={upd('ora_inizio')} /></div>
         <div className="field"><label>Competizione</label>
           <select value={f.tipo} onChange={upd('tipo')}>
             <option value="campionato">Campionato</option>

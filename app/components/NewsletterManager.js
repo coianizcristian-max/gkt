@@ -16,12 +16,16 @@ export function NewsletterRender({ titolo, sezioni, dataStr, societa }) {
       <div style={{
         background: 'linear-gradient(135deg, #0a5a8a 0%, #0a7ec2 100%)',
         padding: '32px 36px 24px', color: '#fff',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
       }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.75, marginBottom: 8 }}>
-          {societa ?? 'GKSeason'} · Newsletter
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.75, marginBottom: 8 }}>
+            {societa ?? 'GKSeason'} · Newsletter
+          </div>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, lineHeight: 1.25, letterSpacing: '-0.3px' }}>{titolo || 'Titolo newsletter'}</h1>
+          {dataStr && <div style={{ marginTop: 10, fontSize: 13, opacity: 0.75 }}>{dataStr}</div>}
         </div>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, lineHeight: 1.25, letterSpacing: '-0.3px' }}>{titolo || 'Titolo newsletter'}</h1>
-        {dataStr && <div style={{ marginTop: 10, fontSize: 13, opacity: 0.75 }}>{dataStr}</div>}
+        <img src="/gk_circle.png" alt="GKSeason" style={{ width: 56, height: 56, flexShrink: 0, display: 'block' }} />
       </div>
 
       {/* Corpo */}
@@ -257,6 +261,23 @@ export default function NewsletterManager({ invii, iscritti }) {
     router.refresh()
   }
 
+  async function inviaEmail(n) {
+    if (!n.pubblicata) { alert('Pubblica prima la newsletter, poi potrai inviarla via email.'); return }
+    const msg = n.email_inviata_il
+      ? `Questa newsletter e' GIA' stata inviata via email il ${new Date(n.email_inviata_il).toLocaleString('it-IT')}.\n\nVuoi inviarla di NUOVO a tutti i ${totIscritti} iscritti attivi?`
+      : `Inviare \"${n.titolo}\" via email a tutti i ${totIscritti} iscritti attivi?`
+    if (!confirm(msg)) return
+    try {
+      const res = await fetch('/api/newsletter/invia', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: n.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) { alert('Errore: ' + (data.error || 'invio non riuscito')); return }
+      alert(`Email inviate: ${data.sent} su ${data.total} iscritti.`)
+      router.refresh()
+    } catch (e) { alert('Errore di rete: ' + e.message) }
+  }
+
   const totIscritti = iscritti.filter((i) => i.attivo).length
   const newsletterInModifica = modificaId ? invii.find((n) => n.id === modificaId) : null
 
@@ -290,9 +311,11 @@ export default function NewsletterManager({ invii, iscritti }) {
               <small style={{ color: 'var(--ink-soft)' }}>
                 {n.pubblicata ? `✅ ${new Date(n.inviata_il).toLocaleDateString('it-IT')}` : '📝 Bozza'}
                 {' · '}{(n.contenuto ?? []).length} sezioni · 👁 visualizza/modifica
+                {n.email_inviata_il ? ' · 📧 email inviata' : ''}
               </small>
             </button>
             {!n.pubblicata && <button type="button" className="btn-mini" onClick={() => pubblica(n.id)}>Pubblica</button>}
+            {n.pubblicata && <button type="button" className="btn-mini" onClick={() => inviaEmail(n)}>{n.email_inviata_il ? '📧 Rinvia email' : '📧 Invia email'}</button>}
             <button type="button" className="btn-mini btn-del" onClick={() => elimina(n.id)}>Elimina</button>
           </div>
         ))}

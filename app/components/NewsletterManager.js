@@ -314,6 +314,7 @@ export default function NewsletterManager({ invii, iscritti }) {
                 {n.email_inviata_il ? ' · 📧 email inviata' : ''}
               </small>
             </button>
+            <button type="button" className="btn-mini" onClick={() => window.open(`/api/newsletter/anteprima?id=${n.id}`, '_blank')}>👁 Anteprima email</button>
             {!n.pubblicata && <button type="button" className="btn-mini" onClick={() => pubblica(n.id)}>Pubblica</button>}
             {n.pubblicata && <button type="button" className="btn-mini" onClick={() => inviaEmail(n)}>{n.email_inviata_il ? '📧 Rinvia email' : '📧 Invia email'}</button>}
             <button type="button" className="btn-mini btn-del" onClick={() => elimina(n.id)}>Elimina</button>

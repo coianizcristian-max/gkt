@@ -341,6 +341,13 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                     </div>
                   </div>
                   <div className="cal-preview-avversario">vs {ev.avversario || '—'}</div>
+                  {(ev.ora_ritrovo || ev.ora_inizio) && (
+                    <div style={{ marginTop: 4, fontSize: 13, color: 'var(--ink-soft)' }}>
+                      {ev.ora_ritrovo && <>🕘 Ritrovo {ev.ora_ritrovo.slice(0, 5)}</>}
+                      {ev.ora_ritrovo && ev.ora_inizio && ' · '}
+                      {ev.ora_inizio && <>⚽ Inizio {ev.ora_inizio.slice(0, 5)}</>}
+                    </div>
+                  )}
                   {/* Risultato */}
                   {passata && ev.gol_fatti != null && (
                     <div style={{ margin: '6px 0', display: 'flex', alignItems: 'center', gap: 8 }}>

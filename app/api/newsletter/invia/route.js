@@ -56,7 +56,7 @@ export async function POST(req) {
           to: i.email,
           reply_to: REPLY_TO,
           subject: nl.titolo || 'Newsletter',
-          html: newsletterHtml({ titolo: nl.titolo, sezioni: nl.contenuto, dataStr, societa: SOCIETA, unsubUrl, logoUrl: `${SITE_URL}/gk_circle.png` }),
+          html: newsletterHtml({ titolo: nl.titolo, sezioni: nl.contenuto, dataStr, societa: SOCIETA, unsubUrl, logoUrl: `${SITE_URL}/gk_circle_white.png` }),
           headers: { 'List-Unsubscribe': `<${unsubUrl}>` },
         }
       })

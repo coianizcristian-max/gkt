@@ -405,6 +405,16 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                         ? <span style={{color:'var(--rosso)'}}>⚠ Da valutare</span>
                         : <span style={{color:'var(--ink-soft)'}}>Programmato</span>}
                 </div>
+                {ev.assenti_annunciati?.length > 0 && (
+                  <div className="cal-preview-note" style={{marginTop:6, background:'#fff8e6', border:'1px solid #f0d98a', borderRadius:8, padding:'6px 8px'}}>
+                    <span className="cal-preview-esercizi-label">📅 Assenti annunciati:</span>
+                    <ul style={{margin:'4px 0 0', paddingLeft:16, fontSize:13}}>
+                      {ev.assenti_annunciati.map((x, i) => (
+                        <li key={i}><b>{x.nome}</b>{x.nota ? ` — ${x.nota}` : ' assente'}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {/* Obiettivi e consuntivo */}
                 {previewExtra[ev.id]?.obiettivi && (
                   <div className="cal-preview-note" style={{marginBottom:6}}>

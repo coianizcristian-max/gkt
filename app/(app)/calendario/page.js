@@ -31,7 +31,7 @@ export default async function CalendarioPage() {
       supabase.from('stagione_categorie')
         .select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
       supabase.from('partite')
-        .select('id, data, squadra_id, avversario, casa, gol_fatti, gol_subiti, tipo, squadre(nome)')
+        .select('id, data, squadra_id, avversario, casa, gol_fatti, gol_subiti, tipo, ora_ritrovo, ora_inizio, squadre(nome)')
         .eq('stagione_id', stagione.id).order('data'),
     ])
 
@@ -50,6 +50,8 @@ export default async function CalendarioPage() {
       tipo: p.tipo ?? 'campionato',
       gol_fatti: p.gol_fatti,
       gol_subiti: p.gol_subiti,
+      ora_ritrovo: p.ora_ritrovo ?? null,
+      ora_inizio: p.ora_inizio ?? null,
       _tipo: 'partita',
     }))
 

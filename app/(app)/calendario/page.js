@@ -105,8 +105,8 @@ export default async function CalendarioPage() {
       allenamenti = allenamenti.map((a) => ({ ...a, valutato: valutati.has(a.id) || a.nessuna_valutazione }))
     }
 
-    // Assenti annunciati per ogni allenamento (solo staff): informativo, mai in statistiche/presenze.
-    if (!isPortiere && allenamenti.length) {
+    // Assenti annunciati per allenamenti E partite (solo staff): informativo, mai in statistiche/presenze.
+    if (!isPortiere && (allenamenti.length || partite.length)) {
       const { data: iscr } = await supabase.from('iscrizioni')
         .select('id, squadra_id, portieri(nome, cognome)')
         .eq('stagione_id', stagione.id)
@@ -130,13 +130,17 @@ export default async function CalendarioPage() {
           al: a.data_fine ?? a.data_inizio,
         }
       })
-      allenamenti = allenamenti.map((a) => {
-        const cats = [a.squadra_id, a.accorpata_con].filter(Boolean)
-        const assenti_annunciati = assExp
-          .filter((x) => cats.includes(x.squadra_id) && x.dal <= a.data && x.al >= a.data)
-          .map((x) => ({ nome: x.nome, nota: x.nota }))
-        return { ...a, assenti_annunciati }
-      })
+      const assentiPer = (data, cats) => assExp
+        .filter((x) => cats.includes(x.squadra_id) && x.dal <= data && x.al >= data)
+        .map((x) => ({ nome: x.nome, nota: x.nota }))
+      allenamenti = allenamenti.map((a) => ({
+        ...a,
+        assenti_annunciati: assentiPer(a.data, [a.squadra_id, a.accorpata_con].filter(Boolean)),
+      }))
+      partite = partite.map((p) => ({
+        ...p,
+        assenti_annunciati: assentiPer(p.data, [p.squadra_id].filter(Boolean)),
+      }))
     }
   }
 

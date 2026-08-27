@@ -38,14 +38,16 @@ export default async function NewsletterPage() {
             />
 
             {archivio.length > 0 && (
-              <div className="elenco-blocco" style={{ marginTop: 28, maxWidth: 580, marginLeft: 'auto', marginRight: 'auto' }}>
-                <h3>Newsletter precedenti</h3>
+              <div style={{ marginTop: 40 }}>
+                <h3 style={{ textAlign: 'center', color: 'var(--ink-soft)', maxWidth: 580, margin: '0 auto 4px' }}>Newsletter precedenti</h3>
                 {archivio.map((n) => (
-                  <div key={n.id} className="lista-riga" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <div style={{ fontWeight: 600 }}>
-                      Newsletter del {new Date(n.inviata_il).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                    </div>
-                    <small style={{ color: 'var(--ink-soft)' }}>{n.titolo}</small>
+                  <div key={n.id} style={{ marginTop: 28 }}>
+                    <NewsletterRender
+                      titolo={n.titolo}
+                      sezioni={n.contenuto}
+                      dataStr={new Date(n.inviata_il).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      societa={societa}
+                    />
                   </div>
                 ))}
               </div>

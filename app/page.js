@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import CercaAllenatoriBox from '@/app/components/CercaAllenatoriBox'
 import AreaLoginCta from '@/app/components/AreaLoginCta'
+import NewsletterSignup from '@/app/components/NewsletterSignup'
 import MobileNav from '@/app/components/MobileNav'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { renderTesto } from '@/lib/renderTesto'
@@ -393,6 +394,9 @@ export default async function Home() {
         </div>
       </div>
 
+      <section style={{ padding: '32px 20px', borderTop: '1px solid var(--linea, #e2e6e1)' }}>
+        <NewsletterSignup />
+      </section>
       {/* ── Footer ── */}
       <footer className="landing-foot">
         GKSeason · Gestione portieri

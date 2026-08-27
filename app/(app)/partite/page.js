@@ -73,7 +73,10 @@ export default async function PartitePage() {
               {' '}<a href="/ricorrenze" className="link-inline">Ricorrenze → Eliminazione massiva</a>,
               dove puoi filtrare per categoria, intervallo di date e presenza o assenza di valutazioni.
             </p>
-          </Guida>
+            <p style={{marginTop:10}}>
+            Puoi indicare anche l&apos;<strong>orario di ritrovo</strong> e l&apos;<strong>orario di inizio</strong> della gara: compaiono nella scheda partita e nella preview del calendario.
+          </p>
+        </Guida>
         )}
         {stagione
           ? <PartiteLista partite={partite} categorie={categorie} isPortiere={isPortiere} />

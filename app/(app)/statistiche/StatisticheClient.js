@@ -29,6 +29,9 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, feedback
           Le medie partite includono solo le gare ufficiali (campionato): le amichevoli sono escluse.
           Clicca sul nome di un portiere per vedere il dettaglio con andamento mensile e per caratteristica.
           Il tab &ldquo;Feedback&rdquo; mostra tutti i commenti scritti dai portieri nelle valutazioni.
+          <p style={{marginTop:10}}>
+            Le sessioni con <strong>infortunio</strong> sono escluse dalle medie (indicate con 🩹).
+          </p>
         </Guida>
       )}
       {/* ── Tab Portieri ── */}

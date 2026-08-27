@@ -145,6 +145,9 @@ export default async function StatistichePage() {
             Le statistiche si riferiscono sempre alla <strong>stagione attiva</strong>. Per consultare stagioni precedenti
             usa la sezione <a href="/archivio" className="link-inline">Archivio</a>.
           </p>
+          <p style={{marginTop:10}}>
+            Le sessioni in cui un portiere risulta <strong>infortunato</strong> sono escluse dalle medie (indicate con 🩹). Nel <strong>Confronto portieri</strong>, oltre alle presenze, puoi scegliere una metrica dal menu e confrontare la <strong>media delle singole voci</strong> di valutazione (tecnica, RPE, ecc.) tra i portieri o per categoria.
+          </p>
         </Guida>
         <ConfrontoPortieri stagioneId={stagione.id} titolo="Confronto portieri" />
         <StatisticheClient

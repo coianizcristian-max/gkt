@@ -103,6 +103,9 @@ export default async function PortieriPage() {
             Per disattivare un portiere senza eliminarlo (es. non è più nella squadra ma vuoi conservare i dati storici)
             usa il toggle <strong>Attivo/Non attivo</strong> nella sua scheda.
           </p>
+          <p style={{marginTop:10}}>
+            La scheda include anche le <strong>Assenze annunciate</strong>: segnali in anticipo i giorni in cui il portiere sarà assente e compaiono nel calendario, senza incidere su presenze o statistiche. Nel tab <strong>Obiettivi</strong> puoi collegare dei <strong>test con un valore target</strong> e registrare le misurazioni nel tempo: l&apos;avanzamento viene poi calcolato in automatico dai test. Gli <strong>infortuni</strong> segnati nella griglia di valutazione compaiono nella scheda e vengono esclusi dalle statistiche (indicati con 🩹).
+          </p>
         </Guida>
         {profilo?.ruolo === 'allenatore' && (
           <OnboardingChecklist checks={[

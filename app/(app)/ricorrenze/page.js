@@ -80,6 +80,9 @@ export default async function RicorrenzePage() {
             errore), solo quelli <em>con valutazioni</em>, oppure tutti indistintamente.
             L&apos;operazione è irreversibile: viene sempre richiesta una conferma prima di procedere.
           </p>
+          <p style={{marginTop:10}}>
+            Il template del <strong>Metodo 2</strong> include anche gli <strong>orari separati per andata e ritorno</strong> (ritrovo e inizio). Se ricarichi il file dopo una correzione, le partite già presenti in quelle date <strong>vengono aggiornate</strong>, non duplicate.
+          </p>
         </Guida>
         {stagione && categorie.length === 0 && (
           <div className="avviso">

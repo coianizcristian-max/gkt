@@ -370,6 +370,9 @@ export default async function DashboardPage() {
             con almeno 2 assenze nelle ultime 3 convocazioni, un calo di rendimento significativo (−1.5 punti di media)
             o un obiettivo con scadenza superata non ancora raggiunto.
           </p>
+          <p style={{marginTop:10}}>
+            Trovi qui anche i <strong>promemoria delle misurazioni</strong> degli obiettivi in scadenza, così sai quando è il momento di registrare un nuovo test.
+          </p>
         </Guida>
 
         {profilo?.ruolo === 'allenatore' && <OnboardingChecklist checks={checksOnboarding} />}

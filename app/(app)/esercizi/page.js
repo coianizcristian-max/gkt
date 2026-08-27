@@ -109,6 +109,9 @@ export default async function EserciziPage() {
             <a href="/supervisore/elenchi" className="link-inline"> Supervisore → Elenchi</a>.
             Gli esercizi archiviati non appaiono nell&apos;elenco principale ma restano collegati agli allenamenti dove erano stati inseriti.
           </p>
+          <p style={{marginTop:10}}>
+            Oltre a titolo, descrizione e immagine, puoi disegnare uno <strong>schema tattico</strong> con la <strong>lavagna</strong> integrata: il disegno viene salvato con l&apos;esercizio e lo puoi riaprire e modificare in qualsiasi momento.
+          </p>
         </Guida>
         {canLibreria
           ? <EserciziManager

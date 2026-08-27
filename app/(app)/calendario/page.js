@@ -172,6 +172,9 @@ export default async function CalendarioPage() {
               {' '}<a href="/ricorrenze" className="link-inline">Ricorrenze → Eliminazione massiva</a>,
               dove puoi filtrare per categoria, intervallo di date e presenza o assenza di valutazioni.
             </p>
+          <p style={{marginTop:10}}>
+            Cliccando un giorno, nella preview vedi anche gli <strong>assenti annunciati</strong> (portieri con un&apos;assenza programmata su quella data) e, per le partite, gli <strong>orari di ritrovo e inizio</strong>. Nella griglia di valutazione di un allenamento puoi inoltre segnare gli <strong>infortuni</strong>, poi esclusi dalle statistiche.
+          </p>
           </Guida>
         )}
         {stagione

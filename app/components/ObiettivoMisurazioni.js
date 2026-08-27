@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 // ─── Costanti ────────────────────────────────────────────────────────────────
@@ -35,6 +36,44 @@ function fmtValore(test, r) {
   return `${r.valore ?? '—'}${test.unita ? ' ' + test.unita : ''}`
 }
 
+// Valore numerico confrontabile di una rilevazione.
+// su_totale -> percentuale riusciti/tentativi (target interpretato come %).
+function valoreNumerico(test, r) {
+  if (test.tipo_misura === 'su_totale') {
+    const tot = Number(r.tentativi)
+    const ok = Number(r.riusciti ?? r.valore)
+    if (!tot || isNaN(ok)) return null
+    return (ok / tot) * 100
+  }
+  return r.valore == null ? null : Number(r.valore)
+}
+
+// Avanzamento automatico dai test: media dei progressi dei test che hanno un
+// target e almeno due misurazioni. Progresso = (attuale - iniziale) / (target -
+// iniziale), limitato a 0..100%. La formula funziona sia se "più alto è meglio"
+// sia se "più basso è meglio" (il segno di target-iniziale si adatta).
+// Ritorna { pct, nTest } oppure null se nessun test è calcolabile.
+function calcolaAvanzamento(tests, rilByTest) {
+  const progressi = []
+  for (const t of tests) {
+    if (t.target == null) continue
+    const ril = rilByTest[t.id] ?? [] // ordinate per data desc
+    if (ril.length < 2) continue
+    const attuale = valoreNumerico(t, ril[0])
+    const iniziale = valoreNumerico(t, ril[ril.length - 1])
+    const target = Number(t.target)
+    if (attuale == null || iniziale == null || isNaN(target)) continue
+    if (target === iniziale) continue
+    let p = (attuale - iniziale) / (target - iniziale)
+    if (!isFinite(p)) continue
+    p = Math.max(0, Math.min(1, p))
+    progressi.push(p)
+  }
+  if (!progressi.length) return null
+  const media = progressi.reduce((a, b) => a + b, 0) / progressi.length
+  return { pct: Math.round(media * 100), nTest: progressi.length }
+}
+
 function prossimaMisura(test, ril) {
   if (!test.cadenza_giorni) return null
   const base = ril.length ? ril[0].data : test.data_inizio // ril ordinate desc per data
@@ -46,10 +85,13 @@ function prossimaMisura(test, ril) {
 
 // ─── Componente principale ───────────────────────────────────────────────────
 export default function ObiettivoMisurazioni({ obiettivoId, eserciziTutti = [] }) {
+  const router = useRouter()
   const [tests, setTests] = useState([])
   const [rilByTest, setRilByTest] = useState({})
   const [loading, setLoading] = useState(true)
   const [creando, setCreando] = useState(false)
+  const [applying, setApplying] = useState(false)
+  const [applicato, setApplicato] = useState(false)
 
   const carica = useCallback(async () => {
     const supabase = createClient()
@@ -71,9 +113,37 @@ export default function ObiettivoMisurazioni({ obiettivoId, eserciziTutti = [] }
 
   useEffect(() => { carica() }, [carica])
 
+  const auto = calcolaAvanzamento(tests, rilByTest)
+
+  async function applicaAvanzamento() {
+    if (!auto) return
+    setApplying(true)
+    const supabase = createClient()
+    const { error } = await supabase.from('obiettivi').update({ percentuale: auto.pct }).eq('id', obiettivoId)
+    setApplying(false)
+    if (error) { alert('Errore: ' + error.message); return }
+    setApplicato(true)
+    router.refresh()
+  }
+
   return (
     <div className="elenco-blocco">
       <h3>📏 Registro misurazioni</h3>
+      {!loading && auto && (
+        <div style={{ ...S.box, borderLeft: '3px solid var(--campo, #1f8a4c)', background: '#f2fbf5' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 700 }}>📈 Avanzamento dai test: {auto.pct}%</div>
+              <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+                Calcolato su {auto.nTest} test con target e almeno due misurazioni.
+              </div>
+            </div>
+            <button className="btn-mini" type="button" onClick={applicaAvanzamento} disabled={applying}>
+              {applying ? '…' : applicato ? 'Applicato ✓' : "Applica all'avanzamento"}
+            </button>
+          </div>
+        </div>
+      )}
       {loading ? (
         <p className="sub-intro">Carico…</p>
       ) : (

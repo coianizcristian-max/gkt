@@ -4,6 +4,7 @@ import { createClient, getUser } from '@/lib/supabase/server'
 import PortiereForm from '@/app/components/PortiereForm'
 import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import TagManager from '@/app/components/TagManager'
+import AssenzePreviste from '@/app/components/AssenzePreviste'
 import { getStagioneAttiva } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
@@ -93,6 +94,16 @@ export default async function SchedaPortierePage({ params }) {
     infortunioAperto = infA ?? null
   }
 
+  // Assenze annunciate (solo staff): promemoria informativo, mai in statistiche/presenze.
+  let assenzePreviste = []
+  if (!soloPortiere && iscrizione?.id) {
+    const { data: apRows } = await supabase.from('assenze_previste')
+      .select('id, data_inizio, data_fine, nota')
+      .eq('iscrizione_id', iscrizione.id)
+      .order('data_inizio', { ascending: true })
+    assenzePreviste = apRows ?? []
+  }
+
   const [{ data: attributiDef }, { data: attributiRows }, { data: tagRows }, { data: tagVoci }] = attributiBatch
   const attributiValori = {}
   for (const r of attributiRows ?? []) attributiValori[r.attributo_id] = r.valore_testo ?? r.valore_num
@@ -152,6 +163,9 @@ export default async function SchedaPortierePage({ params }) {
           />
         ) : (
           <div className="empty">Imposta prima una stagione attiva e almeno una categoria.</div>
+        )}
+        {!soloPortiere && iscrizione?.id && (
+          <AssenzePreviste iscrizioneId={iscrizione.id} assenzeIniziali={assenzePreviste} />
         )}
       </div>
     </>

@@ -49,6 +49,9 @@ export default function ValutazioniAllenamento({
         infortunato: !!p.infortunato,
         infortunioId: p.infortunioId ?? null,
         infortunioDal: p.infortunioDal ?? null,
+        // assenza annunciata (solo informativa: non cambia presente/statistiche)
+        assentePrevisto: !!p.assentePrevisto,
+        assenzaNota: p.assenzaNota ?? null,
       }
     })
   )
@@ -191,6 +194,12 @@ export default function ValutazioniAllenamento({
               </label>
             )}
             <span className="val-nome">{r.nome}</span>
+            {!r.infortunato && r.assentePrevisto && (
+              <span title={r.assenzaNota || 'Assenza annunciata'}
+                style={{ fontSize: 11, fontWeight: 700, color: '#9a6a00', background: '#fff8e6', border: '1px solid #f0d98a', borderRadius: 4, padding: '1px 6px', marginLeft: 6 }}>
+                📅 assenza annunciata
+              </span>
+            )}
             {r.infortunato ? (
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
                 {r.infortunioDal && <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>dal {fmt(r.infortunioDal)}</span>}

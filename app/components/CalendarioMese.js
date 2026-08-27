@@ -348,6 +348,16 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                       {ev.ora_inizio && <>⚽ Inizio {ev.ora_inizio.slice(0, 5)}</>}
                     </div>
                   )}
+                  {ev.assenti_annunciati?.length > 0 && (
+                    <div className="cal-preview-note" style={{marginTop:6, background:'#fff8e6', border:'1px solid #f0d98a', borderRadius:8, padding:'6px 8px'}}>
+                      <span className="cal-preview-esercizi-label">📅 Assenti annunciati:</span>
+                      <ul style={{margin:'4px 0 0', paddingLeft:16, fontSize:13}}>
+                        {ev.assenti_annunciati.map((x, i) => (
+                          <li key={i}><b>{x.nome}</b>{x.nota ? ` — ${x.nota}` : ' assente'}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   {/* Risultato */}
                   {passata && ev.gol_fatti != null && (
                     <div style={{ margin: '6px 0', display: 'flex', alignItems: 'center', gap: 8 }}>

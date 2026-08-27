@@ -243,6 +243,20 @@ export default async function AllenamentoPage({ params }) {
   const infByIscr = {}
   for (const x of infortuniRows) infByIscr[x.iscrizione_id] = x
 
+  // Assenze annunciate che coprono la data D (D in [data_inizio, data_fine]).
+  // Solo informativo: non tocca presenze/valutazioni/statistiche.
+  let assenzeRows = []
+  if (iscrIds.length) {
+    const { data: apData } = await supabase.from('assenze_previste')
+      .select('iscrizione_id, nota')
+      .in('iscrizione_id', iscrIds)
+      .lte('data_inizio', allenamento.data)
+      .gte('data_fine', allenamento.data)
+    assenzeRows = apData ?? []
+  }
+  const assenzaByIscr = {}
+  for (const a of assenzeRows) if (!(a.iscrizione_id in assenzaByIscr)) assenzaByIscr[a.iscrizione_id] = a.nota ?? ''
+
   const portieri = (iscr ?? [])
     .filter((r) => r.portieri)
     .map((r) => {
@@ -253,9 +267,16 @@ export default async function AllenamentoPage({ params }) {
         infortunato: !!inf,
         infortunioId: inf?.id ?? null,
         infortunioDal: inf?.data_inizio ?? null,
+        assentePrevisto: r.id in assenzaByIscr,
+        assenzaNota: assenzaByIscr[r.id] || null,
       }
     })
     .sort((a, b) => `${a.nome}`.localeCompare(`${b.nome}`))
+
+  const assentiAnnunciati = portieri
+    .filter((p) => p.assentePrevisto)
+    .map((p) => `${p.nome} ${p.cognome ?? ''}`.trim() + (p.assenzaNota ? ` (${p.assenzaNota})` : ''))
+    .join(', ')
 
   const valIniziali = {}
   for (const v of vals ?? []) valIniziali[v.portiere_id] = v
@@ -291,6 +312,11 @@ export default async function AllenamentoPage({ params }) {
         </h1>
       </div>
       <div className="content">
+        {assentiAnnunciati.length > 0 && (
+          <div className="ok-msg" style={{ marginBottom: 16, background: '#fff8e6', border: '1px solid #f0d98a' }}>
+            📅 <b>Assenti annunciati:</b> {assentiAnnunciati}
+          </div>
+        )}
         <AllenamentoTabs
           dettaglio={
             <AllenamentoForm allenamento={allenamento} categorie={categorie} stagioneId={allenamento.stagione_id} />

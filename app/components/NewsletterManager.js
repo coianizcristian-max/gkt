@@ -25,7 +25,7 @@ export function NewsletterRender({ titolo, sezioni, dataStr, societa }) {
           <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, lineHeight: 1.25, letterSpacing: '-0.3px' }}>{titolo || 'Titolo newsletter'}</h1>
           {dataStr && <div style={{ marginTop: 10, fontSize: 13, opacity: 0.75 }}>{dataStr}</div>}
         </div>
-        <img src="/gk_circle.png" alt="GKSeason" style={{ width: 56, height: 56, flexShrink: 0, display: 'block' }} />
+        <img src="/gk_circle_white.png" alt="GKSeason" style={{ width: 56, height: 'auto', flexShrink: 0, display: 'block' }} />
       </div>
 
       {/* Corpo */}

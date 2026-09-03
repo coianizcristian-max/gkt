@@ -81,17 +81,20 @@ export default async function PartitaPage({ params }) {
   // Il gating non dipende dai dati di partita: prima girava dopo il batch
   // sottostante, ora in parallelo con esso.
   const [
-    [{ data: catRows }, { data: iscr }, { data: vals }, { data: scalaRows }, { data: puntiRows }, { data: avvRows }],
+    [{ data: catRows }, { data: iscr }, { data: vals }, { data: scalaRows }, { data: puntiRows }, { data: avvRows }, { data: iscrAll }],
     [gatingCfg, abbAttivo],
   ] = await Promise.all([
     Promise.all([
       supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', partita.stagione_id),
       supabase.from('iscrizioni').select('portieri(id, nome, cognome)')
         .eq('stagione_id', partita.stagione_id).eq('squadra_id', partita.squadra_id),
-      supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, note').eq('partita_id', id),
+      supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, gol_subiti, note, fuori_categoria').eq('partita_id', id),
       supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
       supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'punti_partita').eq('attivo', true).order('ordine'),
       supabase.from('squadre_avversarie').select('nome').eq('stagione_id', partita.stagione_id),
+      // Tutti gli iscritti della stagione (con la loro categoria): serve per poter
+      // valutare "fuori categoria" un portiere che non è di questa categoria.
+      supabase.from('iscrizioni').select('squadra_id, portieri(id, nome, cognome)').eq('stagione_id', partita.stagione_id),
     ]),
     Promise.all([
       getGatingConfig(supabase),
@@ -101,8 +104,17 @@ export default async function PartitaPage({ params }) {
   const canValPartita = isUnlocked('valutazioni_partita', gatingCfg, abbAttivo)
 
   const categorie = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
+  const nomeCategoria = {}
+  for (const c of categorie) nomeCategoria[c.id] = c.nome
   const portieri = (iscr ?? []).map((r) => r.portieri).filter(Boolean)
     .sort((a, b) => `${a.nome}`.localeCompare(`${b.nome}`))
+  const idInCategoria = new Set(portieri.map((p) => p.id))
+  // Portieri di ALTRE categorie della stessa stagione: utilizzabili per una
+  // valutazione "fuori categoria" quando i titolari non sono disponibili.
+  const portieriAltri = (iscrAll ?? [])
+    .filter((r) => r.portieri && r.squadra_id !== partita.squadra_id && !idInCategoria.has(r.portieri.id))
+    .map((r) => ({ ...r.portieri, categoria: nomeCategoria[r.squadra_id] ?? 'Altra categoria' }))
+    .sort((a, b) => `${a.categoria}`.localeCompare(`${b.categoria}`) || `${a.nome}`.localeCompare(`${b.nome}`))
   const valIniziali = {}
   for (const v of vals ?? []) valIniziali[v.portiere_id] = v
   const scalaVoti = (scalaRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
@@ -121,11 +133,12 @@ export default async function PartitaPage({ params }) {
         <h2 className="sezione-titolo">Valutazioni</h2>
         {!canValPartita
           ? <PaywallBanner chiave="valutazioni_partita" label="Valutazioni partita" />
-          : portieri.length > 0 ? (
+          : (portieri.length > 0 || portieriAltri.length > 0) ? (
           <ValutazioniPartita
             partitaId={id}
             golSubiti={partita.gol_subiti}
             portieri={portieri}
+            portieriAltri={portieriAltri}
             valIniziali={valIniziali}
             scalaVoti={scalaVoti}
             puntiOpts={puntiOpts}

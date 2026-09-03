@@ -98,7 +98,7 @@ export default async function StatistichePortierePage({ params }) {
         : Promise.resolve({ data: [] }),
       partIds.length
         ? supabase.from('valutazioni_partita')
-            .select('partita_id, presente, voto, punti, gol_subiti')
+            .select('partita_id, presente, voto, punti, gol_subiti, fuori_categoria')
             .eq('portiere_id', id).in('partita_id', partIds)
         : Promise.resolve({ data: [] }),
       supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
@@ -196,9 +196,15 @@ export default async function StatistichePortierePage({ params }) {
   // ── Calcoli partite ──────────────────────────────────────────────────────
   // presente=true significa che il portiere ha giocato (era in campo)
   // Campionato ora ESCLUDE la coppa (prima le sommava insieme): tre gruppi distinti.
-  const parCamp = vPar.filter((v) => v.tipo !== 'amichevole' && v.tipo !== 'torneo' && v.tipo !== 'coppa' && v.presente)
-  const parCoppa = vPar.filter((v) => v.tipo === 'coppa' && v.presente)
-  const parAm = vPar.filter((v) => v.tipo === 'amichevole' && v.presente)
+  // Le prestazioni "fuori categoria" (il portiere ha giocato in una partita di
+  // un'altra categoria) restano SEPARATE dalle statistiche della sua categoria:
+  // qui usiamo solo quelle in categoria; le fuori categoria vanno nella sezione dedicata.
+  const vParIn = vPar.filter((v) => !v.fuori_categoria)
+  const vParFuori = vPar.filter((v) => v.fuori_categoria)
+  const parCamp = vParIn.filter((v) => v.tipo !== 'amichevole' && v.tipo !== 'torneo' && v.tipo !== 'coppa' && v.presente)
+  const parCoppa = vParIn.filter((v) => v.tipo === 'coppa' && v.presente)
+  const parAm = vParIn.filter((v) => v.tipo === 'amichevole' && v.presente)
+  const parFuori = vParFuori.filter((v) => v.presente)
   const mediaVotiPar = (arr) => {
     const vv = arr.filter((v) => v.voto != null).map((v) => Number(v.voto))
     return vv.length ? vv.reduce((s, x) => s + x, 0) / vv.length : null
@@ -212,6 +218,7 @@ export default async function StatistichePortierePage({ params }) {
   const gsCamp = golStats(parCamp)
   const gsCoppa = golStats(parCoppa)
   const gsAm = golStats(parAm)
+  const gsFuori = golStats(parFuori)
   const puntiGruppo = (arr) => arr.reduce((s, v) => s + (v.punti != null ? Number(v.punti) : 0), 0)
   const cleanSheet = gsCamp.cs
   const cleanSheetCoppa = gsCoppa.cs
@@ -274,7 +281,7 @@ export default async function StatistichePortierePage({ params }) {
     .map((v) => ({ x: v.data, y: Number(v.voto) }))
 
   // Grafico 3: voti ultime 10 partite
-  const g3 = vPar
+  const g3 = vParIn
     .filter((v) => v.presente && v.voto != null)
     .sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
     .slice(-10)
@@ -428,6 +435,28 @@ export default async function StatistichePortierePage({ params }) {
             </div>
           </div>
         </div>
+
+        {/* Fuori categoria: prestazioni in partite di un'altra categoria, tenute separate */}
+        {parFuori.length > 0 && (
+          <div className="scheda" style={{ marginBottom: 14, borderLeft: '4px solid var(--giallo)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 6 }}>Fuori categoria</h3>
+            <p className="sub-intro" style={{ marginTop: 0 }}>
+              Partite giocate in una categoria diversa dalla propria. Tenute separate dalle statistiche della sua categoria.
+            </p>
+            <div className="stat-rows">
+              <div className="stat-block">
+                <div className="stat-line"><span>Partite giocate</span><b>{parFuori.length}</b></div>
+                <div className="stat-line"><span>Media voto</span><b style={{ color: 'var(--azzurro)' }}>{fmt(mediaVotiPar(parFuori))}</b></div>
+                <div className="stat-line"><span>Gol subiti</span><b>{gsFuori.tot}</b></div>
+              </div>
+              <div className="stat-block">
+                <div className="stat-line"><span>Gol subiti / partita</span><b>{fmt(gsFuori.media, 2)}</b></div>
+                <div className="stat-line"><span>Clean sheet</span><b style={{ color: 'var(--campo)' }}>{gsFuori.cs}</b></div>
+                <div className="stat-line"><span>Punti totali</span><b>{fmt(puntiGruppo(parFuori), 0)}</b></div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Per caratteristica */}
         {parametri.length > 0 && Object.keys(perParametro).length > 0 && (

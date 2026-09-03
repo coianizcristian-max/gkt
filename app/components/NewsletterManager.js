@@ -39,11 +39,21 @@ export function NewsletterRender({ titolo, sezioni, dataStr, societa }) {
           if (s.tipo === 'foto') return (
             <div key={i} style={{ margin: '20px 0' }}>
               {s.foto_url && (
-                <img src={s.foto_url} alt={s.testo ?? ''} style={{
-                  width: '100%', borderRadius: 8, display: 'block',
-                  maxHeight: 340, objectFit: 'cover',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
-                }} />
+                s.link_url ? (
+                  <a href={s.link_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+                    <img src={s.foto_url} alt={s.testo ?? ''} style={{
+                      width: '100%', borderRadius: 8, display: 'block',
+                      maxHeight: 340, objectFit: 'cover',
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+                    }} />
+                  </a>
+                ) : (
+                  <img src={s.foto_url} alt={s.testo ?? ''} style={{
+                    width: '100%', borderRadius: 8, display: 'block',
+                    maxHeight: 340, objectFit: 'cover',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+                  }} />
+                )
               )}
               {!s.foto_url && (
                 <div style={{ background: '#f0f4f8', borderRadius: 8, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8899a8', fontSize: 14 }}>
@@ -129,6 +139,9 @@ function EditorSezione({ sezione, idx, onUpdate, onRemove }) {
             )}
             <input value={sezione.testo ?? ''} onChange={(e) => onUpdate({ ...sezione, testo: e.target.value })}
               placeholder="Didascalia (opzionale)" style={{ width: '100%', boxSizing: 'border-box', fontSize: 13 }} />
+            <input value={sezione.link_url ?? ''} onChange={(e) => onUpdate({ ...sezione, link_url: e.target.value })}
+              placeholder="Link di destinazione (opzionale) — es. https://…" style={{ width: '100%', boxSizing: 'border-box', fontSize: 13, marginTop: 8 }} />
+            <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--ink-soft)' }}>Se compili il link, la foto diventa cliccabile (anche nell&rsquo;email inviata).</p>
           </div>
         )}
       </div>

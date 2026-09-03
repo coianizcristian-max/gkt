@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { SelettoreCollegamenti, TrendObiettivo } from '@/app/components/ObiettivoCollegamenti'
 import ObiettivoMisurazioni from '@/app/components/ObiettivoMisurazioni'
+import ProposteObiettivi from '@/app/components/ProposteObiettivi'
 
 const STATI = ['aperto', 'raggiunto', 'sospeso']
 
@@ -43,16 +44,38 @@ function PercentualeBar({ value }) {
   )
 }
 
-export default function ObiettiviManager({ portiereId, stagioneId, isPortiere = false, obiettivi, sottoByObiettivo, parametriTutti = [], eserciziTutti = [], collegamentiPerObiettivo = {}, trendPerObiettivo = {} }) {
+export default function ObiettiviManager({ portiereId, stagioneId, ruolo, obiettivi, sottoByObiettivo, parametriTutti = [], eserciziTutti = [], collegamentiPerObiettivo = {}, trendPerObiettivo = {}, proposte = [] }) {
   const router = useRouter()
   const [creating, setCreating] = useState(false)
   const [filtroLivello, setFiltroLivello] = useState('tutti')
+  const [tab, setTab] = useState('obiettivi')
+
+  // Il portiere può VEDERE gli obiettivi ma non crearli/modificarli: quelle scritture
+  // sono riservate al preparatore (la RLS le rifiuta). Nascondere i controlli evita
+  // l'errore "row-level security policy for table obiettivi". Le proposte personali,
+  // invece, le può inserire anche il portiere (tab dedicato, tabella separata).
+  const isPortiere = ruolo === 'portiere'
 
   const lista = filtroLivello === 'tutti' ? obiettivi : obiettivi.filter((o) => (o.livello ?? 'stagionale') === filtroLivello)
 
   return (
     <div className="lista-editor">
-      <p className="sub-intro">Obiettivi in stile PNL: definiscili in modo &ldquo;ben formato&rdquo; (in positivo, misurabili, contestualizzati), con scadenze, note e sotto-obiettivi da monitorare.</p>
+      {/* Tab principali: Obiettivi | Proposta obiettivi personali */}
+      <div className="sub-nav" style={{ marginBottom: 14 }}>
+        <button type="button" className={`sub-nav-link ${tab === 'obiettivi' ? 'active' : ''}`} onClick={() => setTab('obiettivi')}>🎯 Obiettivi</button>
+        <button type="button" className={`sub-nav-link ${tab === 'proposte' ? 'active' : ''}`} onClick={() => setTab('proposte')}>💡 Proposta obiettivi personali</button>
+      </div>
+
+      {tab === 'proposte' ? (
+        <ProposteObiettivi portiereId={portiereId} stagioneId={stagioneId} ruolo={ruolo} proposte={proposte} />
+      ) : (
+      <>
+      <p className="sub-intro">
+        Obiettivi in stile PNL: definiscili in modo &ldquo;ben formato&rdquo; (in positivo, misurabili, contestualizzati), con scadenze, note e sotto-obiettivi da monitorare.
+        {isPortiere
+          ? ' Come portiere qui li consulti in sola lettura: per suggerire un tuo obiettivo usa il tab &ldquo;Proposta obiettivi personali&rdquo;, che il preparatore poi gestisce.'
+          : ' Usa il tab &ldquo;Proposta obiettivi personali&rdquo; per raccogliere e gestire (✔/✘) le proposte che arrivano dai portieri.'}
+      </p>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
         <div className="sub-nav" style={{ marginBottom: 0 }}>
@@ -65,25 +88,27 @@ export default function ObiettiviManager({ portiereId, stagioneId, isPortiere = 
         </div>
       </div>
 
-      {isPortiere && <p className="sub-intro">Gli obiettivi vengono definiti dal tuo preparatore. Qui puoi consultarli. Per proporre i tuoi, usa il tab &ldquo;Proposta obiettivi personali&rdquo;.</p>}
       {!isPortiere && (creating
         ? <ObiettivoCard portiereId={portiereId} stagioneId={stagioneId} onSaved={() => { setCreating(false); router.refresh() }} onCancel={() => setCreating(false)} />
         : <button className="btn-azione" onClick={() => setCreating(true)} type="button">+ Nuovo obiettivo</button>)}
 
       {lista.length === 0 && !creating && <div className="empty">Nessun obiettivo {filtroLivello !== 'tutti' ? `di tipo "${livInfo(filtroLivello).label}"` : ''}.</div>}
       {lista.map((o) => (
-        <ObiettivoCard key={o.id} obiettivo={o} sotto={sottoByObiettivo[o.id] ?? []} readOnly={isPortiere}
+        <ObiettivoCard key={o.id} obiettivo={o} sotto={sottoByObiettivo[o.id] ?? []}
           portiereId={portiereId} stagioneId={stagioneId} onSaved={() => router.refresh()}
           parametriTutti={parametriTutti} eserciziTutti={eserciziTutti}
           collegamenti={collegamentiPerObiettivo[o.id] ?? { parametri: [], esercizi: [] }}
           trend={trendPerObiettivo[o.id] ?? {}}
+          soloLettura={isPortiere}
         />
       ))}
+      </>
+      )}
     </div>
   )
 }
 
-function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved, onCancel, readOnly = false, parametriTutti = [], eserciziTutti = [], collegamenti = { parametri: [], esercizi: [] }, trend = {} }) {
+function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved, onCancel, parametriTutti = [], eserciziTutti = [], collegamenti = { parametri: [], esercizi: [] }, trend = {}, soloLettura = false }) {
   const isEdit = !!obiettivo
   const [espanso, setEspanso] = useState(!isEdit)
   const [f, setF] = useState({
@@ -163,6 +188,7 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
   return (
     <div className={`obiettivo-card stato-${f.stato}`}>
       {error && <div className="err">{error}</div>}
+      <fieldset disabled={soloLettura} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
       <div className="form-grid">
         <div className="field field-full"><label>Obiettivo (in positivo): cosa vuoi ottenere? *</label>
           <input value={f.titolo} onChange={upd('titolo')} /></div>
@@ -204,16 +230,17 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
         <div className="field field-full"><label>Note</label>
           <textarea rows="2" value={f.note} onChange={upd('note')} /></div>
       </div>
+      </fieldset>
 
       <div className="form-actions">
         {isEdit && <button className="btn-ghost" onClick={() => setEspanso(false)} type="button">Comprimi</button>}
-        {!readOnly && onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
-        {!readOnly && isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Archivia</button>}
-        {!readOnly && <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? 'Salvataggio...' : done ? 'Salvato \u2713' : 'Salva obiettivo'}</button>}
+        {!soloLettura && onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
+        {!soloLettura && isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Archivia</button>}
+        {!soloLettura && <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? 'Salvataggio...' : done ? 'Salvato \u2713' : 'Salva obiettivo'}</button>}
       </div>
 
       {isEdit && <TrendObiettivo trendPerParametro={trend} />}
-      {isEdit && !readOnly && (
+      {isEdit && !soloLettura && (
         <SelettoreCollegamenti
           obiettivoId={obiettivo.id}
           parametriTutti={parametriTutti}
@@ -222,14 +249,27 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
           eserciziSelezionati={collegamenti.esercizi}
         />
       )}
-      {isEdit && <SottoObiettivi obiettivoId={obiettivo.id} sotto={sotto} onChanged={onSaved} readOnly={readOnly} />}
-      {isEdit && !readOnly && <ObiettivoMisurazioni obiettivoId={obiettivo.id} eserciziTutti={eserciziTutti} />}
+      {isEdit && !soloLettura && <SottoObiettivi obiettivoId={obiettivo.id} sotto={sotto} onChanged={onSaved} />}
+      {isEdit && !soloLettura && <ObiettivoMisurazioni obiettivoId={obiettivo.id} eserciziTutti={eserciziTutti} />}
+      {/* Sotto-obiettivi in sola lettura per il portiere */}
+      {isEdit && soloLettura && sotto.length > 0 && (
+        <div className="elenco-blocco">
+          <h3>Sotto-obiettivi da monitorare</h3>
+          {sotto.map((so) => (
+            <div key={so.id} className="lista-riga" style={{ opacity: 0.9 }}>
+              <span className="lista-nome" style={{ flex: 1 }}>{so.descrizione}</span>
+              {so.scadenza && <span className="lista-ord" style={{ fontSize: 12 }}>Scad. {so.scadenza}</span>}
+              <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{so.stato ?? 'aperto'}</span>
+            </div>
+          ))}
+        </div>
+      )}
       {!isEdit && <p className="sub-intro">Salva l&rsquo;obiettivo per aggiungere i sotto-obiettivi.</p>}
     </div>
   )
 }
 
-function SottoObiettivi({ obiettivoId, sotto, onChanged, readOnly = false }) {
+function SottoObiettivi({ obiettivoId, sotto, onChanged }) {
   async function aggiungi() {
     const supabase = createClient()
     const maxOrd = sotto.reduce((m, x) => Math.max(m, x.ordine ?? 0), 0)
@@ -241,13 +281,13 @@ function SottoObiettivi({ obiettivoId, sotto, onChanged, readOnly = false }) {
     <div className="elenco-blocco">
       <h3>Sotto-obiettivi da monitorare</h3>
       {sotto.length === 0 && <p className="sub-intro">Nessun sotto-obiettivo.</p>}
-      {sotto.map((so) => <SottoRiga key={so.id} so={so} onChanged={onChanged} readOnly={readOnly} />)}
-      {!readOnly && <button className="btn-ghost" onClick={aggiungi} type="button">+ Aggiungi sotto-obiettivo</button>}
+      {sotto.map((so) => <SottoRiga key={so.id} so={so} onChanged={onChanged} />)}
+      <button className="btn-ghost" onClick={aggiungi} type="button">+ Aggiungi sotto-obiettivo</button>
     </div>
   )
 }
 
-function SottoRiga({ so, onChanged, readOnly = false }) {
+function SottoRiga({ so, onChanged }) {
   const [descrizione, setDescrizione] = useState(so.descrizione)
   const [scadenza, setScadenza] = useState(so.scadenza ?? '')
   const [stato, setStato] = useState(so.stato ?? 'aperto')
@@ -271,8 +311,8 @@ function SottoRiga({ so, onChanged, readOnly = false }) {
       <input className="lista-nome" style={{ flex: 1 }} value={descrizione} onChange={(e) => { setDescrizione(e.target.value); setDone(false) }} />
       <label className="lista-ord">Scadenza<input type="date" value={scadenza} onChange={(e) => { setScadenza(e.target.value); setDone(false) }} /></label>
       <select value={stato} onChange={(e) => { setStato(e.target.value); setDone(false) }}>{STATI.map((s) => <option key={s} value={s}>{s}</option>)}</select>
-      {!readOnly && <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '\u2713' : 'Salva'}</button>}
-      {!readOnly && <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>}
+      <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '\u2713' : 'Salva'}</button>
+      <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>
     </div>
   )
 }

@@ -24,6 +24,11 @@ export default async function ObiettiviPortierePage({ params }) {
   const { data: obiettivi } = await supabase.from('obiettivi')
     .select('*').eq('portiere_id', id).eq('archiviato', false).order('created_at', { ascending: false })
 
+  // Proposte di obiettivo personale (tab dedicato): sia il portiere sia lo staff
+  // possono inserirle; lo stato (✔/✘) lo decide solo lo staff.
+  const { data: proposte } = await supabase.from('proposte_obiettivi')
+    .select('*').eq('portiere_id', id).order('created_at', { ascending: false })
+
   const obIds = (obiettivi ?? []).map((o) => o.id)
   const sottoByObiettivo = {}
   if (obIds.length) {
@@ -128,13 +133,14 @@ export default async function ObiettiviPortierePage({ params }) {
         {canObiettivi ? <ObiettiviManager
           portiereId={id}
           stagioneId={stagione?.id ?? null}
-          isPortiere={profiloViewer?.ruolo === 'portiere'}
+          ruolo={profiloViewer?.ruolo ?? null}
           obiettivi={obiettivi ?? []}
           sottoByObiettivo={sottoByObiettivo}
           parametriTutti={parametriTutti}
           eserciziTutti={eserciziTutti}
           collegamentiPerObiettivo={collegamentiPerObiettivo}
           trendPerObiettivo={trendPerObiettivo}
+          proposte={proposte ?? []}
         /> : <PaywallBanner chiave="obiettivi_portieri" label="Obiettivi portieri" />}
       </div>
     </>

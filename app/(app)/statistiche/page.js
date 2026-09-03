@@ -58,7 +58,7 @@ export default async function StatistichePage() {
       ? supabase.from('valutazioni').select('portiere_id, presente, voto, allenamento_id').in('allenamento_id', allenIds)
       : Promise.resolve({ data: [] }),
     partIds.length
-      ? supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, gol_subiti, partita_id').in('partita_id', partIds)
+      ? supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, gol_subiti, partita_id, fuori_categoria').in('partita_id', partIds)
       : Promise.resolve({ data: [] }),
     allenIds.length
       ? supabase.from('valutazioni')
@@ -102,7 +102,9 @@ export default async function StatistichePage() {
     const presenze = va.filter((x) => x.presente).length
     const votiA = va.filter((x) => x.voto != null).map((x) => Number(x.voto))
     const mediaA = votiA.length ? votiA.reduce((s, x) => s + x, 0) / votiA.length : null
-    const vp = vParBy[p.id] ?? []
+    // Le prestazioni "fuori categoria" restano fuori dai numeri di categoria del coach
+    // (compaiono solo, separate, nella scheda statistiche del singolo portiere).
+    const vp = (vParBy[p.id] ?? []).filter((x) => !x.fuori_categoria)
     // Media partite solo campionato (esclude amichevoli)
     const vpCamp = vp.filter((x) => x.presente && tipoPartita[x.partita_id] !== 'amichevole')
     const votiP = vpCamp.filter((x) => x.voto != null).map((x) => Number(x.voto))

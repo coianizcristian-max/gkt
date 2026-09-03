@@ -42,6 +42,7 @@ export default async function DashboardPage() {
   let prossimoAllenamento = null
   let partiteImminenti = []
   let misurazioniDaFare = []
+  let proposteDaGestire = []
   let coupon = null
 
   // ── Stato configurazione iniziale (per la checklist di onboarding) ──
@@ -177,6 +178,22 @@ export default async function DashboardPage() {
       portieriAttenzione = portieriList
         .filter((p) => motiviPerPortiere[p.id]?.length > 0)
         .map((p) => ({ ...p, motivi: motiviPerPortiere[p.id] }))
+    }
+
+    // ── Proposte di obiettivo personale da gestire (feature A) ──
+    // Avviso "Il portiere X ha inserito N nuove proposte": N = proposte ancora
+    // col quadratino vuoto (stato 'da_gestire'). Sparisce quando lo staff le gestisce
+    // tutte (spunta verde / X rossa).
+    if (portiereIds.length) {
+      const { data: propRows } = await supabase
+        .from('proposte_obiettivi').select('portiere_id')
+        .eq('stagione_id', stagione.id).eq('stato', 'da_gestire')
+        .in('portiere_id', portiereIds)
+      const contPerPortiere = {}
+      for (const r of propRows ?? []) contPerPortiere[r.portiere_id] = (contPerPortiere[r.portiere_id] ?? 0) + 1
+      proposteDaGestire = portieriList
+        .filter((p) => contPerPortiere[p.id] > 0)
+        .map((p) => ({ id: p.id, nome: `${p.nome ?? ''} ${p.cognome ?? ''}`.trim(), n: contPerPortiere[p.id] }))
     }
 
     // ── Misurazioni oggettive da fare (test con cadenza, prossima <= oggi) ──
@@ -440,6 +457,20 @@ export default async function DashboardPage() {
                 <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>
                   {m.portiere} · obiettivo: {m.obiettivo}{m.ultimoValore ? ` · ultima misura: ${m.ultimoValore}` : ''}
                 </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {proposteDaGestire.length > 0 && (
+          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--giallo)', maxWidth: 'none' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--giallo)' }}>
+              💡 Proposte obiettivi personali da gestire
+            </h3>
+            {proposteDaGestire.map((p) => (
+              <Link key={p.id} href={`/portieri/${p.id}/obiettivi`} className="dv-item" style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <span>Il portiere <b>{p.nome || '—'}</b> ha inserito {p.n} {p.n === 1 ? 'nuova proposta personale' : 'nuove proposte personali'}</span>
+                <span className="dv-data">gestisci →</span>
               </Link>
             ))}
           </div>

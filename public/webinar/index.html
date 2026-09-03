@@ -256,11 +256,11 @@
     });
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Inserimento via API REST di Supabase con fetch nativa: NESSUN SDK esterno,
+    // così il form non può rompersi se una CDN non carica.
     const SUPABASE_URL = 'https://kaqgpdbojawjbssqrtoh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthcWdwZGJvamF3amJzc3FydG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mjg0OTIsImV4cCI6MjA5NzEwNDQ5Mn0.FKksxY_elhMvvf3AIcuwuIJfSu2XQbk9-v1GnU7alhQ';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // ─── CAMPAGNA WEBINAR — cambia SOLO questi 2 valori per ogni nuovo webinar ───
     const WEBINAR_CODICE = 'WEB-2026-10';                       // codice univoco (identifica la campagna)
@@ -277,7 +277,7 @@
 
       if (document.getElementById('website').value.trim() !== '') { window.location.href = 'grazie.html'; return; }
 
-      const nome  = document.getElementById('nome').value.trim();
+      const nome = document.getElementById('nome').value.trim();
       const email = document.getElementById('email').value.trim();
       const telefono = document.getElementById('telefono').value.trim();
       const dataSelezionata = document.querySelector('input[name="data_selezionata"]:checked').value;
@@ -288,21 +288,35 @@
       btn.disabled = true;
       const t = btn.textContent; btn.textContent = 'Invio in corso…';
 
-      const { error } = await supabase.from('iscrizioni_webinar').insert({
-        nome, email: email.toLowerCase(), telefono: telefono || null,
-        data_selezionata: dataSelezionata,
-        webinar_codice: WEBINAR_CODICE, webinar_titolo: WEBINAR_TITOLO,
-        origine: 'landing', user_agent: navigator.userAgent
-      });
+      try {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/iscrizioni_webinar', {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            nome: nome,
+            email: email.toLowerCase(),
+            telefono: telefono || null,
+            data_selezionata: dataSelezionata,
+            webinar_codice: WEBINAR_CODICE,
+            webinar_titolo: WEBINAR_TITOLO,
+            origine: 'landing',
+            user_agent: navigator.userAgent
+          })
+        });
 
-      if (error) {
-        if (error.code === '23505') { window.location.href = 'grazie.html'; return; }
-        console.error(error);
-        showError('Si è verificato un errore. Riprova tra poco.');
-        btn.disabled = false; btn.textContent = t;
-        return;
+        if (res.ok || res.status === 409) { window.location.href = 'grazie.html'; return; } // 409 = gia iscritto
+        console.error('Errore Supabase:', res.status, await res.text());
+        showError('Si e verificato un errore. Riprova tra poco.');
+      } catch (err) {
+        console.error(err);
+        showError('Connessione non riuscita. Controlla la rete e riprova.');
       }
-      window.location.href = 'grazie.html';
+      btn.disabled = false; btn.textContent = t;
     });
   </script>
 </body>

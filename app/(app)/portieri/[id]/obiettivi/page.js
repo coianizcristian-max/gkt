@@ -128,6 +128,7 @@ export default async function ObiettiviPortierePage({ params }) {
         {canObiettivi ? <ObiettiviManager
           portiereId={id}
           stagioneId={stagione?.id ?? null}
+          isPortiere={profiloViewer?.ruolo === 'portiere'}
           obiettivi={obiettivi ?? []}
           sottoByObiettivo={sottoByObiettivo}
           parametriTutti={parametriTutti}

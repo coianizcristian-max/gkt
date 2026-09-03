@@ -14,6 +14,7 @@ const VOCI = [
   { href: '/supervisore/coupon', label: 'Coupon' },
   { href: '/supervisore/newsletter', label: 'Newsletter' },
   { href: '/supervisore/metriche', label: 'Metriche' },
+  { href: '/supervisore/webinar', label: 'Webinar' },
   { href: '/supervisore/versioni', label: 'Versioni' },
 ]
 

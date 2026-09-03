@@ -7,8 +7,28 @@ import Link from 'next/link'
 
 const fmt = (n, dec = 2) => (n == null ? '—' : Number(n).toLocaleString('it-IT', { maximumFractionDigits: dec }))
 
-export default function StatisticheClient({ stats, categorieOrd, byCat, feedbackStats, feedback, isPortiere, myPortiereId }) {
+export default function StatisticheClient({ stats, categorieOrd, byCat, feedbackStats, feedback, isPortiere, myPortiereId, canExport = true }) {
   const [tab, setTab] = useState('portieri')
+  const [expCat, setExpCat] = useState('tutte')
+  const [expMese, setExpMese] = useState('tutti')
+
+  // Opzioni mese: ultimi 12 mesi (YYYY-MM + etichetta in italiano)
+  const mesiOpzioni = []
+  const _oggi = new Date()
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(_oggi.getFullYear(), _oggi.getMonth() - i, 1)
+    mesiOpzioni.push({
+      val: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      lbl: d.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }),
+    })
+  }
+
+  const selStyle = { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--bordo, #d0d7dd)', background: '#fff', fontSize: 14, color: 'var(--ink, #14202b)' }
+
+  function esportaPdf() {
+    const params = new URLSearchParams({ mese: expMese, categoria: expCat })
+    window.open(`/api/statistiche-pdf?${params.toString()}`, '_blank')
+  }
 
   return (
     <>
@@ -20,6 +40,28 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, feedback
           <button type="button" className={`sub-nav-link ${tab === 'feedback' ? 'active' : ''}`} onClick={() => setTab('feedback')}>
             Feedback ({feedbackStats.totFeedback})
           </button>
+        </div>
+      )}
+
+      {!isPortiere && tab === 'portieri' && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'flex-end', margin: '4px 0 16px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--ink-soft)', marginBottom: 4 }}>Categoria</label>
+            <select value={expCat} onChange={(e) => setExpCat(e.target.value)} style={selStyle}>
+              <option value="tutte">Tutte le categorie</option>
+              {categorieOrd.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--ink-soft)', marginBottom: 4 }}>Periodo</label>
+            <select value={expMese} onChange={(e) => setExpMese(e.target.value)} style={selStyle}>
+              <option value="tutti">Tutta la stagione</option>
+              {mesiOpzioni.map((m) => <option key={m.val} value={m.val}>{m.lbl}</option>)}
+            </select>
+          </div>
+          {canExport
+            ? <button type="button" className="btn" onClick={esportaPdf}>📄 Esporta PDF</button>
+            : <a className="btn-ghost" href="/abbonati" style={{ color: 'var(--ink-soft)' }}>🔒 Esporta PDF — abbonati per sbloccare</a>}
         </div>
       )}
 

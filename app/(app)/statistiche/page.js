@@ -1,5 +1,6 @@
 import { createClient, getUser } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import Guida from '@/app/components/Guida'
 import StatisticheClient from './StatisticheClient'
 import ConfrontoPortieri from '@/app/components/ConfrontoPortieri'
@@ -17,6 +18,13 @@ export default async function StatistichePage() {
     getStagioneAttiva(supabase, user?.id),
   ])
   const isPortiere = profilo?.ruolo === 'portiere'
+
+  // Sblocco esportatore PDF statistiche (a pagamento)
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user?.id),
+  ])
+  const canExport = isUnlocked('report_pdf_statistiche', gatingCfg, abbAttivo)
 
   if (!stagione) {
     return (
@@ -158,6 +166,7 @@ export default async function StatistichePage() {
           feedback={feedbackRows ?? []}
           isPortiere={isPortiere}
           myPortiereId={profilo?.portiere_id ?? null}
+          canExport={canExport}
         />
       </div>
     </>

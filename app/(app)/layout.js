@@ -9,6 +9,7 @@ import { getGatingConfig, hasAbbonamento } from '@/lib/gating'
 import { puoVisualizzare } from '@/lib/permessi'
 import { getStagioneAttiva } from '@/lib/tenant'
 import IdentificaUtenteTracking from '@/app/components/IdentificaUtenteTracking'
+import IdleLogout from '@/app/components/IdleLogout'
 
 export default async function AppLayout({ children }) {
   const supabase = await createClient()
@@ -174,6 +175,7 @@ export default async function AppLayout({ children }) {
   return (
     <div className="shell">
       <IdentificaUtenteTracking id={user?.id ?? null} email={user?.email ?? null} ruolo={ruoloUtente} />
+      {user && <IdleLogout />}
       {/* Sidebar desktop */}
       <aside className="sidebar">
         <Link href={schedaHref} className="brand">

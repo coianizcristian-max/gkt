@@ -29,7 +29,7 @@ export async function GET(request) {
 
   let q = supabase
     .from('iscrizioni_webinar')
-    .select('nome, email, telefono, data_selezionata, webinar_codice, webinar_titolo, origine, created_at')
+    .select('nome, email, telefono, ruolo, data_selezionata, webinar_codice, webinar_titolo, origine, created_at')
     .order('created_at', { ascending: true }) // ordine di arrivo
 
   if (codice === SENZA) q = q.is('webinar_codice', null)
@@ -49,6 +49,7 @@ export async function GET(request) {
     'Nome': r.nome,
     'Email': r.email,
     'Telefono': r.telefono || '',
+    'Ruolo': r.ruolo === 'portiere' ? 'Portiere' : r.ruolo === 'preparatore' ? 'Preparatore' : '',
     'Data webinar': r.data_selezionata,
     'Iscritto il': fmt(r.created_at),
     'Codice campagna': r.webinar_codice || '',

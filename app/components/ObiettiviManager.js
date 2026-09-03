@@ -43,7 +43,7 @@ function PercentualeBar({ value }) {
   )
 }
 
-export default function ObiettiviManager({ portiereId, stagioneId, obiettivi, sottoByObiettivo, parametriTutti = [], eserciziTutti = [], collegamentiPerObiettivo = {}, trendPerObiettivo = {} }) {
+export default function ObiettiviManager({ portiereId, stagioneId, isPortiere = false, obiettivi, sottoByObiettivo, parametriTutti = [], eserciziTutti = [], collegamentiPerObiettivo = {}, trendPerObiettivo = {} }) {
   const router = useRouter()
   const [creating, setCreating] = useState(false)
   const [filtroLivello, setFiltroLivello] = useState('tutti')
@@ -65,13 +65,14 @@ export default function ObiettiviManager({ portiereId, stagioneId, obiettivi, so
         </div>
       </div>
 
-      {creating
+      {isPortiere && <p className="sub-intro">Gli obiettivi vengono definiti dal tuo preparatore. Qui puoi consultarli. Per proporre i tuoi, usa il tab &ldquo;Proposta obiettivi personali&rdquo;.</p>}
+      {!isPortiere && (creating
         ? <ObiettivoCard portiereId={portiereId} stagioneId={stagioneId} onSaved={() => { setCreating(false); router.refresh() }} onCancel={() => setCreating(false)} />
-        : <button className="btn-azione" onClick={() => setCreating(true)} type="button">+ Nuovo obiettivo</button>}
+        : <button className="btn-azione" onClick={() => setCreating(true)} type="button">+ Nuovo obiettivo</button>)}
 
       {lista.length === 0 && !creating && <div className="empty">Nessun obiettivo {filtroLivello !== 'tutti' ? `di tipo "${livInfo(filtroLivello).label}"` : ''}.</div>}
       {lista.map((o) => (
-        <ObiettivoCard key={o.id} obiettivo={o} sotto={sottoByObiettivo[o.id] ?? []}
+        <ObiettivoCard key={o.id} obiettivo={o} sotto={sottoByObiettivo[o.id] ?? []} readOnly={isPortiere}
           portiereId={portiereId} stagioneId={stagioneId} onSaved={() => router.refresh()}
           parametriTutti={parametriTutti} eserciziTutti={eserciziTutti}
           collegamenti={collegamentiPerObiettivo[o.id] ?? { parametri: [], esercizi: [] }}
@@ -82,7 +83,7 @@ export default function ObiettiviManager({ portiereId, stagioneId, obiettivi, so
   )
 }
 
-function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved, onCancel, parametriTutti = [], eserciziTutti = [], collegamenti = { parametri: [], esercizi: [] }, trend = {} }) {
+function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved, onCancel, readOnly = false, parametriTutti = [], eserciziTutti = [], collegamenti = { parametri: [], esercizi: [] }, trend = {} }) {
   const isEdit = !!obiettivo
   const [espanso, setEspanso] = useState(!isEdit)
   const [f, setF] = useState({
@@ -206,13 +207,13 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
 
       <div className="form-actions">
         {isEdit && <button className="btn-ghost" onClick={() => setEspanso(false)} type="button">Comprimi</button>}
-        {onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
-        {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Archivia</button>}
-        <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? 'Salvataggio...' : done ? 'Salvato \u2713' : 'Salva obiettivo'}</button>
+        {!readOnly && onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
+        {!readOnly && isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Archivia</button>}
+        {!readOnly && <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? 'Salvataggio...' : done ? 'Salvato \u2713' : 'Salva obiettivo'}</button>}
       </div>
 
       {isEdit && <TrendObiettivo trendPerParametro={trend} />}
-      {isEdit && (
+      {isEdit && !readOnly && (
         <SelettoreCollegamenti
           obiettivoId={obiettivo.id}
           parametriTutti={parametriTutti}
@@ -221,14 +222,14 @@ function ObiettivoCard({ obiettivo, sotto = [], portiereId, stagioneId, onSaved,
           eserciziSelezionati={collegamenti.esercizi}
         />
       )}
-      {isEdit && <SottoObiettivi obiettivoId={obiettivo.id} sotto={sotto} onChanged={onSaved} />}
-      {isEdit && <ObiettivoMisurazioni obiettivoId={obiettivo.id} eserciziTutti={eserciziTutti} />}
+      {isEdit && <SottoObiettivi obiettivoId={obiettivo.id} sotto={sotto} onChanged={onSaved} readOnly={readOnly} />}
+      {isEdit && !readOnly && <ObiettivoMisurazioni obiettivoId={obiettivo.id} eserciziTutti={eserciziTutti} />}
       {!isEdit && <p className="sub-intro">Salva l&rsquo;obiettivo per aggiungere i sotto-obiettivi.</p>}
     </div>
   )
 }
 
-function SottoObiettivi({ obiettivoId, sotto, onChanged }) {
+function SottoObiettivi({ obiettivoId, sotto, onChanged, readOnly = false }) {
   async function aggiungi() {
     const supabase = createClient()
     const maxOrd = sotto.reduce((m, x) => Math.max(m, x.ordine ?? 0), 0)
@@ -240,13 +241,13 @@ function SottoObiettivi({ obiettivoId, sotto, onChanged }) {
     <div className="elenco-blocco">
       <h3>Sotto-obiettivi da monitorare</h3>
       {sotto.length === 0 && <p className="sub-intro">Nessun sotto-obiettivo.</p>}
-      {sotto.map((so) => <SottoRiga key={so.id} so={so} onChanged={onChanged} />)}
-      <button className="btn-ghost" onClick={aggiungi} type="button">+ Aggiungi sotto-obiettivo</button>
+      {sotto.map((so) => <SottoRiga key={so.id} so={so} onChanged={onChanged} readOnly={readOnly} />)}
+      {!readOnly && <button className="btn-ghost" onClick={aggiungi} type="button">+ Aggiungi sotto-obiettivo</button>}
     </div>
   )
 }
 
-function SottoRiga({ so, onChanged }) {
+function SottoRiga({ so, onChanged, readOnly = false }) {
   const [descrizione, setDescrizione] = useState(so.descrizione)
   const [scadenza, setScadenza] = useState(so.scadenza ?? '')
   const [stato, setStato] = useState(so.stato ?? 'aperto')
@@ -270,8 +271,8 @@ function SottoRiga({ so, onChanged }) {
       <input className="lista-nome" style={{ flex: 1 }} value={descrizione} onChange={(e) => { setDescrizione(e.target.value); setDone(false) }} />
       <label className="lista-ord">Scadenza<input type="date" value={scadenza} onChange={(e) => { setScadenza(e.target.value); setDone(false) }} /></label>
       <select value={stato} onChange={(e) => { setStato(e.target.value); setDone(false) }}>{STATI.map((s) => <option key={s} value={s}>{s}</option>)}</select>
-      <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '\u2713' : 'Salva'}</button>
-      <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>
+      {!readOnly && <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '\u2713' : 'Salva'}</button>}
+      {!readOnly && <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>}
     </div>
   )
 }

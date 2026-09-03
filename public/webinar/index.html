@@ -147,7 +147,7 @@
             <span class="u">gkseason.it/dashboard</span>
           </div>
           <div class="shot">
-            <img src="dashboard-hero.png" alt="Dashboard GKSeason"
+            <img id="heroShot" alt="Dashboard GKSeason"
                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
             <div class="ph" style="display:none">Screenshot dashboard — 1920×1200</div>
           </div>
@@ -223,6 +223,14 @@
           </div>
 
           <div class="field">
+            <span class="lbl">Sei un…</span>
+            <div class="radios" id="radiosRuolo">
+              <label class="radio"><input type="radio" name="ruolo_webinar" value="preparatore"><span>Preparatore dei portieri</span></label>
+              <label class="radio"><input type="radio" name="ruolo_webinar" value="portiere"><span>Portiere</span></label>
+            </div>
+          </div>
+
+          <div class="field">
             <span class="lbl">Scegli la data della live</span>
             <div class="radios" id="radios">
               <label class="radio on"><input type="radio" name="data_selezionata" value="Giovedì 10 ottobre — ore 20:45" checked><span>Giovedì 10 ottobre <span class="d">— 20:45</span></span></label>
@@ -249,9 +257,13 @@
   </div>
 
   <script>
-    document.getElementById('radios').addEventListener('change', function(){
-      this.querySelectorAll('.radio').forEach(function(r){
-        r.classList.toggle('on', r.querySelector('input').checked);
+    ['radios','radiosRuolo'].forEach(function(id){
+      var g = document.getElementById(id);
+      if (!g) return;
+      g.addEventListener('change', function(){
+        this.querySelectorAll('.radio').forEach(function(r){
+          r.classList.toggle('on', r.querySelector('input').checked);
+        });
       });
     });
   </script>
@@ -271,11 +283,23 @@
     const errEl = document.getElementById('formError');
     const showError = (m) => { errEl.textContent = m; errEl.style.display = 'block'; };
 
+    // cartella corrente (funziona con o senza / finale nell'URL)
+    function folderBase() {
+      let p = window.location.pathname;
+      if (p.endsWith('.html')) p = p.replace(/[^/]*$/, '');
+      else if (!p.endsWith('/')) p = p + '/';
+      return p;
+    }
+    function vaiGrazie() { window.location.href = folderBase() + 'grazie.html'; }
+
+    // carica l'immagine hero dalla cartella giusta (evita il 404 se manca la / finale)
+    (function(){ var img = document.getElementById('heroShot'); if (img) img.src = folderBase() + 'dashboard-hero.png'; })();
+
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       errEl.style.display = 'none';
 
-      if (document.getElementById('website').value.trim() !== '') { window.location.href = 'grazie.html'; return; }
+      if (document.getElementById('website').value.trim() !== '') { vaiGrazie(); return; }
 
       const nome = document.getElementById('nome').value.trim();
       const email = document.getElementById('email').value.trim();
@@ -284,6 +308,8 @@
 
       if (nome.length < 2) { showError('Inserisci nome e cognome.'); return; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError("Controlla l'indirizzo email."); return; }
+      const ruoloEl = document.querySelector('input[name="ruolo_webinar"]:checked');
+      if (!ruoloEl) { showError('Indica se sei un preparatore o un portiere.'); return; }
 
       btn.disabled = true;
       const t = btn.textContent; btn.textContent = 'Invio in corso…';
@@ -302,6 +328,7 @@
             email: email.toLowerCase(),
             telefono: telefono || null,
             data_selezionata: dataSelezionata,
+            ruolo: ruoloEl.value,
             webinar_codice: WEBINAR_CODICE,
             webinar_titolo: WEBINAR_TITOLO,
             origine: 'landing',
@@ -309,7 +336,26 @@
           })
         });
 
-        if (res.ok || res.status === 409) { window.location.href = 'grazie.html'; return; } // 409 = gia iscritto
+        if (res.ok) { vaiGrazie(); return; }
+        if (res.status === 409) {   // gia iscritto a questa campagna (una sola iscrizione per webinar)
+          let msg = 'Sei gia iscritto a questo webinar. E consentita una sola iscrizione per campagna.';
+          try {
+            const r2 = await fetch(SUPABASE_URL + '/rest/v1/rpc/webinar_gia_iscritto', {
+              method: 'POST',
+              headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ p_email: email.toLowerCase(), p_codice: WEBINAR_CODICE })
+            });
+            const rows = await r2.json();
+            if (Array.isArray(rows) && rows[0]) {
+              const d = new Date(rows[0].created_at);
+              const q = d.toLocaleDateString('it-IT') + ' alle ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+              msg = 'Sei gia iscritto a questo webinar (sessione scelta: ' + rows[0].data_selezionata + ' — iscrizione del ' + q + '). Una sola iscrizione per campagna.';
+            }
+          } catch (e) {}
+          showError(msg);
+          btn.disabled = false; btn.textContent = t;
+          return;
+        }
         console.error('Errore Supabase:', res.status, await res.text());
         showError('Si e verificato un errore. Riprova tra poco.');
       } catch (err) {

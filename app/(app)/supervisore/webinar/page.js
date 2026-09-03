@@ -16,7 +16,7 @@ export default async function WebinarPage() {
   // ordine di ISCRIZIONE (ascendente): la prima riga è il primo iscritto.
   const { data: righe, error } = await supabase
     .from('iscrizioni_webinar')
-    .select('nome, email, telefono, data_selezionata, webinar_codice, webinar_titolo, created_at')
+    .select('nome, email, telefono, ruolo, data_selezionata, webinar_codice, webinar_titolo, created_at')
     .order('created_at', { ascending: true })
 
   // raggruppa per campagna → per data (mantiene l'ordine d'arrivo dentro ogni data)
@@ -96,6 +96,7 @@ export default async function WebinarPage() {
                         <th style={th}>Nome</th>
                         <th style={th}>Email</th>
                         <th style={th}>Telefono</th>
+                        <th style={th}>Ruolo</th>
                         <th style={th}>Iscritto il</th>
                       </tr>
                     </thead>
@@ -106,6 +107,7 @@ export default async function WebinarPage() {
                           <td style={td}>{r.nome}</td>
                           <td style={td}>{r.email}</td>
                           <td style={td}>{r.telefono || '—'}</td>
+                          <td style={td}>{r.ruolo === 'portiere' ? 'Portiere' : r.ruolo === 'preparatore' ? 'Preparatore' : '—'}</td>
                           <td style={{ ...td, whiteSpace: 'nowrap' }}>{fmtData(r.created_at)}</td>
                         </tr>
                       ))}

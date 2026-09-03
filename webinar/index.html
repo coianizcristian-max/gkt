@@ -262,6 +262,10 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthcWdwZGJvamF3amJzc3FydG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1Mjg0OTIsImV4cCI6MjA5NzEwNDQ5Mn0.FKksxY_elhMvvf3AIcuwuIJfSu2XQbk9-v1GnU7alhQ';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // ─── CAMPAGNA WEBINAR — cambia SOLO questi 2 valori per ogni nuovo webinar ───
+    const WEBINAR_CODICE = 'WEB-2026-10';                       // codice univoco (identifica la campagna)
+    const WEBINAR_TITOLO = 'Webinar GKSeason — Ottobre 2026';   // nome leggibile mostrato in Supervisore
+
     const form = document.getElementById('webinarForm');
     const btn  = document.getElementById('btnSubmit');
     const errEl = document.getElementById('formError');
@@ -286,7 +290,9 @@
 
       const { error } = await supabase.from('iscrizioni_webinar').insert({
         nome, email: email.toLowerCase(), telefono: telefono || null,
-        data_selezionata: dataSelezionata, origine: 'landing', user_agent: navigator.userAgent
+        data_selezionata: dataSelezionata,
+        webinar_codice: WEBINAR_CODICE, webinar_titolo: WEBINAR_TITOLO,
+        origine: 'landing', user_agent: navigator.userAgent
       });
 
       if (error) {

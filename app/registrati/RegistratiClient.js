@@ -1,18 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { trackMetaEvento } from '@/app/components/MetaPixel'
 import { leggiAttribuzione } from '@/app/components/AttribuzioneUtm'
+import HCaptcha from '@hcaptcha/react-hcaptcha'
+
+const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '98743d70-a876-400c-a1c4-ee8af4ea495e'
 
 export default function RegistratiClient({ token, datiInvito }) {
   const router = useRouter()
   const [nome, setNome] = useState(datiInvito?.nomeCompleto ?? '')
   const [email, setEmail] = useState(datiInvito?.email ?? '')
   const [password, setPassword] = useState('')
+  const [password2, setPassword2] = useState('')
+  const [showPw, setShowPw] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const captchaRef = useRef(null)
   const [error, setError] = useState('')
   const [msg, setMsg] = useState('')
   const [iscriviNewsletter, setIscriviNewsletter] = useState(true)
@@ -29,12 +36,20 @@ export default function RegistratiClient({ token, datiInvito }) {
     e.preventDefault()
     setError('')
     setMsg('')
-    if (password.length < 6) {
-      setError('La password deve avere almeno 6 caratteri.')
+    if (password.length < 8) {
+      setError('La password deve avere almeno 8 caratteri.')
+      return
+    }
+    if (password !== password2) {
+      setError('Le due password non coincidono.')
       return
     }
     if (!email.trim()) {
       setError('Inserisci un indirizzo email.')
+      return
+    }
+    if (HCAPTCHA_SITE_KEY && !captchaToken) {
+      setError('Completa la verifica di sicurezza (captcha) qui sotto.')
       return
     }
     setLoading(true)
@@ -44,6 +59,7 @@ export default function RegistratiClient({ token, datiInvito }) {
       email: email.trim(),
       password,
       options: {
+        captchaToken,
         data: { nome_completo: nome.trim(), ...(token && datiInvito ? { invito_token: token } : {}) },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/benvenuto`,
       },
@@ -55,10 +71,20 @@ export default function RegistratiClient({ token, datiInvito }) {
         signUpError.message?.toLowerCase().includes('already been registered') ||
         signUpError.message?.toLowerCase().includes('email address is already')
       ) {
+        // Account già esistente. Se sta arrivando da un NUOVO invito (es. nuovo
+        // preparatore la stagione dopo), non si ri-registra: lo mandiamo al login
+        // portando il token, così /login collega l'invito all'account esistente
+        // senza errori.
+        if (token && datiInvito) {
+          router.push(`/login?invito=${encodeURIComponent(token)}`)
+          return
+        }
         setError('Questa email è già registrata. Vai alla pagina di accesso.')
       } else {
         setError(signUpError.message)
       }
+      captchaRef.current?.resetCaptcha()
+      setCaptchaToken(null)
       setLoading(false)
       trackEvento('registrazione_fallita', { tipo_invito: datiInvito?.tipo ?? null })
       return
@@ -210,11 +236,32 @@ export default function RegistratiClient({ token, datiInvito }) {
           </div>
           <div className="field">
             <label htmlFor="password">Password</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="password"
+                type={showPw ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                style={{ paddingRight: 66 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((s) => !s)}
+                style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 0, fontSize: 12, fontWeight: 600, color: 'var(--ink-soft)', cursor: 'pointer' }}
+              >
+                {showPw ? 'Nascondi' : 'Mostra'}
+              </button>
+            </div>
+          </div>
+          <div className="field">
+            <label htmlFor="password2">Conferma password</label>
             <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              id="password2"
+              type={showPw ? 'text' : 'password'}
+              value={password2}
+              onChange={(e) => setPassword2(e.target.value)}
               required
               autoComplete="new-password"
             />
@@ -223,6 +270,16 @@ export default function RegistratiClient({ token, datiInvito }) {
             <input type="checkbox" checked={iscriviNewsletter} onChange={(e) => setIscriviNewsletter(e.target.checked)} />
             Iscrivimi alla newsletter GKSeason (puoi disiscriverti in qualsiasi momento)
           </label>
+          {HCAPTCHA_SITE_KEY && (
+            <div className="field" style={{ display: 'flex', justifyContent: 'center' }}>
+              <HCaptcha
+                ref={captchaRef}
+                sitekey={HCAPTCHA_SITE_KEY}
+                onVerify={(t) => setCaptchaToken(t)}
+                onExpire={() => setCaptchaToken(null)}
+              />
+            </div>
+          )}
           <button className="btn" type="submit" disabled={loading || tokenInvalido}>
             {loading ? 'Creazione…' : 'Crea account'}
           </button>

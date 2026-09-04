@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import SupervisoreNav from '@/app/components/SupervisoreNav'
 import GatingManager from '@/app/components/GatingManager'
-import { FUNZIONALITA } from '@/lib/gating'
+import { ALBERO_FUNZIONALITA } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,15 +14,13 @@ export default async function FunzionalitaPage() {
   if (!profilo?.supervisore) redirect('/')
 
   const { data: rows } = await supabase.from('funzionalita_config').select('chiave, free, label')
-  const configMap = {}
-  for (const r of rows ?? []) configMap[r.chiave] = r.free
+  const configMap = {}   // chiave → free (boolean) per le funzionalità
+  const labelMap = {}    // chiave → label (stringa) per prezzi/fee/giorni
+  for (const r of rows ?? []) { configMap[r.chiave] = r.free; labelMap[r.chiave] = r.label }
   const tuttoFree = configMap['__tutto_free'] ?? false
 
-  // Costruisce lista con valori correnti
-  const feeRow = (rows ?? []).find((r) => r.chiave === 'fee_contatto_importo')
-  const feeContatto = feeRow?.label ?? '2.90'
-
-  const get = (k, def) => (rows ?? []).find((r) => r.chiave === k)?.label ?? def
+  const feeContatto = labelMap['fee_contatto_importo'] ?? '2.90'
+  const get = (k, def) => labelMap[k] ?? def
   const prezziIniziali = {
     allenatore: {
       mensile:  get('prezzo_allenatore_mensile',  '9.90'),
@@ -35,11 +33,21 @@ export default async function FunzionalitaPage() {
       lifetime: get('prezzo_portiere_lifetime', '99.00'),
     },
   }
+  const giorniIniziali = {
+    allenatore: get('giorni_prova_allenatore', '30'),
+    portiere:   get('giorni_prova_portiere',   '30'),
+  }
 
-  const funzionalita = Object.entries(FUNZIONALITA).map(([k, def]) => ({
-    chiave: k,
-    label: def.label,
-    free: configMap[k] ?? def.defaultFree,
+  // Costruisce l'albero con il valore free corrente (saved > default) su ogni nodo.
+  const conValori = (nodo) => ({
+    chiave: nodo.chiave,
+    label: nodo.label,
+    free: configMap[nodo.chiave] ?? nodo.defaultFree,
+    ...(nodo.figli ? { figli: nodo.figli.map(conValori) } : {}),
+  })
+  const albero = ALBERO_FUNZIONALITA.map((s) => ({
+    sezione: s.sezione,
+    funzionalita: s.funzionalita.map(conValori),
   }))
 
   return (
@@ -50,7 +58,13 @@ export default async function FunzionalitaPage() {
       </div>
       <div className="content">
         <SupervisoreNav />
-        <GatingManager funzionalita={funzionalita} tuttoFree={tuttoFree} feeContatto={feeContatto} prezziIniziali={prezziIniziali} />
+        <GatingManager
+          albero={albero}
+          tuttoFree={tuttoFree}
+          feeContatto={feeContatto}
+          prezziIniziali={prezziIniziali}
+          giorniIniziali={giorniIniziali}
+        />
       </div>
     </>
   )

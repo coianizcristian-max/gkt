@@ -30,6 +30,7 @@ export default function GatingManager({
   feeContatto: feeIniziale,
   prezziIniziali,
   giorniIniziali,
+  lifetimeIniziale,
 }) {
   const router = useRouter()
   const righe = flatten(albero)
@@ -57,12 +58,17 @@ export default function GatingManager({
     allenatore: giorniIniziali?.allenatore ?? '30',
     portiere:   giorniIniziali?.portiere   ?? '30',
   })
+  const [lifetime, setLifetime] = useState({
+    allenatore: lifetimeIniziale?.allenatore ?? true,
+    portiere:   lifetimeIniziale?.portiere   ?? true,
+  })
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
 
   const tocca = () => setDone(false)
   const updPrezzo = (ruolo, piano) => (e) => { setPrezzi((s) => ({ ...s, [ruolo]: { ...s[ruolo], [piano]: e.target.value } })); tocca() }
   const updGiorni = (ruolo) => (e) => { setGiorni((s) => ({ ...s, [ruolo]: e.target.value })); tocca() }
+  const toggleLifetime = (ruolo) => { setLifetime((s) => ({ ...s, [ruolo]: !s[ruolo] })); tocca() }
   function toggle(chiave) { setStato((s) => ({ ...s, [chiave]: !s[chiave] })); tocca() }
 
   async function salva() {
@@ -80,6 +86,8 @@ export default function GatingManager({
       { chiave: 'prezzo_portiere_lifetime',   label: prezzi.portiere.lifetime,   free: false },
       { chiave: 'giorni_prova_allenatore',    label: String(giorni.allenatore || '0'), free: false },
       { chiave: 'giorni_prova_portiere',      label: String(giorni.portiere   || '0'), free: false },
+      { chiave: 'lifetime_attivo_allenatore', label: 'A vita attivo (allenatore)', free: lifetime.allenatore },
+      { chiave: 'lifetime_attivo_portiere',   label: 'A vita attivo (portiere)',   free: lifetime.portiere },
       // Un record per ogni funzionalità (foglie + padri): salva lo stato free/paid.
       ...righe.filter((r) => r.chiave).map((r) => ({ chiave: r.chiave, label: r.label, free: stato[r.chiave] ?? r.free })),
     ]
@@ -124,12 +132,30 @@ export default function GatingManager({
             <PrezzoField ruolo="allenatore" piano="mensile"  label="Mensile" />
             <PrezzoField ruolo="allenatore" piano="annuale"  label="Annuale" />
             <PrezzoField ruolo="allenatore" piano="lifetime" label="A vita" />
+            <div className="prezzo-field-row" style={{ marginTop: 2 }}>
+              <span className="prezzo-field-label" style={{ fontSize: 12, color: lifetime.allenatore ? 'var(--ink-soft)' : 'var(--rosso)' }}>
+                Piano «A vita» {lifetime.allenatore ? 'mostrato' : 'nascosto'}
+              </span>
+              <button type="button" className={`toggle-switch sm ${lifetime.allenatore ? 'on' : ''}`}
+                onClick={() => toggleLifetime('allenatore')} role="switch" aria-checked={lifetime.allenatore}>
+                <span className="toggle-thumb" />
+              </button>
+            </div>
           </div>
           <div>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>Portiere</div>
             <PrezzoField ruolo="portiere" piano="mensile"  label="Mensile" />
             <PrezzoField ruolo="portiere" piano="annuale"  label="Annuale" />
             <PrezzoField ruolo="portiere" piano="lifetime" label="A vita" />
+            <div className="prezzo-field-row" style={{ marginTop: 2 }}>
+              <span className="prezzo-field-label" style={{ fontSize: 12, color: lifetime.portiere ? 'var(--ink-soft)' : 'var(--rosso)' }}>
+                Piano «A vita» {lifetime.portiere ? 'mostrato' : 'nascosto'}
+              </span>
+              <button type="button" className={`toggle-switch sm ${lifetime.portiere ? 'on' : ''}`}
+                onClick={() => toggleLifetime('portiere')} role="switch" aria-checked={lifetime.portiere}>
+                <span className="toggle-thumb" />
+              </button>
+            </div>
           </div>
         </div>
         <p className="sub-intro" style={{ marginTop: 12 }}>

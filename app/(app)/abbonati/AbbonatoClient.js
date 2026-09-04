@@ -11,7 +11,7 @@ function fmtData(d) {
   return new Date(d).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-export default function AbbonatoClient({ abbonamento, prezzi, ruolo }) {
+export default function AbbonatoClient({ abbonamento, prezzi, ruolo, lifetimeAttivo = true }) {
   const [loading, setLoading] = useState(null)
   const [error, setError] = useState('')
 
@@ -32,13 +32,13 @@ export default function AbbonatoClient({ abbonamento, prezzi, ruolo }) {
       highlight: true,
       badge: 'Più conveniente',
     },
-    {
+    ...(lifetimeAttivo ? [{
       id: 'lifetime',
       nome: 'A vita',
       prezzo: fmt(prezzi.lifetime),
       periodo: 'una tantum',
       desc: 'Paghi una volta sola e hai accesso per sempre, senza rinnovi.',
-    },
+    }] : []),
   ]
 
   async function checkout(pianoId) {
@@ -66,7 +66,8 @@ export default function AbbonatoClient({ abbonamento, prezzi, ruolo }) {
   }
 
   if (abbonamento) {
-    const pianoLabel = PIANI.find((p) => p.id === abbonamento.piano)?.nome ?? abbonamento.piano
+    const NOMI_PIANO = { mensile: 'Mensile', annuale: 'Annuale', lifetime: 'A vita', prova: 'Prova gratuita' }
+    const pianoLabel = NOMI_PIANO[abbonamento.piano] ?? abbonamento.piano
     return (
       <div>
         <div className="scheda abbonamento-attivo">

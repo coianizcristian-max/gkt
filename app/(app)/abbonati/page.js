@@ -48,6 +48,12 @@ export default async function AbbonatiPage() {
     lifetime: prezziMap[`prezzo_${ruolo}_lifetime`] ?? DEFAULT_PREZZI[ruolo].lifetime,
   }
 
+  // Il piano "A vita" può essere disattivato dal Supervisore, per ruolo.
+  // Riga assente = attivo (comportamento storico).
+  const { data: lifetimeRow } = await supabase
+    .from('funzionalita_config').select('free').eq('chiave', `lifetime_attivo_${ruolo}`).maybeSingle()
+  const lifetimeAttivo = lifetimeRow ? lifetimeRow.free !== false : true
+
   return (
     <>
       <div className="topbar">
@@ -55,7 +61,7 @@ export default async function AbbonatiPage() {
         <h1>Abbonamento GKSeason</h1>
       </div>
       <div className="content">
-        <AbbonatoClient abbonamento={abbonamento} userId={user.id} prezzi={prezzi} ruolo={ruolo} />
+        <AbbonatoClient abbonamento={abbonamento} userId={user.id} prezzi={prezzi} ruolo={ruolo} lifetimeAttivo={lifetimeAttivo} />
         {!abbonamento && <CouponBox />}
       </div>
     </>

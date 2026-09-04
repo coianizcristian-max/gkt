@@ -35,6 +35,7 @@ export default function AbbonamentiTabs({ gating, abbonamenti, profili, stats })
           feeContatto={gating.feeContatto}
           prezziIniziali={gating.prezziIniziali}
           giorniIniziali={gating.giorniIniziali}
+          lifetimeIniziale={gating.lifetimeIniziale}
         />
       )}
 

@@ -24,6 +24,15 @@ export async function POST(request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
 
+    // Il piano "A vita" può essere disattivato dal Supervisore, per ruolo.
+    if (piano === 'lifetime') {
+      const { data: ltRow } = await supabase
+        .from('funzionalita_config').select('free').eq('chiave', `lifetime_attivo_${ruolo}`).maybeSingle()
+      if (ltRow && ltRow.free === false) {
+        return NextResponse.json({ error: 'Il piano «A vita» non è al momento disponibile.' }, { status: 400 })
+      }
+    }
+
     // Legge il prezzo dal DB (impostato dal Supervisore)
     const chiave = `prezzo_${ruolo}_${piano}`
     const { data: prezzoRow } = await supabase

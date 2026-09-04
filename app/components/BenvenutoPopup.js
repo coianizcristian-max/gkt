@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 // Popup di benvenuto mostrato UNA volta al primo accesso. Riusa lo stesso stile
 // del popup di versione (.versione-overlay/.versione-popup) per coerenza.
-export default function BenvenutoPopup({ nome, giorni }) {
+export default function BenvenutoPopup({ nome, giorni, ruolo }) {
   const [visible, setVisible] = useState(true)
   const [closing, setClosing] = useState(false)
 
@@ -19,6 +19,9 @@ export default function BenvenutoPopup({ nome, giorni }) {
 
   if (!visible) return null
   const conGiorni = Number(giorni) > 0
+  const sottotitolo = ruolo === 'portiere'
+    ? 'La tua stagione sportiva e la tua crescita tra i pali iniziano qui.'
+    : 'La tua stagione sportiva e la preparazione dei tuoi portieri iniziano qui.'
 
   return (
     <div className="versione-overlay">
@@ -27,39 +30,24 @@ export default function BenvenutoPopup({ nome, giorni }) {
           <div>
             <div className="versione-badge">🎁 Benvenuto</div>
             <h2 className="versione-titolo">
-              Ciao{nome ? ` ${nome}` : ''}, benvenuto in GKSeason!
+              Ciao{nome ? ` ${nome}` : ''}, benvenuto a bordo di GKSeason.it!
             </h2>
           </div>
           <button className="versione-close" onClick={chiudi} type="button">✕</button>
         </div>
 
         <div className="versione-body">
-          {conGiorni ? (
-            <>
-              <p className="versione-intro">
-                Per iniziare col piede giusto ti abbiamo attivato <b>{giorni} giorni</b> di
-                <b> accesso completo a tutte le funzionalità</b>, gratis e senza carta.
-              </p>
-              <ul className="versione-lista">
-                <li className="versione-item">
-                  <span className="versione-bullet">✓</span>
-                  <span>In questi {giorni} giorni hai tutto sbloccato: provalo con calma.</span>
-                </li>
-                <li className="versione-item">
-                  <span className="versione-bullet">✓</span>
-                  <span>Alla fine del periodo continui a usare GKSeason con le funzioni gratuite.</span>
-                </li>
-                <li className="versione-item">
-                  <span className="versione-bullet">✓</span>
-                  <span>Se vuoi tenere tutto attivo, ti basta sottoscrivere l&apos;abbonamento — quando vuoi.</span>
-                </li>
-              </ul>
-            </>
-          ) : (
-            <p className="versione-intro">
-              Il tuo account è pronto: da qui organizzi stagione, portieri, allenamenti e valutazioni.
+          <p className="versione-intro">{sottotitolo}</p>
+          {conGiorni && (
+            <p className="versione-intro" style={{ marginTop: 12 }}>
+              Per iniziare al meglio, goditi <b>{giorni} giorni</b> di accesso totalmente gratuito
+              a tutte le funzionalità avanzate dell&apos;app. Alla scadenza, sarai tu a decidere:
+              potrai continuare con la versione gratuita o sbloccare tutte le funzioni abbonandoti.
             </p>
           )}
+          <p className="versione-intro" style={{ marginTop: 12, fontWeight: 600 }}>
+            Mettiti comodo e buon lavoro!
+          </p>
         </div>
 
         <div className="versione-footer">
@@ -69,7 +57,7 @@ export default function BenvenutoPopup({ nome, giorni }) {
             </Link>
           )}
           <button className="btn" onClick={chiudi} type="button">
-            Iniziamo →
+            Iniziamo &rarr;
           </button>
         </div>
       </div>

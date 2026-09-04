@@ -38,6 +38,10 @@ export default async function AbbonamentiSupPage() {
     allenatore: getL('giorni_prova_allenatore', '30'),
     portiere:   getL('giorni_prova_portiere',   '30'),
   }
+  const lifetimeIniziale = {
+    allenatore: configMap['lifetime_attivo_allenatore'] ?? true,
+    portiere:   configMap['lifetime_attivo_portiere']   ?? true,
+  }
   const conValori = (nodo) => ({
     chiave: nodo.chiave,
     label: nodo.label,
@@ -48,7 +52,7 @@ export default async function AbbonamentiSupPage() {
     sezione: s.sezione,
     funzionalita: s.funzionalita.map(conValori),
   }))
-  const gating = { albero, tuttoFree, feeContatto, prezziIniziali, giorniIniziali }
+  const gating = { albero, tuttoFree, feeContatto, prezziIniziali, giorniIniziali, lifetimeIniziale }
 
   // ── Dati "Abbonamenti manuali" ─────────────────────────────────────────────
   const { data: abbRows } = await supabase

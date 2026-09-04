@@ -250,7 +250,7 @@ export default async function AppLayout({ children }) {
         </footer>
       </div>
       {mostraBenvenuto
-        ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} />
+        ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} ruolo={ruoloUtente} />
         : (versioneNuova && <VersionePopup versione={versioneNuova} />)}
     </div>
   )

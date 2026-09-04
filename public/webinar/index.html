@@ -289,8 +289,8 @@ input:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(116,196,0,.12)}
       </div>
 
       <div class="hero-visual">
-        <!-- Immagine hero: usa dashboard-hero.png (già presente in /public/webinar/). Per cambiarla, sostituisci il file o il nome qui sotto. -->
-        <img src="dashboard-hero.png" alt="GKSeason, il sistema digitale per gestire la stagione del preparatore dei portieri">
+        <!-- Immagine hero: percorso ASSOLUTO /webinar/dashboard-hero.png (funziona sia con /webinar sia con /webinar/). Per cambiarla, sostituisci il file mantenendo il prefisso /webinar/. -->
+        <img src="/webinar/dashboard-hero.png" alt="GKSeason, il sistema digitale per gestire la stagione del preparatore dei portieri">
         <div class="visual-badge">
           <div class="badge-icon">360°</div>
           <div><strong>Una sola piattaforma.</strong>La tua stagione, finalmente collegata.</div>
@@ -463,7 +463,7 @@ document.getElementById('radios').addEventListener('change', function(){
     e.preventDefault();
     errEl.style.display = 'none';
 
-    if (document.getElementById('website').value.trim() !== '') { window.location.href = 'grazie.html'; return; }
+    if (document.getElementById('website').value.trim() !== '') { window.location.href = '/webinar/grazie.html'; return; }
 
     const nome = document.getElementById('nome').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -496,7 +496,7 @@ document.getElementById('radios').addEventListener('change', function(){
           user_agent: navigator.userAgent
         })
       });
-      if (res.ok || res.status === 409) { window.location.href = 'grazie.html'; return; } // 409 = già iscritto
+      if (res.ok || res.status === 409) { window.location.href = '/webinar/grazie.html'; return; } // 409 = già iscritto
       console.error('Errore Supabase:', res.status, await res.text());
       showError('Si è verificato un errore. Riprova tra poco.');
     } catch (err) {

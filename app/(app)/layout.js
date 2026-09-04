@@ -1,11 +1,13 @@
 import Link from 'next/link'
 import NavLink from '@/app/components/NavLink'
 import VersionePopup from '@/app/components/VersionePopup'
+import BenvenutoPopup from '@/app/components/BenvenutoPopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
 import StagioneSwitcher from '@/app/components/StagioneSwitcher'
 import { createClient, getUser } from '@/lib/supabase/server'
-import { getGatingConfig, hasAbbonamento } from '@/lib/gating'
+import { getGatingConfig, hasAbbonamento, getGiorniProva } from '@/lib/gating'
+import { assicuraProva } from '@/lib/prova'
 import { puoVisualizzare } from '@/lib/permessi'
 import { getStagioneAttiva } from '@/lib/tenant'
 import IdentificaUtenteTracking from '@/app/components/IdentificaUtenteTracking'
@@ -19,6 +21,10 @@ export default async function AppLayout({ children }) {
   let portiereId = null, societa = null, logo = null, stagioneNome = null, stagioneId = null
   let mostraAbbonati = false
   let couponGiorni = null
+  let provaGiorni = null
+  let mostraBenvenuto = false
+  let benvenutoNome = null
+  let benvenutoGiorni = null
   let vedePortieri = true, vedeAllenamenti = true, vedePartite = true, vedeStatistiche = true
   let ruoloUtente = null
   let haPreparatori = false
@@ -28,13 +34,36 @@ export default async function AppLayout({ children }) {
 
   if (user) {
     const { data: profilo } = await supabase
-      .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore, newsletter_vista_il').eq('id', user.id).maybeSingle()
+      .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore, newsletter_vista_il, nome_visualizzato, nome_completo, prova_creata, benvenuto_visto').eq('id', user.id).maybeSingle()
     const { stagione, ownerId } = await getStagioneAttiva(supabase, user.id)
     isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
     isSupervisore = profilo?.supervisore === true
     isPortiere = profilo?.ruolo === 'portiere'
     portiereId = profilo?.portiere_id ?? null
     ruoloUtente = profilo?.ruolo ?? null
+
+    // Prova gratuita "una volta sola" alla prima iscrizione (allenatore/portiere).
+    // Crea la riga abbonamenti stato='prova' se non ancora fatto; non blocca.
+    await assicuraProva(supabase, user, profilo)
+
+    // Giorni di prova rimasti (per il banner in sidebar) — solo ruoli con piano proprio.
+    if (profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'portiere') {
+      const { data: provaRow } = await supabase.from('abbonamenti')
+        .select('scadenza').eq('allenatore_id', user.id).eq('stato', 'prova')
+        .order('created_at', { ascending: false }).limit(1).maybeSingle()
+      if (provaRow?.scadenza) {
+        const gg = Math.ceil((new Date(provaRow.scadenza) - new Date()) / (1000 * 60 * 60 * 24))
+        if (gg > 0) provaGiorni = gg
+      }
+    }
+
+    // Popup di benvenuto: una volta sola, a chi ha un piano proprio.
+    mostraBenvenuto = !profilo?.benvenuto_visto && (profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'portiere')
+    if (mostraBenvenuto) {
+      benvenutoNome = profilo?.nome_visualizzato || profilo?.nome_completo || null
+      benvenutoGiorni = provaGiorni ?? await getGiorniProva(supabase, profilo.ruolo)
+    }
+
     societa = stagione?.societa_nome ?? null
     logo = stagione?.logo_url ?? null
     stagioneNome = stagione?.nome ?? null
@@ -143,6 +172,7 @@ export default async function AppLayout({ children }) {
     'profilo':       isStaff ? { href: '/profilo', label: 'Profilo allenatore' } : null,
     'stagioni':      isStaff ? { href: '/stagioni', label: 'Le mie stagioni' } : null,
     'categorie':     isStaff ? { href: '/categorie', label: 'Le mie categorie' } : null,
+    'parametri-valutazione': isStaff ? { href: '/parametri-valutazione', label: '⚙ Parametri di valutazione' } : null,
     'inviti':        isStaff ? { href: '/inviti', label: 'Inviti' } : null,
     'i-miei-preparatori': (ruoloUtente === 'allenatore' && haPreparatori) ? { href: '/i-miei-preparatori', label: '🔗 I miei preparatori' } : null,
     'contatti':      isStaff ? { href: '/contatti', label: contattiNonLetti > 0 ? <>Contatti ricevuti <span className="nav-badge">{contattiNonLetti}</span></> : 'Contatti ricevuti' } : null,
@@ -192,6 +222,11 @@ export default async function AppLayout({ children }) {
             🎟 Periodo gratuito: {couponGiorni} gg rimasti
           </div>
         )}
+        {couponGiorni == null && provaGiorni != null && (
+          <div style={{margin:'4px 8px 8px',padding:'6px 10px',background:'rgba(232,167,44,0.15)',borderRadius:'var(--r-sm)',fontSize:12,color:'var(--giallo)',fontWeight:600,lineHeight:1.3}}>
+            🎁 Prova gratuita: {provaGiorni} gg rimasti
+          </div>
+        )}
         {voci.filter(v => v.href && v.href !== '/').map((v) => (
           <NavLink key={v.href} href={v.href} extraClass={v.href === '/supervisore' ? 'nav-link-supervisore' : ''}>{v.label}</NavLink>
         ))}
@@ -214,7 +249,9 @@ export default async function AppLayout({ children }) {
           <a href="/termini-di-servizio">Termini</a>
         </footer>
       </div>
-      {versioneNuova && <VersionePopup versione={versioneNuova} />}
+      {mostraBenvenuto
+        ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} />
+        : (versioneNuova && <VersionePopup versione={versioneNuova} />)}
     </div>
   )
 }

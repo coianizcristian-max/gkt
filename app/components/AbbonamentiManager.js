@@ -36,33 +36,32 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
     _nome: profiliMap[a.allenatore_id]?.nome_visualizzato
       || profiliMap[a.allenatore_id]?.nome_completo
       || a.allenatore_id,
+    _email: profiliMap[a.allenatore_id]?.email || null,
   })), [abbonamenti, profiliMap])
 
-  // Filtra per ricerca (nome o id)
+  // Filtra per ricerca (nome, email o id)
   const filtrati = useMemo(() => {
     if (!ricerca.trim()) return lista
     const q = ricerca.toLowerCase()
     return lista.filter(a =>
       a._nome?.toLowerCase().includes(q) ||
+      a._email?.toLowerCase().includes(q) ||
       a.allenatore_id?.toLowerCase().includes(q)
     )
   }, [lista, ricerca])
 
-  // Profili senza abbonamento (per creare nuovo)
-  const profiliSenzaAbb = useMemo(() => {
-    const conAbb = new Set(abbonamenti.map(a => a.allenatore_id))
-    return profili.filter(p => !conAbb.has(p.id))
-  }, [profili, abbonamenti])
-
-  // Profili cercati per creare nuovo abbonamento
+  // Profili cercati per creare nuovo abbonamento.
+  // Mostriamo suggerimenti SOLO dopo una ricerca (nome, email o id): niente più
+  // elenco "a caso" dei primi profili, che confondeva.
   const profiliRicercati = useMemo(() => {
-    if (!ricerca.trim()) return profiliSenzaAbb.slice(0, 10)
+    if (!ricerca.trim()) return []
     const q = ricerca.toLowerCase()
     return profili.filter(p =>
       (p.nome_visualizzato || p.nome_completo || '').toLowerCase().includes(q) ||
+      (p.email || '').toLowerCase().includes(q) ||
       p.id.toLowerCase().includes(q)
     ).slice(0, 10)
-  }, [profili, profiliSenzaAbb, ricerca])
+  }, [profili, ricerca])
 
   async function salvaModifica(abb, form) {
     setBusy(true); setMsg('')
@@ -71,6 +70,7 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
       piano: form.piano,
       stato: form.stato,
       scadenza: form.scadenza || null,
+      nota: form.nota?.trim() || null,
     }).eq('id', abb.id)
     if (error) { setMsg('Errore: ' + error.message) }
     else { setMsg('✓ Salvato'); setEditing(null); router.refresh() }
@@ -85,6 +85,7 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
       piano: form.piano,
       stato: form.stato,
       scadenza: form.scadenza || null,
+      nota: form.nota?.trim() || null,
     })
     if (error) { setMsg('Errore: ' + error.message) }
     else { setMsg('✓ Abbonamento creato'); setNuovoFor(null); router.refresh() }
@@ -141,12 +142,14 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 15 }}>{a._nome}</div>
+                  {a._email && <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{a._email}</div>}
                   <div style={{ fontSize: 12, color: 'var(--ink-soft)', fontFamily: 'monospace' }}>{a.allenatore_id}</div>
                   <div style={{ fontSize: 13, marginTop: 2, color: 'var(--ink-soft)' }}>
                     {a.piano === 'lifetime' ? 'Lifetime' : a.piano === 'annuale' ? 'Annuale' : 'Mensile'}
                     {a.scadenza && a.piano !== 'lifetime' && ` · scade ${fmtData(a.scadenza)}`}
                     {' · '}dal {fmtData(a.created_at)}
                   </div>
+                  {a.nota && <div style={{ fontSize: 12, marginTop: 4, color: 'var(--ink)', background: 'var(--soft, #f6f8fb)', display: 'inline-block', padding: '2px 8px', borderRadius: 6 }}>📝 {a.nota}</div>}
                 </div>
                 <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700,
                   background: badge.bg, color: badge.color }}>
@@ -175,9 +178,11 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
 
       {/* Sezione crea nuovo abbonamento */}
       <div className="scheda">
-        <h3 style={{ margin: '0 0 12px' }}>+ Crea abbonamento manuale</h3>
+        <h3 style={{ margin: '0 0 12px' }}>+ Attiva un abbonamento manuale</h3>
         <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: '0 0 12px' }}>
-          Usa la ricerca sopra per trovare l&apos;allenatore, poi selezionalo qui sotto.
+          Cerca l&apos;allenatore per <b>nome o email</b> nella barra qui sopra, poi selezionalo.
+          Creando un abbonamento con stato <b>Attivo</b> gli sblocchi tutte le funzionalità <b>senza fargli pagare nulla</b>
+          (utile per omaggi o pagamenti alternativi). Usa la <b>Nota</b> per ricordarti il motivo.
         </p>
         {nuovoFor ? (
           <div>
@@ -199,17 +204,22 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
                 <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10,
                   padding: '8px 12px', borderRadius: 8, border: '1px solid var(--linea)',
                   background: 'var(--carta)' }}>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600 }}>{p.nome_visualizzato || p.nome_completo || '—'}</div>
+                    {p.email && <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{p.email}</div>}
                     <div style={{ fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'monospace' }}>{p.id}</div>
                   </div>
                   <button className="btn-mini" type="button" onClick={() => setNuovoFor(p.id)}>
-                    Crea abbonamento
+                    Attiva abbonamento
                   </button>
                 </div>
               ))}
               {profiliRicercati.length === 0 && (
-                <div className="empty">Cerca un allenatore sopra per crearne uno.</div>
+                <div className="empty">
+                  {ricerca.trim()
+                    ? 'Nessun allenatore trovato per questa ricerca.'
+                    : 'Scrivi nella barra qui sopra il nome o l\u2019email dell\u2019allenatore per attivargli un abbonamento.'}
+                </div>
               )}
             </div>
           </div>
@@ -227,6 +237,7 @@ function EditForm({ abb, onSave, onDelete, onCancel, busy, isNew = false }) {
     piano: abb.piano ?? 'mensile',
     stato: abb.stato ?? 'attivo',
     scadenza: isoDate(abb.scadenza) || (abb.piano !== 'lifetime' ? tra1anno : ''),
+    nota: abb.nota ?? '',
   })
 
   function upd(k) { return (e) => setForm(s => ({ ...s, [k]: e.target.value })) }
@@ -258,6 +269,10 @@ function EditForm({ abb, onSave, onDelete, onCancel, busy, isNew = false }) {
             <input type="date" value={form.scadenza} onChange={upd('scadenza')} />
           </div>
         )}
+        <div className="field field-full" style={{ margin: 0 }}>
+          <label>Nota (motivo, facoltativa)</label>
+          <input type="text" value={form.nota} onChange={upd('nota')} placeholder="Es. pagamento alternativo, omaggio partner, test…" />
+        </div>
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button className="btn" type="button" onClick={() => onSave(form)} disabled={busy}>

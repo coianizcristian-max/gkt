@@ -80,18 +80,24 @@ export default function ProposteObiettivi({ portiereId, stagioneId, ruolo, propo
 
       {error && <div className="err">{error}</div>}
 
-      {/* Inserimento (sia preparatore sia portiere) */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 14 }}>
-        <input
-          value={nuovo}
-          onChange={(e) => setNuovo(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); aggiungi() } }}
-          placeholder="Scrivi una proposta di obiettivo personale…"
-          style={{ flex: 1, minWidth: 220, boxSizing: 'border-box' }}
-        />
-        <button type="button" className="btn" onClick={aggiungi} disabled={busy || !nuovo.trim()}>
-          {busy ? 'Aggiungo…' : '+ Aggiungi'}
-        </button>
+      {/* Inserimento (sia preparatore sia portiere) — stessa impaginazione del tab Obiettivi */}
+      <div className="obiettivo-card" style={{ borderLeftColor: 'var(--azzurro)', marginBottom: 16 }}>
+        <div className="form-grid">
+          <div className="field field-full">
+            <label>Nuova proposta di obiettivo personale</label>
+            <textarea
+              rows={3}
+              value={nuovo}
+              onChange={(e) => setNuovo(e.target.value)}
+              placeholder="Scrivi qui la proposta… (es. &ldquo;Migliorare le uscite alte in presa&rdquo;)"
+            />
+          </div>
+        </div>
+        <div className="form-actions">
+          <button type="button" className="btn" onClick={aggiungi} disabled={busy || !nuovo.trim()}>
+            {busy ? 'Aggiungo…' : '+ Aggiungi proposta'}
+          </button>
+        </div>
       </div>
 
       {lista.length === 0 && <div className="empty">Nessuna proposta inserita.</div>}

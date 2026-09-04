@@ -9,12 +9,35 @@ const DEFAULT = {
   portiere:   { mensile: '4.90', annuale: '39.00', lifetime: '99.00' },
 }
 
-export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeIniziale, feeContatto: feeIniziale, prezziIniziali }) {
+// Appiattisce l'albero ricevuto dal server in un elenco ordinato con livello,
+// così possiamo indentare le sotto-funzionalità sotto il padre.
+function flatten(albero) {
+  const out = []
+  const visita = (nodo, livello) => {
+    out.push({ chiave: nodo.chiave, label: nodo.label, free: nodo.free, livello })
+    for (const f of nodo.figli ?? []) visita(f, livello + 1)
+  }
+  for (const s of albero) {
+    out.push({ sezione: s.sezione })
+    for (const f of s.funzionalita) visita(f, 0)
+  }
+  return out
+}
+
+export default function GatingManager({
+  albero,
+  tuttoFree: tuttoFreeIniziale,
+  feeContatto: feeIniziale,
+  prezziIniziali,
+  giorniIniziali,
+}) {
   const router = useRouter()
+  const righe = flatten(albero)
+
   const [tuttoFree, setTuttoFree] = useState(tuttoFreeIniziale)
   const [stato, setStato] = useState(() => {
     const m = {}
-    for (const f of funzionalita) m[f.chiave] = f.free
+    for (const r of righe) if (r.chiave) m[r.chiave] = r.free
     return m
   })
   const [fee, setFee] = useState(feeIniziale ?? '2.90')
@@ -30,35 +53,40 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
       lifetime: prezziIniziali?.portiere?.lifetime ?? DEFAULT.portiere.lifetime,
     },
   })
+  const [giorni, setGiorni] = useState({
+    allenatore: giorniIniziali?.allenatore ?? '30',
+    portiere:   giorniIniziali?.portiere   ?? '30',
+  })
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
 
-  const updPrezzo = (ruolo, piano) => (e) => {
-    setPrezzi((s) => ({ ...s, [ruolo]: { ...s[ruolo], [piano]: e.target.value } }))
-    setDone(false)
-  }
+  const tocca = () => setDone(false)
+  const updPrezzo = (ruolo, piano) => (e) => { setPrezzi((s) => ({ ...s, [ruolo]: { ...s[ruolo], [piano]: e.target.value } })); tocca() }
+  const updGiorni = (ruolo) => (e) => { setGiorni((s) => ({ ...s, [ruolo]: e.target.value })); tocca() }
+  function toggle(chiave) { setStato((s) => ({ ...s, [chiave]: !s[chiave] })); tocca() }
 
   async function salva() {
     setSaving(true); setDone(false)
     const supabase = createClient()
 
     const rows = [
-      { chiave: '__tutto_free',            label: 'Tutto free',    free: tuttoFree },
-      { chiave: 'fee_contatto_importo',    label: fee,             free: false },
+      { chiave: '__tutto_free',         label: 'Tutto free', free: tuttoFree },
+      { chiave: 'fee_contatto_importo', label: fee,          free: false },
       { chiave: 'prezzo_allenatore_mensile',  label: prezzi.allenatore.mensile,  free: false },
       { chiave: 'prezzo_allenatore_annuale',  label: prezzi.allenatore.annuale,  free: false },
       { chiave: 'prezzo_allenatore_lifetime', label: prezzi.allenatore.lifetime, free: false },
       { chiave: 'prezzo_portiere_mensile',    label: prezzi.portiere.mensile,    free: false },
       { chiave: 'prezzo_portiere_annuale',    label: prezzi.portiere.annuale,    free: false },
       { chiave: 'prezzo_portiere_lifetime',   label: prezzi.portiere.lifetime,   free: false },
-      ...funzionalita.map((f) => ({ chiave: f.chiave, label: f.label, free: stato[f.chiave] ?? f.free })),
+      { chiave: 'giorni_prova_allenatore',    label: String(giorni.allenatore || '0'), free: false },
+      { chiave: 'giorni_prova_portiere',      label: String(giorni.portiere   || '0'), free: false },
+      // Un record per ogni funzionalità (foglie + padri): salva lo stato free/paid.
+      ...righe.filter((r) => r.chiave).map((r) => ({ chiave: r.chiave, label: r.label, free: stato[r.chiave] ?? r.free })),
     ]
     const { error } = await supabase.from('funzionalita_config').upsert(rows, { onConflict: 'chiave' })
     if (error) { alert('Errore: ' + error.message); setSaving(false); return }
     setDone(true); setSaving(false); router.refresh()
   }
-
-  function toggle(chiave) { setStato((s) => ({ ...s, [chiave]: !s[chiave] })); setDone(false) }
 
   const PrezzoField = ({ ruolo, piano, label }) => (
     <div className="prezzo-field-row">
@@ -66,15 +94,14 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
         <span style={{ fontWeight: 600, fontSize: 13 }}>€</span>
         <input type="number" min="0.50" step="0.10" value={prezzi[ruolo][piano]}
-          onChange={updPrezzo(ruolo, piano)}
-          className="prezzo-field-input" />
+          onChange={updPrezzo(ruolo, piano)} className="prezzo-field-input" />
       </div>
     </div>
   )
 
   return (
     <div className="lista-editor">
-      <p className="sub-intro">Configura prezzi, funzionalità e accessi. Clicca <b>Salva</b> in fondo per applicare tutte le modifiche.</p>
+      <p className="sub-intro">Configura prezzi, prova gratuita, funzionalità e accessi. Clicca <b>Salva</b> in fondo per applicare tutte le modifiche.</p>
 
       {/* TUTTO FREE */}
       <div className="scheda" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
@@ -83,7 +110,7 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
           <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 3 }}>Tutti accedono a tutto senza abbonamento. Utile per periodi di prova.</div>
         </div>
         <button type="button" className={`toggle-switch ${tuttoFree ? 'on' : ''}`}
-          onClick={() => { setTuttoFree((v) => !v); setDone(false) }} role="switch" aria-checked={tuttoFree}>
+          onClick={() => { setTuttoFree((v) => !v); tocca() }} role="switch" aria-checked={tuttoFree}>
           <span className="toggle-thumb" />
         </button>
       </div>
@@ -111,35 +138,82 @@ export default function GatingManager({ funzionalita, tuttoFree: tuttoFreeInizia
         </p>
       </div>
 
+      {/* Prova gratuita */}
+      <div className="scheda" style={{ marginBottom: 16 }}>
+        <h3 style={{ margin: '0 0 6px' }}>🎁 Prova gratuita alla prima iscrizione</h3>
+        <p className="sub-intro" style={{ marginTop: 0, marginBottom: 12 }}>
+          Giorni di accesso completo concessi <b>una sola volta</b>, alla prima iscrizione. Alla scadenza si resta sul piano free
+          finché non si sottoscrive un abbonamento. Metti <b>0</b> per disattivare la prova.
+        </p>
+        <div className="prezzi-grid">
+          <div className="prezzo-field-row">
+            <span className="prezzo-field-label">Allenatore / Staff</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+              <input type="number" min="0" step="1" value={giorni.allenatore}
+                onChange={updGiorni('allenatore')} className="prezzo-field-input" />
+              <span style={{ fontWeight: 600, fontSize: 13 }}>gg</span>
+            </div>
+          </div>
+          <div className="prezzo-field-row">
+            <span className="prezzo-field-label">Portiere</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+              <input type="number" min="0" step="1" value={giorni.portiere}
+                onChange={updGiorni('portiere')} className="prezzo-field-input" />
+              <span style={{ fontWeight: 600, fontSize: 13 }}>gg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Fee contatto */}
       <div className="scheda" style={{ marginBottom: 16 }}>
         <h3 style={{ margin: '0 0 10px' }}>💳 Fee sblocco contatti allenatore</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontWeight: 600 }}>€</span>
           <input type="number" min="0.50" step="0.10" value={fee}
-            onChange={(e) => { setFee(e.target.value); setDone(false) }}
+            onChange={(e) => { setFee(e.target.value); tocca() }}
             style={{ width: 90, padding: '8px 10px', border: '1px solid var(--linea)', borderRadius: 'var(--r-sm)', fontSize: 16 }} />
           <span style={{ color: 'var(--ink-soft)', fontSize: 13 }}>una tantum per allenatore</span>
         </div>
       </div>
 
-      {/* Funzionalità */}
+      {/* Funzionalità (albero) */}
       <div className="elenco-blocco">
         <h3>Funzionalità app</h3>
-        {funzionalita.map((f) => (
-          <div key={f.chiave} className="lista-riga" style={{ gap: 12 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>{f.label}</div>
-              <div style={{ fontSize: 12, color: stato[f.chiave] ? 'var(--campo)' : 'var(--rosso)', marginTop: 2 }}>
-                {stato[f.chiave] ? '✓ FREE' : '🔒 A pagamento'}
+        <p className="sub-intro" style={{ marginTop: 0 }}>
+          Ogni interruttore è indipendente. Le sotto-voci sono indentate sotto la funzionalità padre.
+        </p>
+        {righe.map((r, i) => {
+          if (r.sezione) {
+            return (
+              <div key={`sez-${i}`} style={{
+                fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                color: 'var(--ink-soft)', margin: '18px 0 6px',
+              }}>
+                {r.sezione}
               </div>
+            )
+          }
+          const isFiglio = r.livello > 0
+          const on = stato[r.chiave]
+          return (
+            <div key={r.chiave} className="lista-riga" style={{ gap: 12, paddingLeft: isFiglio ? 22 : 0 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: isFiglio ? 500 : 600, fontSize: 14 }}>
+                  {isFiglio && <span style={{ color: 'var(--ink-soft)', marginRight: 6 }}>↳</span>}
+                  {r.label}
+                </div>
+                <div style={{ fontSize: 12, color: on ? 'var(--campo)' : 'var(--rosso)', marginTop: 2 }}>
+                  {on ? '✓ FREE' : '🔒 A pagamento'}
+                </div>
+              </div>
+              <button type="button" className={`toggle-switch sm ${on ? 'on' : ''}`}
+                onClick={() => toggle(r.chiave)} role="switch" aria-checked={!!on}>
+                <span className="toggle-thumb" />
+              </button>
             </div>
-            <button type="button" className={`toggle-switch sm ${stato[f.chiave] ? 'on' : ''}`}
-              onClick={() => toggle(f.chiave)} role="switch" aria-checked={stato[f.chiave]}>
-              <span className="toggle-thumb" />
-            </button>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="form-actions" style={{ marginTop: 20 }}>

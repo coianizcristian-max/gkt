@@ -1,84 +1,94 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iscrizione confermata — GKSeason</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        :root{
-          --navy-950:#070d1c; --navy-900:#0a1224; --navy-800:#0f1b33;
-          --green:#10b981; --lime:#a3e635; --text:#e2e8f0; --muted:#94a3b8;
-        }
-        *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
-        body{
-          background:var(--navy-900); color:var(--text);
-          min-height:100vh; display:flex; align-items:center; justify-content:center;
-          padding:24px; position:relative; overflow:hidden;
-        }
-        body::before{
-          content:""; position:absolute; top:-15%; left:50%; transform:translateX(-50%);
-          width:640px; height:640px; border-radius:9999px; filter:blur(90px);
-          background:rgba(16,185,129,.18); pointer-events:none;
-        }
-        .card{
-          position:relative; z-index:1; width:100%; max-width:460px; text-align:center;
-          background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10);
-          backdrop-filter:blur(16px); border-radius:24px; padding:44px 32px;
-          box-shadow:0 20px 60px -20px rgba(0,0,0,.6);
-        }
-        .check{
-          width:66px; height:66px; margin:0 auto 22px; border-radius:50%;
-          display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:800;
-          color:var(--navy-950);
-          background:linear-gradient(135deg,var(--lime),var(--green));
-          box-shadow:0 0 50px -10px rgba(16,185,129,.7);
-        }
-        h1{font-size:1.7rem; font-weight:800; color:#fff; margin-bottom:12px; line-height:1.2}
-        p{color:var(--muted); font-size:.98rem; line-height:1.6; margin-bottom:8px}
-        .steps{
-          text-align:left; margin-top:28px; display:flex; flex-direction:column; gap:12px;
-        }
-        .step{
-          display:flex; gap:12px; align-items:flex-start;
-          background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07);
-          border-radius:14px; padding:14px 16px;
-        }
-        .step .n{
-          flex:none; width:26px; height:26px; border-radius:8px; font-size:.8rem; font-weight:700;
-          color:var(--green); background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.25);
-          display:flex; align-items:center; justify-content:center;
-        }
-        .step .t{font-size:.9rem; color:#cbd5e1; line-height:1.45}
-        .step .t b{color:#fff}
-        .brand{margin-top:30px; font-size:.8rem; color:#64748b; font-weight:600}
-        .brand span{color:var(--green)}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iscrizione confermata — GKSeason</title>
+<meta name="description" content="La tua iscrizione al webinar GKSeason è confermata.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Redirect automatico alla home dopo 8s (fallback se JS è disattivato) -->
+<meta http-equiv="refresh" content="8;url=https://gkseason.it">
+<style>
+:root{
+  --ink:#17213b; --ink-soft:#33415f; --muted:#667085;
+  --paper:#ffffff; --soft:#f6f8fb; --soft-green:#f1faea;
+  --green:#74c400; --green-2:#94d600; --green-dark:#4e9200;
+  --line:#e5eaf0; --shadow:0 18px 55px rgba(23,33,59,.10); --r:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,Arial,sans-serif; color:var(--ink);
+  background:radial-gradient(1100px 520px at 50% -10%, var(--soft-green), var(--paper) 60%);
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  -webkit-font-smoothing:antialiased;
+}
+.card{
+  width:100%; max-width:520px; text-align:center; background:var(--paper);
+  border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow);
+  padding:48px 34px;
+}
+.check{
+  width:74px; height:74px; margin:0 auto 24px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:2.1rem; font-weight:800; color:#fff;
+  background:linear-gradient(135deg,var(--green-2),var(--green-dark));
+  box-shadow:0 14px 34px -8px rgba(116,196,0,.55);
+}
+h1{font-family:'DM Sans',Inter,sans-serif; font-size:1.7rem; font-weight:700; margin-bottom:12px; line-height:1.2}
+.lead{color:var(--ink-soft); font-size:1rem; line-height:1.6; margin-bottom:6px}
+.lead b{color:var(--ink)}
+.steps{text-align:left; margin-top:28px; display:flex; flex-direction:column; gap:12px}
+.step{
+  display:flex; gap:12px; align-items:flex-start;
+  background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:14px 16px;
+}
+.step .n{
+  flex:none; width:28px; height:28px; border-radius:9px; font-size:.85rem; font-weight:700; color:var(--green-dark);
+  background:var(--soft-green); border:1px solid rgba(116,196,0,.35);
+  display:flex; align-items:center; justify-content:center;
+}
+.step .t{font-size:.94rem; color:var(--ink-soft); line-height:1.45}
+.step .t b{color:var(--ink)}
+.cta{
+  display:inline-block; margin-top:30px; padding:15px 26px; border-radius:14px;
+  font-weight:700; font-size:1rem; color:#fff; text-decoration:none;
+  background:linear-gradient(135deg,var(--green-2),var(--green-dark));
+  box-shadow:0 12px 30px -10px rgba(116,196,0,.6);
+}
+.redirect{margin-top:16px; font-size:.85rem; color:var(--muted)}
+.redirect a{color:var(--green-dark); font-weight:600}
+.brand{margin-top:26px; font-size:.82rem; color:var(--muted); font-weight:600}
+.brand span{color:var(--green-dark)}
+</style>
 </head>
 <body>
-    <div class="card">
-        <div class="check">✓</div>
-        <h1>Ci siamo, il tuo posto è riservato.</h1>
-        <p>Ti abbiamo inviato un'email di conferma con i dettagli. Se non la vedi, controlla anche nelle cartelle <b style="color:#cbd5e1">Promozioni</b> o <b style="color:#cbd5e1">Spam</b>.</p>
+  <div class="card">
+    <div class="check">✓</div>
+    <h1>Ci siamo, il tuo posto è riservato.</h1>
+    <p class="lead">Ti abbiamo inviato un&rsquo;email di conferma con i dettagli. Se non la vedi, controlla anche nelle cartelle <b>Promozioni</b> o <b>Spam</b>.</p>
 
-        <div class="steps">
-          <div class="step">
-            <span class="n">1</span>
-            <span class="t"><b>Segna la data.</b> Aggiungi la live al calendario così non te la dimentichi.</span>
-          </div>
-          <div class="step">
-            <span class="n">2</span>
-            <span class="t"><b>Aspetta il link.</b> Il collegamento privato arriva via email il giorno prima dell'evento.</span>
-          </div>
-          <div class="step">
-            <span class="n">3</span>
-            <span class="t"><b>Presentati puntuale.</b> I posti sono limitati e si parte in orario.</span>
-          </div>
-        </div>
-
-        <div class="brand">GK<span>Season</span> · la stagione del preparatore, sotto controllo</div>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><span class="t"><b>Segna la data.</b> Aggiungi la live al calendario così non te la dimentichi.</span></div>
+      <div class="step"><span class="n">2</span><span class="t"><b>Aspetta il link.</b> Il collegamento privato arriva via email il giorno prima dell&rsquo;evento.</span></div>
+      <div class="step"><span class="n">3</span><span class="t"><b>Presentati puntuale.</b> I posti sono limitati e si parte in orario.</span></div>
     </div>
+
+    <a class="cta" href="https://gkseason.it">Vai su GKSeason →</a>
+    <div class="redirect">Verrai reindirizzato alla home tra <b id="cd">8</b> secondi… <a href="https://gkseason.it">vai subito</a></div>
+
+    <div class="brand">GK<span>Season</span> · la stagione del preparatore, sotto controllo</div>
+  </div>
+
+  <script>
+    // Countdown + redirect alla home (il <meta refresh> è il fallback senza JS)
+    var n = 8;
+    var el = document.getElementById('cd');
+    var timer = setInterval(function () {
+      n -= 1;
+      if (el) el.textContent = n;
+      if (n <= 0) { clearInterval(timer); window.location.href = 'https://gkseason.it'; }
+    }, 1000);
+  </script>
 </body>
 </html>

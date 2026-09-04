@@ -61,7 +61,9 @@ export default async function MetrichePage({ searchParams }) {
           <Card valore={righe.length} label="Iscritti mostrati" />
         </div>
 
-        <div className="scheda">
+        {/* maxWidth:'none' → su desktop questo pannello si allarga a tutta la larghezza
+            disponibile (le altre .scheda restano a 760px). Su mobile .scheda è già full-width. */}
+        <div className="scheda" style={{ maxWidth: 'none' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <h3 style={{ margin: 0 }}>Ultimi iscritti</h3>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -83,13 +85,13 @@ export default async function MetrichePage({ searchParams }) {
                   <th style={th}>#</th>
                   <th style={th}>Email</th>
                   <th style={th}>Ruolo</th>
-                  <th style={{ ...th, textAlign: 'right' }}>Stagioni</th>
-                  <th style={{ ...th, textAlign: 'right' }}>Allenam.</th>
                   <th style={{ ...th, textAlign: 'center' }}>Mail verif.</th>
                   <th style={th}>Iscritto il</th>
                   <th style={th}>Ultimo accesso</th>
                   <th style={th}>Origine</th>
                   <th style={th}>Invitato da</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Stag.</th>
+                  <th style={{ ...th, textAlign: 'right' }}>Allen.</th>
                 </tr>
               </thead>
               <tbody>
@@ -98,8 +100,6 @@ export default async function MetrichePage({ searchParams }) {
                     <td style={{ ...td, color: 'var(--ink-soft, #6b7e8e)' }}>{i + 1}</td>
                     <td style={td}>{u.email}</td>
                     <td style={td}>{ruoloLabel(u.ruolo)}</td>
-                    <td style={tdR}>{u.n_stagioni}</td>
-                    <td style={tdR}>{u.n_allenamenti}</td>
                     <td style={{ ...td, textAlign: 'center' }}>
                       {u.email_verificata
                         ? <span style={{ color: 'var(--verde, #1f9d55)', fontWeight: 700 }}>✓</span>
@@ -109,6 +109,8 @@ export default async function MetrichePage({ searchParams }) {
                     <td style={{ ...td, whiteSpace: 'nowrap' }}>{fmtData(u.ultimo_accesso)}</td>
                     <td style={td}>{u.origine === 'invito' ? 'Invito' : 'Diretta'}</td>
                     <td style={td}>{u.invitato_da || '—'}</td>
+                    <td style={tdR}>{u.n_stagioni}</td>
+                    <td style={tdR}>{u.n_allenamenti}</td>
                   </tr>
                 ))}
                 {righe.length === 0 && (

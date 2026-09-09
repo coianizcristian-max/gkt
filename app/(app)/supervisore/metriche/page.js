@@ -14,7 +14,7 @@ export default async function MetrichePage({ searchParams }) {
 
   // filtro 50 / 100 / 200 dalla query string (?n=)
   const sp = await searchParams
-  const OPZIONI = [50, 100, 200]
+  const OPZIONI = [50, 100, 200,999]
   const n = OPZIONI.includes(Number(sp?.n)) ? Number(sp.n) : 50
 
   // card metriche (record recenti) dalla funzione esistente

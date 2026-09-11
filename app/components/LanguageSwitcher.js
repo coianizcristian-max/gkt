@@ -56,6 +56,7 @@ export default function LanguageSwitcher() {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [alignRight, setAlignRight] = useState(true)
   const ref = useRef(null)
 
   useEffect(() => {
@@ -65,6 +66,14 @@ export default function LanguageSwitcher() {
     document.addEventListener('mousedown', onDoc)
     return () => document.removeEventListener('mousedown', onDoc)
   }, [])
+
+  function toggle() {
+    if (!open && ref.current) {
+      const r = ref.current.getBoundingClientRect()
+      setAlignRight(r.left > window.innerWidth / 2)
+    }
+    setOpen((o) => !o)
+  }
 
   function change(next) {
     setOpen(false)
@@ -77,7 +86,7 @@ export default function LanguageSwitcher() {
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         aria-label="Cambia lingua"
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -94,7 +103,7 @@ export default function LanguageSwitcher() {
         <ul
           role="listbox"
           style={{
-            position: 'absolute', right: 0, top: 'calc(100% + 6px)', margin: 0,
+            position: 'absolute', [alignRight ? 'right' : 'left']: 0, top: 'calc(100% + 6px)', margin: 0,
             padding: 6, listStyle: 'none', minWidth: 160, zIndex: 1000,
             background: '#fff', borderRadius: 10,
             boxShadow: '0 8px 28px rgba(0,0,0,0.18)', border: '1px solid rgba(0,0,0,0.08)',

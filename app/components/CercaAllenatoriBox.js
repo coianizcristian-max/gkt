@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import ProfiloModal from '@/app/cerca-allenatori/ProfiloModal'
+import ProfiloModal from '@/app/[locale]/cerca-allenatori/ProfiloModal'
 import { useTranslations } from 'next-intl'
 
 function buildQuery(citta, cap, provincia) {

@@ -4,12 +4,54 @@ import { useLocale } from 'next-intl'
 import { useState, useRef, useEffect } from 'react'
 import { usePathname, useRouter, routing } from '@/i18n/routing'
 
-const FLAG = { it: '🇮🇹', en: '🇬🇧', de: '🇩🇪', fr: '🇫🇷', es: '🇪🇸' }
 const NAME = { it: 'Italiano', en: 'English', de: 'Deutsch', fr: 'Français', es: 'Español' }
+
+// Bandiere disegnate in SVG (le emoji-bandiera NON si vedono su Chrome/Windows).
+function Flag({ code, size = 22 }) {
+  const common = {
+    width: size, height: Math.round(size * 0.68), preserveAspectRatio: 'none',
+    style: { borderRadius: 2, display: 'block', boxShadow: '0 0 0 1px rgba(0,0,0,0.15)', flexShrink: 0 },
+  }
+  switch (code) {
+    case 'it':
+      return (
+        <svg viewBox="0 0 3 2" {...common} aria-hidden="true">
+          <rect width="1" height="2" fill="#009246" />
+          <rect x="1" width="1" height="2" fill="#ffffff" />
+          <rect x="2" width="1" height="2" fill="#ce2b37" />
+        </svg>
+      )
+    case 'de':
+      return (
+        <svg viewBox="0 0 5 3" {...common} aria-hidden="true">
+          <rect width="5" height="1" fill="#000000" />
+          <rect y="1" width="5" height="1" fill="#dd0000" />
+          <rect y="2" width="5" height="1" fill="#ffce00" />
+        </svg>
+      )
+    case 'es':
+      return (
+        <svg viewBox="0 0 3 2" {...common} aria-hidden="true">
+          <rect width="3" height="2" fill="#aa151b" />
+          <rect y="0.5" width="3" height="1" fill="#f1bf00" />
+        </svg>
+      )
+    case 'en': // Inghilterra (croce di San Giorgio)
+      return (
+        <svg viewBox="0 0 30 20" {...common} aria-hidden="true">
+          <rect width="30" height="20" fill="#ffffff" />
+          <rect x="12" width="6" height="20" fill="#ce1124" />
+          <rect y="7" width="30" height="6" fill="#ce1124" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
 
 export default function LanguageSwitcher() {
   const locale = useLocale()
-  const pathname = usePathname() // percorso SENZA prefisso lingua
+  const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -25,8 +67,6 @@ export default function LanguageSwitcher() {
   function change(next) {
     setOpen(false)
     if (next === locale) return
-    // next-intl imposta il cookie NEXT_LOCALE e naviga alla stessa pagina
-    // nella nuova lingua (aggiunge/toglie il prefisso da solo).
     router.replace(pathname, { locale: next })
   }
 
@@ -39,14 +79,12 @@ export default function LanguageSwitcher() {
         aria-haspopup="listbox"
         aria-expanded={open}
         style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          padding: '6px 10px', borderRadius: 8, cursor: 'pointer',
-          background: 'transparent', border: '1px solid rgba(0,0,0,0.15)',
-          font: 'inherit', lineHeight: 1,
+          display: 'inline-flex', alignItems: 'center',
+          padding: '5px 8px', borderRadius: 8, cursor: 'pointer',
+          background: 'transparent', border: '1px solid rgba(0,0,0,0.15)', lineHeight: 0,
         }}
       >
-        <span style={{ textTransform: 'uppercase', fontSize: 13, fontWeight: 700 }}>{locale}</span>
-        <span style={{ fontSize: 18 }}>{FLAG[locale]}</span>
+        <Flag code={locale} size={24} />
       </button>
 
       {open && (
@@ -74,9 +112,8 @@ export default function LanguageSwitcher() {
                   fontWeight: l === locale ? 700 : 500,
                 }}
               >
-                <span style={{ textTransform: 'uppercase', fontSize: 13, fontWeight: 700, minWidth: 24 }}>{l}</span>
-                <span style={{ fontSize: 18 }}>{FLAG[l]}</span>
-                <span style={{ color: 'var(--ink-soft, #6b7e8e)' }}>{NAME[l]}</span>
+                <Flag code={l} size={22} />
+                <span>{NAME[l]}</span>
               </button>
             </li>
           ))}

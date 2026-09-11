@@ -69,7 +69,15 @@ export default async function Home() {
   const lista = sezioni ?? []
   // Overlay traduzioni EN/DE (fallback IT) sui campi di testo delle sezioni.
   const trSez = await caricaTraduzioni(supabase, 'sito_sezioni', lista.map((s) => s.id), locale)
-  const listaTr = lista.map((s) => ({ ...s, titolo: trSez(s.id, 'titolo') ?? s.titolo, testo: trSez(s.id, 'testo') ?? s.testo }))
+  const listaTr = lista.map((s) => ({
+    ...s,
+    titolo: trSez(s.id, 'titolo') ?? s.titolo,
+    testo: trSez(s.id, 'testo') ?? s.testo,
+    immagine_url: trSez(s.id, 'immagine_url') ?? s.immagine_url,
+    immagine_mobile_url: trSez(s.id, 'immagine_mobile_url') ?? s.immagine_mobile_url,
+    link_url: trSez(s.id, 'link_url') ?? s.link_url,
+    link_url_2: trSez(s.id, 'link_url_2') ?? s.link_url_2,
+  }))
   const gruppi = gruppaPerTipo(listaTr)
   const hasPrezzi = gruppi.some((g) => g.tipo === 'prezzi')
   const hasSocial = gruppi.some((g) => g.tipo === 'social')

@@ -13,6 +13,24 @@ async function revalidateHome() {
 
 const TIPI_VAL = ['hero', 'vantaggio', 'contenuto', 'testo', 'faq', 'banner', 'social', 'prezzi']
 
+function campiTrad(s, t) {
+  const c = [
+    { campo: 'titolo', label: t('titolo'), it: s.titolo, tipo: 'testo' },
+    { campo: 'testo', label: t('testo'), it: s.testo, tipo: 'testo' },
+  ]
+  const haImmagine = s.tipo !== 'testo' && s.tipo !== 'prezzi' && s.tipo !== 'faq'
+  if (haImmagine) c.push({ campo: 'immagine_url', label: t('imgTradLabel'), it: s.immagine_url, tipo: 'immagine' })
+  if (s.tipo === 'hero' || s.tipo === 'banner') {
+    c.push({ campo: 'immagine_mobile_url', label: t('imgMobileTradLabel'), it: s.immagine_mobile_url, tipo: 'immagine' })
+    c.push({ campo: 'link_url', label: t('linkLabel'), it: s.link_url, tipo: 'link' })
+  }
+  if (s.tipo === 'social') {
+    c.push({ campo: 'link_url', label: t('linkFacebook'), it: s.link_url, tipo: 'link' })
+    c.push({ campo: 'link_url_2', label: t('linkInstagram'), it: s.link_url_2, tipo: 'link' })
+  }
+  return c
+}
+
 function SezioneCard({ sezione, onChanged }) {
   const t = useTranslations('sitoEditor')
   const router = useRouter()
@@ -233,8 +251,7 @@ function SezioneCard({ sezione, onChanged }) {
           </div>
         </div>
       )}
-      <TraduzioniEditor tabella="sito_sezioni" rigaId={s.id}
-        campi={[{ campo: 'titolo', label: t('titolo'), it: s.titolo }, { campo: 'testo', label: t('testo'), it: s.testo }]} />
+      <TraduzioniEditor tabella="sito_sezioni" rigaId={s.id} campi={campiTrad(s, t)} />
       <div className="sez-actions">
         <button className="btn-ghost btn-del" onClick={elimina} type="button">{t('elimina')}</button>
         <button className="btn" onClick={salva} disabled={busy} type="button">

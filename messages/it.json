@@ -2586,7 +2586,9 @@
   "addFaq": "+ FAQ (una domanda)",
   "addBanner": "+ Banner",
   "addSocial": "+ Social",
-  "addPrezzi": "+ Prezzi"
+  "addPrezzi": "+ Prezzi",
+  "imgTradLabel": "Immagine (versione per lingua)",
+  "imgMobileTradLabel": "Immagine mobile (versione per lingua)"
  },
  "newsletterManager": {
   "erroreUpload": "Errore upload: {msg}",
@@ -2735,6 +2737,10 @@
   "salva": "Salva traduzione",
   "salvataggio": "Salvataggio…",
   "salvato": "Salvato ✓",
-  "errore": "Errore: {msg}"
+  "errore": "Errore: {msg}",
+  "nessunaImmagine": "Nessuna immagine",
+  "caricaImmagine": "Carica immagine",
+  "cambiaImmagine": "Cambia immagine",
+  "rimuovi": "Rimuovi"
  }
 }

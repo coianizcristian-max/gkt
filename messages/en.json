@@ -869,7 +869,8 @@
   "note": "Notes",
   "caratteristiche": "Attributes",
   "salvaModifiche": "Save changes",
-  "creaPortiere": "Create goalkeeper"
+  "creaPortiere": "Create goalkeeper",
+  "linguaPreferita": "Preferred language"
  },
  "partitaForm": {
   "phAvversario": "Opponent team name",
@@ -2040,7 +2041,8 @@
   "aggiungi": "+ Add",
   "salvataggio": "Saving...",
   "salvato": "Saved ✓",
-  "salva": "Save profile"
+  "salva": "Save profile",
+  "linguaPreferita": "Preferred language"
  },
  "ricorrenzeTabs": {
   "allenamenti": "Trainings",

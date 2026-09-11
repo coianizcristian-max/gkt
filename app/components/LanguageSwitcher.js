@@ -36,12 +36,14 @@ function Flag({ code, size = 22 }) {
           <rect y="0.5" width="3" height="1" fill="#f1bf00" />
         </svg>
       )
-    case 'en': // Inghilterra (croce di San Giorgio)
+    case 'en': // Regno Unito (Union Jack)
       return (
-        <svg viewBox="0 0 30 20" {...common} aria-hidden="true">
-          <rect width="30" height="20" fill="#ffffff" />
-          <rect x="12" width="6" height="20" fill="#ce1124" />
-          <rect y="7" width="30" height="6" fill="#ce1124" />
+        <svg viewBox="0 0 60 30" {...common} aria-hidden="true">
+          <rect width="60" height="30" fill="#012169" />
+          <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" strokeWidth="6" />
+          <path d="M0,0 L60,30 M60,0 L0,30" stroke="#c8102e" strokeWidth="2.5" />
+          <path d="M30,0 V30 M0,15 H60" stroke="#ffffff" strokeWidth="10" />
+          <path d="M30,0 V30 M0,15 H60" stroke="#c8102e" strokeWidth="6" />
         </svg>
       )
     default:
@@ -67,6 +69,7 @@ export default function LanguageSwitcher() {
   function change(next) {
     setOpen(false)
     if (next === locale) return
+    fetch('/api/set-lingua', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lingua: next }) }).catch(() => {})
     router.replace(pathname, { locale: next })
   }
 
@@ -81,7 +84,7 @@ export default function LanguageSwitcher() {
         style={{
           display: 'inline-flex', alignItems: 'center',
           padding: '5px 8px', borderRadius: 8, cursor: 'pointer',
-          background: 'transparent', border: '1px solid rgba(0,0,0,0.15)', lineHeight: 0,
+          background: 'rgba(128,128,128,0.16)', border: '1px solid rgba(128,128,128,0.45)', lineHeight: 0,
         }}
       >
         <Flag code={locale} size={24} />

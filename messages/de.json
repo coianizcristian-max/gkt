@@ -869,7 +869,8 @@
   "note": "Notizen",
   "caratteristiche": "Merkmale",
   "salvaModifiche": "Änderungen speichern",
-  "creaPortiere": "Torhüter anlegen"
+  "creaPortiere": "Torhüter anlegen",
+  "linguaPreferita": "Bevorzugte Sprache"
  },
  "partitaForm": {
   "phAvversario": "Name der gegnerischen Mannschaft",
@@ -2040,7 +2041,8 @@
   "aggiungi": "+ Hinzufügen",
   "salvataggio": "Wird gespeichert...",
   "salvato": "Gespeichert ✓",
-  "salva": "Profil speichern"
+  "salva": "Profil speichern",
+  "linguaPreferita": "Bevorzugte Sprache"
  },
  "ricorrenzeTabs": {
   "allenamenti": "Trainings",

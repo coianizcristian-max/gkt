@@ -66,7 +66,15 @@ export default function LoginPage() {
       console.warn('consuma-invito post-login:', err)
     }
 
-    router.push('/dashboard')
+    let linguaPref = 'it'
+    try {
+      const { data: { user: u } } = await supabase.auth.getUser()
+      if (u) {
+        const { data: prof } = await supabase.from('profili').select('lingua').eq('id', u.id).maybeSingle()
+        if (prof?.lingua) linguaPref = prof.lingua
+      }
+    } catch (e) {}
+    router.push('/dashboard', { locale: linguaPref })
     router.refresh()
   }
 

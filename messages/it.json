@@ -869,7 +869,8 @@
   "note": "Note",
   "caratteristiche": "Caratteristiche",
   "salvaModifiche": "Salva modifiche",
-  "creaPortiere": "Crea portiere"
+  "creaPortiere": "Crea portiere",
+  "linguaPreferita": "Lingua preferita"
  },
  "partitaForm": {
   "phAvversario": "Nome squadra avversaria",
@@ -2040,7 +2041,8 @@
   "aggiungi": "+ Aggiungi",
   "salvataggio": "Salvataggio...",
   "salvato": "Salvato ✓",
-  "salva": "Salva profilo"
+  "salva": "Salva profilo",
+  "linguaPreferita": "Lingua preferita"
  },
  "ricorrenzeTabs": {
   "allenamenti": "Allenamenti",

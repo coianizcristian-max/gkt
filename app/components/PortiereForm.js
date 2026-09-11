@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId, piedi = [], soloPortiere = false, attributiDef = [], attributiValori = {}, infortunioAperto = null }) {
   const router = useRouter()
@@ -35,6 +35,8 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
   const [fotoPreview, setFotoPreview] = useState(portiere?.foto_url ?? null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const locale = useLocale()
+  const [lingua, setLingua] = useState(locale)
 
   // ── Infortunio ────────────────────────────────────────────────────────────
   const oggi = new Date().toISOString().slice(0, 10)
@@ -169,7 +171,10 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         }
       }
 
-      if (soloPortiere) { router.push(`/portieri/${portiereId}`); router.refresh() }
+      if (soloPortiere) {
+        try { await fetch('/api/set-lingua', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lingua }) }) } catch (e) {}
+        router.push(`/portieri/${portiereId}`, lingua !== locale ? { locale } : undefined); router.refresh()
+      }
       else { router.push('/portieri'); router.refresh() }
     } catch (err) {
       setError(err.message || t('erroreSalvataggio'))
@@ -181,6 +186,16 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
     <form className="scheda" onSubmit={save}>
       {error && <div className="err">{error}</div>}
       {soloPortiere && <p className="sub-intro">{t('introPortiere')}</p>}
+      {soloPortiere && (
+        <div className="field" style={{ maxWidth: 240 }}><label>{t('linguaPreferita')}</label>
+          <select value={lingua} onChange={(e) => setLingua(e.target.value)}>
+            <option value="it">Italiano</option>
+            <option value="en">English</option>
+            <option value="de">Deutsch</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+      )}
 
       {/* ── Stato infortunio (solo staff, richiede un'iscrizione) ── */}
       {!soloPortiere && iscrizione?.id && (

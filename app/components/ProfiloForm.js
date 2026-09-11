@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/routing'
+import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ProfiloForm({ profilo, userId }) {
   const t = useTranslations('profiloForm')
   const router = useRouter()
+  const locale = useLocale()
+  const pathname = usePathname()
   const [f, setF] = useState({
     nome_completo: profilo?.nome_completo ?? '',
     telefono: profilo?.telefono ?? '',
@@ -17,6 +19,7 @@ export default function ProfiloForm({ profilo, userId }) {
     cap: profilo?.cap ?? '',
     range_ricerca: profilo?.range_ricerca == null ? '' : String(profilo.range_ricerca),
     disponibile: profilo?.disponibile ?? true,
+    lingua: profilo?.lingua ?? 'it',
   })
   const [esperienze, setEsperienze] = useState(Array.isArray(profilo?.esperienze) ? profilo.esperienze : [])
   const [certificati, setCertificati] = useState(Array.isArray(profilo?.certificati) ? profilo.certificati : [])
@@ -63,6 +66,7 @@ export default function ProfiloForm({ profilo, userId }) {
         esperienze: esperienze.filter((x) => x && x.trim()),
         certificati: certificati.filter((x) => x && x.trim()),
         foto_url,
+        lingua: f.lingua || 'it',
       }
       if (f.citta) {
         try {
@@ -74,7 +78,8 @@ export default function ProfiloForm({ profilo, userId }) {
       }
       const { error } = await supabase.from('profili').update(payload).eq('id', userId)
       if (error) throw error
-      setDone(true); setBusy(false); router.refresh()
+      setDone(true); setBusy(false)
+      if (f.lingua && f.lingua !== locale) router.replace(pathname, { locale: f.lingua }); else router.refresh()
     } catch (err) { setError(err.message); setBusy(false) }
   }
 
@@ -92,6 +97,14 @@ export default function ProfiloForm({ profilo, userId }) {
         <div className="field"><label>{t('lVia')}</label><input value={f.via} onChange={upd('via')} required /></div>
         <div className="field"><label>{t('lCitta')}</label><input value={f.citta} onChange={upd('citta')} placeholder={t('phCitta')} required /></div>
         <div className="field"><label>{t('lCap')}</label><input value={f.cap} onChange={upd('cap')} required /></div>
+        <div className="field"><label>{t('linguaPreferita')}</label>
+          <select value={f.lingua} onChange={upd('lingua')}>
+            <option value="it">Italiano</option>
+            <option value="en">English</option>
+            <option value="de">Deutsch</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
         <div className="field field-full">
           <div style={{ background: 'var(--carta)', border: '1px solid var(--linea)', borderRadius: 10, padding: 12, display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'center' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, margin: 0 }}>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { renderTesto } from '@/lib/renderTesto'
+import TraduzioniEditor from '@/app/components/TraduzioniEditor'
 
 async function revalidateHome() {
   try { await fetch('/api/revalidate-home', { method: 'POST' }) } catch (_) {}
@@ -232,6 +233,8 @@ function SezioneCard({ sezione, onChanged }) {
           </div>
         </div>
       )}
+      <TraduzioniEditor tabella="sito_sezioni" rigaId={s.id}
+        campi={[{ campo: 'titolo', label: t('titolo'), it: s.titolo }, { campo: 'testo', label: t('testo'), it: s.testo }]} />
       <div className="sez-actions">
         <button className="btn-ghost btn-del" onClick={elimina} type="button">{t('elimina')}</button>
         <button className="btn" onClick={salva} disabled={busy} type="button">

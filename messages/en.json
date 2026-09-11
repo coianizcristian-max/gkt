@@ -2726,5 +2726,15 @@
   "a7": "Yes. We process data in compliance with the GDPR, with encrypted connections and restricted access. See the Privacy Policy for full details.",
   "q8": "Which languages is GKSeason available in?",
   "a8": "GKSeason is available in Italian, English, German and Spanish. You can switch language from the selector at any time."
+ },
+ "traduzioniEditor": {
+  "titolo": "🌐 Translations (EN / DE / ES)",
+  "riferimentoIT": "IT:",
+  "placeholder": "Translation…",
+  "caricamento": "Loading…",
+  "salva": "Save translation",
+  "salvataggio": "Saving…",
+  "salvato": "Saved ✓",
+  "errore": "Error: {msg}"
  }
 }

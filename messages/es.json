@@ -2726,5 +2726,15 @@
   "a7": "Sí. Tratamos los datos conforme al RGPD, con conexiones cifradas y acceso restringido. Consulta la Política de Privacidad para todos los detalles.",
   "q8": "¿En qué idiomas está disponible GKSeason?",
   "a8": "GKSeason está disponible en italiano, inglés, alemán y español. Puedes cambiar de idioma desde el selector en cualquier momento."
+ },
+ "traduzioniEditor": {
+  "titolo": "🌐 Traducciones (EN / DE / ES)",
+  "riferimentoIT": "IT:",
+  "placeholder": "Traducción…",
+  "caricamento": "Cargando…",
+  "salva": "Guardar traducción",
+  "salvataggio": "Guardando…",
+  "salvato": "Guardado ✓",
+  "errore": "Error: {msg}"
  }
 }

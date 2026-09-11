@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
+import TraduzioniEditor from '@/app/components/TraduzioniEditor'
 
 export default function FaqManager({ faq }) {
   const t = useTranslations('faqManager')
@@ -151,6 +152,8 @@ function FaqRiga({ f, onChanged }) {
         <label>{t('risposta')}</label>
         <textarea rows="2" value={risposta} onChange={(e) => { setRisposta(e.target.value); setDone(false) }} />
       </div>
+      <TraduzioniEditor tabella="faq_interne" rigaId={f.id}
+        campi={[{ campo: 'domanda', label: t('domanda'), it: f.domanda }, { campo: 'risposta', label: t('risposta'), it: f.risposta }]} />
       <div className="form-actions" style={{ marginTop: 10 }}>
         <button className="btn-ghost btn-del" onClick={elimina} type="button">{t('elimina')}</button>
         <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? t('salvataggio') : done ? t('salvato') : t('salva')}</button>

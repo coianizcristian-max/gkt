@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import AreaLoginCta from '@/app/components/AreaLoginCta'
+import LanguageSwitcher from '@/app/components/LanguageSwitcher'
 
 export default function MobileNav({ links }) {
+  const c = useTranslations('common')
   const [aperto, setAperto] = useState(false)
 
   return (
@@ -11,7 +14,7 @@ export default function MobileNav({ links }) {
       <button
         type="button"
         className="mobile-nav-toggle"
-        aria-label={aperto ? 'Chiudi menu' : 'Apri menu'}
+        aria-label={aperto ? c('chiudiMenu') : c('apriMenu')}
         aria-expanded={aperto}
         onClick={() => setAperto((v) => !v)}
       >
@@ -25,6 +28,9 @@ export default function MobileNav({ links }) {
           ))}
           <div className="mobile-nav-login">
             <AreaLoginCta variant="nav" />
+          </div>
+          <div className="mobile-nav-lang" style={{ marginTop: 8 }}>
+            <LanguageSwitcher />
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 // Converte un dataURL (PNG) in Blob per l'upload su Storage
 function dataUrlToBlob(dataUrl) {
@@ -19,6 +20,7 @@ function dataUrlToBlob(dataUrl) {
  */
 export default function LavagnaEsercizioModal({ mode = 'create', esercizio = null, allenatoreId, tipologie = [], onResult, onSaved, onClose }) {
   const iframeRef = useRef(null)
+  const t = useTranslations('lavagnaEsercizio')
   const [fase, setFase] = useState('disegno') // 'disegno' | 'dettagli' | 'salvataggio'
   const [dati, setDati] = useState(null)       // { name, schema, immagine_url }
   const [error, setError] = useState('')
@@ -93,7 +95,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
           if (updErr) throw updErr
           if (onSaved) onSaved(data)
         } catch (err) {
-          alert('Errore nel salvataggio delle modifiche: ' + err.message)
+          alert(t('erroreModifiche') + err.message)
           setFase('disegno')
         }
       }
@@ -115,7 +117,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
           setDati({ name: d.name, schema: d.schema, immagine_url })
           setFase('dettagli')
         } catch (err) {
-          setError('Errore nel salvataggio dello schema: ' + err.message)
+          setError(t('erroreSchema') + err.message)
           setFase('disegno')
         }
       }
@@ -150,7 +152,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
       if (insErr) throw insErr
       if (onSaved) onSaved(data)
     } catch (err) {
-      setError('Errore nel salvataggio: ' + err.message)
+      setError(t('erroreSalvataggio') + err.message)
       setFase('dettagli')
     }
   }
@@ -166,12 +168,12 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderBottom: '1px solid #e4ebef', flex: 'none' }}>
           <h3 style={{ margin: 0, fontSize: 17 }}>
             {mode === 'view'
-              ? `Schema — ${esercizio?.titolo || 'Esercizio'}`
+              ? t('titoloView', { nome: esercizio?.titolo || t('esercizioFallback') })
               : mode === 'edit'
-                ? `Modifica schema — ${esercizio?.titolo || 'Esercizio'}`
-                : fase === 'dettagli' ? 'Completa l’esercizio' : 'Crea esercizio con la lavagna'}
+                ? t('titoloEdit', { nome: esercizio?.titolo || t('esercizioFallback') })
+                : fase === 'dettagli' ? t('completa') : t('creaTitolo')}
           </h3>
-          <button onClick={onClose} type="button" aria-label="Chiudi" style={{ border: 0, background: 'transparent', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} type="button" aria-label={t('chiudi')} style={{ border: 0, background: 'transparent', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>✕</button>
         </div>
 
         {/* FASE DISEGNO / VISTA — la lavagna in un iframe */}
@@ -180,7 +182,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
             <iframe
               ref={iframeRef}
               src={src}
-              title="Lavagna esercizi"
+              title={t('lavagnaTitle')}
               style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
             />
           </div>
@@ -199,52 +201,52 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
                 />
               )}
               <div style={{ minWidth: 200, flex: 1 }}>
-                <div style={{ fontSize: 12, color: 'var(--ink-soft, #7f8f9b)', fontWeight: 600 }}>Titolo</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-soft, #7f8f9b)', fontWeight: 600 }}>{t('titoloLabel')}</div>
                 <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>{dati?.name}</div>
                 <div style={{ fontSize: 12.5, color: 'var(--ink-soft, #7f8f9b)' }}>
-                  Lo schema disegnato è salvato con l’esercizio. Aggiungi le informazioni che ti servono e conferma.
+                  {t('schemaInfo')}
                 </div>
               </div>
             </div>
 
             <div className="form-grid">
               <div className="field">
-                <label>Tipologia</label>
+                <label>{t('tipologia')}</label>
                 <select value={f.tipologia} onChange={upd('tipologia')}>
                   <option value="">—</option>
-                  {tipList.map((t) => <option key={t} value={t}>{t}</option>)}
+                  {tipList.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
                 </select>
               </div>
               <div className="field">
-                <label>Durata (min)</label>
-                <input type="number" min="0" step="0.5" value={f.durata_minuti} onChange={upd('durata_minuti')} placeholder="es. 15" />
+                <label>{t('durata')}</label>
+                <input type="number" min="0" step="0.5" value={f.durata_minuti} onChange={upd('durata_minuti')} placeholder={t('phDurata')} />
               </div>
               <div className="field">
-                <label>Recupero (min)</label>
-                <input type="number" min="0" step="0.5" value={f.recupero_minuti} onChange={upd('recupero_minuti')} placeholder="es. 3" />
+                <label>{t('recupero')}</label>
+                <input type="number" min="0" step="0.5" value={f.recupero_minuti} onChange={upd('recupero_minuti')} placeholder={t('phRecupero')} />
               </div>
               <div className="field field-full">
-                <label>Descrizione breve</label>
-                <input value={f.descrizione_breve} onChange={upd('descrizione_breve')} placeholder="Una riga di sintesi" />
+                <label>{t('descrizioneBreve')}</label>
+                <input value={f.descrizione_breve} onChange={upd('descrizione_breve')} placeholder={t('phDescrizioneBreve')} />
               </div>
               <div className="field field-full">
-                <label>Descrizione completa</label>
-                <textarea rows={3} value={f.descrizione} onChange={upd('descrizione')} placeholder="Descrizione dettagliata dell'esercizio..." />
+                <label>{t('descrizioneCompleta')}</label>
+                <textarea rows={3} value={f.descrizione} onChange={upd('descrizione')} placeholder={t('phDescrizioneCompleta')} />
               </div>
               <div className="field field-full">
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                   <input type="checkbox" checked={f.pubblico} onChange={(e) => setF((s) => ({ ...s, pubblico: e.target.checked }))} />
-                  Rendi pubblico (visibile ad altri allenatori nella libreria pubblica)
+                  {t('rendiPubblico')}
                 </label>
               </div>
             </div>
 
             <div className="form-actions" style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
               <button className="btn-ghost" type="button" onClick={() => setFase('disegno')} disabled={fase === 'salvataggio'}>
-                ← Torna al disegno
+                {t('tornaDisegno')}
               </button>
               <button className="btn" type="button" onClick={salvaEsercizio} disabled={fase === 'salvataggio'}>
-                {fase === 'salvataggio' ? 'Salvataggio...' : '💾 Salva in libreria'}
+                {fase === 'salvataggio' ? t('salvataggio') : t('salvaLibreria')}
               </button>
             </div>
           </div>

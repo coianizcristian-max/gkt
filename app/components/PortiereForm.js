@@ -3,10 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 export default function PortiereForm({ portiere, iscrizione, categorie, stagioneId, piedi = [], soloPortiere = false, attributiDef = [], attributiValori = {}, infortunioAperto = null }) {
   const router = useRouter()
   const isEdit = !!portiere
+  const t = useTranslations('portiereForm')
+  const c = useTranslations('common')
   const [attrVal, setAttrVal] = useState(() => {
     const init = {}
     for (const a of attributiDef) init[a.id] = attributiValori[a.id] ?? ''
@@ -57,7 +60,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
       if (error) throw error
       setInf(data); setInfOpen(false)
       router.refresh()
-    } catch (err) { setInfErr(err.message || "Errore nel salvataggio dell'infortunio.") }
+    } catch (err) { setInfErr(err.message || t('erroreSalvaInfortunio')) }
     setInfBusy(false)
   }
 
@@ -70,7 +73,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
       if (error) throw error
       setInf(null)
       router.refresh()
-    } catch (err) { setInfErr(err.message || "Errore nella chiusura dell'infortunio.") }
+    } catch (err) { setInfErr(err.message || t('erroreChiusuraInfortunio')) }
     setInfBusy(false)
   }
 
@@ -89,8 +92,8 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
   async function save(e) {
     e.preventDefault()
     setError('')
-    if (!soloPortiere && !f.nome.trim()) { setError('Il nome è obbligatorio.'); return }
-    if (!soloPortiere && !f.squadra_id) { setError('Seleziona una categoria.'); return }
+    if (!soloPortiere && !f.nome.trim()) { setError(t('erroreNomeObbligatorio')); return }
+    if (!soloPortiere && !f.squadra_id) { setError(t('erroreCategoria')); return }
     setSaving(true)
     const supabase = createClient()
 
@@ -169,7 +172,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
       if (soloPortiere) { router.push(`/portieri/${portiereId}`); router.refresh() }
       else { router.push('/portieri'); router.refresh() }
     } catch (err) {
-      setError(err.message || 'Errore durante il salvataggio.')
+      setError(err.message || t('erroreSalvataggio'))
       setSaving(false)
     }
   }
@@ -177,44 +180,44 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
   return (
     <form className="scheda" onSubmit={save}>
       {error && <div className="err">{error}</div>}
-      {soloPortiere && <p className="sub-intro">Puoi aggiornare i tuoi dati (recapiti, misure, foto…). Nome, cognome e categoria sono gestiti dallo staff.</p>}
+      {soloPortiere && <p className="sub-intro">{t('introPortiere')}</p>}
 
       {/* ── Stato infortunio (solo staff, richiede un'iscrizione) ── */}
       {!soloPortiere && iscrizione?.id && (
         <div style={{ border: '1px solid var(--line, #e5e7eb)', borderRadius: 10, padding: 12, marginBottom: 14, background: inf ? '#fff4f4' : 'var(--bg-soft, #fafafa)' }}>
           {inf ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <span style={{ fontWeight: 700, color: '#c0392b' }}>🩹 Infortunato</span>
+              <span style={{ fontWeight: 700, color: '#c0392b' }}>{t('infortunato')}</span>
               <span style={{ color: 'var(--ink-soft)' }}>
-                dal {fmt(inf.data_inizio)}{inf.data_rientro_prevista ? ` · rientro previsto ${fmt(inf.data_rientro_prevista)}` : ''}
+                {t('dal')} {fmt(inf.data_inizio)}{inf.data_rientro_prevista ? t('rientroPrevistoSuffix', { data: fmt(inf.data_rientro_prevista) }) : ''}
               </span>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
-                <label style={{ fontSize: 12, color: 'var(--ink-soft)' }}>Rientro</label>
+                <label style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{t('rientro')}</label>
                 <input type="date" value={infFine} onChange={(e) => setInfFine(e.target.value)} />
                 <button type="button" className="btn-mini" disabled={infBusy} onClick={terminaInfortunio}>
-                  {infBusy ? '…' : 'Termina infortunio'}
+                  {infBusy ? '…' : t('terminaInfortunio')}
                 </button>
               </div>
             </div>
           ) : infOpen ? (
             <div style={{ display: 'grid', gap: 8 }}>
-              <div style={{ fontWeight: 700 }}>Registra un infortunio</div>
+              <div style={{ fontWeight: 700 }}>{t('registraInfortunio')}</div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'end' }}>
-                <div className="field"><label>Inizio</label>
+                <div className="field"><label>{t('inizio')}</label>
                   <input type="date" value={infStart} onChange={(e) => setInfStart(e.target.value)} /></div>
-                <div className="field"><label>Rientro previsto (opzionale)</label>
+                <div className="field"><label>{t('rientroPrevistoOpz')}</label>
                   <input type="date" value={infRientro} onChange={(e) => setInfRientro(e.target.value)} /></div>
                 <button type="button" className="btn" disabled={infBusy || !infStart} onClick={registraInfortunio}>
-                  {infBusy ? 'Salvataggio…' : 'Registra'}
+                  {infBusy ? t('salvataggio') : t('registra')}
                 </button>
-                <button type="button" className="btn-ghost" onClick={() => setInfOpen(false)}>Annulla</button>
+                <button type="button" className="btn-ghost" onClick={() => setInfOpen(false)}>{c('annulla')}</button>
               </div>
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ color: 'var(--ink-soft)' }}>Disponibile</span>
+              <span style={{ color: 'var(--ink-soft)' }}>{t('disponibile')}</span>
               <button type="button" className="btn-mini" style={{ marginLeft: 'auto' }} onClick={() => setInfOpen(true)}>
-                Segna infortunio
+                {t('segnaInfortunio')}
               </button>
             </div>
           )}
@@ -226,60 +229,60 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         <div className="foto-box">
           {fotoPreview
             ? <img src={fotoPreview} alt="" />
-            : <span className="foto-ph">Nessuna foto</span>}
+            : <span className="foto-ph">{t('nessunaFoto')}</span>}
         </div>
         <label className="foto-upload">
-          {fotoPreview ? 'Cambia foto' : 'Carica foto'}
+          {fotoPreview ? t('cambiaFoto') : t('caricaFoto')}
           <input type="file" accept="image/*" onChange={onFoto} hidden />
         </label>
       </div>
 
       <div className="form-grid">
-        <div className="field"><label>Nome *</label>
+        <div className="field"><label>{t('nome')}</label>
           <input value={f.nome} onChange={upd('nome')} required disabled={soloPortiere} /></div>
-        <div className="field"><label>Cognome</label>
+        <div className="field"><label>{t('cognome')}</label>
           <input value={f.cognome} onChange={upd('cognome')} disabled={soloPortiere} /></div>
 
-        <div className="field"><label>Categoria *</label>
+        <div className="field"><label>{t('categoria')}</label>
           <select value={f.squadra_id} onChange={upd('squadra_id')} required disabled={soloPortiere}>
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></div>
-        <div className="field"><label>Numero di maglia</label>
+        <div className="field"><label>{t('numeroMaglia')}</label>
           <input type="number" value={f.numero_maglia} onChange={upd('numero_maglia')} disabled={soloPortiere} /></div>
 
-        <div className="field"><label>Data di nascita</label>
+        <div className="field"><label>{t('dataNascita')}</label>
           <input type="date" value={f.data_nascita} onChange={upd('data_nascita')} /></div>
-        <div className="field"><label>Luogo di nascita</label>
+        <div className="field"><label>{t('luogoNascita')}</label>
           <input value={f.luogo_nascita} onChange={upd('luogo_nascita')} /></div>
 
-        <div className="field"><label>Altezza (cm)</label>
+        <div className="field"><label>{t('altezza')}</label>
           <input type="number" value={f.altezza_cm} onChange={upd('altezza_cm')} /></div>
-        <div className="field"><label>Peso (kg)</label>
+        <div className="field"><label>{t('peso')}</label>
           <input type="number" step="0.1" value={f.peso_kg} onChange={upd('peso_kg')} /></div>
 
-        <div className="field"><label>Piede preferito</label>
+        <div className="field"><label>{t('piedePreferito')}</label>
           <select value={f.piede} onChange={upd('piede')}>
             <option value="">—</option>
             {piedi.map((p) => <option key={p} value={p}>{p}</option>)}
           </select></div>
-        <div className="field"><label>Squadra di provenienza</label>
+        <div className="field"><label>{t('squadraProvenienza')}</label>
           <input value={f.squadra_provenienza} onChange={upd('squadra_provenienza')} /></div>
 
-        <div className="field"><label>Indirizzo</label>
+        <div className="field"><label>{t('indirizzo')}</label>
           <input value={f.indirizzo} onChange={upd('indirizzo')} /></div>
-        <div className="field"><label>Telefono</label>
+        <div className="field"><label>{t('telefono')}</label>
           <input value={f.telefono} onChange={upd('telefono')} /></div>
 
-        <div className="field"><label>Contatto genitore</label>
+        <div className="field"><label>{t('contattoGenitore')}</label>
           <input value={f.contatto_genitore} onChange={upd('contatto_genitore')} /></div>
-        <div className="field field-full"><label>Note</label>
+        <div className="field field-full"><label>{t('note')}</label>
           <textarea rows="3" value={f.note} onChange={upd('note')} /></div>
       </div>
 
       {attributiDef.length > 0 && (
         <div className="form-grid" style={{ marginTop: 4 }}>
           <div className="field-full" style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 8 }}>
-            Caratteristiche
+            {t('caratteristiche')}
           </div>
           {attributiDef.map((a) => (
             <div className="field" key={a.id}>
@@ -296,9 +299,9 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
       )}
 
       <div className="form-actions">
-        <button type="button" className="btn-ghost" onClick={tornaIndietro}>Annulla</button>
+        <button type="button" className="btn-ghost" onClick={tornaIndietro}>{c('annulla')}</button>
         <button type="submit" className="btn" disabled={saving}>
-          {saving ? 'Salvataggio…' : (isEdit ? 'Salva modifiche' : 'Crea portiere')}
+          {saving ? t('salvataggio') : (isEdit ? t('salvaModifiche') : t('creaPortiere'))}
         </button>
       </div>
     </form>

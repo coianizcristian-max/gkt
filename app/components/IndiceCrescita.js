@@ -1,6 +1,10 @@
+'use client'
+
 import { interpretaIndice } from '@/lib/indiceCrescita'
+import { useTranslations } from 'next-intl'
 
 export default function IndiceCrescita({ score, dettagli, provvisorio = false }) {
+  const t = useTranslations('indiceCrescita')
   const info = interpretaIndice(score, provvisorio)
   const pct = score ?? 0
   const circonferenza = 2 * Math.PI * 42
@@ -8,7 +12,7 @@ export default function IndiceCrescita({ score, dettagli, provvisorio = false })
 
   return (
     <div className="scheda" style={{ marginBottom: 14 }}>
-      <h3 style={{ marginTop: 0, marginBottom: 14 }}>📊 Indice di Crescita GKSeason</h3>
+      <h3 style={{ marginTop: 0, marginBottom: 14 }}>{t('titolo')}</h3>
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', width: 100, height: 100, flexShrink: 0 }}>
           <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
@@ -26,13 +30,13 @@ export default function IndiceCrescita({ score, dettagli, provvisorio = false })
         </div>
         <div style={{ flex: 1, minWidth: 180 }}>
           <div style={{ fontWeight: 700, fontSize: 15, color: info.colore, marginBottom: 8 }}>{info.label}</div>
-          {provvisorio && <div style={{ fontSize: 11, color: 'var(--ink-soft)', marginBottom: 8 }}>Il punteggio si stabilizza con più allenamenti e valutazioni.</div>}
+          {provvisorio && <div style={{ fontSize: 11, color: 'var(--ink-soft)', marginBottom: 8 }}>{t('provvisorio')}</div>}
           <div style={{ fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.7 }}>
             {dettagli.map((d) => (
               <div key={d.label} style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
                 <span>{d.label} ({d.peso}%)</span>
                 <b style={{ color: d.valore != null ? 'var(--ink)' : 'var(--ink-soft)' }}>
-                  {d.valore != null ? d.display : 'n/d'}
+                  {d.valore != null ? d.display : t('nd')}
                 </b>
               </div>
             ))}

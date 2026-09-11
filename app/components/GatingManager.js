@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 const DEFAULT = {
@@ -9,8 +10,6 @@ const DEFAULT = {
   portiere:   { mensile: '4.90', annuale: '39.00', lifetime: '99.00' },
 }
 
-// Appiattisce l'albero ricevuto dal server in un elenco ordinato con livello,
-// così possiamo indentare le sotto-funzionalità sotto il padre.
 function flatten(albero) {
   const out = []
   const visita = (nodo, livello) => {
@@ -32,6 +31,7 @@ export default function GatingManager({
   giorniIniziali,
   lifetimeIniziale,
 }) {
+  const t = useTranslations('gatingManager')
   const router = useRouter()
   const righe = flatten(albero)
 
@@ -75,6 +75,8 @@ export default function GatingManager({
     setSaving(true); setDone(false)
     const supabase = createClient()
 
+    // NB: i campi `label` restano gli identificatori interni salvati nel DB
+    // (non vengono mostrati tradotti), quindi si lasciano invariati.
     const rows = [
       { chiave: '__tutto_free',         label: 'Tutto free', free: tuttoFree },
       { chiave: 'fee_contatto_importo', label: fee,          free: false },
@@ -88,11 +90,10 @@ export default function GatingManager({
       { chiave: 'giorni_prova_portiere',      label: String(giorni.portiere   || '0'), free: false },
       { chiave: 'lifetime_attivo_allenatore', label: 'A vita attivo (allenatore)', free: lifetime.allenatore },
       { chiave: 'lifetime_attivo_portiere',   label: 'A vita attivo (portiere)',   free: lifetime.portiere },
-      // Un record per ogni funzionalità (foglie + padri): salva lo stato free/paid.
       ...righe.filter((r) => r.chiave).map((r) => ({ chiave: r.chiave, label: r.label, free: stato[r.chiave] ?? r.free })),
     ]
     const { error } = await supabase.from('funzionalita_config').upsert(rows, { onConflict: 'chiave' })
-    if (error) { alert('Errore: ' + error.message); setSaving(false); return }
+    if (error) { alert(t('errore', { msg: error.message })); setSaving(false); return }
     setDone(true); setSaving(false); router.refresh()
   }
 
@@ -109,13 +110,12 @@ export default function GatingManager({
 
   return (
     <div className="lista-editor">
-      <p className="sub-intro">Configura prezzi, prova gratuita, funzionalità e accessi. Clicca <b>Salva</b> in fondo per applicare tutte le modifiche.</p>
+      <p className="sub-intro">{t.rich('intro', { b: (ch) => <b>{ch}</b> })}</p>
 
-      {/* TUTTO FREE */}
       <div className="scheda" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 15 }}>🌐 TUTTO FREE</div>
-          <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 3 }}>Tutti accedono a tutto senza abbonamento. Utile per periodi di prova.</div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>{t('tuttoFreeTitolo')}</div>
+          <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 3 }}>{t('tuttoFreeDesc')}</div>
         </div>
         <button type="button" className={`toggle-switch ${tuttoFree ? 'on' : ''}`}
           onClick={() => { setTuttoFree((v) => !v); tocca() }} role="switch" aria-checked={tuttoFree}>
@@ -123,18 +123,17 @@ export default function GatingManager({
         </button>
       </div>
 
-      {/* Prezzi abbonamento */}
       <div className="scheda" style={{ marginBottom: 16 }}>
-        <h3 style={{ margin: '0 0 12px' }}>💰 Prezzi abbonamento</h3>
+        <h3 style={{ margin: '0 0 12px' }}>{t('prezziTitolo')}</h3>
         <div className="prezzi-grid">
           <div>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>Allenatore / Staff</div>
-            <PrezzoField ruolo="allenatore" piano="mensile"  label="Mensile" />
-            <PrezzoField ruolo="allenatore" piano="annuale"  label="Annuale" />
-            <PrezzoField ruolo="allenatore" piano="lifetime" label="A vita" />
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>{t('allenatoreStaff')}</div>
+            <PrezzoField ruolo="allenatore" piano="mensile"  label={t('mensile')} />
+            <PrezzoField ruolo="allenatore" piano="annuale"  label={t('annuale')} />
+            <PrezzoField ruolo="allenatore" piano="lifetime" label={t('aVita')} />
             <div className="prezzo-field-row" style={{ marginTop: 2 }}>
               <span className="prezzo-field-label" style={{ fontSize: 12, color: lifetime.allenatore ? 'var(--ink-soft)' : 'var(--rosso)' }}>
-                Piano «A vita» {lifetime.allenatore ? 'mostrato' : 'nascosto'}
+                {lifetime.allenatore ? t('pianoAVitaMostrato') : t('pianoAVitaNascosto')}
               </span>
               <button type="button" className={`toggle-switch sm ${lifetime.allenatore ? 'on' : ''}`}
                 onClick={() => toggleLifetime('allenatore')} role="switch" aria-checked={lifetime.allenatore}>
@@ -143,13 +142,13 @@ export default function GatingManager({
             </div>
           </div>
           <div>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>Portiere</div>
-            <PrezzoField ruolo="portiere" piano="mensile"  label="Mensile" />
-            <PrezzoField ruolo="portiere" piano="annuale"  label="Annuale" />
-            <PrezzoField ruolo="portiere" piano="lifetime" label="A vita" />
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>{t('portiere')}</div>
+            <PrezzoField ruolo="portiere" piano="mensile"  label={t('mensile')} />
+            <PrezzoField ruolo="portiere" piano="annuale"  label={t('annuale')} />
+            <PrezzoField ruolo="portiere" piano="lifetime" label={t('aVita')} />
             <div className="prezzo-field-row" style={{ marginTop: 2 }}>
               <span className="prezzo-field-label" style={{ fontSize: 12, color: lifetime.portiere ? 'var(--ink-soft)' : 'var(--rosso)' }}>
-                Piano «A vita» {lifetime.portiere ? 'mostrato' : 'nascosto'}
+                {lifetime.portiere ? t('pianoAVitaMostrato') : t('pianoAVitaNascosto')}
               </span>
               <button type="button" className={`toggle-switch sm ${lifetime.portiere ? 'on' : ''}`}
                 onClick={() => toggleLifetime('portiere')} role="switch" aria-checked={lifetime.portiere}>
@@ -158,57 +157,48 @@ export default function GatingManager({
             </div>
           </div>
         </div>
-        <p className="sub-intro" style={{ marginTop: 12 }}>
-          Se hai configurato i Price ID Stripe nelle variabili d&apos;ambiente, i prezzi Stripe avranno la precedenza.
-          Per usare questi prezzi dinamici, lascia vuote le variabili STRIPE_PRICE_*.
-        </p>
+        <p className="sub-intro" style={{ marginTop: 12 }}>{t('stripeNota')}</p>
       </div>
 
-      {/* Prova gratuita */}
       <div className="scheda" style={{ marginBottom: 16 }}>
-        <h3 style={{ margin: '0 0 6px' }}>🎁 Prova gratuita alla prima iscrizione</h3>
+        <h3 style={{ margin: '0 0 6px' }}>{t('provaTitolo')}</h3>
         <p className="sub-intro" style={{ marginTop: 0, marginBottom: 12 }}>
-          Giorni di accesso completo concessi <b>una sola volta</b>, alla prima iscrizione. Alla scadenza si resta sul piano free
-          finché non si sottoscrive un abbonamento. Metti <b>0</b> per disattivare la prova.
+          {t.rich('provaDesc', { b: (ch) => <b>{ch}</b> })}
         </p>
         <div className="prezzi-grid">
           <div className="prezzo-field-row">
-            <span className="prezzo-field-label">Allenatore / Staff</span>
+            <span className="prezzo-field-label">{t('allenatoreStaff')}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
               <input type="number" min="0" step="1" value={giorni.allenatore}
                 onChange={updGiorni('allenatore')} className="prezzo-field-input" />
-              <span style={{ fontWeight: 600, fontSize: 13 }}>gg</span>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>{t('ggUnit')}</span>
             </div>
           </div>
           <div className="prezzo-field-row">
-            <span className="prezzo-field-label">Portiere</span>
+            <span className="prezzo-field-label">{t('portiere')}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
               <input type="number" min="0" step="1" value={giorni.portiere}
                 onChange={updGiorni('portiere')} className="prezzo-field-input" />
-              <span style={{ fontWeight: 600, fontSize: 13 }}>gg</span>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>{t('ggUnit')}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Fee contatto */}
       <div className="scheda" style={{ marginBottom: 16 }}>
-        <h3 style={{ margin: '0 0 10px' }}>💳 Fee sblocco contatti allenatore</h3>
+        <h3 style={{ margin: '0 0 10px' }}>{t('feeTitolo')}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontWeight: 600 }}>€</span>
           <input type="number" min="0.50" step="0.10" value={fee}
             onChange={(e) => { setFee(e.target.value); tocca() }}
             style={{ width: 90, padding: '8px 10px', border: '1px solid var(--linea)', borderRadius: 'var(--r-sm)', fontSize: 16 }} />
-          <span style={{ color: 'var(--ink-soft)', fontSize: 13 }}>una tantum per allenatore</span>
+          <span style={{ color: 'var(--ink-soft)', fontSize: 13 }}>{t('feeUna')}</span>
         </div>
       </div>
 
-      {/* Funzionalità (albero) */}
       <div className="elenco-blocco">
-        <h3>Funzionalità app</h3>
-        <p className="sub-intro" style={{ marginTop: 0 }}>
-          Ogni interruttore è indipendente. Le sotto-voci sono indentate sotto la funzionalità padre.
-        </p>
+        <h3>{t('funzTitolo')}</h3>
+        <p className="sub-intro" style={{ marginTop: 0 }}>{t('funzDesc')}</p>
         {righe.map((r, i) => {
           if (r.sezione) {
             return (
@@ -230,7 +220,7 @@ export default function GatingManager({
                   {r.label}
                 </div>
                 <div style={{ fontSize: 12, color: on ? 'var(--campo)' : 'var(--rosso)', marginTop: 2 }}>
-                  {on ? '✓ FREE' : '🔒 A pagamento'}
+                  {on ? t('freeLabel') : t('pagamentoLabel')}
                 </div>
               </div>
               <button type="button" className={`toggle-switch sm ${on ? 'on' : ''}`}
@@ -244,7 +234,7 @@ export default function GatingManager({
 
       <div className="form-actions" style={{ marginTop: 20 }}>
         <button className="btn" onClick={salva} disabled={saving} type="button">
-          {saving ? 'Salvataggio...' : done ? 'Salvato ✓' : 'Salva configurazione'}
+          {saving ? t('salvataggio') : done ? t('salvato') : t('salva')}
         </button>
       </div>
     </div>

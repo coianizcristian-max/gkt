@@ -4,12 +4,14 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
+import { useTranslations } from 'next-intl'
 
 // Autocomplete "avversario" custom: input di testo SEMPRE editabile (la tastiera
 // non viene mai bloccata) + lista suggerimenti sotto al campo, filtrata mentre
 // scrivi e selezionabile al tocco. Sostituisce <input list> + <datalist> nativo,
 // che su iPad copriva il campo e impediva di digitare.
 function AvversarioInput({ value, onChange, suggestions = [] }) {
+  const t = useTranslations('partitaForm')
   const [open, setOpen] = useState(false)
   const q = (value || '').trim().toLowerCase()
   const matches = q
@@ -25,7 +27,7 @@ function AvversarioInput({ value, onChange, suggestions = [] }) {
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 120)}
         autoComplete="off"
-        placeholder="Nome squadra avversaria"
+        placeholder={t('phAvversario')}
       />
       {open && matches.length > 0 && (
         <ul
@@ -63,6 +65,8 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
   const router = useRouter()
   const isEdit = !!partita
   const inizioRef = useRef(null)
+  const t = useTranslations('partitaForm')
+  const c = useTranslations('common')
 
   useEffect(() => {
     if (!isEdit) {
@@ -91,7 +95,7 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
   const num = (v) => (v === '' || v == null ? null : Number(v))
 
   async function elimina() {
-    if (!confirm('Eliminare definitivamente questa partita? L\'operazione non è reversibile.')) return
+    if (!confirm(t('confermaElimina'))) return
     setDeleting(true)
     const supabase = createClient()
     const { error } = await supabase.from('partite').delete().eq('id', partita.id)
@@ -101,8 +105,8 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
 
   async function save(e) {
     e.preventDefault(); setError('')
-    if (!f.data) { setError('Inserisci la data.'); return }
-    if (!f.squadra_id) { setError('Seleziona la categoria.'); return }
+    if (!f.data) { setError(t('erroreData')); return }
+    if (!f.squadra_id) { setError(t('erroreCategoria')); return }
     setSaving(true)
     const supabase = createClient()
     const avv = f.avversario?.trim() || null
@@ -134,51 +138,51 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
     <form className="scheda" onSubmit={save}>
       {error && <div className="err">{error}</div>}
       <div className="form-grid">
-        <div className="field"><label>Data *</label>
+        <div className="field"><label>{t('data')}</label>
           <input type="date" value={f.data} onChange={upd('data')} required /></div>
-        <div className="field"><label>Categoria *</label>
+        <div className="field"><label>{t('categoria')}</label>
           <select value={f.squadra_id} onChange={upd('squadra_id')} disabled={isEdit} required>
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></div>
-        <div className="field"><label>Avversario</label>
+        <div className="field"><label>{t('avversario')}</label>
           <AvversarioInput
             value={f.avversario}
             onChange={(v) => { setF((s) => ({ ...s, avversario: v })); setDone(false) }}
             suggestions={avversari}
           /></div>
-        <div className="field"><label>Dove</label>
+        <div className="field"><label>{t('dove')}</label>
           <select value={f.casa ? '1' : '0'} onChange={(e) => { setF((s) => ({ ...s, casa: e.target.value === '1' })); setDone(false) }}>
-            <option value="1">Casa</option>
-            <option value="0">Trasferta</option>
+            <option value="1">{c('casa')}</option>
+            <option value="0">{c('trasferta')}</option>
           </select></div>
-        <div className="field"><label>Ora ritrovo</label>
+        <div className="field"><label>{t('oraRitrovo')}</label>
           <input type="time" value={f.ora_ritrovo} onChange={upd('ora_ritrovo')} /></div>
-        <div className="field"><label>Ora inizio</label>
+        <div className="field"><label>{t('oraInizio')}</label>
           <input type="time" value={f.ora_inizio} onChange={upd('ora_inizio')} /></div>
-        <div className="field"><label>Competizione</label>
+        <div className="field"><label>{t('competizione')}</label>
           <select value={f.tipo} onChange={upd('tipo')}>
-            <option value="campionato">Campionato</option>
-            <option value="coppa">Coppa</option>
-            <option value="torneo">Torneo</option>
-            <option value="amichevole">Amichevole</option>
+            <option value="campionato">{t('tipoCampionato')}</option>
+            <option value="coppa">{t('tipoCoppa')}</option>
+            <option value="torneo">{t('tipoTorneo')}</option>
+            <option value="amichevole">{t('tipoAmichevole')}</option>
           </select></div>
-        <div className="field"><label>Gol fatti</label>
+        <div className="field"><label>{t('golFatti')}</label>
           <input type="number" min="0" value={f.gol_fatti} onChange={upd('gol_fatti')} /></div>
-        <div className="field"><label>Gol subiti</label>
+        <div className="field"><label>{t('golSubiti')}</label>
           <input type="number" min="0" value={f.gol_subiti} onChange={upd('gol_subiti')} /></div>
-        <div className="field field-full"><label>Note</label>
+        <div className="field field-full"><label>{t('note')}</label>
           <textarea rows="2" value={f.note} onChange={upd('note')} /></div>
       </div>
       <div className="form-actions" style={{ justifyContent: isEdit ? 'space-between' : 'flex-end' }}>
         {isEdit && (
           <button type="button" className="btn-ghost" onClick={elimina} disabled={deleting || saving} style={{ color: 'var(--rosso)', borderColor: 'var(--rosso)' }}>
-            {deleting ? 'Eliminazione...' : '🗑 Elimina partita'}
+            {deleting ? t('eliminazione') : t('eliminaPartita')}
           </button>
         )}
         <div style={{ display: 'flex', gap: 8 }}>
-          {!isEdit && <button type="button" className="btn-ghost" onClick={() => { if (window.history.length > 1) router.back(); else router.push('/partite') }}>Annulla</button>}
+          {!isEdit && <button type="button" className="btn-ghost" onClick={() => { if (window.history.length > 1) router.back(); else router.push('/partite') }}>{c('annulla')}</button>}
           <button type="submit" className="btn" disabled={saving || deleting}>
-            {saving ? 'Salvataggio...' : done ? 'Salvato \u2713' : (isEdit ? 'Salva partita' : 'Crea e inserisci valutazioni')}
+            {saving ? t('salvataggio') : done ? t('salvato') : (isEdit ? t('salvaPartita') : t('creaValutazioni'))}
           </button>
         </div>
       </div>

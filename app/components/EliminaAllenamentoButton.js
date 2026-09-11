@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 
 export default function EliminaAllenamentoButton({ id }) {
+  const t = useTranslations('eliminaAllenamento')
+  const c = useTranslations('common')
   const router = useRouter()
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -15,11 +18,11 @@ export default function EliminaAllenamentoButton({ id }) {
     try {
       const res = await fetch(`/api/allenamenti/${id}`, { method: 'DELETE' })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error || 'Errore durante l\'eliminazione.')
+      if (!res.ok) throw new Error(data.error || t('erroreElim'))
       router.push('/calendario')
       router.refresh()
     } catch (err) {
-      setError(err.message || 'Errore imprevisto.')
+      setError(err.message || t('erroreImprevisto'))
       setDeleting(false)
       setConfirming(false)
     }
@@ -28,14 +31,14 @@ export default function EliminaAllenamentoButton({ id }) {
   if (confirming) {
     return (
       <div className="elimina-conferma">
-        <span className="elimina-conferma-testo">Eliminare questo allenamento?</span>
+        <span className="elimina-conferma-testo">{t('conferma')}</span>
         <button
           type="button"
           className="btn-danger-solid"
           onClick={conferma}
           disabled={deleting}
         >
-          {deleting ? 'Eliminazione…' : 'Sì, elimina'}
+          {deleting ? t('eliminando') : t('siElimina')}
         </button>
         <button
           type="button"
@@ -43,7 +46,7 @@ export default function EliminaAllenamentoButton({ id }) {
           onClick={() => setConfirming(false)}
           disabled={deleting}
         >
-          Annulla
+          {c('annulla')}
         </button>
         {error && <span className="elimina-conferma-errore">{error}</span>}
       </div>
@@ -55,8 +58,8 @@ export default function EliminaAllenamentoButton({ id }) {
       type="button"
       className="btn-icon-danger"
       onClick={() => setConfirming(true)}
-      aria-label="Elimina allenamento"
-      title="Elimina allenamento"
+      aria-label={t('aria')}
+      title={t('aria')}
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path

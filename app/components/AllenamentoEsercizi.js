@@ -6,9 +6,11 @@ import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
 import LavagnaEsercizioModal from '@/app/components/LavagnaEsercizioModal'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 // ─── Popup anteprima esercizio ────────────────────────────────────────────────
 function EsercizioPreview({ esercizio, onClose }) {
+  const t = useTranslations('allenamentoEsercizi')
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
@@ -33,8 +35,8 @@ function EsercizioPreview({ esercizio, onClose }) {
             {e.tipologia && <p style={{ margin: '0 0 8px', fontSize: 12, color: 'var(--azzurro)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{e.tipologia}</p>}
             {(e.durata_minuti || e.recupero_minuti) && (
               <div style={{ display: 'flex', gap: 16, margin: '0 0 12px', fontSize: 14 }}>
-                {e.durata_minuti && <span>⏱ Durata: <b>{e.durata_minuti} min</b></span>}
-                {e.recupero_minuti && <span>↩ Recupero: <b>{e.recupero_minuti} min</b></span>}
+                {e.durata_minuti && <span>{t('durataLabel')}<b>{e.durata_minuti} {t('min')}</b></span>}
+                {e.recupero_minuti && <span>{t('recuperoLabel')}<b>{e.recupero_minuti} {t('min')}</b></span>}
               </div>
             )}
             {e.descrizione_breve && <p style={{ margin: '0 0 8px', fontWeight: 600 }}>{e.descrizione_breve}</p>}
@@ -43,7 +45,7 @@ function EsercizioPreview({ esercizio, onClose }) {
             {e.video_url && (
               <a href={e.video_url} target="_blank" rel="noopener noreferrer"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '10px 16px', background: '#ff0000', color: '#fff', borderRadius: 8, fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
-                ▶ Guarda il video
+                {t('guardaVideo')}
               </a>
             )}
           </div>
@@ -65,6 +67,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
   const [cerca, setCerca] = useState('')
   const [filtroAttr, setFiltroAttr] = useState(new Set())
   const [modoFiltro, setModoFiltro] = useState('almeno') // 'almeno' | 'tutti'
+  const t = useTranslations('allenamentoEsercizi')
 
   useEffect(() => {
     async function carica() {
@@ -119,7 +122,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
     : listaDopoAttr
 
   const gruppi = {}
-  for (const e of lista) (gruppi[e.tipologia || 'Senza tipologia'] ??= []).push(e)
+  for (const e of lista) (gruppi[e.tipologia || t('senzaTipologia')] ??= []).push(e)
   const chiavi = Object.keys(gruppi).sort()
 
   return (
@@ -130,16 +133,16 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
       <div className="sub-nav">
         <button type="button" className={`sub-nav-link ${fonte === 'mia' ? 'active' : ''}`}
           onClick={() => { setFonte('mia'); setSoloPref(false); setTipologiaAttiva(null); setCerca(''); setFiltroAttr(new Set()) }}>
-          La mia libreria ({libreriaMia.length})
+          {t('miaLibreria', { n: libreriaMia.length })}
         </button>
         <button type="button" className={`sub-nav-link ${fonte === 'pubblica' ? 'active' : ''}`}
           onClick={() => { setFonte('pubblica'); setTipologiaAttiva(null); setCerca(''); setFiltroAttr(new Set()) }}>
-          Libreria pubblica ({libreriaPubblica.length})
+          {t('libreriaPubblica', { n: libreriaPubblica.length })}
         </button>
         {eserciziResponsabile.length > 0 && (
           <button type="button" className={`sub-nav-link ${fonte === 'responsabile' ? 'active' : ''}`}
             onClick={() => { setFonte('responsabile'); setTipologiaAttiva(null); setCerca(''); setFiltroAttr(new Set()) }}>
-            🔗 Del responsabile ({eserciziResponsabile.length})
+            {t('delResponsabile', { n: eserciziResponsabile.length })}
           </button>
         )}
       </div>
@@ -155,7 +158,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
             color: soloPref ? 'var(--giallo, #e8a72c)' : 'var(--ink-soft)',
           }}>
             <span>★</span>
-            {soloPref ? `Solo preferiti (${preferiti.size})` : `Preferiti (${preferiti.size})`}
+            {soloPref ? t('soloPreferiti', { n: preferiti.size }) : t('preferiti', { n: preferiti.size })}
           </button>
         </div>
       )}
@@ -164,10 +167,10 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
       {fonte === 'mia' && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
           <button className="btn" type="button" onClick={() => setShowLavagna(true)}>
-            🎨 Crea al volo con la lavagna
+            {t('creaLavagna')}
           </button>
           <button className="btn" type="button" onClick={() => setShowNuovoModal(true)}>
-            ✏️ Crea nuovo esercizio
+            {t('creaNuovo')}
           </button>
         </div>
       )}
@@ -178,7 +181,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
           type="search"
           value={cerca}
           onChange={(e) => { setCerca(e.target.value); setTipologiaAttiva(null) }}
-          placeholder="Cerca per titolo o descrizione..."
+          placeholder={t('cerca')}
           style={{ width: '100%', padding: '7px 12px', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--linea)', fontSize: 14, background: 'var(--carta)', boxSizing: 'border-box' }}
         />
       </div>
@@ -187,7 +190,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
       {attributiDisponibili.length > 0 && (
         <div style={{ margin: '8px 0 4px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
-            <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginRight: 2 }}>Attributi:</span>
+            <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginRight: 2 }}>{t('attributi')}</span>
             {attributiDisponibili.map((a) => (
               <button key={a.id} type="button" onClick={() => toggleAttr(a.id)} style={{
                 padding: '3px 10px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
@@ -204,7 +207,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
                 padding: '3px 10px', borderRadius: 20, fontSize: 11, cursor: 'pointer',
                 border: '1.5px solid var(--linea)', background: 'var(--carta)', color: 'var(--ink-soft)',
               }}>
-                {modoFiltro === 'almeno' ? 'almeno uno ▾' : 'tutti ▾'}
+                {modoFiltro === 'almeno' ? t('almenoUno') : t('tutti')}
               </button>
             )}
             {filtroAttr.size > 0 && (
@@ -212,7 +215,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
                 padding: '3px 8px', borderRadius: 20, fontSize: 11, cursor: 'pointer',
                 border: 'none', background: 'none', color: 'var(--ink-soft)', textDecoration: 'underline',
               }}>
-                Rimuovi filtri
+                {t('rimuoviFiltri')}
               </button>
             )}
           </div>
@@ -222,10 +225,10 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
       {lista.length === 0 ? (
         <div className="empty">
           {cerca.trim() || filtroAttr.size > 0
-            ? 'Nessun esercizio corrisponde ai filtri.'
+            ? t('nessunCorrisponde')
             : fonte === 'mia'
-              ? <a href="/esercizi" className="link-inline">Vai alla libreria esercizi per crearne</a>
-              : soloPref ? 'Nessun preferito. Clicca ★ per salvare.' : 'Nessun esercizio pubblico disponibile.'}
+              ? <a href="/esercizi" className="link-inline">{t('vaiLibreria')}</a>
+              : soloPref ? t('nessunPreferito') : t('nessunPubblico')}
         </div>
       ) : (
         <>
@@ -264,14 +267,14 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
                                 {e.recupero_minuti && <span>↩ {e.recupero_minuti}min</span>}
                               </div>
                             )}
-                            {e.video_url && <div style={{ marginTop: 4, fontSize: 11, color: 'var(--azzurro)' }}>▶ Video disponibile</div>}
+                            {e.video_url && <div style={{ marginTop: 4, fontSize: 11, color: 'var(--azzurro)' }}>{t('videoDisponibile')}</div>}
                           </div>
                         </button>
                         {/* Bottone + / ✓ */}
                         <button
                           type="button"
                           onClick={() => onToggle(e.id)}
-                          title={selezionato ? 'Rimuovi dalla seduta' : 'Aggiungi alla seduta'}
+                          title={selezionato ? t('rimuoviSeduta') : t('aggiungiSeduta')}
                           style={{
                             position: 'absolute', bottom: 6, right: 6,
                             width: 28, height: 28, borderRadius: '50%',
@@ -287,7 +290,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
                         {/* Stella preferiti — solo libreria pubblica */}
                         {fonte === 'pubblica' && (
                           <button type="button" onClick={(ev) => togglePreferito(ev, e.id)}
-                            title={preferiti.has(e.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                            title={preferiti.has(e.id) ? t('rimuoviPreferiti') : t('aggiungiPreferiti')}
                             style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, color: preferiti.has(e.id) ? 'var(--giallo, #e8a72c)' : '#ccc', padding: 2 }}>
                             {preferiti.has(e.id) ? '★' : '☆'}
                           </button>
@@ -332,6 +335,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
   const overIdx = useRef(null)
   const [preview, setPreview] = useState(null)
   const [pdfBusy, setPdfBusy] = useState(false)
+  const t = useTranslations('allenamentoEsercizi')
 
   const byId = {}
   for (const e of tuttiEsercizi) byId[e.id] = e
@@ -382,14 +386,14 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
       a.click()
       a.remove()
     } catch (err) {
-      alert('Errore apertura PDF: ' + err.message)
+      alert(t('erroreApertura') + err.message)
     }
     // Feedback breve: da qui il download prosegue nativamente nel browser.
     setTimeout(() => setPdfBusy(false), 1500)
   }
 
   if (ordine.length === 0) {
-    return <div className="empty">Nessun esercizio selezionato. Vai in &ldquo;Libreria&rdquo; per aggiungerne.</div>
+    return <div className="empty">{t('nessunSelezionato')}</div>
   }
 
   return (
@@ -405,9 +409,9 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
               onDrop={onDrop}>
               <span className="drag-handle">⠿</span>
               <div className="reorder-arrows">
-                <button type="button" className="reorder-btn" aria-label="Sposta su"
+                <button type="button" className="reorder-btn" aria-label={t('spostaSu')}
                   disabled={i === 0} onClick={() => moveItem(i, i - 1)}>▲</button>
-                <button type="button" className="reorder-btn" aria-label="Sposta giù"
+                <button type="button" className="reorder-btn" aria-label={t('spostaGiu')}
                   disabled={i === ordine.length - 1} onClick={() => moveItem(i, i + 1)}>▼</button>
               </div>
               <button type="button" onClick={() => setPreview(e)} style={{ display: 'contents', cursor: 'pointer' }}>
@@ -421,7 +425,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
                       {e.recupero_minuti ? `↩ ${e.recupero_minuti}min rec.` : ''}
                     </span>
                   )}
-                  <span style={{ fontSize: 11, color: 'var(--azzurro)', marginLeft: 8 }}>Tocca per anteprima</span>
+                  <span style={{ fontSize: 11, color: 'var(--azzurro)', marginLeft: 8 }}>{t('toccaAnteprima')}</span>
                 </div>
               </button>
               {e.immagine_url && (
@@ -438,10 +442,10 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
         <div style={{ marginTop: 14, padding: '10px 16px', background: 'var(--carta)', borderRadius: 'var(--r)', border: '1px solid var(--linea)', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 20 }}>⏱</span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>Stima tempo: {stimaLabel}</div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>{t('stimaTempo', { label: stimaLabel })}</div>
             <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-              Durata + recupero degli esercizi con tempi impostati
-              {ordine.some((eid) => byId[eid] && !byId[eid]?.durata_minuti && !byId[eid]?.recupero_minuti) ? ' · alcuni esercizi non hanno durata' : ''}
+              {t('stimaDesc')}
+              {ordine.some((eid) => byId[eid] && !byId[eid]?.durata_minuti && !byId[eid]?.recupero_minuti) ? t('alcuniSenzaDurata') : ''}
             </div>
           </div>
         </div>
@@ -450,7 +454,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
       {/* Esporta PDF */}
       <div style={{ marginTop: 12 }}>
         <button type="button" className="btn-ghost" onClick={esportaPdf} disabled={pdfBusy} style={{ fontSize: 14 }}>
-          {pdfBusy ? 'Generazione PDF...' : '📄 Esporta seduta in PDF'}
+          {pdfBusy ? t('generazionePdf') : t('esportaPdf')}
         </button>
       </div>
     </div>
@@ -460,6 +464,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
 // ─── Componente principale ────────────────────────────────────────────────────
 export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], libreriaPubblica = [], eserciziResponsabile = [], selezionatiIniziali, selezionatiEsercizi = [], attributiDisponibili = [] }) {
   const router = useRouter()
+  const t = useTranslations('allenamentoEsercizi')
   const [tab, setTab] = useState('libreria')
   const [sel, setSel] = useState(new Set(selezionatiIniziali))
   const [ordine, setOrdine] = useState(selezionatiIniziali)
@@ -506,10 +511,10 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
       {error && <div className="err">{error}</div>}
       <div className="sub-nav">
         <button type="button" className={`sub-nav-link ${tab === 'libreria' ? 'active' : ''}`} onClick={() => setTab('libreria')}>
-          Libreria ({sel.size} selezionati)
+          {t('tabLibreria', { n: sel.size })}
         </button>
         <button type="button" className={`sub-nav-link ${tab === 'ordine' ? 'active' : ''}`} onClick={() => setTab('ordine')}>
-          Ordine e anteprima
+          {t('tabOrdine')}
         </button>
       </div>
 
@@ -542,10 +547,10 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
         border: '1px solid var(--linea)',
       }}>
         <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontWeight: 500 }}>
-          {sel.size} selezionati
+          {t('nSelezionati', { n: sel.size })}
         </span>
         <button className="btn" onClick={salva} disabled={busy} type="button" style={{ borderRadius: 30, padding: '8px 20px' }}>
-          {busy ? 'Salvataggio...' : done ? '✓ Salvato' : 'Salva esercizi'}
+          {busy ? t('salvataggio') : done ? t('salvato') : t('salvaEsercizi')}
         </button>
       </div>
     </div>

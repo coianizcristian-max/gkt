@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 const COLORI = {
@@ -11,11 +12,21 @@ const COLORI = {
   'Recupero infortunio': '#c0392b',
 }
 const colore = (tag) => COLORI[tag] ?? '#1f8a4c'
+// I valori dei tag sono memorizzati nel DB in italiano; qui solo l'etichetta mostrata è localizzata.
+const LABEL_KEY = {
+  'Capitano': 'tag_capitano',
+  'Talento': 'tag_talento',
+  'Leader': 'tag_leader',
+  'Da osservare': 'tag_daOsservare',
+  'Recupero infortunio': 'tag_recuperoInfortunio',
+}
 
 export default function TagManager({ portiereId, tagAttivi, tagDisponibili }) {
+  const t = useTranslations('tagManager')
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const attiviSet = new Set(tagAttivi)
+  const labelTag = (tag) => (LABEL_KEY[tag] ? t(LABEL_KEY[tag]) : tag)
 
   async function toggle(tag) {
     setBusy(true)
@@ -30,21 +41,15 @@ export default function TagManager({ portiereId, tagAttivi, tagDisponibili }) {
 
   return (
     <div className="scheda" style={{ marginBottom: 16 }}>
-      <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>🏷 Tag</h3>
+      <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>{t('titolo')}</h3>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {tagDisponibili.map((tag) => {
           const attivo = attiviSet.has(tag)
           const c = colore(tag)
           return (
             <button key={tag} type="button" onClick={() => toggle(tag)} disabled={busy}
-              style={{
-                padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                border: `1.5px solid ${c}`,
-                background: attivo ? c : 'transparent',
-                color: attivo ? '#fff' : c,
-                transition: 'all 0.15s',
-              }}>
-              {attivo ? '✓ ' : ''}{tag}
+              style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: `1.5px solid ${c}`, background: attivo ? c : 'transparent', color: attivo ? '#fff' : c, transition: 'all 0.15s' }}>
+              {attivo ? '✓ ' : ''}{labelTag(tag)}
             </button>
           )
         })}

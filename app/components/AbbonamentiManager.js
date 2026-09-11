@@ -2,35 +2,36 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
-const PIANI = ['mensile', 'annuale', 'lifetime']
-const STATI = ['attivo', 'disdetto', 'scaduto', 'cancellato']
-const STATO_BADGE = {
-  attivo:     { label: '🟢 Attivo',    bg: 'rgba(46,158,91,0.1)',   color: 'var(--campo)' },
-  disdetto:   { label: '🟡 Disdetto',  bg: 'rgba(230,160,0,0.1)',   color: '#b8860b' },
-  scaduto:    { label: '🔴 Scaduto',   bg: 'rgba(192,57,43,0.1)',   color: 'var(--rosso)' },
-  cancellato: { label: '⛔ Cancellato',bg: 'rgba(150,150,150,0.1)', color: 'var(--ink-soft)' },
+const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
+const STATO_STYLE = {
+  attivo:     { bg: 'rgba(46,158,91,0.1)',   color: 'var(--campo)' },
+  disdetto:   { bg: 'rgba(230,160,0,0.1)',   color: '#b8860b' },
+  scaduto:    { bg: 'rgba(192,57,43,0.1)',   color: 'var(--rosso)' },
+  cancellato: { bg: 'rgba(150,150,150,0.1)', color: 'var(--ink-soft)' },
 }
-const fmtData = (d) => d ? new Date(d).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
 const isoDate = (d) => d ? new Date(d).toISOString().slice(0, 10) : ''
 
 export default function AbbonamentiManager({ abbonamenti, profili }) {
+  const t = useTranslations('abbonamentiManager')
+  const locale = useLocale()
+  const dl = DATE_LOCALE[locale] || 'it-IT'
+  const fmtData = (d) => d ? new Date(d).toLocaleDateString(dl, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
   const router = useRouter()
   const [ricerca, setRicerca] = useState('')
-  const [editing, setEditing] = useState(null)    // abbonamento in modifica
-  const [nuovoFor, setNuovoFor] = useState(null)  // profilo_id per nuovo abbonamento
+  const [editing, setEditing] = useState(null)
+  const [nuovoFor, setNuovoFor] = useState(null)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
 
-  // Mappa profili per lookup rapido
   const profiliMap = useMemo(() => {
     const m = {}
     for (const p of profili) m[p.id] = p
     return m
   }, [profili])
 
-  // Lista abbonamenti arricchita con dati profilo
   const lista = useMemo(() => abbonamenti.map(a => ({
     ...a,
     _nome: profiliMap[a.allenatore_id]?.nome_visualizzato
@@ -39,7 +40,6 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
     _email: profiliMap[a.allenatore_id]?.email || null,
   })), [abbonamenti, profiliMap])
 
-  // Filtra per ricerca (nome, email o id)
   const filtrati = useMemo(() => {
     if (!ricerca.trim()) return lista
     const q = ricerca.toLowerCase()
@@ -50,9 +50,6 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
     )
   }, [lista, ricerca])
 
-  // Profili cercati per creare nuovo abbonamento.
-  // Mostriamo suggerimenti SOLO dopo una ricerca (nome, email o id): niente più
-  // elenco "a caso" dei primi profili, che confondeva.
   const profiliRicercati = useMemo(() => {
     if (!ricerca.trim()) return []
     const q = ricerca.toLowerCase()
@@ -63,6 +60,8 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
     ).slice(0, 10)
   }, [profili, ricerca])
 
+  const pianoLabel = (p) => p === 'lifetime' ? t('pianoLifetime') : p === 'annuale' ? t('pianoAnnuale') : t('pianoMensile')
+
   async function salvaModifica(abb, form) {
     setBusy(true); setMsg('')
     const supabase = createClient()
@@ -72,8 +71,8 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
       scadenza: form.scadenza || null,
       nota: form.nota?.trim() || null,
     }).eq('id', abb.id)
-    if (error) { setMsg('Errore: ' + error.message) }
-    else { setMsg('✓ Salvato'); setEditing(null); router.refresh() }
+    if (error) { setMsg('✕ ' + t('errore', { msg: error.message })) }
+    else { setMsg('✓ ' + t('salvato')); setEditing(null); router.refresh() }
     setBusy(false)
   }
 
@@ -87,13 +86,13 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
       scadenza: form.scadenza || null,
       nota: form.nota?.trim() || null,
     })
-    if (error) { setMsg('Errore: ' + error.message) }
-    else { setMsg('✓ Abbonamento creato'); setNuovoFor(null); router.refresh() }
+    if (error) { setMsg('✕ ' + t('errore', { msg: error.message })) }
+    else { setMsg('✓ ' + t('creato')); setNuovoFor(null); router.refresh() }
     setBusy(false)
   }
 
   async function eliminaAbb(id) {
-    if (!confirm('Eliminare definitivamente questo abbonamento?')) return
+    if (!confirm(t('confermaElim'))) return
     setBusy(true)
     const supabase = createClient()
     await supabase.from('abbonamenti').delete().eq('id', id)
@@ -111,12 +110,11 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
         </div>
       )}
 
-      {/* Barra di ricerca */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 20, alignItems: 'center' }}>
         <input
           value={ricerca}
           onChange={e => setRicerca(e.target.value)}
-          placeholder="Cerca per nome allenatore..."
+          placeholder={t('cerca')}
           style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1.5px solid var(--linea)', fontSize: 15 }}
         />
         {ricerca && (
@@ -127,41 +125,38 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
         )}
       </div>
 
-      {/* Lista abbonamenti filtrati */}
       <div className="lista-editor" style={{ marginBottom: 32 }}>
         {filtrati.length === 0 && (
-          <div className="empty">Nessun abbonamento trovato.</div>
+          <div className="empty">{t('nessunAbb')}</div>
         )}
         {filtrati.map((a) => {
-          const badge = STATO_BADGE[a.stato] ?? { label: a.stato, bg: 'var(--carta)', color: 'var(--ink)' }
+          const st = STATO_STYLE[a.stato] ?? { bg: 'var(--carta)', color: 'var(--ink)' }
           const isEditing = editing?.id === a.id
 
           return (
             <div key={a.id} className="elenco-blocco" style={{ marginBottom: 12 }}>
-              {/* Riga riassuntiva */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 15 }}>{a._nome}</div>
                   {a._email && <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{a._email}</div>}
                   <div style={{ fontSize: 12, color: 'var(--ink-soft)', fontFamily: 'monospace' }}>{a.allenatore_id}</div>
                   <div style={{ fontSize: 13, marginTop: 2, color: 'var(--ink-soft)' }}>
-                    {a.piano === 'lifetime' ? 'Lifetime' : a.piano === 'annuale' ? 'Annuale' : 'Mensile'}
-                    {a.scadenza && a.piano !== 'lifetime' && ` · scade ${fmtData(a.scadenza)}`}
-                    {' · '}dal {fmtData(a.created_at)}
+                    {pianoLabel(a.piano)}
+                    {a.scadenza && a.piano !== 'lifetime' && ` · ${t('scade', { data: fmtData(a.scadenza) })}`}
+                    {' · '}{t('dal', { data: fmtData(a.created_at) })}
                   </div>
                   {a.nota && <div style={{ fontSize: 12, marginTop: 4, color: 'var(--ink)', background: 'var(--soft, #f6f8fb)', display: 'inline-block', padding: '2px 8px', borderRadius: 6 }}>📝 {a.nota}</div>}
                 </div>
                 <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700,
-                  background: badge.bg, color: badge.color }}>
-                  {badge.label}
+                  background: st.bg, color: st.color }}>
+                  {t('stato_' + a.stato)}
                 </span>
                 <button className="btn-mini" type="button"
                   onClick={() => setEditing(isEditing ? null : { ...a })}>
-                  {isEditing ? 'Chiudi' : 'Modifica'}
+                  {isEditing ? t('chiudi') : t('modifica')}
                 </button>
               </div>
 
-              {/* Form modifica inline */}
               {isEditing && (
                 <EditForm
                   abb={editing}
@@ -176,18 +171,15 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
         })}
       </div>
 
-      {/* Sezione crea nuovo abbonamento */}
       <div className="scheda">
-        <h3 style={{ margin: '0 0 12px' }}>+ Attiva un abbonamento manuale</h3>
+        <h3 style={{ margin: '0 0 12px' }}>{t('attivaTitolo')}</h3>
         <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: '0 0 12px' }}>
-          Cerca l&apos;allenatore per <b>nome o email</b> nella barra qui sopra, poi selezionalo.
-          Creando un abbonamento con stato <b>Attivo</b> gli sblocchi tutte le funzionalità <b>senza fargli pagare nulla</b>
-          (utile per omaggi o pagamenti alternativi). Usa la <b>Nota</b> per ricordarti il motivo.
+          {t.rich('attivaIntro', { b: (ch) => <b>{ch}</b> })}
         </p>
         {nuovoFor ? (
           <div>
             <div style={{ fontWeight: 600, marginBottom: 12 }}>
-              Nuovo abbonamento per: <b>{profiliMap[nuovoFor]?.nome_visualizzato || profiliMap[nuovoFor]?.nome_completo || nuovoFor}</b>
+              {t.rich('nuovoPer', { nome: profiliMap[nuovoFor]?.nome_visualizzato || profiliMap[nuovoFor]?.nome_completo || nuovoFor, b: (ch) => <b>{ch}</b> })}
             </div>
             <EditForm
               abb={{ piano: 'mensile', stato: 'attivo', scadenza: '' }}
@@ -210,15 +202,13 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
                     <div style={{ fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'monospace' }}>{p.id}</div>
                   </div>
                   <button className="btn-mini" type="button" onClick={() => setNuovoFor(p.id)}>
-                    Attiva abbonamento
+                    {t('attivaBtn')}
                   </button>
                 </div>
               ))}
               {profiliRicercati.length === 0 && (
                 <div className="empty">
-                  {ricerca.trim()
-                    ? 'Nessun allenatore trovato per questa ricerca.'
-                    : 'Scrivi nella barra qui sopra il nome o l\u2019email dell\u2019allenatore per attivargli un abbonamento.'}
+                  {ricerca.trim() ? t('nessunAllenatore') : t('scriviBarra')}
                 </div>
               )}
             </div>
@@ -230,6 +220,7 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
 }
 
 function EditForm({ abb, onSave, onDelete, onCancel, busy, isNew = false }) {
+  const t = useTranslations('abbonamentiManager')
   const oggi = new Date()
   const tra1anno = new Date(oggi.setFullYear(oggi.getFullYear() + 1)).toISOString().slice(0, 10)
 
@@ -247,44 +238,44 @@ function EditForm({ abb, onSave, onDelete, onCancel, busy, isNew = false }) {
       borderRadius: 8, border: '1px solid var(--linea)' }}>
       <div className="form-grid" style={{ marginBottom: 12 }}>
         <div className="field" style={{ margin: 0 }}>
-          <label>Piano</label>
+          <label>{t('piano')}</label>
           <select value={form.piano} onChange={upd('piano')}>
-            <option value="mensile">Mensile</option>
-            <option value="annuale">Annuale</option>
-            <option value="lifetime">Lifetime (a vita)</option>
+            <option value="mensile">{t('pianoMensile')}</option>
+            <option value="annuale">{t('pianoAnnuale')}</option>
+            <option value="lifetime">{t('pianoLifetimeLungo')}</option>
           </select>
         </div>
         <div className="field" style={{ margin: 0 }}>
-          <label>Stato</label>
+          <label>{t('stato')}</label>
           <select value={form.stato} onChange={upd('stato')}>
-            <option value="attivo">🟢 Attivo</option>
-            <option value="disdetto">🟡 Disdetto</option>
-            <option value="scaduto">🔴 Scaduto</option>
-            <option value="cancellato">⛔ Cancellato</option>
+            <option value="attivo">{t('stato_attivo')}</option>
+            <option value="disdetto">{t('stato_disdetto')}</option>
+            <option value="scaduto">{t('stato_scaduto')}</option>
+            <option value="cancellato">{t('stato_cancellato')}</option>
           </select>
         </div>
         {form.piano !== 'lifetime' && (
           <div className="field" style={{ margin: 0 }}>
-            <label>Scadenza</label>
+            <label>{t('scadenza')}</label>
             <input type="date" value={form.scadenza} onChange={upd('scadenza')} />
           </div>
         )}
         <div className="field field-full" style={{ margin: 0 }}>
-          <label>Nota (motivo, facoltativa)</label>
-          <input type="text" value={form.nota} onChange={upd('nota')} placeholder="Es. pagamento alternativo, omaggio partner, test…" />
+          <label>{t('notaLabel')}</label>
+          <input type="text" value={form.nota} onChange={upd('nota')} placeholder={t('notaPlaceholder')} />
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button className="btn" type="button" onClick={() => onSave(form)} disabled={busy}>
-          {busy ? 'Salvataggio...' : isNew ? '+ Crea abbonamento' : '💾 Salva modifiche'}
+          {busy ? t('salvataggio') : isNew ? t('creaBtn') : t('salvaBtn')}
         </button>
         <button className="btn-ghost" type="button" onClick={onCancel} disabled={busy}>
-          Annulla
+          {t('annulla')}
         </button>
         {!isNew && onDelete && (
           <button className="btn-ghost btn-del" type="button" onClick={onDelete} disabled={busy}
             style={{ marginLeft: 'auto' }}>
-            Elimina
+            {t('elimina')}
           </button>
         )}
       </div>

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 
 // ── Demo data per ogni funzionalità ─────────────────────────────────────────
 const DEMO_DATA = {
@@ -248,6 +249,7 @@ const S = {
 }
 
 function DemoModal({ chiave, onClose }) {
+  const t = useTranslations('paywall')
   const demo = DEMO_DATA[chiave]
   if (!demo) return null
   return (
@@ -255,7 +257,7 @@ function DemoModal({ chiave, onClose }) {
       <div className="popup-box" style={{maxWidth:480,maxHeight:'88vh'}} onClick={(e)=>e.stopPropagation()}>
         <button className="popup-close" onClick={onClose} type="button">✕</button>
         <div style={{display:'inline-block',padding:'3px 10px',borderRadius:999,background:'rgba(10,126,194,0.12)',color:'#0a7ec2',fontSize:12,fontWeight:700,marginBottom:8}}>
-          📋 Anteprima funzionalità
+          {t('anteprimaBadge')}
         </div>
         <h2 style={{margin:'0 0 6px',fontSize:18}}>{demo.titolo}</h2>
         <p style={{fontSize:13,color:'#4a5b68',margin:'0 0 14px',lineHeight:1.5}}>{demo.desc}</p>
@@ -263,11 +265,11 @@ function DemoModal({ chiave, onClose }) {
           {demo.content()}
         </div>
         <div style={{borderTop:'1px solid #e2e6e1',paddingTop:14,textAlign:'center'}}>
-          <p style={{fontSize:13,color:'#4a5b68',margin:'0 0 10px'}}>Questi sono dati di esempio. Con l&apos;abbonamento vedrai i tuoi dati reali.</p>
+          <p style={{fontSize:13,color:'#4a5b68',margin:'0 0 10px'}}>{t('datiEsempio')}</p>
           <Link href="/abbonati" className="btn" style={{display:'block',width:'100%',textAlign:'center'}}>
-            🔓 Abbonati per sbloccare
+            {t('abbonatiSblocca')}
           </Link>
-          <p style={{fontSize:11,color:'#4a5b68',marginTop:8}}>Disdici in qualsiasi momento · Stripe</p>
+          <p style={{fontSize:11,color:'#4a5b68',marginTop:8}}>{t('disdici')}</p>
         </div>
       </div>
     </div>
@@ -275,6 +277,7 @@ function DemoModal({ chiave, onClose }) {
 }
 
 export default function PaywallBanner({ chiave, label, wrap = false, children }) {
+  const t = useTranslations('paywall')
   const [demoOpen, setDemoOpen] = useState(false)
   const hasDemo = chiave && DEMO_DATA[chiave]
 
@@ -283,17 +286,17 @@ export default function PaywallBanner({ chiave, label, wrap = false, children })
       {demoOpen && <DemoModal chiave={chiave} onClose={() => setDemoOpen(false)} />}
       <div className="paywall-icon">🔒</div>
       <div className="paywall-text">
-        <b>{label ?? 'Funzionalità a pagamento'}</b>
-        <p>Abbonati per sbloccare questa sezione.</p>
+        <b>{label ?? t('fallbackLabel')}</b>
+        <p>{t('sottotitolo')}</p>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:6,flexShrink:0}}>
         {hasDemo && (
           <button type="button" onClick={() => setDemoOpen(true)}
             style={{padding:'8px 14px',fontSize:13,fontWeight:600,cursor:'pointer',border:'1px solid var(--azzurro)',borderRadius:'var(--r-sm)',background:'transparent',color:'var(--azzurro)',whiteSpace:'nowrap'}}>
-            👁 Vedi anteprima
+            {t('vediAnteprima')}
           </button>
         )}
-        <Link href="/abbonati" className="btn paywall-cta">Abbonati</Link>
+        <Link href="/abbonati" className="btn paywall-cta">{t('abbonati')}</Link>
       </div>
     </div>
   )

@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
-// ── Selettore parametri/esercizi collegati ───────────────────────────────────
 export function SelettoreCollegamenti({ obiettivoId, parametriTutti, parametriSelezionati, eserciziTutti, eserciziSelezionati }) {
+  const t = useTranslations('obiettivoCollegamenti')
   const router = useRouter()
   const [busyPar, setBusyPar] = useState(null)
   const [busyEs, setBusyEs] = useState(null)
@@ -36,10 +37,8 @@ export function SelettoreCollegamenti({ obiettivoId, parametriTutti, parametriSe
 
   return (
     <div className="elenco-blocco">
-      <h3>Parametri di valutazione collegati</h3>
-      <p className="sub-intro" style={{ marginTop: -6 }}>
-        Collega questo obiettivo a uno o più parametri: vedrai il trend automatico dei voti nel tempo.
-      </p>
+      <h3>{t('parametriTitolo')}</h3>
+      <p className="sub-intro" style={{ marginTop: -6 }}>{t('parametriIntro')}</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
         {parametriTutti.map((p) => {
           const attivo = selParSet.has(p.id)
@@ -55,13 +54,11 @@ export function SelettoreCollegamenti({ obiettivoId, parametriTutti, parametriSe
             </button>
           )
         })}
-        {parametriTutti.length === 0 && <p className="sub-intro">Nessun parametro disponibile.</p>}
+        {parametriTutti.length === 0 && <p className="sub-intro">{t('nessunParametro')}</p>}
       </div>
 
-      <h3>Esercizi collegati</h3>
-      <p className="sub-intro" style={{ marginTop: -6 }}>
-        Collega gli esercizi della tua libreria che usi per lavorare su questo obiettivo.
-      </p>
+      <h3>{t('eserciziTitolo')}</h3>
+      <p className="sub-intro" style={{ marginTop: -6 }}>{t('eserciziIntro')}</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {eserciziTutti.map((e) => {
           const attivo = selEsSet.has(e.id)
@@ -77,20 +74,20 @@ export function SelettoreCollegamenti({ obiettivoId, parametriTutti, parametriSe
             </button>
           )
         })}
-        {eserciziTutti.length === 0 && <p className="sub-intro">Nessun esercizio nella libreria.</p>}
+        {eserciziTutti.length === 0 && <p className="sub-intro">{t('nessunEsercizio')}</p>}
       </div>
     </div>
   )
 }
 
-// ── Mini grafico trend per i parametri collegati ──────────────────────────────
 export function TrendObiettivo({ trendPerParametro }) {
+  const t = useTranslations('obiettivoCollegamenti')
   const parametriConDati = Object.entries(trendPerParametro).filter(([, d]) => d.punti.length > 0)
   if (parametriConDati.length === 0) return null
 
   return (
     <div className="elenco-blocco">
-      <h3>📈 Trend automatico</h3>
+      <h3>{t('trendTitolo')}</h3>
       {parametriConDati.map(([nome, d]) => {
         const ultimi = d.punti.slice(-8)
         const max = Math.max(...ultimi.map((p) => p.y), 10)

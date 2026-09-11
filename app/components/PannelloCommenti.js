@@ -1,8 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
+
+const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
 
 export default function PannelloCommenti({ preparatoreId, contesto }) {
+  const t = useTranslations('pannelloCommenti')
+  const c = useTranslations('common')
+  const locale = useLocale()
+  const dl = DATE_LOCALE[locale] || 'it-IT'
   const [commenti, setCommenti] = useState([])
   const [testo, setTesto] = useState('')
   const [loading, setLoading] = useState(true)
@@ -53,7 +60,6 @@ export default function PannelloCommenti({ preparatoreId, contesto }) {
       zIndex: 1000,
       fontFamily: 'inherit',
     }}>
-      {/* Pannello aperto */}
       {aperto && (
         <div style={{
           width: 320,
@@ -67,7 +73,6 @@ export default function PannelloCommenti({ preparatoreId, contesto }) {
           marginBottom: 8,
           overflow: 'hidden',
         }}>
-          {/* Header */}
           <div style={{
             padding: '10px 14px',
             borderBottom: '1px solid var(--linea)',
@@ -79,37 +84,35 @@ export default function PannelloCommenti({ preparatoreId, contesto }) {
             background: 'var(--azzurro)',
             color: '#fff',
           }}>
-            <span>💬 Note per il preparatore {contesto ? `· ${contesto}` : ''}</span>
+            <span>{t('header')}{contesto ? ` · ${contesto}` : ''}</span>
             <button onClick={() => setAperto(false)} type="button"
               style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 16, padding: 0 }}>
               ×
             </button>
           </div>
 
-          {/* Lista commenti */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {loading
-              ? <div style={{ fontSize: 13, color: 'var(--ink-soft)', textAlign: 'center', padding: 16 }}>Caricamento...</div>
+              ? <div style={{ fontSize: 13, color: 'var(--ink-soft)', textAlign: 'center', padding: 16 }}>{c('caricamento')}</div>
               : commenti.length === 0
-                ? <div style={{ fontSize: 13, color: 'var(--ink-soft)', textAlign: 'center', padding: 16 }}>Nessuna nota ancora.</div>
-                : commenti.map(c => (
-                    <div key={c.id} style={{
-                      background: c.sono_io ? 'rgba(10,126,194,0.08)' : 'var(--sfondo)',
+                ? <div style={{ fontSize: 13, color: 'var(--ink-soft)', textAlign: 'center', padding: 16 }}>{t('nessunaNota')}</div>
+                : commenti.map(cm => (
+                    <div key={cm.id} style={{
+                      background: cm.sono_io ? 'rgba(10,126,194,0.08)' : 'var(--sfondo)',
                       borderRadius: 'var(--r-sm)',
                       padding: '8px 10px',
-                      alignSelf: c.sono_io ? 'flex-end' : 'flex-start',
+                      alignSelf: cm.sono_io ? 'flex-end' : 'flex-start',
                       maxWidth: '85%',
                     }}>
-                      <div style={{ fontSize: 13 }}>{c.testo}</div>
+                      <div style={{ fontSize: 13 }}>{cm.testo}</div>
                       <div style={{ fontSize: 10, color: 'var(--ink-soft)', marginTop: 3 }}>
-                        {c.sono_io ? 'Tu' : c.mittente} · {new Date(c.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        {cm.sono_io ? t('tu') : cm.mittente} · {new Date(cm.created_at).toLocaleDateString(dl, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
                   ))
             }
           </div>
 
-          {/* Input */}
           <div style={{
             padding: '10px 14px',
             borderTop: '1px solid var(--linea)',
@@ -119,7 +122,7 @@ export default function PannelloCommenti({ preparatoreId, contesto }) {
             <textarea
               value={testo}
               onChange={e => setTesto(e.target.value)}
-              placeholder="Scrivi una nota..."
+              placeholder={t('placeholder')}
               rows={2}
               style={{
                 flex: 1,
@@ -146,7 +149,6 @@ export default function PannelloCommenti({ preparatoreId, contesto }) {
         </div>
       )}
 
-      {/* Bottone toggle */}
       <button
         onClick={() => setAperto(v => !v)}
         type="button"

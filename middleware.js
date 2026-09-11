@@ -1,25 +1,38 @@
+import createMiddleware from 'next-intl/middleware'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
+import { routing } from './i18n/routing'
 
-// Solo queste sezioni richiedono il login. Il resto (/, /login, /auth, /cerca-allenatori) e' pubblico.
+const handleI18n = createMiddleware(routing)
+
+// Solo queste sezioni richiedono il login. (Confronto fatto sul percorso SENZA
+// prefisso lingua, calcolato piu' sotto.)
 const PROTETTE = ['/dashboard', '/portieri', '/calendario', '/partite', '/statistiche', '/supervisore', '/contatti']
-const PUBBLICHE = ['/', '/login', '/auth', '/cerca-allenatori', '/allenatori', '/registrati', '/suggerimenti', '/newsletter']
 
 export async function middleware(request) {
-  const path = request.nextUrl.pathname
-  const isProtected = PROTETTE.some((p) => path === p || path.startsWith(p + '/'))
-  const isLogin = path.startsWith('/login')
+  // 1) next-intl produce la response base (gestisce lingua, cookie NEXT_LOCALE,
+  //    eventuali rewrite/redirect di locale).
+  let response = handleI18n(request)
 
-  // Il risultato di getUser() serve solo per le due redirect qui sotto: se il
-  // percorso non e' ne' protetto ne' /login, nessuna delle due puo' scattare,
-  // quindi evitiamo del tutto la chiamata (e la relativa richiesta di rete
-  // verso l'Auth server quando esiste una sessione).
+  // 2) percorso "nudo" senza il prefisso lingua, per i controlli auth.
+  const pathname = request.nextUrl.pathname
+  const seg = pathname.split('/')
+  const hasLocale = routing.locales.includes(seg[1])
+  const locale = hasLocale ? seg[1] : routing.defaultLocale
+  const bare = hasLocale ? '/' + seg.slice(2).join('/') : pathname
+  const barePath = bare === '' ? '/' : bare
+
+  const isProtected = PROTETTE.some((p) => barePath === p || barePath.startsWith(p + '/'))
+  const isLogin = barePath.startsWith('/login')
+
+  // Come prima: se non e' ne' protetto ne' /login, niente chiamata all'Auth
+  // server. Restituiamo la response di next-intl cosi' com'e'.
   if (!isProtected && !isLogin) {
-    return NextResponse.next({ request })
+    return response
   }
 
-  let response = NextResponse.next({ request })
-
+  // 3) Supabase legge/scrive i cookie SULLA response di next-intl (non su una
+  //    NextResponse nuova, altrimenti si perderebbe il lavoro sulla lingua).
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -29,10 +42,7 @@ export async function middleware(request) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           )
@@ -45,15 +55,19 @@ export async function middleware(request) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Prefisso da conservare nelle redirect: vuoto per l'italiano (default),
+  // '/en' o '/de' per le altre.
+  const prefix = locale === routing.defaultLocale ? '' : '/' + locale
+
   if (!user && isProtected) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = prefix + '/login'
     return NextResponse.redirect(url)
   }
 
   if (user && isLogin) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = prefix + '/dashboard'
     return NextResponse.redirect(url)
   }
 
@@ -61,7 +75,6 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  // Esclude /api, /auth (callback OAuth!), gli interni di Next e i file statici.
+  matcher: ['/((?!api|auth|_next|_vercel|.*\\..*).*)'],
 }

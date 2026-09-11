@@ -1,7 +1,9 @@
 'use client'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 export default function AllenamentoTabs({ dettaglio, valutazioni, esercizi, feedback }) {
+  const t = useTranslations('allenamentoTabs')
   const [tab, setTab] = useState('dettaglio')
 
   return (
@@ -11,17 +13,17 @@ export default function AllenamentoTabs({ dettaglio, valutazioni, esercizi, feed
           type="button"
           className={`sub-nav-link ${tab === 'dettaglio' ? 'active' : ''}`}
           onClick={() => setTab('dettaglio')}
-        >📋 Dettaglio</button>
+        >{t('dettaglio')}</button>
         <button
           type="button"
           className={`sub-nav-link ${tab === 'valutazioni' ? 'active' : ''}`}
           onClick={() => setTab('valutazioni')}
-        >⭐ Valutazioni</button>
+        >{t('valutazioni')}</button>
         <button
           type="button"
           className={`sub-nav-link ${tab === 'esercizi' ? 'active' : ''}`}
           onClick={() => setTab('esercizi')}
-        >📚 Esercizi</button>
+        >{t('esercizi')}</button>
       </div>
 
       {tab === 'dettaglio'   && <div>{dettaglio}</div>}

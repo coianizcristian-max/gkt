@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
 function calcEta(dataNascita) {
   if (!dataNascita) return null
@@ -14,6 +15,7 @@ function calcEta(dataNascita) {
 }
 
 export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPortiere = {} }) {
+  const t = useTranslations('portieriSearch')
   const [q, setQ] = useState('')
 
   const filtrati = useMemo(() => {
@@ -43,18 +45,18 @@ export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPorti
       <div className="search-bar">
         <input
           type="search"
-          placeholder="Cerca portiere per nome..."
+          placeholder={t('placeholder')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           autoComplete="off"
         />
         {q && (
-          <button type="button" className="search-clear" onClick={() => setQ('')} aria-label="Cancella ricerca">✕</button>
+          <button type="button" className="search-clear" onClick={() => setQ('')} aria-label={t('cancella')}>✕</button>
         )}
       </div>
 
       {q && totale === 0 && (
-        <div className="empty">Nessun portiere trovato per &ldquo;{q}&rdquo;.</div>
+        <div className="empty">{t('nessunTrovato', { q })}</div>
       )}
 
       {squadre.map((sq) => {
@@ -64,7 +66,7 @@ export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPorti
           <section key={sq.id}>
             <div className="squadra-head">
               <h2>{sq.nome}</h2>
-              <span className="conta">{lista.length} portieri</span>
+              <span className="conta">{t('nPortieri', { n: lista.length })}</span>
             </div>
             <div className="grid">
               {lista.map((i) => {
@@ -85,7 +87,7 @@ export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPorti
                         </div>
                         <div className="ruolo">
                           {sq.nome}
-                          {eta != null && <span className="eta-badge">{eta} anni</span>}
+                          {eta != null && <span className="eta-badge">{t('anni', { n: eta })}</span>}
                         </div>
                         {(tagPerPortiere[p.id] ?? []).length > 0 && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
@@ -101,11 +103,11 @@ export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPorti
                     <div className="stat-row">
                       <div className="stat">
                         <div className="num voto">{media(p.id)}</div>
-                        <div className="lab">Media voto</div>
+                        <div className="lab">{t('mediaVoto')}</div>
                       </div>
                       <div className="stat">
                         <div className="num">{presenzePct(p.id)}</div>
-                        <div className="lab">Presenze</div>
+                        <div className="lab">{t('presenze')}</div>
                       </div>
                     </div>
                   </Link>
@@ -118,8 +120,8 @@ export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPorti
 
       {!q && totale === 0 && (
         <div className="empty">
-          Nessun portiere iscritto a questa stagione.<br />
-          <Link href="/portieri/nuovo" className="link-inline">Aggiungi il primo portiere</Link>
+          {t('nessunIscritto')}<br />
+          <Link href="/portieri/nuovo" className="link-inline">{t('aggiungiPrimo')}</Link>
         </div>
       )}
     </>

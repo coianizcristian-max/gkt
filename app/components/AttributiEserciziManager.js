@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AttributiEserciziManager({ attributi }) {
+  const t = useTranslations('attributiEsercizi')
   const router = useRouter()
   const [nuovoNome, setNuovoNome] = useState('')
   const [busy, setBusy] = useState(false)
@@ -27,7 +29,7 @@ export default function AttributiEserciziManager({ attributi }) {
   }
 
   async function elimina(id) {
-    if (!confirm('Eliminare questo attributo? Verrà rimosso anche dagli esercizi che lo usano.')) return
+    if (!confirm(t('confermaElim'))) return
     const supabase = createClient()
     await supabase.from('attributi_esercizio').delete().eq('id', id)
     router.refresh()
@@ -39,13 +41,13 @@ export default function AttributiEserciziManager({ attributi }) {
         <div key={a.id} className="lista-riga" style={{ opacity: a.attivo ? 1 : 0.5 }}>
           <span style={{ flex: 1, fontWeight: 600 }}>{a.nome}</span>
           <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-            {a.attivo ? 'Visibile' : 'Nascosto'}
+            {a.attivo ? t('visibile') : t('nascosto')}
           </span>
           <button className="btn-mini" type="button" onClick={() => toggleAttivo(a.id, a.attivo)}>
-            {a.attivo ? 'Nascondi' : 'Mostra'}
+            {a.attivo ? t('nascondi') : t('mostra')}
           </button>
           <button className="btn-mini btn-del" type="button" onClick={() => elimina(a.id)}>
-            Elimina
+            {t('elimina')}
           </button>
         </div>
       ))}
@@ -54,12 +56,12 @@ export default function AttributiEserciziManager({ attributi }) {
         <input
           value={nuovoNome}
           onChange={e => setNuovoNome(e.target.value)}
-          placeholder="es. Esplosività"
+          placeholder={t('placeholder')}
           onKeyDown={e => e.key === 'Enter' && aggiungi()}
           style={{ flex: 1 }}
         />
         <button className="btn" type="button" onClick={aggiungi} disabled={busy || !nuovoNome.trim()}>
-          + Aggiungi
+          {t('aggiungi')}
         </button>
       </div>
     </div>

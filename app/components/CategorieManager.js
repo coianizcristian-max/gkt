@@ -2,9 +2,12 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 export default function CategorieManager({ categorie, attive, stagioneId, stagioneNome, ownerId }) {
+  const t = useTranslations('categorieManager')
+  const c = useTranslations('common')
   const router = useRouter()
   const attiveSet = new Set(attive)
   const [busy, setBusy] = useState(false)
@@ -12,13 +15,12 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
   const dragIndex = useRef(null)
   const [dragOver, setDragOver] = useState(null)
 
-  // Tieni sincronizzato lo stato locale quando arrivano nuovi dati dal server
-  if (categorie.length !== ordineLocale.length || categorie.some((c, i) => c.id !== ordineLocale[i]?.id)) {
+  if (categorie.length !== ordineLocale.length || categorie.some((cat, i) => cat.id !== ordineLocale[i]?.id)) {
     if (!busy) setOrdineLocale(categorie)
   }
 
   async function toggleAttiva(squadraId, on) {
-    if (!stagioneId) { alert('Nessuna stagione attiva.'); return }
+    if (!stagioneId) { alert(c('nessunaStagione')); return }
     setBusy(true)
     const supabase = createClient()
     let error
@@ -29,30 +31,29 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
       ;({ error } = await supabase.from('stagione_categorie')
         .delete().eq('stagione_id', stagioneId).eq('squadra_id', squadraId))
     }
-    if (error) alert('Errore: ' + error.message)
+    if (error) alert(t('errore', { msg: error.message }))
     setBusy(false); router.refresh()
   }
 
   async function aggiungi() {
     setBusy(true)
     const supabase = createClient()
-    const maxOrd = ordineLocale.reduce((m, c) => Math.max(m, c.ordine), 0)
-    const { error } = await supabase.from('squadre').insert({ nome: 'Nuova categoria', ordine: maxOrd + 1, owner_id: ownerId })
-    if (error) alert('Errore: ' + error.message)
+    const maxOrd = ordineLocale.reduce((m, cat) => Math.max(m, cat.ordine), 0)
+    const { error } = await supabase.from('squadre').insert({ nome: t('nuovaCategoria'), ordine: maxOrd + 1, owner_id: ownerId })
+    if (error) alert(t('errore', { msg: error.message }))
     setBusy(false); router.refresh()
   }
 
-  // Salva il nuovo ordine sul DB dopo un riordino (sia da frecce che da drag)
   async function persistiOrdine(nuovoOrdine) {
     setBusy(true)
     const supabase = createClient()
-    const updates = nuovoOrdine.map((c, i) => ({ id: c.id, ordine: i + 1 }))
+    const updates = nuovoOrdine.map((cat, i) => ({ id: cat.id, ordine: i + 1 }))
     const errors = []
     for (const u of updates) {
       const { error } = await supabase.from('squadre').update({ ordine: u.ordine }).eq('id', u.id)
       if (error) errors.push(error.message)
     }
-    if (errors.length) alert('Errore: ' + errors.join(', '))
+    if (errors.length) alert(t('errore', { msg: errors.join(', ') }))
     setBusy(false); router.refresh()
   }
 
@@ -65,7 +66,6 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
     await persistiOrdine(nuovo)
   }
 
-  // ── Drag and drop (desktop) ──────────────────────────────────────────────
   function onDragStart(i) { dragIndex.current = i }
   function onDragOver(e, i) { e.preventDefault(); setDragOver(i) }
   function onDragEnd() { setDragOver(null); dragIndex.current = null }
@@ -85,12 +85,10 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
   return (
     <div className="lista-editor">
       <p className="sub-intro">
-        Crea e ordina le categorie, e scegli quali sono attive nella stagione <b>{stagioneNome ?? '—'}</b>.
-        Solo le categorie attive compaiono nei menù a tendina (scheda portiere, allenamenti…).
-        Su desktop trascina <span style={{ fontWeight: 700 }}>⠿</span> per riordinare, su mobile usa le frecce.
+        {t.rich('intro', { nome: stagioneNome ?? '—', b: (ch) => <b>{ch}</b>, drag: (ch) => <span style={{ fontWeight: 700 }}>{ch}</span> })}
       </p>
-      {ordineLocale.map((c, i) => (
-        <CategoriaRiga key={c.id} categoria={c} attiva={attiveSet.has(c.id)}
+      {ordineLocale.map((cat, i) => (
+        <CategoriaRiga key={cat.id} categoria={cat} attiva={attiveSet.has(cat.id)}
           onToggle={toggleAttiva} onChanged={() => router.refresh()}
           canUp={i > 0} canDown={i < ordineLocale.length - 1}
           onUp={() => muovi(i, -1)} onDown={() => muovi(i, 1)}
@@ -102,12 +100,13 @@ export default function CategorieManager({ categorie, attive, stagioneId, stagio
           onDrop={(e) => onDrop(e, i)}
         />
       ))}
-      <button className="btn-ghost" onClick={aggiungi} disabled={busy} type="button">+ Aggiungi categoria</button>
+      <button className="btn-ghost" onClick={aggiungi} disabled={busy} type="button">{t('aggiungi')}</button>
     </div>
   )
 }
 
 function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown, onUp, onDown, isDragOver, onDragStart, onDragOver, onDragEnd, onDrop }) {
+  const t = useTranslations('categorieManager')
   const [nome, setNome] = useState(categoria.nome)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
@@ -122,9 +121,8 @@ function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown,
   async function salva() {
     setBusy(true)
     const supabase = createClient()
-    const { error } = await supabase.from('squadre')
-      .update({ nome }).eq('id', categoria.id)
-    if (error) alert('Errore: ' + error.message); else setDone(true)
+    const { error } = await supabase.from('squadre').update({ nome }).eq('id', categoria.id)
+    if (error) alert(t('errore', { msg: error.message })); else setDone(true)
     setBusy(false); onChanged()
   }
 
@@ -136,37 +134,28 @@ function CategoriaRiga({ categoria, attiva, onToggle, onChanged, canUp, canDown,
       supabase.from('partite').select('id', { count: 'exact', head: true }).eq('squadra_id', categoria.id),
     ])
     const tot = (i.count || 0) + (a.count || 0) + (p.count || 0)
-    if (tot > 0) {
-      alert(`Non eliminabile: ci sono ${tot} elementi collegati (portieri, allenamenti o partite). Spostali o eliminali prima.`)
-      return
-    }
-    if (!confirm(`Eliminare la categoria "${categoria.nome}"?`)) return
+    if (tot > 0) { alert(t('nonEliminabile', { tot })); return }
+    if (!confirm(t('confermaElim', { nome: categoria.nome }))) return
     const { error } = await supabase.from('squadre').delete().eq('id', categoria.id)
-    if (error) alert('Errore: ' + error.message)
+    if (error) alert(t('errore', { msg: error.message }))
     onChanged()
   }
 
   return (
-    <div
-      className={`lista-riga cat-riga ${isDragOver ? 'drag-over' : ''}`}
-      draggable
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDragEnd={onDragEnd}
-      onDrop={onDrop}
-    >
-      <span className="drag-handle" title="Trascina per riordinare" aria-hidden="true">⠿</span>
+    <div className={`lista-riga cat-riga ${isDragOver ? 'drag-over' : ''}`} draggable
+      onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDrop={onDrop}>
+      <span className="drag-handle" title={t('trascina')} aria-hidden="true">⠿</span>
       <span className="ord-frecce">
-        <button className="btn-frec" onClick={onUp} disabled={!canUp} type="button" aria-label="Su">&uarr;</button>
-        <button className="btn-frec" onClick={onDown} disabled={!canDown} type="button" aria-label="Giu">&darr;</button>
+        <button className="btn-frec" onClick={onUp} disabled={!canUp} type="button" aria-label={t('su')}>&uarr;</button>
+        <button className="btn-frec" onClick={onDown} disabled={!canDown} type="button" aria-label={t('giu')}>&darr;</button>
       </span>
       <input className="lista-nome" value={nome} onChange={(e) => { setNome(e.target.value); setDone(false) }} />
       <label className="lista-attiva">
         <input type="checkbox" checked={attiva} disabled={toggleBusy} onChange={handleToggle} />
-        Attiva in stagione
+        {t('attivaInStagione')}
       </label>
-      <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '✓' : 'Salva'}</button>
-      <button className="btn-mini btn-del" onClick={elimina} type="button">Elimina</button>
+      <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '✓' : t('salva')}</button>
+      <button className="btn-mini btn-del" onClick={elimina} type="button">{t('elimina')}</button>
     </div>
   )
 }

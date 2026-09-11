@@ -1,0 +1,44 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import ProfiloForm from '@/app/components/ProfiloForm'
+import PaywallBanner from '@/app/components/PaywallBanner'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
+import { Link } from '@/i18n/routing'
+import { getTranslations } from 'next-intl/server'
+
+export const dynamic = 'force-dynamic'
+
+export default async function ProfiloPage() {
+  const supabase = await createClient()
+  const t = await getTranslations('profilo')
+  const c = await getTranslations('common')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: profilo } = await supabase.from('profili')
+    .select('id, ruolo, nome_completo, telefono, bio, foto_url, esperienze, certificati, via, citta, cap, range_ricerca, disponibile')
+    .eq('id', user.id).maybeSingle()
+  if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
+
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user.id),
+  ])
+  const canProfilo = isUnlocked('profilo_ricerca', gatingCfg, abbAttivo)
+
+  return (
+    <>
+      <div className="topbar">
+        <div className="eyebrow">{c('areaRiservata')}</div>
+        <h1>{t('titolo')}</h1>
+      </div>
+      <div className="content">
+        <div style={{ marginBottom: 16 }}>
+          <Link href="/parametri-valutazione" className="link-inline" style={{ fontSize: 13 }}>
+            {t('personalizzaParametri')}
+          </Link>
+        </div>
+        <ProfiloForm profilo={profilo} userId={user.id} />
+      </div>
+    </>
+  )
+}

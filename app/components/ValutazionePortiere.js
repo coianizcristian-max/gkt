@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ValutazionePortiere({ allenamentoId, portiereId, presente, votoIniziale, feedbackIniziale, notaIniziale }) {
+  const t = useTranslations('valutazionePortiere')
   const [voto, setVoto] = useState(votoIniziale ?? 0)
   const [feedback, setFeedback] = useState(feedbackIniziale ?? '')
   const [nota, setNota] = useState(notaIniziale ?? '')
@@ -14,7 +16,7 @@ export default function ValutazionePortiere({ allenamentoId, portiereId, present
   if (!presente) {
     return (
       <div className="scheda">
-        <p className="sub-intro">Non risulti presente a questo allenamento, quindi non c&apos;e&apos; nulla da valutare.</p>
+        <p className="sub-intro">{t('nonPresente')}</p>
       </div>
     )
   }
@@ -23,43 +25,36 @@ export default function ValutazionePortiere({ allenamentoId, portiereId, present
     setBusy(true); setError('')
     const supabase = createClient()
     const { error } = await supabase.from('valutazioni')
-      .update({
-        voto_portiere: voto || null,
-        feedback_portiere: feedback || null,
-        nota_portiere: nota || null,
-      })
+      .update({ voto_portiere: voto || null, feedback_portiere: feedback || null, nota_portiere: nota || null })
       .eq('allenamento_id', allenamentoId).eq('portiere_id', portiereId)
     if (error) { setError(error.message); setBusy(false); return }
     setDone(true); setBusy(false)
   }
 
-  const stellaStyle = (on) => ({
-    fontSize: '2rem', lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer',
-    color: on ? '#f2b705' : 'var(--linea)', padding: '0 2px',
-  })
+  const stellaStyle = (on) => ({ fontSize: '2rem', lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', color: on ? '#f2b705' : 'var(--linea)', padding: '0 2px' })
 
   return (
     <div className="scheda">
       <div className="field field-full">
-        <label>Il tuo voto all&apos;allenamento</label>
+        <label>{t('tuoVoto')}</label>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {[1, 2, 3, 4, 5].map((n) => (
-            <button key={n} type="button" style={stellaStyle(n <= voto)} onClick={() => { setVoto(n); setDone(false) }} aria-label={`${n} stelle`}>&#9733;</button>
+            <button key={n} type="button" style={stellaStyle(n <= voto)} onClick={() => { setVoto(n); setDone(false) }} aria-label={t('stelle', { n })}>&#9733;</button>
           ))}
-          {voto > 0 && <button type="button" className="btn-ghost" style={{ marginLeft: 8 }} onClick={() => { setVoto(0); setDone(false) }}>Azzera</button>}
+          {voto > 0 && <button type="button" className="btn-ghost" style={{ marginLeft: 8 }} onClick={() => { setVoto(0); setDone(false) }}>{t('azzera')}</button>}
         </div>
       </div>
       <div className="field field-full">
-        <label>Feedback per l&apos;allenatore (facoltativo)</label>
-        <textarea rows="3" value={feedback} onChange={(e) => { setFeedback(e.target.value); setDone(false) }} placeholder="Cosa e' andato bene, cosa vorresti migliorare..." />
+        <label>{t('feedbackLabel')}</label>
+        <textarea rows="3" value={feedback} onChange={(e) => { setFeedback(e.target.value); setDone(false) }} placeholder={t('feedbackPlaceholder')} />
       </div>
       <div className="field field-full">
-        <label>Nota personale (visibile solo a te)</label>
+        <label>{t('notaLabel')}</label>
         <textarea rows="3" value={nota} onChange={(e) => { setNota(e.target.value); setDone(false) }} />
       </div>
       {error && <div className="err">{error}</div>}
       <div className="form-actions">
-        <button className="btn" type="button" onClick={salva} disabled={busy}>{busy ? 'Salvataggio...' : done ? 'Salvato \u2713' : 'Salva valutazione'}</button>
+        <button className="btn" type="button" onClick={salva} disabled={busy}>{busy ? t('salvataggio') : done ? t('salvato') : t('salva')}</button>
       </div>
     </div>
   )

@@ -2,10 +2,12 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 export default function TemplateManager({ templates, attributiDisponibili }) {
+  const tx = useTranslations('templateManager')
   const router = useRouter()
   const [showNuovo, setShowNuovo] = useState(false)
   const [nome, setNome] = useState('')
@@ -18,7 +20,7 @@ export default function TemplateManager({ templates, attributiDisponibili }) {
   const [editId, setEditId] = useState(null)
 
   async function crea() {
-    if (!nome.trim()) { setError('Inserisci un nome per il template.'); return }
+    if (!nome.trim()) { setError(tx('inserisciNome')); return }
     setBusy(true); setError('')
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -32,7 +34,7 @@ export default function TemplateManager({ templates, attributiDisponibili }) {
 
   async function elimina(id, e) {
     e.preventDefault(); e.stopPropagation()
-    if (!confirm('Eliminare questo template? Gli allenamenti già creati con questo template non vengono toccati.')) return
+    if (!confirm(tx('confermaElim'))) return
     const supabase = createClient()
     await supabase.from('template_allenamento').delete().eq('id', id)
     router.refresh()
@@ -42,8 +44,6 @@ export default function TemplateManager({ templates, attributiDisponibili }) {
     setFiltroAttr((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
   }
 
-  // Ricerca: descrizione del template OPPURE titolo di uno degli esercizi contenuti.
-  // Filtro attributi: TUTTI quelli selezionati devono essere presenti sul template (AND).
   const templatesFiltrati = useMemo(() => {
     const q = cerca.trim().toLowerCase()
     return templates.filter((t) => {
@@ -63,9 +63,7 @@ export default function TemplateManager({ templates, attributiDisponibili }) {
   return (
     <div className="lista-editor">
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-        <button className="btn" type="button" onClick={() => setShowNuovo((v) => !v)}>
-          + Nuovo template
-        </button>
+        <button className="btn" type="button" onClick={() => setShowNuovo((v) => !v)}>{tx('nuovoTemplate')}</button>
       </div>
 
       {showNuovo && (
@@ -73,39 +71,29 @@ export default function TemplateManager({ templates, attributiDisponibili }) {
           {error && <div className="err">{error}</div>}
           <div className="form-grid">
             <div className="field">
-              <label>Nome template *</label>
-              <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="es. Seduta tecnica base" />
+              <label>{tx('nomeLabel')}</label>
+              <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder={tx('phNome')} />
             </div>
             <div className="field field-full">
-              <label>Descrizione (opzionale)</label>
+              <label>{tx('descrizioneOpz')}</label>
               <textarea rows="2" value={descrizione} onChange={(e) => setDescrizione(e.target.value)} />
             </div>
           </div>
-          <p className="sub-intro" style={{ marginTop: 0 }}>
-            Gli attributi per la ricerca vengono calcolati automaticamente dagli esercizi che aggiungerai al template.
-          </p>
+          <p className="sub-intro" style={{ marginTop: 0 }}>{tx('attrAuto')}</p>
           <div className="form-actions">
-            <button className="btn-ghost" type="button" onClick={() => setShowNuovo(false)}>Annulla</button>
-            <button className="btn" type="button" onClick={crea} disabled={busy}>
-              {busy ? 'Creazione...' : 'Crea e aggiungi esercizi'}
-            </button>
+            <button className="btn-ghost" type="button" onClick={() => setShowNuovo(false)}>{tx('annulla')}</button>
+            <button className="btn" type="button" onClick={crea} disabled={busy}>{busy ? tx('creazione') : tx('creaEAggiungi')}</button>
           </div>
         </div>
       )}
 
-      {/* Ricerca e filtro attributi */}
       {templates.length > 0 && (
         <div style={{ marginBottom: 14 }}>
-          <input
-            type="search"
-            value={cerca}
-            onChange={(e) => setCerca(e.target.value)}
-            placeholder="Cerca per descrizione o esercizi contenuti..."
-            style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--linea)', fontSize: 14, background: 'var(--carta)', boxSizing: 'border-box', marginBottom: 8 }}
-          />
+          <input type="search" value={cerca} onChange={(e) => setCerca(e.target.value)} placeholder={tx('cercaPlaceholder')}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--linea)', fontSize: 14, background: 'var(--carta)', boxSizing: 'border-box', marginBottom: 8 }} />
           {attributiDisponibili.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginRight: 2 }}>Attributi:</span>
+              <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginRight: 2 }}>{tx('attributi')}</span>
               {attributiDisponibili.map((a) => (
                 <button key={a.id} type="button" onClick={() => toggleFiltroAttr(a.id)} style={{
                   padding: '3px 10px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
@@ -118,15 +106,12 @@ export default function TemplateManager({ templates, attributiDisponibili }) {
                 </button>
               ))}
               {filtroAttr.size > 0 && (
-                <button type="button" onClick={() => setFiltroAttr(new Set())} style={{
-                  padding: '3px 8px', borderRadius: 20, fontSize: 11, cursor: 'pointer',
-                  border: 'none', background: 'none', color: 'var(--ink-soft)', textDecoration: 'underline',
-                }}>
-                  Rimuovi filtri
+                <button type="button" onClick={() => setFiltroAttr(new Set())} style={{ padding: '3px 8px', borderRadius: 20, fontSize: 11, cursor: 'pointer', border: 'none', background: 'none', color: 'var(--ink-soft)', textDecoration: 'underline' }}>
+                  {tx('rimuoviFiltri')}
                 </button>
               )}
               {filtroAttr.size > 1 && (
-                <span style={{ fontSize: 11, color: 'var(--ink-soft)' }}>(devono essere presenti tutti)</span>
+                <span style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{tx('devonoTutti')}</span>
               )}
             </div>
           )}
@@ -135,20 +120,14 @@ export default function TemplateManager({ templates, attributiDisponibili }) {
 
       <div className="elenco-blocco">
         {templates.length === 0 && !showNuovo && (
-          <div className="empty">Nessun template creato. Clicca &ldquo;+ Nuovo template&rdquo; per iniziare.</div>
+          <div className="empty">{tx('nessunTemplate')}</div>
         )}
         {templates.length > 0 && templatesFiltrati.length === 0 && (
-          <div className="empty">Nessun template corrisponde alla ricerca/ai filtri.</div>
+          <div className="empty">{tx('nessunaCorrispondenza')}</div>
         )}
         {templatesFiltrati.map((t) => (
-          <TemplateRiga
-            key={t.id}
-            template={t}
-            attributiDisponibili={attributiDisponibili}
-            editing={editId === t.id}
-            onEditToggle={() => setEditId(editId === t.id ? null : t.id)}
-            onElimina={elimina}
-          />
+          <TemplateRiga key={t.id} template={t} attributiDisponibili={attributiDisponibili}
+            editing={editId === t.id} onEditToggle={() => setEditId(editId === t.id ? null : t.id)} onElimina={elimina} />
         ))}
       </div>
     </div>
@@ -156,6 +135,7 @@ export default function TemplateManager({ templates, attributiDisponibili }) {
 }
 
 function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle, onElimina }) {
+  const tx = useTranslations('templateManager')
   const router = useRouter()
   const [nome, setNome] = useState(t.nome)
   const [descrizione, setDescrizione] = useState(t.descrizione ?? '')
@@ -164,10 +144,7 @@ function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle
   async function salva() {
     setBusy(true)
     const supabase = createClient()
-    await supabase.from('template_allenamento').update({
-      nome: nome.trim() || t.nome,
-      descrizione: descrizione.trim() || null,
-    }).eq('id', t.id)
+    await supabase.from('template_allenamento').update({ nome: nome.trim() || t.nome, descrizione: descrizione.trim() || null }).eq('id', t.id)
     setBusy(false)
     onEditToggle()
     router.refresh()
@@ -178,32 +155,27 @@ function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle
       <div className="scheda" style={{ marginBottom: 10 }}>
         <div className="form-grid">
           <div className="field">
-            <label>Nome</label>
+            <label>{tx('nome')}</label>
             <input value={nome} onChange={(e) => setNome(e.target.value)} />
           </div>
           <div className="field field-full">
-            <label>Descrizione</label>
+            <label>{tx('descrizione')}</label>
             <textarea rows="2" value={descrizione} onChange={(e) => setDescrizione(e.target.value)} />
           </div>
         </div>
-        <p className="sub-intro" style={{ marginTop: 4 }}>
-          Gli attributi mostrati sotto ogni template sono calcolati automaticamente dagli esercizi che
-          contiene: aggiungili o rimuovili dal template (aprendolo) per cambiarli.
-        </p>
+        <p className="sub-intro" style={{ marginTop: 4 }}>{tx('attrCalcolati')}</p>
         <div className="form-actions" style={{ marginTop: 12, justifyContent: 'space-between' }}>
-          <Link href={`/template-allenamenti/${t.id}`} className="btn-ghost">✏️ Modifica esercizi</Link>
+          <Link href={`/template-allenamenti/${t.id}`} className="btn-ghost">{tx('modificaEsercizi')}</Link>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn-ghost" type="button" onClick={onEditToggle}>Annulla</button>
-            <button className="btn" type="button" onClick={salva} disabled={busy}>{busy ? 'Salvataggio...' : 'Salva'}</button>
+            <button className="btn-ghost" type="button" onClick={onEditToggle}>{tx('annulla')}</button>
+            <button className="btn" type="button" onClick={salva} disabled={busy}>{busy ? tx('salvataggio') : tx('salva')}</button>
           </div>
         </div>
       </div>
     )
   }
 
-  const nomiAttr = (t.attributoIds ?? [])
-    .map((id) => attributiDisponibili.find((a) => a.id === id)?.nome)
-    .filter(Boolean)
+  const nomiAttr = (t.attributoIds ?? []).map((id) => attributiDisponibili.find((a) => a.id === id)?.nome).filter(Boolean)
 
   return (
     <div className="lista-riga">
@@ -211,10 +183,10 @@ function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle
         <div style={{ fontWeight: 700 }}>{t.nome}</div>
         {t.descrizione && <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>{t.descrizione}</div>}
         <div style={{ fontSize: 12, color: 'var(--azzurro)', marginTop: 4, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span>{t.numEsercizi} esercizi</span>
+          <span>{tx('numEsercizi', { n: t.numEsercizi })}</span>
           {t.minutiTotali > 0 && (
             <span style={{ color: 'var(--ink-soft)' }}>
-              ⏱ {t.minutiTotali >= 60 ? `${Math.floor(t.minutiTotali / 60)}h ${Math.round(t.minutiTotali % 60)}min` : `${Math.round(t.minutiTotali)} min`}
+              ⏱ {t.minutiTotali >= 60 ? tx('oreMin', { h: Math.floor(t.minutiTotali / 60), min: Math.round(t.minutiTotali % 60) }) : tx('minuti', { min: Math.round(t.minutiTotali) })}
             </span>
           )}
           {nomiAttr.map((n) => (
@@ -222,8 +194,8 @@ function TemplateRiga({ template: t, attributiDisponibili, editing, onEditToggle
           ))}
         </div>
       </Link>
-      <button className="btn-mini" type="button" onClick={(e) => { e.preventDefault(); onEditToggle() }}>✏️ Modifica</button>
-      <button className="btn-mini btn-del" type="button" onClick={(e) => onElimina(t.id, e)}>Elimina</button>
+      <button className="btn-mini" type="button" onClick={(e) => { e.preventDefault(); onEditToggle() }}>{tx('modifica')}</button>
+      <button className="btn-mini btn-del" type="button" onClick={(e) => onElimina(t.id, e)}>{tx('elimina')}</button>
     </div>
   )
 }

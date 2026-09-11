@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
+import { useTranslations } from 'next-intl'
 
 const MAX_RETRY = 3
 const RETRY_DELAY_MS = 1200
@@ -26,6 +27,8 @@ export default function ValutazioniAllenamento({
 }) {
   const router = useRouter()
   const inizioRef = useRef(null)
+  const t = useTranslations('valutazioniAllenamento')
+  const c = useTranslations('common')
 
   useEffect(() => {
     inizioRef.current = Date.now()
@@ -77,7 +80,7 @@ export default function ValutazioniAllenamento({
 
   async function registraInfortunio(i) {
     const r = rows[i]
-    if (!r.iscrizione_id) { setError('Iscrizione non trovata per questo portiere.'); return }
+    if (!r.iscrizione_id) { setError(t('erroreIscrizione')); return }
     setInfBusy(true); setError('')
     try {
       const supabase = createClient()
@@ -92,7 +95,7 @@ export default function ValutazioniAllenamento({
         : x)))
       setInfForm(null)
       router.refresh()
-    } catch (err) { setError(err.message || "Errore nel salvataggio dell'infortunio.") }
+    } catch (err) { setError(err.message || t('erroreSalvaInfortunio')) }
     setInfBusy(false)
   }
 
@@ -108,7 +111,7 @@ export default function ValutazioniAllenamento({
         ? { ...x, infortunato: false, infortunioId: null, infortunioDal: null }
         : x)))
       router.refresh()
-    } catch (err) { setError(err.message || "Errore nella chiusura dell'infortunio.") }
+    } catch (err) { setError(err.message || t('erroreChiusuraInfortunio')) }
     setInfBusy(false)
   }
 
@@ -151,10 +154,10 @@ export default function ValutazioniAllenamento({
       router.refresh()
       setTimeout(() => router.push('/calendario'), 900)
     } catch (err) {
-      const msg = err?.message ?? 'Errore sconosciuto'
+      const msg = err?.message ?? t('erroreSconosciuto')
       const isNetErr = msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')
       setError(isNetErr
-        ? `Errore di rete dopo ${MAX_RETRY} tentativi. Controlla la connessione e riprova.`
+        ? t('erroreRete', { n: MAX_RETRY })
         : msg
       )
     }
@@ -162,52 +165,50 @@ export default function ValutazioniAllenamento({
   }
 
   const savingLabel = retryCount > 0
-    ? `Tentativo ${retryCount}/${MAX_RETRY}…`
-    : saving ? 'Salvataggio…' : done ? 'Salvato ✓' : 'Salva valutazioni'
+    ? t('tentativo', { n: retryCount, tot: MAX_RETRY })
+    : saving ? t('salvataggio') : done ? t('salvato') : t('salvaValutazioni')
 
   return (
     <div className="val-grid">
       {error && (
         <div className="err" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span style={{ flex: 1 }}>{error}</span>
-          <button type="button" className="btn-mini" onClick={salvaTutto} style={{ flexShrink: 0 }}>
-            Riprova
-          </button>
+          <button type="button" className="btn-mini" onClick={salvaTutto} style={{ flexShrink: 0 }}>{t('riprova')}</button>
         </div>
       )}
       <label className="val-nessuno">
         <input type="checkbox" checked={nessuno} onChange={(e) => { setNessuno(e.target.checked); setDone(false) }} />
-        Allenamento svolto senza valutazioni individuali
+        {t('senzaValutazioni')}
       </label>
       {rows.map((r, i) => (
         <div className={`val-card ${r.infortunato ? 'infortunato' : (r.presente ? '' : 'assente')}`} key={r.portiere_id}>
           <div className="val-head">
             {r.infortunato ? (
               <span className="val-pres" style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: '#c0392b' }}>
-                🩹 Infortunato
+                {t('infortunato')}
               </span>
             ) : (
               <label className="val-pres">
                 <input type="checkbox" checked={r.presente}
                   onChange={(e) => setRow(i, { presente: e.target.checked })} />
-                Pres.
+                {t('pres')}
               </label>
             )}
             <span className="val-nome">{r.nome}</span>
             {!r.infortunato && r.assentePrevisto && (
-              <span title={r.assenzaNota || 'Assenza annunciata'}
+              <span title={r.assenzaNota || t('assenzaAnnunciata')}
                 style={{ fontSize: 11, fontWeight: 700, color: '#9a6a00', background: '#fff8e6', border: '1px solid #f0d98a', borderRadius: 4, padding: '1px 6px', marginLeft: 6 }}>
-                📅 assenza annunciata
+                {t('assenzaAnnunciataBadge')}
               </span>
             )}
             {r.infortunato ? (
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-                {r.infortunioDal && <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>dal {fmt(r.infortunioDal)}</span>}
-                <button type="button" className="btn-mini" disabled={infBusy} onClick={() => terminaInfortunio(i)}>Termina</button>
+                {r.infortunioDal && <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{t('dal')} {fmt(r.infortunioDal)}</span>}
+                <button type="button" className="btn-mini" disabled={infBusy} onClick={() => terminaInfortunio(i)}>{t('termina')}</button>
               </div>
             ) : (
               <div className="val-voto">
-                <span>Voto</span>
+                <span>{t('voto')}</span>
                 {scalaVoti.length > 0 ? (
                   <select value={r.voto} disabled={!r.presente}
                     onChange={(e) => setRow(i, { voto: e.target.value })} style={{ minWidth: 60 }}>
@@ -227,18 +228,18 @@ export default function ValutazioniAllenamento({
             <div style={{ marginTop: 6 }}>
               {infForm === i ? (
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end', background: '#fff4f4', border: '1px solid #f0caca', borderRadius: 8, padding: 8 }}>
-                  <div className="field"><label>Inizio infortunio</label>
+                  <div className="field"><label>{t('inizioInfortunio')}</label>
                     <input type="date" value={infStart} onChange={(e) => setInfStart(e.target.value)} /></div>
-                  <div className="field"><label>Rientro previsto (opz.)</label>
+                  <div className="field"><label>{t('rientroPrevisto')}</label>
                     <input type="date" value={infRientro} onChange={(e) => setInfRientro(e.target.value)} /></div>
                   <button type="button" className="btn-mini" disabled={infBusy} onClick={() => registraInfortunio(i)}>
-                    {infBusy ? '…' : 'Conferma'}
+                    {infBusy ? '…' : t('conferma')}
                   </button>
-                  <button type="button" className="btn-ghost btn-mini" onClick={() => setInfForm(null)}>Annulla</button>
+                  <button type="button" className="btn-ghost btn-mini" onClick={() => setInfForm(null)}>{c('annulla')}</button>
                 </div>
               ) : (
                 <button type="button" className="btn-mini btn-ghost" style={{ fontSize: 12 }} onClick={() => apriForm(i)}>
-                  🩹 Segna infortunato
+                  {t('segnaInfortunato')}
                 </button>
               )}
             </div>
@@ -258,7 +259,7 @@ export default function ValutazioniAllenamento({
                 </div>
               )}
               <div className="field">
-                <label>Note</label>
+                <label>{t('note')}</label>
                 <textarea rows="2" value={r.note} onChange={(e) => setRow(i, { note: e.target.value })} />
               </div>
             </>

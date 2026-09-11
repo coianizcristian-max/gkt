@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import StagioneSwitcher from '@/app/components/StagioneSwitcher'
+import LanguageSwitcher from '@/app/components/LanguageSwitcher'
 
 function MobileNavLink({ href, children, onClick, extraClass = '' }) {
   const pathname = usePathname()
@@ -16,6 +17,7 @@ function MobileNavLink({ href, children, onClick, extraClass = '' }) {
 }
 
 export default function SidebarMobile({ voci, brand }) {
+  const c = useTranslations('common')
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
 
@@ -52,11 +54,14 @@ export default function SidebarMobile({ voci, brand }) {
         <>
           <div className="mob-overlay" onClick={() => setOpen(false)} aria-hidden="true" />
           <nav className="mob-menu">
+            <div className="mob-lang" style={{ padding: '4px 12px 8px' }}>
+              <LanguageSwitcher />
+            </div>
             {voci.map((v) =>
               v.type === 'divider' ? <div key={v.key} className="mob-divider" /> :
               v.type === 'signout' ? (
                 <form key="signout" action="/auth/signout" method="post">
-                  <button type="submit" className="mob-nav-link mob-signout">Esci</button>
+                  <button type="submit" className="mob-nav-link mob-signout">{c('esci')}</button>
                 </form>
               ) : (
                 <MobileNavLink key={v.href} href={v.href} onClick={() => setOpen(false)} extraClass={v.href === '/supervisore' ? 'mob-nav-link-supervisore' : ''}>

@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import GatingManager from '@/app/components/GatingManager'
 import AbbonamentiManager from '@/app/components/AbbonamentiManager'
 
-// Unisce sotto un'unica pagina "Abbonamenti" due schede:
-//  - Prezzi & funzionalità (l'editor ad albero + prezzi + fee + giorni prova)
-//  - Abbonamenti manuali (la lista + creazione manuale)
 export default function AbbonamentiTabs({ gating, abbonamenti, profili, stats }) {
+  const t = useTranslations('abbonamentiTabs')
   const [tab, setTab] = useState('prezzi')
 
   const TabBtn = ({ id, children }) => (
@@ -24,8 +23,8 @@ export default function AbbonamentiTabs({ gating, abbonamenti, profili, stats })
   return (
     <>
       <div className="sub-nav" style={{ marginTop: 4 }}>
-        <TabBtn id="prezzi">Prezzi &amp; funzionalità</TabBtn>
-        <TabBtn id="manuali">Abbonamenti manuali</TabBtn>
+        <TabBtn id="prezzi">{t('tabPrezzi')}</TabBtn>
+        <TabBtn id="manuali">{t('tabManuali')}</TabBtn>
       </div>
 
       {tab === 'prezzi' && (
@@ -44,15 +43,15 @@ export default function AbbonamentiTabs({ gating, abbonamenti, profili, stats })
           <div className="scheda" style={{ display: 'flex', gap: 32, marginBottom: 24, flexWrap: 'wrap' }}>
             <div>
               <div style={{ fontSize: 28, fontWeight: 700 }}>{stats.attivi}</div>
-              <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>Abbonamenti attivi</div>
+              <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>{t('attivi')}</div>
             </div>
             <div>
               <div style={{ fontSize: 28, fontWeight: 700 }}>{stats.lifetime}</div>
-              <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>Piani Lifetime</div>
+              <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>{t('lifetime')}</div>
             </div>
             <div>
               <div style={{ fontSize: 28, fontWeight: 700 }}>{stats.totali}</div>
-              <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>Totale storici</div>
+              <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>{t('totali')}</div>
             </div>
           </div>
           <AbbonamentiManager abbonamenti={abbonamenti} profili={profili} />

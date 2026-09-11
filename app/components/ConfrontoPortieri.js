@@ -1,20 +1,20 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
-const MESI = { '01': 'Gen', '02': 'Feb', '03': 'Mar', '04': 'Apr', '05': 'Mag', '06': 'Giu', '07': 'Lug', '08': 'Ago', '09': 'Set', '10': 'Ott', '11': 'Nov', '12': 'Dic' }
 const COLORI = ['#0a7ec2', '#2fae66', '#e0a400', '#d6493b', '#7a5bd6', '#12a4a4', '#e0663b', '#4a5b68', '#c23fa0', '#5b8c00']
-const mLabel = (m) => MESI[String(m).slice(5, 7)] ?? m
 
-export default function ConfrontoPortieri({ stagioneId, titolo = 'Confronto portieri' }) {
-  const [rows, setRows] = useState(null)          // presenze (RPC)
-  const [med, setMed] = useState(null)            // dati per le medie voci (client-side)
-  const [parametri, setParametri] = useState([])  // voci di valutazione attive
+export default function ConfrontoPortieri({ stagioneId, titolo }) {
+  const t = useTranslations('confrontoPortieri')
+  const titoloEff = titolo ?? t('titoloDefault')
+  const [rows, setRows] = useState(null)
+  const [med, setMed] = useState(null)
+  const [parametri, setParametri] = useState([])
   const [cat, setCat] = useState('all')
   const [metrica, setMetrica] = useState('presenze')
 
-  // Presenze: stessa fonte di prima (RPC presenze_confronto).
   useEffect(() => {
     let vivo = true
     ;(async () => {
@@ -25,7 +25,6 @@ export default function ConfrontoPortieri({ stagioneId, titolo = 'Confronto port
     return () => { vivo = false }
   }, [stagioneId])
 
-  // Medie voci: valutazioni + punteggi della stagione, calcolate lato client.
   useEffect(() => {
     let vivo = true
     ;(async () => {
@@ -56,7 +55,6 @@ export default function ConfrontoPortieri({ stagioneId, titolo = 'Confronto port
     return () => { vivo = false }
   }, [stagioneId])
 
-  // Nomi e categorie derivati dalle presenze (fonte completa dei portieri).
   const nomeById = useMemo(() => {
     const m = {}
     for (const r of rows ?? []) m[r.portiere_id] = `${r.nome ?? ''} ${(r.cognome ?? '').slice(0, 1)}.`.trim()
@@ -65,21 +63,19 @@ export default function ConfrontoPortieri({ stagioneId, titolo = 'Confronto port
 
   const categorie = useMemo(() => {
     const catMap = {}
-    for (const r of rows ?? []) if (r.squadra_id) catMap[r.squadra_id] = r.squadra_nome ?? 'Categoria'
+    for (const r of rows ?? []) if (r.squadra_id) catMap[r.squadra_id] = r.squadra_nome ?? t('categoriaFallback')
     return Object.entries(catMap).map(([id, nome]) => ({ id, nome }))
-  }, [rows])
+  }, [rows, t])
 
-  // Opzioni del selettore metrica: presenze + media voto + una voce per parametro.
   const metriche = useMemo(() => ([
-    { key: 'presenze', label: 'Presenze' },
-    { key: 'voto', label: 'Media voto' },
+    { key: 'presenze', label: t('metPresenze') },
+    { key: 'voto', label: t('metVoto') },
     ...parametri.map((p) => ({ key: 'p:' + p.id, label: p.nome })),
-  ]), [parametri])
+  ]), [parametri, t])
 
-  // Medie per il metrica+categoria selezionati: { portiere_id -> media } su 1 decimale.
   const medie = useMemo(() => {
     if (!med || metrica === 'presenze') return null
-    const acc = {} // portiere_id -> {sum, n}
+    const acc = {}
     const add = (pid, squadra, val) => {
       if (val == null || isNaN(val)) return
       if (cat !== 'all' && squadra !== cat) return
@@ -105,10 +101,9 @@ export default function ConfrontoPortieri({ stagioneId, titolo = 'Confronto port
     return out
   }, [med, metrica, cat])
 
-  if (rows === null) return <Guscio titolo={titolo}><div className="empty" style={{ padding: '10px 0' }}>Carico…</div></Guscio>
-  if (rows.length === 0) return <Guscio titolo={titolo}><div className="empty" style={{ padding: '10px 0' }}>Nessun dato.</div></Guscio>
+  if (rows === null) return <Guscio titolo={titoloEff}><div className="empty" style={{ padding: '10px 0' }}>{t('carico')}</div></Guscio>
+  if (rows.length === 0) return <Guscio titolo={titoloEff}><div className="empty" style={{ padding: '10px 0' }}>{t('nessunDato')}</div></Guscio>
 
-  // ── Presenze (comportamento originale) ──
   const filtrate = cat === 'all' ? rows : rows.filter((r) => r.squadra_id === cat)
   const portMap = {}
   for (const r of filtrate) portMap[r.portiere_id] = nomeById[r.portiere_id] ?? `${r.nome ?? ''}`.trim()
@@ -127,7 +122,6 @@ export default function ConfrontoPortieri({ stagioneId, titolo = 'Confronto port
     if (r.mese) perMese[r.portiere_id][r.mese] = (perMese[r.portiere_id][r.mese] || 0) + n
   }
 
-  // ── Medie voci: portieri con dato per metrica selezionata ──
   const portieriMedie = medie ? Object.keys(medie) : []
   const coloreMedie = {}
   portieriMedie.forEach((id, i) => { coloreMedie[id] = COLORI[i % COLORI.length] })
@@ -136,15 +130,14 @@ export default function ConfrontoPortieri({ stagioneId, titolo = 'Confronto port
   return (
     <div className="scheda" style={{ marginBottom: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-        <h3 style={{ margin: 0 }}>{titolo}</h3>
+        <h3 style={{ margin: 0 }}>{titoloEff}</h3>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <select value={metrica} onChange={(e) => setMetrica(e.target.value)}
-            style={selStyle}>
+          <select value={metrica} onChange={(e) => setMetrica(e.target.value)} style={selStyle}>
             {metriche.map((m) => <option key={m.key} value={m.key}>{m.label}</option>)}
           </select>
           {categorie.length > 1 && (
             <select value={cat} onChange={(e) => setCat(e.target.value)} style={selStyle}>
-              <option value="all">Tutte le categorie</option>
+              <option value="all">{t('tutteCategorie')}</option>
               {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
             </select>
           )}
@@ -160,11 +153,11 @@ export default function ConfrontoPortieri({ stagioneId, titolo = 'Confronto port
               </span>
             ))}
           </div>
-          <h4 style={sottoTitolo}>Presenze totali</h4>
+          <h4 style={sottoTitolo}>{t('presenzeTotali')}</h4>
           <BarreValori portieri={portieriPres} portMap={portMap} colore={colore} valori={totale} decimali={0} />
-          <h4 style={{ ...sottoTitolo, marginTop: 16 }}>Presenze per mese</h4>
+          <h4 style={{ ...sottoTitolo, marginTop: 16 }}>{t('presenzePerMese')}</h4>
           {mesi.length === 0
-            ? <div className="empty" style={{ padding: '8px 0' }}>Nessun allenamento registrato.</div>
+            ? <div className="empty" style={{ padding: '8px 0' }}>{t('nessunAllenamento')}</div>
             : <BarreMensili mesi={mesi} portieri={portieriPres} colore={colore} perMese={perMese} portMap={portMap} />}
         </>
       ) : (
@@ -176,9 +169,9 @@ export default function ConfrontoPortieri({ stagioneId, titolo = 'Confronto port
               </span>
             ))}
           </div>
-          <h4 style={sottoTitolo}>Media {metricaLabel.toLowerCase()}{cat !== 'all' ? '' : ' · tutte le categorie'}</h4>
+          <h4 style={sottoTitolo}>{t('media', { label: metricaLabel.toLowerCase() })}{cat === 'all' ? t('suffTutte') : ''}</h4>
           {portieriMedie.length === 0
-            ? <div className="empty" style={{ padding: '8px 0' }}>Nessuna valutazione registrata per questa voce.</div>
+            ? <div className="empty" style={{ padding: '8px 0' }}>{t('nessunaValutazione')}</div>
             : <BarreValori
                 portieri={portieriMedie}
                 portMap={Object.fromEntries(portieriMedie.map((id) => [id, nomeById[id] ?? id]))}
@@ -199,7 +192,6 @@ function Guscio({ titolo, children }) {
   return <div className="scheda" style={{ marginBottom: 16 }}><h3 style={{ marginTop: 0 }}>{titolo}</h3>{children}</div>
 }
 
-// ─── Barre: un valore per portiere (presenze totali oppure media voce) ────────
 function BarreValori({ portieri, portMap, colore, valori, decimali = 0, scalaMax = null }) {
   const vOf = (id) => Number(valori[id] || 0)
   const maxV = Math.max(scalaMax ?? 1, ...portieri.map(vOf))
@@ -231,8 +223,9 @@ function BarreValori({ portieri, portMap, colore, valori, decimali = 0, scalaMax
   )
 }
 
-// ─── Barre raggruppate: presenze per mese (gruppo = mese, barra = portiere) ───
 function BarreMensili({ mesi, portieri, colore, perMese, portMap }) {
+  const t = useTranslations('confrontoPortieri')
+  const mLabel = (m) => t('mese_' + String(m).slice(5, 7))
   const tutti = []
   for (const m of mesi) for (const id of portieri) tutti.push(perMese[id]?.[m] || 0)
   const maxV = Math.max(1, ...tutti)

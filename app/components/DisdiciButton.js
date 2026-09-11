@@ -1,23 +1,26 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
+
+const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
 
 export default function DisdiciButton({ scadenza }) {
+  const t = useTranslations('disdici')
+  const locale = useLocale()
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [err, setErr] = useState('')
 
   const scadenzaLabel = scadenza
-    ? new Date(scadenza).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+    ? new Date(scadenza).toLocaleDateString(DATE_LOCALE[locale] || 'it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
     : null
 
   async function disdici() {
     const confermato = window.confirm(
-      `⚠️ Sei sicuro di voler disdire l'abbonamento?\n\n` +
-      (scadenzaLabel
-        ? `L'abbonamento resterà attivo fino al ${scadenzaLabel}, poi tornerai al piano gratuito.`
-        : `Dopo la disdetta tornerai al piano gratuito.`) +
-      `\n\nQuesta azione non può essere annullata.`
+      t('confermaTitolo') + '\n\n' +
+      (scadenzaLabel ? t('confermaFino', { data: scadenzaLabel }) : t('confermaSenza')) +
+      '\n\n' + t('confermaIrreversibile')
     )
     if (!confermato) return
 
@@ -26,16 +29,16 @@ export default function DisdiciButton({ scadenza }) {
     try {
       const res = await fetch('/api/disdici-abbonamento', { method: 'POST' })
       const body = await res.json()
-      if (!res.ok) { setErr(body.error ?? 'Errore.'); setBusy(false); return }
+      if (!res.ok) { setErr(body.error ?? t('errore')); setBusy(false); return }
       setDone(true)
-    } catch { setErr('Errore di rete.') }
+    } catch { setErr(t('erroreRete')) }
     setBusy(false)
   }
 
   if (done) {
     return (
       <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(192,57,43,0.07)', borderRadius: 8, border: '1px solid rgba(192,57,43,0.3)', fontSize: 13 }}>
-        ✓ Abbonamento disdetto.{scadenzaLabel ? ` Resterà attivo fino al ${scadenzaLabel}.` : ''} Ricarica la pagina per vedere lo stato aggiornato.
+        {t('disdetto')}{scadenzaLabel ? ' ' + t('restaFino', { data: scadenzaLabel }) : ''} {t('ricarica')}
       </div>
     )
   }
@@ -50,13 +53,13 @@ export default function DisdiciButton({ scadenza }) {
         onClick={disdici}
         disabled={busy}
       >
-        {busy ? 'Elaborazione...' : '🚫 Disdici abbonamento'}
+        {busy ? t('elaborazione') : t('disdici')}
       </button>
       <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 6 }}>
         {scadenzaLabel
-          ? `L'abbonamento resterà attivo fino al ${scadenzaLabel}.`
-          : 'L\'abbonamento verrà disattivato alla scadenza.'}
-        {' '}Potrai riabbonarti in qualsiasi momento.
+          ? t('noteFino', { data: scadenzaLabel })
+          : t('noteScadenza')}
+        {' '}{t('noteRiabbonarti')}
       </p>
     </div>
   )

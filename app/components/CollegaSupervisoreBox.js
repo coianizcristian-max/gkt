@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 
 export default function CollegaSupervisoreBox({ supervisoreAttuale }) {
+  const t = useTranslations('collegaSupervisore')
   const router = useRouter()
   const [codice, setCodice] = useState('')
   const [busy, setBusy] = useState(false)
@@ -11,12 +13,11 @@ export default function CollegaSupervisoreBox({ supervisoreAttuale }) {
   const [errore, setErrore] = useState('')
 
   async function collega() {
-    if (!codice.trim()) { setErrore('Inserisci il codice ricevuto.'); return }
+    if (!codice.trim()) { setErrore(t('inserisciCodice')); return }
     setBusy(true)
     setErrore('')
     setMessaggio('')
     try {
-      // Estrai il token dal codice: può essere un link completo o solo il token
       let token = codice.trim()
       if (token.includes('invito=')) {
         token = token.split('invito=')[1].split('&')[0]
@@ -30,11 +31,11 @@ export default function CollegaSupervisoreBox({ supervisoreAttuale }) {
       const json = await res.json()
 
       if (!res.ok) {
-        setErrore(json.error ?? 'Codice non valido o già utilizzato.')
+        setErrore(json.error ?? t('codiceNonValido'))
       } else if (json.tipo !== 'preparatore') {
-        setErrore('Questo codice non è un invito di tipo supervisione.')
+        setErrore(t('nonSupervisione'))
       } else {
-        setMessaggio('✅ Collegamento avvenuto! Ora il tuo responsabile può accedere alla tua area.')
+        setMessaggio(t('collegato'))
         setCodice('')
         router.refresh()
       }
@@ -44,18 +45,15 @@ export default function CollegaSupervisoreBox({ supervisoreAttuale }) {
     setBusy(false)
   }
 
-  // Se ha già un supervisore, mostra solo lo stato
   if (supervisoreAttuale) {
     return (
       <div className="scheda" style={{ marginBottom: 20 }}>
-        <h3 style={{ marginTop: 0 }}>Supervisore</h3>
+        <h3 style={{ marginTop: 0 }}>{t('supervisore')}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 22 }}>🔗</span>
           <div>
-            <div style={{ fontWeight: 600 }}>Sei collegato a un responsabile</div>
-            <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
-              Il tuo responsabile può visualizzare la tua area in sola lettura.
-            </div>
+            <div style={{ fontWeight: 600 }}>{t('seiCollegato')}</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>{t('puoVedere')}</div>
           </div>
         </div>
       </div>
@@ -64,10 +62,8 @@ export default function CollegaSupervisoreBox({ supervisoreAttuale }) {
 
   return (
     <div className="scheda" style={{ marginBottom: 20 }}>
-      <h3 style={{ marginTop: 0 }}>Collegati a un responsabile</h3>
-      <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: 14 }}>
-        Se il tuo responsabile ti ha inviato un codice o un link di supervisione, incollalo qui per collegarti al suo account.
-      </p>
+      <h3 style={{ marginTop: 0 }}>{t('collegatiTitolo')}</h3>
+      <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: 14 }}>{t('collegatiDesc')}</p>
 
       {errore && <div className="err" style={{ marginBottom: 10 }}>{errore}</div>}
       {messaggio && (
@@ -85,7 +81,7 @@ export default function CollegaSupervisoreBox({ supervisoreAttuale }) {
           type="text"
           value={codice}
           onChange={(e) => setCodice(e.target.value)}
-          placeholder="Incolla il codice o il link ricevuto"
+          placeholder={t('placeholder')}
           style={{
             flex: 1, minWidth: 200,
             padding: '10px 14px',
@@ -103,7 +99,7 @@ export default function CollegaSupervisoreBox({ supervisoreAttuale }) {
           type="button"
           style={{ flexShrink: 0 }}
         >
-          {busy ? 'Collegamento...' : 'Collegati'}
+          {busy ? t('collegamento') : t('collegati')}
         </button>
       </div>
     </div>

@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 export default function NuovoEsercizioModal({ onSaved, onClose }) {
   const [tipologie, setTipologie] = useState([])
   const [allenatoreId, setAllenatoreId] = useState(null)
+  const t = useTranslations('nuovoEsercizioModal')
 
   useEffect(() => {
     async function carica() {
@@ -23,7 +25,7 @@ export default function NuovoEsercizioModal({ onSaved, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 600 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 style={{ margin: 0 }}>Nuovo esercizio</h3>
+          <h3 style={{ margin: 0 }}>{t('titolo')}</h3>
           <button className="modal-close" onClick={onClose} type="button">✕</button>
         </div>
         <div style={{ padding: '0 0 8px' }}>
@@ -42,6 +44,8 @@ export default function NuovoEsercizioModal({ onSaved, onClose }) {
 }
 
 function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
+  const t = useTranslations('nuovoEsercizioModal')
+  const c = useTranslations('common')
   const [f, setF] = useState({
     titolo: '',
     tipologia: tipologie[0] ?? '',
@@ -65,7 +69,7 @@ function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
   function onTip(e) {
     const v = e.target.value
     if (v === '__nuova__') {
-      const nome = prompt('Nome della nuova tipologia:')
+      const nome = prompt(t('promptTipologia'))
       if (!nome) return
       const supabase = createClient()
       supabase.from('elenco_voci').insert({
@@ -78,7 +82,7 @@ function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
   }
 
   async function salva() {
-    if (!f.titolo.trim()) { setError('Inserisci il titolo.'); return }
+    if (!f.titolo.trim()) { setError(t('erroreTitolo')); return }
     setBusy(true); setError('')
     const supabase = createClient()
     try {
@@ -112,48 +116,48 @@ function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
       {error && <div className="err" style={{ marginBottom: 12 }}>{error}</div>}
       <div className="form-grid">
         <div className="field field-full">
-          <label>Titolo *</label>
-          <input value={f.titolo} onChange={upd('titolo')} placeholder="es. Parate in uscita bassa" autoFocus />
+          <label>{t('labelTitolo')}</label>
+          <input value={f.titolo} onChange={upd('titolo')} placeholder={t('phTitolo')} autoFocus />
         </div>
         <div className="field">
-          <label>Tipologia</label>
+          <label>{t('tipologia')}</label>
           <select value={f.tipologia} onChange={onTip}>
-            {tipologie.map(t => <option key={t} value={t}>{t}</option>)}
-            <option value="__nuova__">+ Nuova tipologia...</option>
+            {tipologie.map(tp => <option key={tp} value={tp}>{tp}</option>)}
+            <option value="__nuova__">{t('nuovaTipologia')}</option>
           </select>
         </div>
         <div className="field">
-          <label>Durata (min)</label>
-          <input type="number" min="0" step="0.5" value={f.durata_minuti} onChange={upd('durata_minuti')} placeholder="es. 15" />
+          <label>{t('durata')}</label>
+          <input type="number" min="0" step="0.5" value={f.durata_minuti} onChange={upd('durata_minuti')} placeholder={t('phDurata')} />
         </div>
         <div className="field">
-          <label>Recupero (min)</label>
-          <input type="number" min="0" step="0.5" value={f.recupero_minuti} onChange={upd('recupero_minuti')} placeholder="es. 3" />
+          <label>{t('recupero')}</label>
+          <input type="number" min="0" step="0.5" value={f.recupero_minuti} onChange={upd('recupero_minuti')} placeholder={t('phRecupero')} />
         </div>
         <div className="field field-full">
-          <label>Descrizione breve</label>
-          <input value={f.descrizione_breve} onChange={upd('descrizione_breve')} placeholder="Una riga di sintesi" />
+          <label>{t('descrizioneBreve')}</label>
+          <input value={f.descrizione_breve} onChange={upd('descrizione_breve')} placeholder={t('phDescrizioneBreve')} />
         </div>
         <div className="field field-full">
-          <label>Descrizione completa</label>
-          <textarea rows={3} value={f.descrizione} onChange={upd('descrizione')} placeholder="Descrizione dettagliata dell'esercizio..." />
+          <label>{t('descrizioneCompleta')}</label>
+          <textarea rows={3} value={f.descrizione} onChange={upd('descrizione')} placeholder={t('phDescrizioneCompleta')} />
         </div>
         <div className="field field-full">
-          <label>Immagine (opzionale)</label>
+          <label>{t('immagine')}</label>
           <input type="file" accept="image/*" onChange={onFile} />
           {preview && <img src={preview} alt="" style={{ marginTop: 8, maxHeight: 120, borderRadius: 6, objectFit: 'cover' }} />}
         </div>
         <div className="field field-full">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
             <input type="checkbox" checked={f.pubblico} onChange={e => setF(s => ({ ...s, pubblico: e.target.checked }))} />
-            Rendi pubblico (visibile ad altri allenatori nella libreria pubblica)
+            {t('rendiPubblico')}
           </label>
         </div>
       </div>
       <div className="form-actions" style={{ marginTop: 16 }}>
-        <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>
+        <button className="btn-ghost" onClick={onCancel} type="button">{c('annulla')}</button>
         <button className="btn" onClick={salva} disabled={busy} type="button">
-          {busy ? 'Salvataggio...' : '💾 Salva esercizio'}
+          {busy ? t('salvataggio') : t('salvaEsercizio')}
         </button>
       </div>
     </div>

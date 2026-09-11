@@ -1,25 +1,46 @@
 import { createClient as createPublicClient } from '@supabase/supabase-js'
 
-// La sitemap la genera il server SENZA nessun utente loggato. Il client di
-// @/lib/supabase/server si autentica coi cookie di sessione: qui non ce ne sono,
-// quindi girava come anon e le RLS su profili restituivano zero righe. Nota bene:
-// zero righe, non un errore — per questo il fallimento era invisibile e la sitemap
-// pubblicava solo le 5 pagine statiche. Si passa dalla RPC elenco_allenatori_pubblici
-// (SECURITY DEFINER), che espone solo id e created_at: nessun dato personale.
+// La sitemap gira SENZA utente loggato: usa la RPC elenco_allenatori_pubblici
+// (SECURITY DEFINER, espone solo id e created_at) per bypassare le RLS.
+const BASE = 'https://www.gkseason.it'
+const LOCALES = ['it', 'en', 'de', 'es']
+const DEFAULT = 'it'
+
+function url(locale, path) {
+  const prefix = locale === DEFAULT ? '' : `/${locale}`
+  const p = path === '/' ? '' : path
+  return `${BASE}${prefix}${p}` || BASE
+}
+
+// Mappa hreflang { it, en, de, x-default } per un dato percorso.
+function languages(path) {
+  const out = {}
+  for (const l of LOCALES) out[l] = url(l, path)
+  out['x-default'] = url(DEFAULT, path)
+  return out
+}
+
 function getPublicClient() {
   return createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 }
 
 export default async function sitemap() {
-  const baseUrl = 'https://www.gkseason.it'
-
-  const staticPages = [
-    { url: baseUrl, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
-    { url: `${baseUrl}/cerca-allenatori`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${baseUrl}/login`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/registrati`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/newsletter`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
+  const staticDefs = [
+    { path: '/', changeFrequency: 'weekly', priority: 1 },
+    { path: '/cerca-allenatori', changeFrequency: 'weekly', priority: 0.9 },
+    { path: '/domande-frequenti', changeFrequency: 'monthly', priority: 0.7 },
+    { path: '/login', changeFrequency: 'monthly', priority: 0.3 },
+    { path: '/registrati', changeFrequency: 'monthly', priority: 0.3 },
+    { path: '/newsletter', changeFrequency: 'monthly', priority: 0.4 },
   ]
+
+  const staticPages = staticDefs.map((d) => ({
+    url: url(DEFAULT, d.path),
+    lastModified: new Date(),
+    changeFrequency: d.changeFrequency,
+    priority: d.priority,
+    alternates: { languages: languages(d.path) },
+  }))
 
   try {
     const supabase = getPublicClient()
@@ -30,12 +51,16 @@ export default async function sitemap() {
       return staticPages
     }
 
-    const dynamicPages = (allenatori ?? []).map((a) => ({
-      url: `${baseUrl}/allenatori/${a.id}`,
-      lastModified: a.created_at ? new Date(a.created_at) : new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    }))
+    const dynamicPages = (allenatori ?? []).map((a) => {
+      const path = `/allenatori/${a.id}`
+      return {
+        url: url(DEFAULT, path),
+        lastModified: a.created_at ? new Date(a.created_at) : new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.6,
+        alternates: { languages: languages(path) },
+      }
+    })
 
     return [...staticPages, ...dynamicPages]
   } catch (e) {

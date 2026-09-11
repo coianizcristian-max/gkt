@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AnniManager({ anni }) {
+  const t = useTranslations('anniManager')
   const router = useRouter()
   const [nuovoNome, setNuovoNome] = useState('')
   const [busy, setBusy] = useState(false)
@@ -16,7 +18,7 @@ export default function AnniManager({ anni }) {
     const maxOrd = anni.reduce((m, a) => Math.max(m, a.ordine), 0)
     const { error } = await supabase.from('anni_stagione')
       .insert({ nome: nuovoNome.trim(), ordine: maxOrd + 1, attivo: true })
-    if (error) alert('Errore: ' + error.message)
+    if (error) alert(t('errore', { msg: error.message }))
     else { setNuovoNome(''); router.refresh() }
     setBusy(false)
   }
@@ -28,7 +30,7 @@ export default function AnniManager({ anni }) {
   }
 
   async function elimina(id) {
-    if (!confirm('Eliminare questo anno? Non influenza le stagioni già create dagli allenatori.')) return
+    if (!confirm(t('confermaElim'))) return
     const supabase = createClient()
     await supabase.from('anni_stagione').delete().eq('id', id)
     router.refresh()
@@ -40,13 +42,13 @@ export default function AnniManager({ anni }) {
         <div key={a.id} className="lista-riga" style={{ opacity: a.attivo ? 1 : 0.5 }}>
           <span style={{ flex: 1, fontWeight: 600 }}>{a.nome}</span>
           <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-            {a.attivo ? 'Visibile agli allenatori' : 'Nascosto'}
+            {a.attivo ? t('visibile') : t('nascosto')}
           </span>
           <button className="btn-mini" type="button" onClick={() => toggleAttivo(a.id, a.attivo)}>
-            {a.attivo ? 'Nascondi' : 'Mostra'}
+            {a.attivo ? t('nascondi') : t('mostra')}
           </button>
           <button className="btn-mini btn-del" type="button" onClick={() => elimina(a.id)}>
-            Elimina
+            {t('elimina')}
           </button>
         </div>
       ))}
@@ -55,12 +57,12 @@ export default function AnniManager({ anni }) {
         <input
           value={nuovoNome}
           onChange={(e) => setNuovoNome(e.target.value)}
-          placeholder="es. 2027-28"
+          placeholder={t('placeholder')}
           onKeyDown={(e) => e.key === 'Enter' && aggiungi()}
           style={{ flex: 1 }}
         />
         <button className="btn" type="button" onClick={aggiungi} disabled={busy || !nuovoNome.trim()}>
-          + Aggiungi anno
+          {t('aggiungi')}
         </button>
       </div>
     </div>

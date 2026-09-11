@@ -1,0 +1,42 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import SupervisoreNav from '@/app/components/SupervisoreNav'
+import { getTranslations } from 'next-intl/server'
+import CouponManager from '@/app/components/CouponManager'
+
+export const dynamic = 'force-dynamic'
+
+export default async function CouponPage() {
+  const supabase = await createClient()
+  const t = await getTranslations('supervisore')
+  const c = await getTranslations('common')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: profilo } = await supabase.from('profili').select('supervisore').eq('id', user.id).maybeSingle()
+  if (!profilo?.supervisore) redirect('/')
+
+  const { data: coupon } = await supabase.from('coupon')
+    .select('id, codice, tipo, durata_gg, attivo, created_at, scadenza_attivazione, max_utilizzi, sconto_percento, sconto_mesi, target_abbonamento')
+    .order('created_at', { ascending: false })
+
+  const { data: utilizzi } = await supabase.from('coupon_utilizzi')
+    .select('coupon_id, scade_il, utente_id')
+
+  const utilizziPerCoupon = {}
+  for (const u of utilizzi ?? []) {
+    (utilizziPerCoupon[u.coupon_id] ??= []).push(u)
+  }
+
+  return (
+    <>
+      <div className="topbar">
+        <div className="eyebrow">{c('areaRiservata')}</div>
+        <h1>{t('titoloCoupon')}</h1>
+      </div>
+      <div className="content">
+        <SupervisoreNav />
+        <CouponManager coupon={coupon ?? []} utilizziPerCoupon={utilizziPerCoupon} />
+      </div>
+    </>
+  )
+}

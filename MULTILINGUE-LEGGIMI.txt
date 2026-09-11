@@ -1,0 +1,38 @@
+GKSEASON — ALBERO COMPLETO MULTILINGUE (it / en / de / es)
+==========================================================
+Questo ZIP è l'INTERO progetto: base = codice online attuale (main) +
+tutto il lavoro i18n. Puoi svuotare la cartella locale e sostituirla con
+questo contenuto (mantieni fuori: node_modules, .next, .git).
+
+LINGUE: italiano (default, SENZA prefisso URL), inglese /en, tedesco /de,
+spagnolo /es. localePrefix 'as-needed' → gli URL italiani attuali NON cambiano.
+
+DA FARE SUL DATABASE (Supabase → SQL editor), se non già applicate:
+  1) supabase/migrations/20260903_contenuti_traduzioni.sql
+     (tabella traduzioni contenuti DB, es. FAQ interne)
+  2) supabase/migrations/20260910_supervisore_record_finestre.sql
+     (funzione per le nuove colonne record 3/7/30gg in Supervisore > Metriche)
+
+NOVITÀ RISPETTO ALL'ONLINE:
+  - Tutte le pagine/UI tradotte in 4 lingue (dizionari in messages/*.json).
+  - Supervisore > Metriche: 3 nuove colonne "Rec 3gg / 7gg / 30gg" per utente
+    (record creati; verdi se >0) per capire chi usa davvero la piattaforma.
+  - Nuova pagina pubblica SEO /domande-frequenti con dati strutturati FAQPage
+    (JSON-LD) + hreflang, tradotta nelle 4 lingue.
+  - hreflang/sitemap estesi allo spagnolo.
+
+VERIFICHE GIÀ FATTE:
+  - Parità 124 namespace su 4 lingue (struttura identica).
+  - ICU: 7026 stringhe, 0 errori di sintassi, 0 placeholder divergenti.
+  - node --check: 239 file, 0 errori.
+  - Chiavi t() nei componenti: tutte esistenti.
+  - Confronto con l'online: tutte le feature recenti presenti (abbonamenti v1,
+    prova gratuita, obiettivi/proposte, fuori categoria, export PDF, captcha,
+    IdleLogout, newsletter). Nessun update perso.
+
+DEPLOY: push su branch i18n → preview Vercel → verifica /, /en, /de, /es
+(home + qualche pagina area riservata) → deploy. Prod al sicuro (Vercel builda
+prima di pubblicare).
+
+NOTA: le pagine solo-supervisore CouponManager / RipristinoManager /
+StagioniManager restano in italiano (viste solo da te), come concordato.

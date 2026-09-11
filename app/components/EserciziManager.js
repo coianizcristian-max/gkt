@@ -4,20 +4,22 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import LavagnaEsercizioModal from '@/app/components/LavagnaEsercizioModal'
+import { useTranslations } from 'next-intl'
 
 // Popup dettaglio esercizio
 function EsercizioPopup({ esercizio, onClose, onOpenSchema }) {
+  const t = useTranslations('eserciziManager')
   return (
     <div className="popup-overlay" onClick={onClose}>
       <div className="popup-box" onClick={(e) => e.stopPropagation()}>
         <button className="popup-close" onClick={onClose} type="button">✕</button>
         <h2 style={{ margin: '0 0 6px' }}>{esercizio.titolo}</h2>
-        {((esercizio.tipologie?.length ? esercizio.tipologie : (esercizio.tipologia ? [esercizio.tipologia] : []))).map(t => (
-          <span key={t} className="stat-cat" style={{ marginBottom: 4, marginRight: 4, display: 'inline-block' }}>{t}</span>
+        {((esercizio.tipologie?.length ? esercizio.tipologie : (esercizio.tipologia ? [esercizio.tipologia] : []))).map(tp => (
+          <span key={tp} className="stat-cat" style={{ marginBottom: 4, marginRight: 4, display: 'inline-block' }}>{tp}</span>
         ))}
         {esercizio.schema_json && onOpenSchema && (
           <div style={{ marginTop: 8, marginBottom: 12 }}>
-            <button className="btn" type="button" onClick={() => onOpenSchema(esercizio, 'view')}>🖼️ Visualizza schema</button>
+            <button className="btn" type="button" onClick={() => onOpenSchema(esercizio, 'view')}>{t('visualizzaSchema')}</button>
           </div>
         )}
         {esercizio.immagine_url && (
@@ -25,11 +27,11 @@ function EsercizioPopup({ esercizio, onClose, onOpenSchema }) {
         )}
         {esercizio.descrizione_breve && <p style={{ fontStyle: 'italic', color: 'var(--ink-soft)', margin: '0 0 10px' }}>{esercizio.descrizione_breve}</p>}
         {esercizio.descrizione && <p style={{ margin: '0 0 10px', lineHeight: 1.65 }}>{esercizio.descrizione}</p>}
-        {esercizio.note && <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: 0 }}>Note: {esercizio.note}</p>}
+        {esercizio.note && <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: 0 }}>{t('note')}: {esercizio.note}</p>}
         {esercizio.video_url && (
           <a href={esercizio.video_url} target="_blank" rel="noopener noreferrer"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, padding: '8px 14px', background: '#ff0000', color: '#fff', borderRadius: 'var(--r-sm)', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>
-            ▶ Guarda il video
+            {t('guardaVideo')}
           </a>
         )}
       </div>
@@ -39,9 +41,10 @@ function EsercizioPopup({ esercizio, onClose, onOpenSchema }) {
 
 // Tile singolo esercizio nella libreria
 function EsercizioTile({ esercizio, onDetail, onEdit, onRemoveFav }) {
+  const t = useTranslations('eserciziManager')
   return (
     <div className="es-lib-tile">
-      <button className="es-lib-img-wrap" type="button" onClick={() => onDetail(esercizio)} title="Vedi dettaglio">
+      <button className="es-lib-img-wrap" type="button" onClick={() => onDetail(esercizio)} title={t('vediDettaglio')}>
         {esercizio.immagine_url
           ? <img src={esercizio.immagine_url} alt="" />
           : <div className="es-lib-no-img">📋</div>}
@@ -50,12 +53,12 @@ function EsercizioTile({ esercizio, onDetail, onEdit, onRemoveFav }) {
         <button className="es-lib-titolo" type="button" onClick={() => onDetail(esercizio)}>{esercizio.titolo}</button>
         {esercizio.pubblico && <span style={{ fontSize: 10, color: 'var(--azzurro)', fontWeight: 600, marginLeft: 4 }}>PUB</span>}
       </div>
-      <button className="btn-mini es-lib-edit" type="button" onClick={() => onDetail(esercizio)}>Dettaglio</button>
-      {onEdit && <button className="btn-mini es-lib-edit" type="button" onClick={() => onEdit(esercizio)}>Modifica</button>}
+      <button className="btn-mini es-lib-edit" type="button" onClick={() => onDetail(esercizio)}>{t('dettaglio')}</button>
+      {onEdit && <button className="btn-mini es-lib-edit" type="button" onClick={() => onEdit(esercizio)}>{t('modifica')}</button>}
       {onRemoveFav && (
         <button className="btn-mini" type="button" onClick={() => onRemoveFav(esercizio.id)}
           style={{ margin: '0 8px 8px', fontSize: 11, padding: '3px 8px', background: 'var(--giallo, #e8a72c)', color: '#000', fontWeight: 700, border: 'none', borderRadius: 'var(--r-sm)', cursor: 'pointer' }}>
-          ★ Rimuovi dai preferiti
+          {t('rimuoviPreferiti')}
         </button>
       )}
     </div>
@@ -64,6 +67,7 @@ function EsercizioTile({ esercizio, onDetail, onEdit, onRemoveFav }) {
 
 export default function EserciziManager({ esercizi, eserciziPubblici = [], eserciziResponsabile = [], tipologie, attributiDisponibili = [], allenatoreId }) {
   const router = useRouter()
+  const t = useTranslations('eserciziManager')
   const [editing, setEditing] = useState(null)
   const [popup, setPopup] = useState(null)
   const [lavagna, setLavagna] = useState(null) // {mode:'create'|'view', esercizio?}
@@ -111,7 +115,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
 
   const gruppi = {}
   for (const e of listaFiltrata) {
-    const tips = (e.tipologie?.length ? e.tipologie : (e.tipologia ? [e.tipologia] : ['Senza tipologia']))
+    const tips = (e.tipologie?.length ? e.tipologie : (e.tipologia ? [e.tipologia] : [t('senzaTipologia')]))
     for (const t of tips) (gruppi[t] ??= []).push(e)
   }
   const chiavi = Object.keys(gruppi).sort()
@@ -120,7 +124,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
   if (editing) {
     return (
       <div className="lista-editor">
-        <button className="btn-ghost" onClick={() => setEditing(null)} type="button" style={{ marginBottom: 12 }}>← Torna alla libreria</button>
+        <button className="btn-ghost" onClick={() => setEditing(null)} type="button" style={{ marginBottom: 12 }}>{t('tornaLibreria')}</button>
         <EsercizioForm
           esercizio={editing === 'new' ? null : editing}
           tipologie={tipologie}
@@ -164,18 +168,18 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
         <button type="button"
           className={`sub-nav-link ${sezione === 'miei' ? 'active' : ''}`}
           onClick={() => { setSezione('miei'); setTabAttivo(null) }}>
-          I miei esercizi ({esercizi.length})
+          {t('mieiEsercizi', { n: esercizi.length })}
         </button>
         <button type="button"
           className={`sub-nav-link ${sezione === 'pubblici' ? 'active' : ''}`}
           onClick={() => { setSezione('pubblici'); setTabAttivo(null) }}>
-          ★ Preferiti ({preferitiFull.length})
+          {t('preferiti', { n: preferitiFull.length })}
         </button>
         {eserciziResponsabile.length > 0 && (
           <button type="button"
             className={`sub-nav-link ${sezione === 'responsabile' ? 'active' : ''}`}
             onClick={() => { setSezione('responsabile'); setTabAttivo(null) }}>
-            🔗 Del responsabile ({eserciziResponsabile.length})
+            {t('delResponsabile', { n: eserciziResponsabile.length })}
           </button>
         )}
         <button type="button"
@@ -194,25 +198,25 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
               setEsPublici(data ?? [])
             }
           }}>
-          🌐 Libreria pubblica
+          {t('libreriaPubblica')}
         </button>
       </div>
 
       {/* Azioni — solo nella sezione miei */}
       {sezione === 'miei' && sezione !== 'responsabile' && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-          <button className="btn-azione" type="button" onClick={() => setLavagna({ mode: 'create' })}>🎨 Crea con la lavagna</button>
-          <button className="btn-azione" onClick={() => setEditing('new')} type="button">+ Nuovo esercizio</button>
+          <button className="btn-azione" type="button" onClick={() => setLavagna({ mode: 'create' })}>{t('creaLavagna')}</button>
+          <button className="btn-azione" onClick={() => setEditing('new')} type="button">{t('nuovoEsercizio')}</button>
         </div>
       )}
 
       {lista.length === 0 && (
         <div className="empty">
           {sezione === 'miei'
-            ? 'Nessun esercizio in libreria. Creane uno con il pulsante sopra.'
+            ? t('emptyMiei')
             : sezione === 'responsabile'
-              ? 'Nessun esercizio del responsabile disponibile.'
-              : 'Nessun esercizio pubblico preferito. Salva gli esercizi con ★ dalla libreria pubblica in un allenamento per trovarli qui.'}
+              ? t('emptyResponsabile')
+              : t('emptyPreferiti')}
         </div>
       )}
 
@@ -249,14 +253,14 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
       {/* Sezione libreria pubblica */}
       {sezione === 'scopri' && (
         <div style={{ marginTop: 8 }}>
-          {esPublici === null && <div className="empty">Caricamento...</div>}
+          {esPublici === null && <div className="empty">{t('caricamento')}</div>}
           {esPublici !== null && esPublici.length === 0 && (
-            <div className="empty">Nessun esercizio pubblico disponibile al momento.</div>
+            <div className="empty">{t('nessunPubblico')}</div>
           )}
           {esPublici !== null && esPublici.length > 0 && (() => {
             const gruppiScopri = {}
             for (const e of esPublici) {
-              const tips = (e.tipologie?.length ? e.tipologie : (e.tipologia ? [e.tipologia] : ['Senza tipologia']))
+              const tips = (e.tipologie?.length ? e.tipologie : (e.tipologia ? [e.tipologia] : [t('senzaTipologia')]))
               for (const t of tips) (gruppiScopri[t] ??= []).push(e)
             }
             const chiaviScopri = Object.keys(gruppiScopri).sort()
@@ -276,7 +280,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
                   <div className="es-lib-grid">
                     {gruppiScopri[tabCorrScopri].map((e) => (
                       <div key={e.id} className="es-lib-tile" style={{ position: 'relative' }}>
-                        <button className="es-lib-img-wrap" type="button" onClick={() => setPopup(e)} title="Vedi dettaglio">
+                        <button className="es-lib-img-wrap" type="button" onClick={() => setPopup(e)} title={t('vediDettaglio')}>
                           {e.immagine_url
                             ? <img src={e.immagine_url} alt="" />
                             : <div className="es-lib-no-img">📋</div>}
@@ -290,7 +294,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
                             type="button"
                             disabled={loadingPref === e.id}
                             onClick={() => togglePreferito(e.id)}
-                            title={prefIds.has(e.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+                            title={prefIds.has(e.id) ? t('rimuoviPreferitiTitle') : t('aggiungiPreferiti')}
                             style={{
                               flex: 1, fontSize: 11, padding: '3px 6px',
                               background: prefIds.has(e.id) ? 'var(--giallo, #e8a72c)' : undefined,
@@ -298,10 +302,10 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
                               fontWeight: 700,
                             }}
                           >
-                            {loadingPref === e.id ? '...' : prefIds.has(e.id) ? '★ Salvato' : '☆ Salva'}
+                            {loadingPref === e.id ? '...' : prefIds.has(e.id) ? t('salvato') : t('salva')}
                           </button>
                           <button className="btn-mini" type="button" onClick={() => setPopup(e)} style={{ flex: 1, fontSize: 11, padding: '3px 6px' }}>
-                            Dettaglio
+                            {t('dettaglio')}
                           </button>
                         </div>
                       </div>
@@ -318,6 +322,8 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
 }
 
 function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allenatoreId, onSaved, onCancel, onEditSchema }) {
+  const t = useTranslations('eserciziManager')
+  const c = useTranslations('common')
   const isEdit = !!esercizio
   const [f, setF] = useState({
     titolo: esercizio?.titolo ?? '',
@@ -353,7 +359,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
     setDone(false)
   }
   function aggiungiTip() {
-    const nome = prompt('Nome della nuova tipologia:')
+    const nome = prompt(t('promptTipologia'))
     if (!nome) return
     const supabase = createClient()
     supabase.from('elenco_voci').insert({
@@ -366,7 +372,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
   }
 
   async function salva() {
-    if (!f.titolo.trim()) { setError('Inserisci il titolo.'); return }
+    if (!f.titolo.trim()) { setError(t('erroreTitolo')); return }
     setBusy(true); setError('')
     const supabase = createClient()
     try {
@@ -411,43 +417,43 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
   }
 
   async function elimina() {
-    if (!confirm('Archiviare questo esercizio? Non comparirà più nella libreria, ma resterà collegato agli allenamenti e obiettivi passati che lo usano.')) return
+    if (!confirm(t('confermaArchivia'))) return
     const supabase = createClient()
     const { error } = await supabase.from('esercizi').update({ archiviato: true }).eq('id', esercizio.id)
-    if (error) alert('Errore: ' + error.message); else if (onSaved) onSaved()
+    if (error) alert(t('erroreAlert') + error.message); else if (onSaved) onSaved()
   }
 
   return (
     <div className="scheda">
-      <h2 style={{ margin: '0 0 16px', fontSize: 18 }}>{isEdit ? 'Modifica esercizio' : 'Nuovo esercizio'}</h2>
+      <h2 style={{ margin: '0 0 16px', fontSize: 18 }}>{isEdit ? t('modificaEsercizio') : t('nuovoEsercizioTitolo')}</h2>
       {error && <div className="err">{error}</div>}
       <div className="form-grid">
-        <div className="field field-full"><label>Titolo *</label><input value={f.titolo} onChange={upd('titolo')} /></div>
+        <div className="field field-full"><label>{t('titolo')}</label><input value={f.titolo} onChange={upd('titolo')} /></div>
         <div className="field field-full">
-          <label>Tipologie (seleziona una o più)</label>
+          <label>{t('tipologieLabel')}</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-            {tipologie.map((t) => (
-              <button key={t} type="button"
-                onClick={() => toggleTip(t)}
+            {tipologie.map((tp) => (
+              <button key={tp} type="button"
+                onClick={() => toggleTip(tp)}
                 style={{
                   padding: '4px 12px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
-                  border: (f.tipologie ?? []).includes(t) ? '2px solid var(--azzurro)' : '1.5px solid var(--linea)',
-                  background: (f.tipologie ?? []).includes(t) ? 'rgba(10,126,194,0.1)' : 'var(--carta)',
-                  color: (f.tipologie ?? []).includes(t) ? 'var(--azzurro)' : 'var(--ink)',
-                  fontWeight: (f.tipologie ?? []).includes(t) ? 700 : 400,
+                  border: (f.tipologie ?? []).includes(tp) ? '2px solid var(--azzurro)' : '1.5px solid var(--linea)',
+                  background: (f.tipologie ?? []).includes(tp) ? 'rgba(10,126,194,0.1)' : 'var(--carta)',
+                  color: (f.tipologie ?? []).includes(tp) ? 'var(--azzurro)' : 'var(--ink)',
+                  fontWeight: (f.tipologie ?? []).includes(tp) ? 700 : 400,
                 }}>
-                {t}
+                {tp}
               </button>
             ))}
             <button type="button" onClick={aggiungiTip}
               style={{ padding: '4px 12px', borderRadius: 20, fontSize: 13, border: '1.5px dashed var(--linea)', background: 'none', cursor: 'pointer', color: 'var(--ink-soft)' }}>
-              + Nuova...
+              {t('nuovaTip')}
             </button>
           </div>
         </div>
         {attributiDisponibili.length > 0 && (
           <div className="field field-full">
-            <label>Attributi (caratteristiche dell&apos;esercizio)</label>
+            <label>{t('attributiLabel')}</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
               {attributiDisponibili.map((a) => (
                 <button key={a.id} type="button"
@@ -465,43 +471,43 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
             </div>
           </div>
         )}
-        <div className="field"><label>Immagine</label>
-          <label className="foto-upload">{preview ? 'Cambia immagine' : 'Carica immagine'}
+        <div className="field"><label>{t('immagine')}</label>
+          <label className="foto-upload">{preview ? t('cambiaImmagine') : t('caricaImmagine')}
             <input type="file" accept="image/*" onChange={onFile} hidden />
           </label>
           {preview && <img src={preview} alt="" style={{ marginTop: 8, maxWidth: 160, borderRadius: 'var(--r-sm)' }} />}
         </div>
-        <div className="field field-full"><label>Descrizione breve</label><input value={f.descrizione_breve} onChange={upd('descrizione_breve')} /></div>
-        <div className="field field-full"><label>Descrizione dettagliata</label><textarea rows="4" value={f.descrizione} onChange={upd('descrizione')} /></div>
-        <div className="field field-full"><label>Note</label><textarea rows="2" value={f.note} onChange={upd('note')} /></div>
-        <div className="field field-full"><label>Link video (YouTube o altro)</label>
+        <div className="field field-full"><label>{t('descrizioneBreve')}</label><input value={f.descrizione_breve} onChange={upd('descrizione_breve')} /></div>
+        <div className="field field-full"><label>{t('descrizioneDettagliata')}</label><textarea rows="4" value={f.descrizione} onChange={upd('descrizione')} /></div>
+        <div className="field field-full"><label>{t('noteLabel')}</label><textarea rows="2" value={f.note} onChange={upd('note')} /></div>
+        <div className="field field-full"><label>{t('linkVideo')}</label>
           <input type="url" value={f.video_url} onChange={upd('video_url')} placeholder="https://www.youtube.com/watch?v=..." />
-          {f.video_url && <a href={f.video_url} target="_blank" rel="noopener noreferrer" style={{fontSize:12,color:'var(--azzurro)',marginTop:4,display:'inline-block'}}>▶ Anteprima link</a>}
+          {f.video_url && <a href={f.video_url} target="_blank" rel="noopener noreferrer" style={{fontSize:12,color:'var(--azzurro)',marginTop:4,display:'inline-block'}}>{t('anteprimaLink')}</a>}
         </div>
         <div className="field">
-          <label>Durata esercizio <span style={{ fontWeight: 400, color: 'var(--ink-soft)', fontSize: 12 }}>(minuti, facoltativo)</span></label>
+          <label>{t('durataEsercizio')} <span style={{ fontWeight: 400, color: 'var(--ink-soft)', fontSize: 12 }}>{t('minutiFacoltativo')}</span></label>
           <input
             type="number" min="0" step="0.5"
             value={f.durata_minuti}
             onChange={upd('durata_minuti')}
-            placeholder="es. 10"
+            placeholder={t('phDurata')}
             style={{ maxWidth: 120 }}
           />
         </div>
         <div className="field">
-          <label>Recupero <span style={{ fontWeight: 400, color: 'var(--ink-soft)', fontSize: 12 }}>(minuti, facoltativo)</span></label>
+          <label>{t('recupero')} <span style={{ fontWeight: 400, color: 'var(--ink-soft)', fontSize: 12 }}>{t('minutiFacoltativo')}</span></label>
           <input
             type="number" min="0" step="0.5"
             value={f.recupero_minuti}
             onChange={upd('recupero_minuti')}
-            placeholder="es. 2"
+            placeholder={t('phRecupero')}
             style={{ maxWidth: 120 }}
           />
         </div>
         <div className="field field-full">
           <label className="val-nessuno">
             <input type="checkbox" checked={f.pubblico} onChange={(e) => { setF((s) => ({ ...s, pubblico: e.target.checked })); setDone(false) }} />
-            Pubblico (visibile agli altri allenatori)
+            {t('pubblicoLabel')}
           </label>
         </div>
       </div>
@@ -512,18 +518,18 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
             if (res.name) setF((st) => ({ ...st, titolo: res.name }))
             setDone(false)
           })}>
-            {schemaJson ? '✏️ Modifica lo schema con la lavagna' : '🎨 Aggiungi uno schema con la lavagna'}
+            {schemaJson ? t('modificaSchema') : t('aggiungiSchema')}
           </button>
           <span style={{ marginLeft: 10, fontSize: 12.5, color: 'var(--ink-soft, #7f8f9b)' }}>
-            (poi premi <strong>Salva</strong> qui sotto per confermare)
+            {t.rich('poiPremiSalva', { b: (ch) => <strong>{ch}</strong> })}
           </span>
         </div>
       )}
       <div className="form-actions">
-        {onCancel && <button className="btn-ghost" onClick={onCancel} type="button">Annulla</button>}
-        {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">Archivia</button>}
+        {onCancel && <button className="btn-ghost" onClick={onCancel} type="button">{c('annulla')}</button>}
+        {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">{t('archivia')}</button>}
         <button className="btn" onClick={salva} disabled={busy} type="button">
-          {busy ? 'Salvataggio...' : done ? 'Salvato ✓' : 'Salva'}
+          {busy ? t('salvataggio') : done ? t('salvatoCheck') : t('salvaBtn')}
         </button>
       </div>
     </div>

@@ -1,14 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
-// Piccolo componente client: controlla la sessione nel browser (non blocca
-// la cache della pagina, che è server-rendered e cacheata). Di default mostra
-// la vista "ospite" (la maggioranza dei visitatori della home non è loggata),
-// e passa a quella "loggato" appena il controllo lato client lo conferma.
 export default function AreaLoginCta({ variant }) {
+  const t = useTranslations('areaLoginCta')
   const [loggedIn, setLoggedIn] = useState(false)
 
   useEffect(() => {
@@ -24,24 +22,23 @@ export default function AreaLoginCta({ variant }) {
 
   if (variant === 'nav') {
     return loggedIn
-      ? <Link href="/dashboard" className="link-accedi">La mia area</Link>
-      : <Link href="/login" className="link-accedi">Accedi</Link>
+      ? <Link href="/dashboard" className="link-accedi">{t('miaArea')}</Link>
+      : <Link href="/login" className="link-accedi">{t('accedi')}</Link>
   }
 
-  // variant === 'hero'
   return loggedIn ? (
     <Link href="/dashboard" className="cta-card">
       <span className="cta-text">
-        <span className="cta-eyebrow">Area gestione</span>
-        <strong>Entra nella tua area operativa</strong>
-        <span className="cta-sub">Portieri · Calendario · Partite · Statistiche</span>
+        <span className="cta-eyebrow">{t('eyebrow')}</span>
+        <strong>{t('entra')}</strong>
+        <span className="cta-sub">{t('sub')}</span>
       </span>
       <span className="cta-arrow" aria-hidden="true">&rarr;</span>
     </Link>
   ) : (
     <div className="cta-guest">
-      <Link href="/login" className="btn-hero">Accedi all&apos;area gestione</Link>
-      <span className="cta-guest-note">Riservata allo staff tecnico e ai portieri.</span>
+      <Link href="/login" className="btn-hero">{t('accediArea')}</Link>
+      <span className="cta-guest-note">{t('note')}</span>
     </div>
   )
 }

@@ -1,6 +1,8 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { getTranslations } from 'next-intl/server'
 
-export default function OnboardingChecklist({ checks }) {
+export default async function OnboardingChecklist({ checks }) {
+  const t = await getTranslations('onboarding')
   const tutti = checks.every((c) => c.ok)
   if (tutti) return null
 
@@ -11,8 +13,8 @@ export default function OnboardingChecklist({ checks }) {
       <div className="onboarding-head">
         <div className="onboarding-icon">🚀</div>
         <div>
-          <div className="onboarding-titolo">Configurazione iniziale</div>
-          <div className="onboarding-prog">{completati}/{checks.length} passi completati</div>
+          <div className="onboarding-titolo">{t('titolo')}</div>
+          <div className="onboarding-prog">{t('passi', { fatti: completati, tot: checks.length })}</div>
         </div>
         <div className="onboarding-bar-wrap">
           <div className="onboarding-bar" style={{ width: `${Math.round((completati / checks.length) * 100)}%` }} />
@@ -27,7 +29,7 @@ export default function OnboardingChecklist({ checks }) {
               {!c.ok && <div className="onboarding-step-desc">{c.desc}</div>}
             </div>
             {!c.ok && c.href && (
-              <Link href={c.href} className="btn-mini" style={{ flexShrink: 0 }}>Vai →</Link>
+              <Link href={c.href} className="btn-mini" style={{ flexShrink: 0 }}>{t('vai')}</Link>
             )}
           </div>
         ))}

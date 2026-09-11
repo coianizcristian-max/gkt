@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 export default function VersionePopup({ versione }) {
+  const t = useTranslations('versionePopup')
   const [visible, setVisible] = useState(true)
   const [closing, setClosing] = useState(false)
 
@@ -23,9 +25,9 @@ export default function VersionePopup({ versione }) {
       <div className={`versione-popup ${closing ? 'closing' : ''}`}>
         <div className="versione-header">
           <div>
-            <div className="versione-badge">🚀 Aggiornamento</div>
+            <div className="versione-badge">{t('badge')}</div>
             <h2 className="versione-titolo">
-              {versione.titolo || `Versione ${versione.numero}`}
+              {versione.titolo || t('versioneN', { n: versione.numero })}
             </h2>
             <div className="versione-numero">v{versione.numero}</div>
           </div>
@@ -33,9 +35,7 @@ export default function VersionePopup({ versione }) {
         </div>
 
         <div className="versione-body">
-          <p className="versione-intro">
-            GKSeason è stato aggiornato. Ecco le novità di questa versione:
-          </p>
+          <p className="versione-intro">{t('intro')}</p>
           <ul className="versione-lista">
             {(versione.note ?? []).map((nota, i) => (
               <li key={i} className="versione-item">
@@ -47,9 +47,7 @@ export default function VersionePopup({ versione }) {
         </div>
 
         <div className="versione-footer">
-          <button className="btn" onClick={chiudi} type="button">
-            Ho capito, continua →
-          </button>
+          <button className="btn" onClick={chiudi} type="button">{t('continua')}</button>
         </div>
       </div>
     </div>

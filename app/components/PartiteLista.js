@@ -1,17 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { useTranslations, useLocale } from 'next-intl'
 
 const TIPI = ['campionato', 'coppa', 'amichevole', 'torneo']
-const TIPO_LABEL = { campionato: 'Campionato', coppa: 'Coppa', amichevole: 'Amichevole', torneo: 'Torneo' }
 const TIPO_EMOJI = { campionato: '🏆', coppa: '🏅', amichevole: '🤝', torneo: '⚡' }
-
-function fmtData(d) {
-  return new Date(d + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
-}
+const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
 
 function RigaPartita({ p, compact = false }) {
+  const t = useTranslations('partiteLista')
+  const locale = useLocale()
+  const dl = DATE_LOCALE[locale] || 'it-IT'
+  const fmtData = (d) => new Date(d + 'T00:00:00').toLocaleDateString(dl, { weekday: 'short', day: 'numeric', month: 'short' })
   const haRis = p.gol_fatti != null && p.gol_subiti != null
   const esito = !haRis ? null : p.gol_fatti > p.gol_subiti ? 'V' : p.gol_fatti < p.gol_subiti ? 'P' : 'X'
   const esitoCol = { V: 'var(--campo)', P: 'var(--rosso)', X: 'var(--giallo)' }
@@ -23,7 +24,7 @@ function RigaPartita({ p, compact = false }) {
         {p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'} {p.avversario || '—'}
         {!compact && p.tipo !== 'campionato' && (
           <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--ink-soft)', background: 'var(--carta)', borderRadius: 4, padding: '1px 5px' }}>
-            {TIPO_LABEL[p.tipo] ?? p.tipo}
+            {t('tipo_' + p.tipo)}
           </span>
         )}
       </span>
@@ -35,6 +36,7 @@ function RigaPartita({ p, compact = false }) {
 }
 
 export default function PartiteLista({ partite, categorie, isPortiere = false }) {
+  const t = useTranslations('partiteLista')
   const oggi = new Date().toISOString().slice(0, 10)
   const [range, setRange] = useState(7)
   const [tabTipo, setTabTipo] = useState('campionato')
@@ -43,84 +45,52 @@ export default function PartiteLista({ partite, categorie, isPortiere = false })
   limiteData.setDate(limiteData.getDate() + range)
   const limiteStr = limiteData.toISOString().slice(0, 10)
 
-  // Prossime partite nel range selezionato
-  const prossime = partite
-    .filter((p) => p.data >= oggi && p.data <= limiteStr)
-    .sort((a, b) => a.data.localeCompare(b.data))
-
-  // Partite passate senza valutazioni (solo staff)
+  const prossime = partite.filter((p) => p.data >= oggi && p.data <= limiteStr).sort((a, b) => a.data.localeCompare(b.data))
   const daValutare = !isPortiere
-    ? partite.filter((p) => p.data < oggi && !p.ha_valutazioni)
-        .sort((a, b) => b.data.localeCompare(a.data)).slice(0, 5)
+    ? partite.filter((p) => p.data < oggi && !p.ha_valutazioni).sort((a, b) => b.data.localeCompare(a.data)).slice(0, 5)
     : []
-
-  // Partite per tab tipo
-  const perTipo = (tipo) => partite.filter((p) => (p.tipo ?? 'campionato') === tipo)
-    .sort((a, b) => b.data.localeCompare(a.data))
+  const perTipo = (tipo) => partite.filter((p) => (p.tipo ?? 'campionato') === tipo).sort((a, b) => b.data.localeCompare(a.data))
 
   return (
     <div>
-      {/* Preview prossime partite */}
       <div className="scheda" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
-          <h3 style={{ margin: 0 }}>📅 Prossime partite</h3>
+          <h3 style={{ margin: 0 }}>{t('prossime')}</h3>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button type="button"
-              onClick={() => setRange(7)}
-              style={{ padding: '4px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 'var(--r-sm)', border: 'none',
-                background: range === 7 ? '#0a7ec2' : 'var(--carta)',
-                color: range === 7 ? '#fff' : 'var(--ink-soft)',
-                boxShadow: range === 7 ? '0 2px 6px rgba(10,126,194,0.3)' : 'none',
-                transition: 'all 0.15s' }}>
-              7 giorni
+            <button type="button" onClick={() => setRange(7)}
+              style={{ padding: '4px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 'var(--r-sm)', border: 'none', background: range === 7 ? '#0a7ec2' : 'var(--carta)', color: range === 7 ? '#fff' : 'var(--ink-soft)', boxShadow: range === 7 ? '0 2px 6px rgba(10,126,194,0.3)' : 'none', transition: 'all 0.15s' }}>
+              {t('giorni7')}
             </button>
-            <button type="button"
-              onClick={() => setRange(31)}
-              style={{ padding: '4px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 'var(--r-sm)', border: 'none',
-                background: range === 31 ? '#7c3aed' : 'var(--carta)',
-                color: range === 31 ? '#fff' : 'var(--ink-soft)',
-                boxShadow: range === 31 ? '0 2px 6px rgba(124,58,237,0.3)' : 'none',
-                transition: 'all 0.15s' }}>
-              31 giorni
+            <button type="button" onClick={() => setRange(31)}
+              style={{ padding: '4px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 'var(--r-sm)', border: 'none', background: range === 31 ? '#7c3aed' : 'var(--carta)', color: range === 31 ? '#fff' : 'var(--ink-soft)', boxShadow: range === 31 ? '0 2px 6px rgba(124,58,237,0.3)' : 'none', transition: 'all 0.15s' }}>
+              {t('giorni31')}
             </button>
           </div>
         </div>
         {prossime.length === 0
-          ? <div className="empty" style={{ padding: '12px 0' }}>Nessuna partita nei prossimi {range} giorni.</div>
+          ? <div className="empty" style={{ padding: '12px 0' }}>{t('nessunaProssima', { range })}</div>
           : prossime.map((p) => <RigaPartita key={p.id} p={p} compact />)}
 
         {!isPortiere && daValutare.length > 0 && (
           <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--linea)' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--rosso)', marginBottom: 8 }}>
-              ⚠ Partite senza valutazioni
-            </div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--rosso)', marginBottom: 8 }}>{t('senzaValutazioni')}</div>
             {daValutare.map((p) => <RigaPartita key={p.id} p={p} compact />)}
           </div>
         )}
       </div>
 
-      {/* Bottone nuova partita — floating in basso a destra */}
       {!isPortiere && (
-        <Link href="/partite/nuova" style={{
-          position: 'fixed', bottom: 28, right: 28, zIndex: 100,
-          padding: '13px 22px', borderRadius: 999,
-          background: 'var(--azzurro)', color: '#fff',
-          fontWeight: 700, fontSize: 15, textDecoration: 'none',
-          boxShadow: '0 4px 18px rgba(10,126,194,0.35)',
-          display: 'flex', alignItems: 'center', gap: 8,
-        }}>
-          + Nuova partita
+        <Link href="/partite/nuova" style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 100, padding: '13px 22px', borderRadius: 999, background: 'var(--azzurro)', color: '#fff', fontWeight: 700, fontSize: 15, textDecoration: 'none', boxShadow: '0 4px 18px rgba(10,126,194,0.35)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          {t('nuovaPartita')}
         </Link>
       )}
 
       <div className="sub-nav">
-        {TIPI.map((t) => {
-          const n = perTipo(t).length
+        {TIPI.map((tp) => {
+          const n = perTipo(tp).length
           return (
-            <button key={t} type="button"
-              className={`sub-nav-link ${tabTipo === t ? 'active' : ''}`}
-              onClick={() => setTabTipo(t)}>
-              {TIPO_EMOJI[t]} {TIPO_LABEL[t]} {n > 0 && <span style={{ opacity: 0.7, fontSize: 11 }}>({n})</span>}
+            <button key={tp} type="button" className={`sub-nav-link ${tabTipo === tp ? 'active' : ''}`} onClick={() => setTabTipo(tp)}>
+              {TIPO_EMOJI[tp]} {t('tipo_' + tp)} {n > 0 && <span style={{ opacity: 0.7, fontSize: 11 }}>({n})</span>}
             </button>
           )
         })}
@@ -128,7 +98,7 @@ export default function PartiteLista({ partite, categorie, isPortiere = false })
 
       <div className="partite-list">
         {perTipo(tabTipo).length === 0
-          ? <div className="empty">Nessuna partita di tipo {TIPO_LABEL[tabTipo]} questa stagione.</div>
+          ? <div className="empty">{t('nessunaTipo', { tipo: t('tipo_' + tabTipo) })}</div>
           : perTipo(tabTipo).map((p) => <RigaPartita key={p.id} p={p} />)}
       </div>
     </div>

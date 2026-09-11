@@ -45,8 +45,8 @@ export default function LanguageSwitcher() {
           font: 'inherit', lineHeight: 1,
         }}
       >
+        <span style={{ textTransform: 'uppercase', fontSize: 13, fontWeight: 700 }}>{locale}</span>
         <span style={{ fontSize: 18 }}>{FLAG[locale]}</span>
-        <span style={{ textTransform: 'uppercase', fontSize: 12, fontWeight: 700 }}>{locale}</span>
       </button>
 
       {open && (
@@ -74,8 +74,9 @@ export default function LanguageSwitcher() {
                   fontWeight: l === locale ? 700 : 500,
                 }}
               >
+                <span style={{ textTransform: 'uppercase', fontSize: 13, fontWeight: 700, minWidth: 24 }}>{l}</span>
                 <span style={{ fontSize: 18 }}>{FLAG[l]}</span>
-                <span>{NAME[l]}</span>
+                <span style={{ color: 'var(--ink-soft, #6b7e8e)' }}>{NAME[l]}</span>
               </button>
             </li>
           ))}

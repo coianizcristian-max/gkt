@@ -241,11 +241,11 @@ export default async function AppLayout({ children }) {
       <div className="main-col">
         <main className="main">{children}</main>
         <footer className="app-foot">
-          <a href="/privacy-policy">{t('privacy')}</a>
+          <Link href="/privacy-policy">{t('privacy')}</Link>
           <span>·</span>
-          <a href="/cookie-policy">{t('cookie')}</a>
+          <Link href="/cookie-policy">{t('cookie')}</Link>
           <span>·</span>
-          <a href="/termini-di-servizio">{t('termini')}</a>
+          <Link href="/termini-di-servizio">{t('termini')}</Link>
         </footer>
       </div>
       {mostraBenvenuto

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { Link } from '@/i18n/routing'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { trackMetaEvento } from '@/app/components/MetaPixel'

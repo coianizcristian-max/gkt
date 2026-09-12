@@ -1,0 +1,256 @@
+========================================================
+AGGIORNAMENTO SPAGNOLO + SUPERVISORE  ·  2026-09-05
+========================================================
+
+LINGUE ORA ATTIVE: IT (default) · EN (/en) · DE (/de) · ES (/es)  ← nuovo
+  - 'es' aggiunto in i18n/routing.js. Il LanguageSwitcher e la sitemap si
+    estendono da soli. Fallback per-chiave all'italiano: /es non è mai vuoto.
+  - messages/es.json creato. TRADOTTI in spagnolo (14 namespace):
+      common, notFound, meta, home, sidebar, login, registrati, benvenuto,
+      cercaAllenatori, allenatorePubblico, faqManager, attributiManager,
+      elenchiManager, versioniManager.
+    => Tutte le PAGINE PUBBLICHE sono già in spagnolo reale (home, login,
+       registrazione, ricerca allenatori, profilo pubblico) — utile anche per la SEO.
+  - RESTA da tradurre in ES: gli altri ~104 namespace dell'area riservata
+    (dashboard, calendario, statistiche, ecc.). Finché non sono tradotti,
+    su /es quelle schermate mostrano l'italiano (fallback), NON si rompono.
+    Vanno aggiunti a messages/es.json namespace per namespace.
+
+SUPERVISORE — tradotti (IT/EN/DE/ES): faqManager, attributiManager,
+  elenchiManager, versioniManager.
+  RESTANO da tradurre: SitoEditor (gestione home, ~322 righe) e
+  NewsletterManager (default export, ~350 righe; la NewsletterRender è già fatta).
+  Restano volutamente IT (non richiesti): CouponManager, RipristinoManager, StagioniManager.
+
+FAQ SEO — DA FARE: creare una pagina FAQ PUBBLICA (fuori area riservata,
+  es. app/[locale]/faq-pubbliche) che legga le faq_interne pubblicabili e
+  includa i dati strutturati JSON-LD schema.org/FAQPage, così Google le indicizza.
+  Serve: (1) SQL — policy di lettura pubblica su faq_interne (solo le voci marcate
+  pubbliche) + eventuale colonna 'pubblica'; (2) la pagina con JSON-LD localizzato
+  via lib/traduzioni; (3) voce in app/sitemap.js. La FAQ interna (area riservata)
+  è già tradotta e usa lib/traduzioni per domande/risposte per-lingua.
+
+========================================================
+STATO AGGIORNATO (sessione notturna)  ·  2026-09-05
+========================================================
+
+COMPONENTI CLIENT LATO ALLENATORE/PORTIERE: TUTTI CONVERTITI.
+- File con traduzioni: 147  ·  Namespace: 105  ·  Parità IT/EN/DE: OK
+- Verifica: check.mjs pulito (nessuna chiave reale mancante; restano solo
+  falsi positivi su chiavi dinamiche: voce_ stato_ piano_ tipo_ giorno_ mese_ dowShort_).
+
+Convertiti in questa sessione (22 componenti):
+  CookieBanner, MieiPreparatoriClient, CercaAllenatoriBox, Suggerimenti,
+  CategorieManager, InvitiManager, StagioniAllenatoreManager, ValutazionePortiere,
+  PartiteLista, ProfiloForm, RicorrenzeTabs, RicorrenzeManager,
+  RicorrenzePartiteManager, ReportStagione, TemplateManager, ConfrontoPortieri,
+  ValutazioniPartita, EserciziSedutaEditor, CalendarioMese,
+  CalendarioMeseSupervisione, SetupWizard, NewsletterRender.
+
+NOTE IMPORTANTI:
+  - La sezione /supervisore resta in ITALIANO (esclusa di proposito). NewsletterManager
+    (default export, supervisore) resta IT; solo la sua NewsletterRender (usata dalla
+    pagina allenatore /newsletter) è tradotta.
+  - NewsletterManager.js MANCAVA sul branch i18n ma due pagine lo importavano:
+    l'ho aggiunto dal main e convertita la sola NewsletterRender (evita build rotta).
+  - Intestazioni colonne Excel in RicorrenzePartiteManager restano IT (combaciano col template .xlsx).
+  - Categorie dei Suggerimenti restano IT (sono testo salvato nel DB); gli STATI sono tradotti (codice salvato).
+  - Etichette da lib/permessi (MODULI_PERMESSI/LIVELLI) restano IT (task lib separato).
+
+COSA RESTA (prossime sessioni):
+  1) File NUOVI comparsi online e non ancora tradotti (bassa priorità):
+     StatisticheClient.js (pulsante export PDF), pagine webinar/reset-password,
+     API statistiche-pdf/webinar-export (testo PDF/CSV: decidere se tradurre).
+     → Rifare il diff eecfe3d→origin/main per intercettare altre modifiche a main.
+  2) DEFERRED (opzionali): etichette albero gating + FUNZIONALITA in lib/gating.js;
+     landing webinar HTML statica (public/webinar/*.html — lasciare IT salvo richiesta).
+  3) FINALE: montare <LanguageSwitcher /> nei due menu mobile (MobileNav, SidebarMobile),
+     poi merge i18n→main, `npm run build`, test completo nelle 3 lingue.
+
+  - NUOVO: aggiunti al branch i18n (mancavano, importati da pagine convertite):
+      · app/components/NewsletterManager.js  (solo NewsletterRender tradotta; resto IT)
+      · app/[locale]/(app)/statistiche/StatisticheClient.js  (co-locato, tradotto, export PDF)
+      · app/[locale]/(app)/contatti/MarcaLettoButton.js  (co-locato, tradotto)
+    Verificato con scansione import relativi: nessun altro file co-locato mancante.
+
+  - CONVERTITI ANCHE i componenti UI trasversali che erano rimasti fuori:
+      Guida, StagioneSwitcher, CommentiRicevuti, PercorsoTimeline, StatisticheGrafici,
+      TagManager (etichette tag predefiniti; valori DB invariati), IndiceCrescita.
+    Restano volutamente IT: interpretaIndice() e le etichette dei dettagli in lib/indiceCrescita.js
+    (logica di libreria, come lib/permessi). IdleLogout/NavLink/tracking: nessun testo UI.
+
+Baseline commit per la prossima riconciliazione: eecfe3d (in fondo a questo file).
+
+========================================================
+GKSEASON — SUPPORTO MULTILINGUA (i18n)  ·  pacchetto cumulativo
+========================================================
+
+Lingue attive: IT (default, URL invariati) · EN (/en) · DE (/de)
+Libreria: next-intl 4.14.1 · routing app/[locale] con prefisso "as-needed"
+
+--------------------------------------------------------
+COME APPLICARE (lunedì, su D:\SITO\GKT, branch i18n)
+--------------------------------------------------------
+1. Estrai questo zip DENTRO la cartella del progetto D:\SITO\GKT
+   (unisci le cartelle; conferma la sovrascrittura per
+   middleware.js, next.config.mjs, app/sitemap.js, app/robots.js).
+2. npm run build   → deve compilare senza errori.
+3. BANDIERINA: gia' montata su DESKTOP (header home + sidebar area riservata).
+   Restano i due menu MOBILE (una riga ciascuno):
+     - app/components/MobileNav.js     (menu mobile home pubblica)
+     - app/components/SidebarMobile.js (menu mobile area riservata)
+   In entrambi aggiungi:
+     import LanguageSwitcher from '@/app/components/LanguageSwitcher'
+   e inserisci <LanguageSwitcher /> nel menu.
+4. Push del branch i18n → apri la preview Vercel.
+5. Test: / (IT), /en, /de, cambio bandiera, pagine sotto.
+6. Deploy notturno.
+
+--------------------------------------------------------
+FONDAMENTA (infrastruttura)
+--------------------------------------------------------
+- i18n/routing.js, i18n/request.js  (locale, fallback IT per-chiave)
+- middleware.js                     (next-intl + auth Supabase; esclude /api e /auth)
+- next.config.mjs                   (plugin next-intl)
+- app/[locale]/layout.js            (lang dinamico, hreflang, metadata)
+- app/[locale]/not-found.js         (404 localizzato)
+- app/sitemap.js, app/robots.js     (per-locale + hreflang)
+- app/components/LanguageSwitcher.js (selettore bandierine) ← DA MONTARE
+- app/components/CercaAllenatoriBox.js (fix import dopo lo spostamento rotta)
+
+--------------------------------------------------------
+PAGINE GIÀ TRADOTTE (testi statici → messages/*.json)
+--------------------------------------------------------
+Pubblica:
+  - app/[locale]/page.js .............. home (nav, prezzi, social, footer, JSON-LD)
+  - login/page.js .................... accesso
+  - benvenuto/page.js ................ email confermata (+ meta)
+  - cerca-allenatori/page.js ......... ricerca pubblica allenatori
+  - allenatori/[id]/page.js .......... profilo pubblico allenatore (+ meta SEO)
+Area riservata:
+  - (app)/layout.js .................. sidebar (29 voci menu)
+  - (app)/dashboard/page.js .......... dashboard (plurali ICU, guida, box aiuto)
+  - (app)/partite/ .................... partite (elenco + nuova partita)
+  - (app)/portieri/ .................. portieri (elenco + onboarding + nuovo portiere)
+  - (app)/calendario/ ................ calendario (guida colorata + nuovo allenamento)
+  - (app)/statistiche/page.js ........ statistiche (+ confronto portieri)
+  - (app)/come-iniziare/page.js ...... come iniziare (percorsi allenatore/portiere)
+  - (app)/faq/page.js ................ faq (domande dal DB)
+  - (app)/account/page.js ............ account (date localizzate)
+  - (app)/contatti/page.js ........... contatti
+  - (app)/suggerimenti/page.js ....... suggerimenti
+  - (app)/profilo/page.js ............ profilo allenatore
+  - (app)/categorie/page.js .......... le mie categorie
+  - (app)/stagioni/ .................. le mie stagioni (elenco + nuova stagione)
+  - (app)/setup/page.js .............. wizard primo accesso
+  - (app)/parametri-valutazione ...... parametri di valutazione
+  - (app)/inviti/page.js ............. inviti (+ label paywall)
+  - (app)/ricorrenze/page.js ......... ricorrenze (guida lunga + avviso)
+  - (app)/esercizi/page.js ........... libreria esercizi (+ label paywall)
+  - (app)/template-allenamenti/ ...... template allenamenti (elenco + dettaglio)
+  - (app)/newsletter/page.js ......... newsletter
+  - (app)/abbonati/page.js ........... abbonamento
+  - (app)/i-miei-preparatori ......... i miei preparatori
+  - (app)/archivio/page.js ........... archivio stagioni (statistiche + esiti)
+  - (app)/partite/[id] ............... dettaglio partita (valutazioni)
+  - (app)/calendario/[id] ............ dettaglio allenamento (esercizi, valutazioni, feedback)
+  - (app)/portieri/[id] .............. scheda portiere (+ onboarding)
+  - (app)/portieri/[id]/obiettivi .... obiettivi portiere
+  - (app)/portieri/[id]/percorso ..... percorso di crescita (timeline)
+  - (app)/portieri/[id]/statistiche .. statistiche dettaglio portiere (grafici, KPI)
+  - (app)/responsabile/preparatore/[id]/ .. supervisione preparatore (11 pagine):
+      layout (banner+nav), panoramica, portieri, calendario, calendario/[id],
+      partite, partite/[id], esercizi, template, statistiche, portieri/[id]
+
+Area admin (solo supervisore):
+  - (app)/supervisore/ ............... 13 pagine admin (sito, anni, attributi, faq,
+      abbonamenti, coupon, elenchi, funzionalità, metriche, newsletter, ripristino,
+      ordine sidebar, versioni) — le 4 pagine di solo redirect sono saltate
+Componenti condivisi (avviati):
+  - components/PaywallBanner.js ...... banner paywall + cornice anteprima
+      (i dati demo di esempio restano in IT: contenuto illustrativo)
+  - components/SupervisoreNav.js ..... nav admin
+  - components/ValutazioniAllenamento.js  valutazioni seduta + infortuni
+  - components/PortiereForm.js ....... form anagrafica portiere + infortuni
+  - components/PartitaForm.js ........ form partita
+  - components/AllenamentoForm.js .... form allenamento (accorpamenti, duplica)
+  - components/ObiettiviManager.js ... obiettivi PNL + sotto-obiettivi
+  - components/ObiettivoMisurazioni.js  registro misure oggettive (test)
+  - components/EserciziManager.js .... libreria esercizi + form
+  - components/NuovoEsercizioModal.js  modale nuovo esercizio
+  - components/AllenamentoEsercizi.js  selezione/ordine esercizi seduta + PDF
+  - components/TemplateEsercizi.js ... selezione/ordine esercizi template
+  - components/LavagnaEsercizioModal.js  esercizio da lavagna
+  - cerca-allenatori/ProfiloModal.js . già i18n (namespace profiloModal)
+  - registrati/RegistratiClient.js ... già i18n (namespace registrati)
+
+Verifiche automatiche superate su tutte:
+  · JSX valido (parser Babel)
+  · ogni t()/c()/t.rich()/t.raw() risolve in IT/EN/DE
+  · ogni <tag> del testo ricco ha la sua callback in tutte le lingue
+
+----------------------------------------------
+
+--------------------------------------------------------
+STATO REALE (aggiornato)
+--------------------------------------------------------
+FATTO in questa sessione:
+- Bandierina montata su DESKTOP (header home + sidebar area riservata).
+- Convertiti: SignOutButton, layout metadata (login, registrati,
+  cerca-allenatori con SEO), ContattoClient (pagina pubblica sblocco
+  contatti), l'intero gruppo SUPERVISIONE (supervisore/preparatore/[id]:
+  panoramica, portieri, calendario, partite, statistiche, esercizi, layout)
+  e PannelloCommenti.
+- Date localizzate (it-IT/en-GB/de-DE) nelle pagine supervisione.
+- 56 namespace, ~1000 chiavi, parità totale IT/EN/DE; JSX valido su tutti.
+
+ANCORA DA TRADURRE (il grosso del testo interattivo vive qui):
+- ~51 COMPONENTI client con testo hardcoded (i "manager"/editor e le liste).
+  I titoli/guide delle pagine sono tradotti, ma questi componenti no.
+  Priorità suggerita (uso quotidiano prima):
+  * GROSSI: CalendarioMese, RicorrenzeManager, RicorrenzePartiteManager,
+    SetupWizard, ProfiloForm, CategorieManager, StagioniManager,
+    StagioniAllenatoreManager, InvitiManager, TemplateManager,
+    DuplicaTemplatePicker, EserciziSedutaEditor, ConfrontoPortieri,
+    Suggerimenti, CookieBanner (+ area supervisore: SitoEditor,
+    NewsletterManager, CouponManager, AbbonamentiManager, FaqManager,
+    GatingManager, RipristinoManager, VersioniManager,
+    CalendarioMeseSupervisione).
+  * MEDI/PICCOLI: PartiteLista, ValutazionePortiere, ValutazioniPartita,
+    AssenzePreviste, DuplicaAllenamentoPicker, AreaLoginCta, PortieriSearch,
+    CouponBox, CollegaSupervisoreBox, ObiettivoCollegamenti, ReportStagione,
+    ElenchiManager, AttributiManager, MieiPreparatoriClient,
+    OnboardingChecklist, NewsletterSignup, ExportButtons, VersionePopup,
+    FeedbackAllenamento, AllenamentoTabs, ParametriValutazioneManager, ecc.
+- MENU MOBILE: MobileNav.js, SidebarMobile.js (aggiungere <LanguageSwitcher/>).
+- PAGINE LEGALI: privacy-policy, cookie-policy, termini-di-servizio
+  (testo statico) → DECISIONE: IT-only, traduzione automatica, o testi
+  ufficiali forniti da te.
+- CONTENUTO DA DB: sito_sezioni (home), faq_interne, etichette
+  FUNZIONALITA in lib/gating.js → scelta di localizzazione lato database.
+
+--------------------------------------------------------
+CONTENUTO DB — TABELLA TRADUZIONI (fatto: lettura)
+--------------------------------------------------------
+Scelta: tabella traduzioni separata.
+1) Applica la migration: supabase/migrations/20260903_contenuti_traduzioni.sql
+   (crea contenuti_traduzioni + RLS: lettura pubblica, scrittura supervisore).
+2) Helper: lib/traduzioni.js  (caricaTraduzioni -> tr(rigaId, campo)).
+3) Lettura GIA' cablata con overlay + fallback IT in:
+   - app/[locale]/page.js       (sito_sezioni: campi titolo, testo)
+   - app/[locale]/(app)/faq/page.js (faq_interne: campi domanda, risposta)
+   Appena una traduzione esiste nel DB, compare in automatico su /en e /de;
+   altrimenti resta l'italiano.
+MANCA (parte di SitoEditor/FaqManager, nel blocco componenti):
+   la UI nel pannello Sito/FAQ per INSERIRE le traduzioni EN/DE
+   (upsert su contenuti_traduzioni per tabella/riga_id/campo/lingua).
+   Nel frattempo le righe si possono popolare a mano da Supabase.
+   Nota: la 'categoria' delle FAQ per ora resta in italiano.
+
+--------------------------------------------------------
+BASELINE ONLINE (riferimento per i confronti)
+--------------------------------------------------------
+Ultimo commit main allineato: eecfe3d (03/09 sera).
+Le versioni convertite in questo pacchetto includono GIA' le modifiche
+online fino a questo commit. Vanno MERGIATE sul branch i18n, non
+sovrascritte alla cieca. Prossimo confronto: git diff eecfe3d origin/main.

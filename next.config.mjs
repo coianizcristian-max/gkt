@@ -15,7 +15,7 @@ const csp = [
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline' https://*.hcaptcha.com",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://eu.i.posthog.com https://eu-assets.i.posthog.com https://js.stripe.com https://*.hcaptcha.com https://hcaptcha.com",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://eu.i.posthog.com https://eu-assets.i.posthog.com https://api.stripe.com https://*.hcaptcha.com https://connect.facebook.net https://www.facebook.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://eu.i.posthog.com https://eu-assets.i.posthog.com https://api.stripe.com https://*.hcaptcha.com https://connect.facebook.net https://www.facebook.com https://nominatim.openstreetmap.org",
   "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.hcaptcha.com https://hcaptcha.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",

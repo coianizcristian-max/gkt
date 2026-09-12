@@ -14,6 +14,13 @@ export default function AbbonatoClient({ abbonamento, prezzi, ruolo, lifetimeAtt
   const [loading, setLoading] = useState(null)
   const [error, setError] = useState('')
 
+  const nMensile = parseFloat(String(prezzi.mensile).replace(',', '.'))
+  const nAnnuale = parseFloat(String(prezzi.annuale).replace(',', '.'))
+  const risparmioAnnuo = (nMensile * 12) - nAnnuale
+  const percRisparmio = nMensile > 0 ? Math.round((risparmioAnnuo / (nMensile * 12)) * 100) : 0
+  const mostraRisparmio = risparmioAnnuo > 0.01
+  const features = ruolo === 'portiere' ? (t.raw('featuresPortiere') || []) : (t.raw('featuresCoach') || [])
+
   const PIANI = [
     { id: 'mensile', nome: t('piano_mensile'), prezzo: fmt(prezzi.mensile), periodo: t('periodoMese'), desc: t('descMensile') },
     { id: 'annuale', nome: t('piano_annuale'), prezzo: fmt(prezzi.annuale), periodo: t('periodoAnno'), desc: t('descAnnuale'), highlight: true, badge: t('badgeConveniente') },
@@ -89,6 +96,11 @@ export default function AbbonatoClient({ abbonamento, prezzi, ruolo, lifetimeAtt
               <span className="piano-num">{p.prezzo}</span>
               <span className="piano-periodo">{p.periodo}</span>
             </div>
+            {p.id === 'annuale' && mostraRisparmio && (
+              <div style={{ display: 'inline-block', margin: '2px 0 8px', padding: '3px 10px', borderRadius: 999, background: 'rgba(46,158,91,0.12)', color: 'var(--campo, #2e9e5b)', fontSize: 12.5, fontWeight: 700 }}>
+                {t('risparmio', { importo: '€' + fmt(risparmioAnnuo), perc: percRisparmio + '%' })}
+              </div>
+            )}
             <p className="piano-desc">{p.desc}</p>
             <button className="btn piano-cta" onClick={() => checkout(p.id)} disabled={!!loading} type="button">
               {loading === p.id ? t('caricamento') : t('scegli')}
@@ -96,6 +108,19 @@ export default function AbbonatoClient({ abbonamento, prezzi, ruolo, lifetimeAtt
           </div>
         ))}
       </div>
+      {features.length > 0 && (
+        <div style={{ marginTop: 28, padding: '20px 22px', borderRadius: 12, background: 'var(--card-soft, rgba(10,126,194,0.05))', border: '1px solid rgba(10,126,194,0.15)' }}>
+          <h3 style={{ margin: '0 0 14px', fontSize: 16 }}>{t('sbloccoTitolo')}</h3>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 10 }}>
+            {features.map((f, idx) => (
+              <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14 }}>
+                <span aria-hidden="true" style={{ flexShrink: 0, marginTop: 1, color: 'var(--campo, #2e9e5b)', fontWeight: 800 }}>✓</span>
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <p className="sub-intro" style={{ marginTop: 20, fontSize: 12 }}>{t('pagamentoSicuro')}</p>
     </div>
   )

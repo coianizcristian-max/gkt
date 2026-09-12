@@ -1882,7 +1882,23 @@
     "introPortiere": "Sblocca le statistiche avanzate e il dettaglio del tuo percorso di crescita.",
     "introCoach": "Sblocca tutte le funzionalità avanzate: statistiche, obiettivi, ricorrenze automatiche e molto altro.",
     "scegli": "Scegli questo piano",
-    "pagamentoSicuro": "Pagamento sicuro via Stripe. Disdici in qualsiasi momento."
+    "pagamentoSicuro": "Pagamento sicuro via Stripe. Disdici in qualsiasi momento.",
+    "sbloccoTitolo": "Cosa sblocchi con l'abbonamento",
+    "risparmio": "Risparmi {importo} ({perc}) rispetto al mensile",
+    "featuresCoach": [
+      "Obiettivi personalizzati per ogni portiere",
+      "Statistiche di dettaglio (per mese e per caratteristica)",
+      "Feedback dei portieri",
+      "Generazione automatica degli allenamenti ricorrenti",
+      "Report PDF delle statistiche squadra",
+      "Profilo pubblico nella ricerca allenatori"
+    ],
+    "featuresPortiere": [
+      "I tuoi obiettivi personali e la proposta di nuovi obiettivi",
+      "Statistiche di dettaglio della tua crescita",
+      "Report PDF della tua stagione",
+      "Storico completo di valutazioni e presenze"
+    ]
   },
   "cookieBanner": {
     "gestisci": "Gestisci le preferenze cookie",

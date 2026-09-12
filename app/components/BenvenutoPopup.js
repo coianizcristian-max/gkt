@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Link } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
 
-export default function BenvenutoPopup({ nome, giorni, ruolo }) {
+export default function BenvenutoPopup({ nome, giorni, ruolo, mostraPiani = false }) {
   const t = useTranslations('benvenutoPopup')
   const [visible, setVisible] = useState(true)
   const [closing, setClosing] = useState(false)
@@ -46,7 +46,7 @@ export default function BenvenutoPopup({ nome, giorni, ruolo }) {
         </div>
 
         <div className="versione-footer">
-          {conGiorni && (
+          {conGiorni && mostraPiani && (
             <Link href="/abbonati" className="btn-ghost" onClick={chiudi} style={{ marginRight: 8 }}>
               {t('vediPiani')}
             </Link>

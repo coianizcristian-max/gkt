@@ -1882,7 +1882,23 @@
     "introPortiere": "Unlock advanced statistics and the details of your growth path.",
     "introCoach": "Unlock all advanced features: statistics, goals, automatic recurrences and much more.",
     "scegli": "Choose this plan",
-    "pagamentoSicuro": "Secure payment via Stripe. Cancel anytime."
+    "pagamentoSicuro": "Secure payment via Stripe. Cancel anytime.",
+    "sbloccoTitolo": "What you unlock with a subscription",
+    "risparmio": "Save {importo} ({perc}) vs monthly",
+    "featuresCoach": [
+      "Personalised goals for each goalkeeper",
+      "Detailed statistics (by month and by attribute)",
+      "Goalkeeper feedback",
+      "Automatic generation of recurring trainings",
+      "PDF reports of team statistics",
+      "Public profile in the coach search"
+    ],
+    "featuresPortiere": [
+      "Your personal goals and the option to propose new ones",
+      "Detailed statistics of your growth",
+      "PDF report of your season",
+      "Full history of evaluations and attendance"
+    ]
   },
   "cookieBanner": {
     "gestisci": "Manage cookie preferences",

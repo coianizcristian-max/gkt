@@ -28,6 +28,7 @@ export default async function AppLayout({ children }) {
   let mostraBenvenuto = false
   let benvenutoNome = null
   let benvenutoGiorni = null
+  let mostraPiani = false
   let vedePortieri = true, vedeAllenamenti = true, vedePartite = true, vedeStatistiche = true
   let ruoloUtente = null
   let haPreparatori = false
@@ -71,6 +72,9 @@ export default async function AppLayout({ children }) {
     if (mostraBenvenuto) {
       benvenutoNome = profilo?.nome_visualizzato || profilo?.nome_completo || null
       benvenutoGiorni = provaGiorni ?? await getGiorniProva(supabase, profilo.ruolo)
+      // Mostra "Vedi i piani" solo se NON è tutto gratis (altrimenti /abbonati rimanda in home).
+      const { tuttoFree: tfBenv } = await getGatingConfig(supabase)
+      mostraPiani = !tfBenv
     }
 
     // Badge contatti ricevuti: stesso principio della newsletter, ma qui il flag
@@ -249,7 +253,7 @@ export default async function AppLayout({ children }) {
         </footer>
       </div>
       {mostraBenvenuto
-        ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} ruolo={ruoloUtente} />
+        ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} ruolo={ruoloUtente} mostraPiani={mostraPiani} />
         : (versioneNuova && <VersionePopup versione={versioneNuova} />)}
     </div>
   )

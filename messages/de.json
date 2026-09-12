@@ -1882,7 +1882,23 @@
     "introPortiere": "Schalte erweiterte Statistiken und die Details deines Entwicklungswegs frei.",
     "introCoach": "Schalte alle erweiterten Funktionen frei: Statistiken, Ziele, automatische Serien und vieles mehr.",
     "scegli": "Diesen Plan wählen",
-    "pagamentoSicuro": "Sichere Zahlung über Stripe. Jederzeit kündbar."
+    "pagamentoSicuro": "Sichere Zahlung über Stripe. Jederzeit kündbar.",
+    "sbloccoTitolo": "Was du mit einem Abo freischaltest",
+    "risparmio": "Spare {importo} ({perc}) gegenüber monatlich",
+    "featuresCoach": [
+      "Individuelle Ziele für jeden Torwart",
+      "Detailstatistiken (nach Monat und Merkmal)",
+      "Torwart-Feedback",
+      "Automatische Erstellung wiederkehrender Trainings",
+      "PDF-Berichte der Teamstatistiken",
+      "Öffentliches Profil in der Trainersuche"
+    ],
+    "featuresPortiere": [
+      "Deine persönlichen Ziele und das Vorschlagen neuer Ziele",
+      "Detailstatistiken deiner Entwicklung",
+      "PDF-Bericht deiner Saison",
+      "Vollständiger Verlauf von Bewertungen und Anwesenheit"
+    ]
   },
   "cookieBanner": {
     "gestisci": "Cookie-Einstellungen verwalten",

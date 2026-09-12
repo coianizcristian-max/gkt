@@ -1637,7 +1637,15 @@
     "mediaVoto": "Ø Note",
     "presenze": "Anwesenheit",
     "nessunIscritto": "Kein Torhüter in dieser Saison angemeldet.",
-    "aggiungiPrimo": "Ersten Torhüter hinzufügen"
+    "aggiungiPrimo": "Ersten Torhüter hinzufügen",
+    "eliminaAria": "Torwart löschen",
+    "confermaTitolo": "{nome} löschen?",
+    "verifica": "Wird geprüft…",
+    "confermaSoloStagione": "Er wird aus dieser Saison entfernt. Sein Profil und andere Saisons bleiben erhalten.",
+    "confermaTutto": "Dies ist seine einzige Saison: auch alle seine Daten (Bewertungen, Ziele usw.) werden gelöscht. Das kann nicht rückgängig gemacht werden.",
+    "annulla": "Abbrechen",
+    "conferma": "Löschen",
+    "eliminazioneErrore": "Löschen fehlgeschlagen. Bitte erneut versuchen."
   },
   "assenzePreviste": {
     "erroreIscrizione": "Anmeldung für diesen Torhüter nicht gefunden.",

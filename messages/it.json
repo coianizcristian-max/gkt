@@ -1637,7 +1637,15 @@
     "mediaVoto": "Media voto",
     "presenze": "Presenze",
     "nessunIscritto": "Nessun portiere iscritto a questa stagione.",
-    "aggiungiPrimo": "Aggiungi il primo portiere"
+    "aggiungiPrimo": "Aggiungi il primo portiere",
+    "eliminaAria": "Elimina portiere",
+    "confermaTitolo": "Eliminare {nome}?",
+    "verifica": "Verifica in corso…",
+    "confermaSoloStagione": "Verrà tolto da questa stagione. La sua scheda e le altre stagioni restano.",
+    "confermaTutto": "È la sua unica stagione: verranno eliminati anche tutti i suoi dati (valutazioni, obiettivi, ecc.). L'operazione non è reversibile.",
+    "annulla": "Annulla",
+    "conferma": "Elimina",
+    "eliminazioneErrore": "Eliminazione non riuscita. Riprova."
   },
   "assenzePreviste": {
     "erroreIscrizione": "Iscrizione non trovata per questo portiere.",

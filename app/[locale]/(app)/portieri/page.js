@@ -130,7 +130,7 @@ export default async function PortieriPage() {
         )}
         {!stagione
           ? <div className="empty">{c('nessunaStagione')} <Link href="/setup" className="link-inline">{t('configuraStagione')}</Link></div>
-          : <PortieriSearch squadre={squadre} iscrizioni={iscrizioni} stats={stats} tagPerPortiere={tagPerPortiere} />}
+          : <PortieriSearch squadre={squadre} iscrizioni={iscrizioni} stats={stats} tagPerPortiere={tagPerPortiere} stagioneId={stagione.id} puoEliminare={profilo?.ruolo === 'allenatore'} />}
       </div>
     </>
   )

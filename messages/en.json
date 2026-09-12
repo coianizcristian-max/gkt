@@ -1637,7 +1637,15 @@
     "mediaVoto": "Avg rating",
     "presenze": "Attendance",
     "nessunIscritto": "No goalkeeper enrolled in this season.",
-    "aggiungiPrimo": "Add the first goalkeeper"
+    "aggiungiPrimo": "Add the first goalkeeper",
+    "eliminaAria": "Delete goalkeeper",
+    "confermaTitolo": "Delete {nome}?",
+    "verifica": "Checking…",
+    "confermaSoloStagione": "They will be removed from this season. Their record and other seasons remain.",
+    "confermaTutto": "This is their only season: all their data (evaluations, goals, etc.) will also be deleted. This cannot be undone.",
+    "annulla": "Cancel",
+    "conferma": "Delete",
+    "eliminazioneErrore": "Deletion failed. Please try again."
   },
   "assenzePreviste": {
     "erroreIscrizione": "Enrolment not found for this goalkeeper.",

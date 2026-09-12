@@ -1637,7 +1637,15 @@
     "mediaVoto": "Nota media",
     "presenze": "Asistencias",
     "nessunIscritto": "Ningún portero inscrito en esta temporada.",
-    "aggiungiPrimo": "Añade el primer portero"
+    "aggiungiPrimo": "Añade el primer portero",
+    "eliminaAria": "Eliminar portero",
+    "confermaTitolo": "¿Eliminar a {nome}?",
+    "verifica": "Comprobando…",
+    "confermaSoloStagione": "Se quitará de esta temporada. Su ficha y las demás temporadas se mantienen.",
+    "confermaTutto": "Es su única temporada: también se eliminarán todos sus datos (evaluaciones, objetivos, etc.). Esta acción no se puede deshacer.",
+    "annulla": "Cancelar",
+    "conferma": "Eliminar",
+    "eliminazioneErrore": "No se pudo eliminar. Inténtalo de nuevo."
   },
   "assenzePreviste": {
     "erroreIscrizione": "No se ha encontrado la inscripción de este portero.",

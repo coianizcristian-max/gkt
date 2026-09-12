@@ -6,6 +6,14 @@ import { createClient } from '@/lib/supabase/client'
 import ProfiloModal from '@/app/[locale]/cerca-allenatori/ProfiloModal'
 import { useTranslations } from 'next-intl'
 
+// Mostra solo nome + iniziale cognome (es. "Cristian C.") nella lista pubblica.
+function abbreviaNome(nome) {
+  if (!nome) return ''
+  const parti = String(nome).trim().split(/\s+/).filter(Boolean)
+  if (parti.length <= 1) return parti[0] || ''
+  return parti[0] + ' ' + parti[parti.length - 1].charAt(0).toUpperCase() + '.'
+}
+
 function buildQuery(citta, cap, provincia) {
   const parts = []
   if (cap.trim()) parts.push(cap.trim())
@@ -107,7 +115,7 @@ export default function CercaAllenatoriBox() {
                         : <span style={{ color: '#fff', fontWeight: 700, fontSize: 17 }}>{(a.nome || '?').charAt(0)}</span>}
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.nome || t('allenatore')}</div>
+                      <div style={{ fontWeight: 700, fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.nome ? abbreviaNome(a.nome) : t('allenatore')}</div>
                       <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 1 }}>
                         {a.citta ? a.citta.toUpperCase() : ''}{kmLabel}
                       </div>

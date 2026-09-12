@@ -22,7 +22,10 @@ async function getPosthog() {
         api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com',
         capture_pageview: false,
         capture_pageleave: true,
-        session_recording: { maskAllInputs: false },
+        // GDPR/minimizzazione: niente registrazione sessioni (catturerebbe in
+        // chiaro i dati dei minori nell'area riservata). Solo pageview + eventi.
+        disable_session_recording: true,
+        autocapture: false,
       })
       ph.__loaded = true
     }

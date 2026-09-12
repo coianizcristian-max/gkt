@@ -1,3 +1,4 @@
+import LegalFooter from '@/app/components/LegalFooter'
 import { getTranslations } from 'next-intl/server'
 
 export async function generateMetadata() {
@@ -9,4 +10,4 @@ export async function generateMetadata() {
   }
 }
 
-export default function Layout({ children }) { return children }
+export default function Layout({ children }) { return <>{children}<LegalFooter /></> }

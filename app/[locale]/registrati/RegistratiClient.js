@@ -25,6 +25,7 @@ export default function RegistratiClient({ token, datiInvito }) {
   const [error, setError] = useState('')
   const [msg, setMsg] = useState('')
   const [iscriviNewsletter, setIscriviNewsletter] = useState(true)
+  const [accettaPrivacy, setAccettaPrivacy] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const nomeBloccato = !!datiInvito?.nomeCompleto
@@ -52,6 +53,10 @@ export default function RegistratiClient({ token, datiInvito }) {
     }
     if (HCAPTCHA_SITE_KEY && !captchaToken) {
       setError(t('captchaMancante'))
+      return
+    }
+    if (!accettaPrivacy) {
+      setError(t('devAccettarePrivacy'))
       return
     }
     setLoading(true)
@@ -255,6 +260,15 @@ export default function RegistratiClient({ token, datiInvito }) {
               autoComplete="new-password"
             />
           </div>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--ink-soft)', marginBottom: 10 }}>
+            <input type="checkbox" checked={accettaPrivacy} onChange={(e) => setAccettaPrivacy(e.target.checked)} required style={{ marginTop: 3 }} />
+            <span>
+              {t.rich('accettoPrivacy', {
+                privacy: (ch) => <Link href="/privacy-policy" target="_blank" style={{ color: 'var(--brand)', textDecoration: 'underline' }}>{ch}</Link>,
+                termini: (ch) => <Link href="/termini-di-servizio" target="_blank" style={{ color: 'var(--brand)', textDecoration: 'underline' }}>{ch}</Link>,
+              })}
+            </span>
+          </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--ink-soft)', marginBottom: 12 }}>
             <input type="checkbox" checked={iscriviNewsletter} onChange={(e) => setIscriviNewsletter(e.target.checked)} />
             {t('newsletter')}

@@ -9,6 +9,8 @@ export async function generateMetadata() {
 
 export default async function TerminiDiServizio() {
   const t = await getTranslations('legalTermini')
+  const c = await getTranslations('common')
+  const locale = await getLocale()
   return (
     <div className="legal-page">
       <div className="legal-content">

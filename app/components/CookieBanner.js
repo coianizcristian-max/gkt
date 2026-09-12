@@ -5,6 +5,43 @@ import { Link } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
 
 const CHIAVE = 'gkt-cookie-consent'
+const CHIAVE_ID = 'gkt-cookie-consent-id'
+// Aggiorna questa versione se cambi il banner o l'informativa cookie: serve a
+// sapere a quale versione l'utente ha prestato il consenso.
+const VERSIONE_CONSENSO = '2026-09'
+
+// Id casuale del consenso (non è un dato identificativo di per sé), tenuto anche
+// in localStorage per correlare eventuali scelte successive dello stesso browser.
+function consentId() {
+  try {
+    let id = localStorage.getItem(CHIAVE_ID)
+    if (!id) {
+      id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : String(Date.now()) + Math.random().toString(16).slice(2)
+      localStorage.setItem(CHIAVE_ID, id)
+    }
+    return id
+  } catch { return null }
+}
+
+// Registra il consenso lato server (accountability, art. 7 GDPR). Best-effort:
+// non blocca la UI e non altera il comportamento del banner se fallisce.
+function registraConsenso(scelta) {
+  try {
+    fetch('/api/consenso-cookie', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({
+        consent_id: consentId(),
+        scelta,
+        versione: VERSIONE_CONSENSO,
+        categorie: { tecnici: true, analitici: scelta === 'accepted' },
+      }),
+    }).catch(() => {})
+  } catch {}
+}
 
 export function useCookieConsent() {
   if (typeof window === 'undefined') return null
@@ -25,12 +62,14 @@ export default function CookieBanner() {
   function accetta() {
     localStorage.setItem(CHIAVE, 'accepted')
     setStato('accepted')
+    registraConsenso('accepted')
     if (typeof window !== 'undefined' && window.__posthogOptOut) window.__posthogOptOut = false
     try { window.dispatchEvent(new Event('gkt-consenso-accettato')) } catch {}
   }
   function rifiuta() {
     localStorage.setItem(CHIAVE, 'rejected')
     setStato('rejected')
+    registraConsenso('rejected')
     if (typeof window !== 'undefined') window.__posthogOptOut = true
   }
 

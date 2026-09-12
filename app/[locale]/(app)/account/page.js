@@ -5,6 +5,7 @@ import { hasAbbonamento } from '@/lib/gating'
 import DisdiciButton from '@/app/components/DisdiciButton'
 import CollegaSupervisoreBox from '@/app/components/CollegaSupervisoreBox'
 import CommentiRicevuti from '@/app/components/CommentiRicevuti'
+import EliminaAccountBox from '@/app/components/EliminaAccountBox'
 import { getTranslations, getLocale } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -145,6 +146,9 @@ export default async function AccountPage() {
         {profilo?.ruolo === 'allenatore' && profilo?.supervisore_id && (
           <CommentiRicevuti preparatoreId={user.id} />
         )}
+
+        {/* Cancellazione account e dati (art. 17 GDPR) */}
+        <EliminaAccountBox />
 
       </div>
     </>

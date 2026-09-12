@@ -9,6 +9,8 @@ export async function generateMetadata() {
 
 export default async function CookiePolicy() {
   const t = await getTranslations('legalCookie')
+  const c = await getTranslations('common')
+  const locale = await getLocale()
   const Table = ({ ck }) => (
     <table className="legal-table">
       <thead><tr>{t.raw('cols').map((c, i) => <th key={i}>{c}</th>)}</tr></thead>

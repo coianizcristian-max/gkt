@@ -35,6 +35,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
   const [fotoPreview, setFotoPreview] = useState(portiere?.foto_url ?? null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confermaMinori, setConfermaMinori] = useState(false)
   const locale = useLocale()
   const [lingua, setLingua] = useState(locale)
 
@@ -96,6 +97,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
     setError('')
     if (!soloPortiere && !f.nome.trim()) { setError(t('erroreNomeObbligatorio')); return }
     if (!soloPortiere && !f.squadra_id) { setError(t('erroreCategoria')); return }
+    if (!soloPortiere && !isEdit && !confermaMinori) { setError(t('erroreMinoriConferma')); return }
     setSaving(true)
     const supabase = createClient()
 
@@ -123,7 +125,22 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         const { error } = await supabase.from('portieri').update(anagrafica).eq('id', portiereId)
         if (error) throw error
       } else {
-        const { data, error } = await supabase.from('portieri').insert(anagrafica).select('id').single()
+        // Passo B (isolamento per tenant): il portiere NUOVO nasce gia' con
+        // allenatore_id = proprietario del tenant. Fonte primaria: owner della
+        // stagione (come il backfill). Ripiego: profilo dell'utente loggato.
+        let ownerId = null
+        if (stagioneId) {
+          const { data: st } = await supabase.from('stagioni').select('owner_id').eq('id', stagioneId).maybeSingle()
+          ownerId = st?.owner_id ?? null
+        }
+        if (!ownerId) {
+          const { data: auth } = await supabase.auth.getUser()
+          if (auth?.user) {
+            const { data: prof } = await supabase.from('profili').select('id, allenatore_id').eq('id', auth.user.id).maybeSingle()
+            ownerId = prof?.allenatore_id ?? prof?.id ?? auth.user.id
+          }
+        }
+        const { data, error } = await supabase.from('portieri').insert({ ...anagrafica, allenatore_id: ownerId }).select('id').single()
         if (error) throw error
         portiereId = data.id
       }
@@ -293,6 +310,19 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         <div className="field field-full"><label>{t('note')}</label>
           <textarea rows="3" value={f.note} onChange={upd('note')} /></div>
       </div>
+
+      {!soloPortiere && (
+        <div style={{ margin: '4px 0 8px', padding: '12px 14px', borderRadius: 8, background: 'rgba(10,126,194,0.06)', border: '1px solid rgba(10,126,194,0.25)' }}>
+          <strong style={{ display: 'block', fontSize: 13, marginBottom: 6 }}>{t('minoriTitolo')}</strong>
+          <p style={{ fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.5, margin: 0 }}>{t('minoriInfo')}</p>
+          {!isEdit && (
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--ink)', marginTop: 10 }}>
+              <input type="checkbox" checked={confermaMinori} onChange={(e) => setConfermaMinori(e.target.checked)} required style={{ marginTop: 2 }} />
+              <span>{t('minoriConferma')}</span>
+            </label>
+          )}
+        </div>
+      )}
 
       {attributiDef.length > 0 && (
         <div className="form-grid" style={{ marginTop: 4 }}>

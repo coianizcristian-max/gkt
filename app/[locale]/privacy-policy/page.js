@@ -9,6 +9,8 @@ export async function generateMetadata() {
 
 export default async function PrivacyPolicy() {
   const t = await getTranslations('legalPrivacy')
+  const c = await getTranslations('common')
+  const locale = await getLocale()
   return (
     <div className="legal-page">
       <div className="legal-content">
@@ -97,6 +99,11 @@ export default async function PrivacyPolicy() {
           <p>
             {t.rich('s9', { cookie: (ch) => <a href="/cookie-policy">{ch}</a> })}
           </p>
+        </section>
+
+        <section>
+          <h2>{t('s10h')}</h2>
+          <p>{t('s10')}</p>
         </section>
       </div>
     </div>

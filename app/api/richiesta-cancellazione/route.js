@@ -1,0 +1,71 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdmin } from '@supabase/supabase-js'
+
+// Registra una richiesta di cancellazione (art. 17 GDPR) e notifica il titolare.
+// NON esegue la cancellazione: quella avviene con procedura controllata manuale
+// (vedi documentazione-gdpr/05-cancellazione-account-procedura.md).
+const RESEND_API_KEY = process.env.RESEND_API_KEY
+const MITTENTE = 'GKSeason <notifiche@gkseason.it>'
+const TITOLARE = 'info@gkseason.it'
+
+export async function POST() {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+
+    const { data: profilo } = await supabase
+      .from('profili').select('ruolo, nome_completo').eq('id', user.id).maybeSingle()
+
+    // Log della richiesta (best-effort: se la tabella non esiste ancora, non blocca).
+    try {
+      const admin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+      await admin.from('richieste_cancellazione').insert({
+        user_id: user.id, email: user.email, ruolo: profilo?.ruolo ?? null, stato: 'in_attesa',
+      })
+    } catch (e) {
+      console.warn('Log richiesta cancellazione non riuscito (tabella assente?):', e?.message)
+    }
+
+    // Notifica al titolare + conferma all'utente.
+    if (RESEND_API_KEY) {
+      const nome = profilo?.nome_completo || '—'
+      const ruolo = profilo?.ruolo || '—'
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: MITTENTE, to: TITOLARE,
+          subject: 'Richiesta cancellazione account (GDPR art. 17)',
+          html: `<p>Nuova richiesta di cancellazione.</p>
+                 <p><strong>Utente:</strong> ${nome} (${user.email})</p>
+                 <p><strong>Ruolo:</strong> ${ruolo}</p>
+                 <p><strong>User ID:</strong> ${user.id}</p>
+                 <p>Da evadere entro 30 giorni con la procedura controllata.</p>`,
+        }),
+      }).catch((e) => console.error('Resend (titolare) fallita:', e?.message))
+
+      // Conferma all'utente (best-effort).
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: MITTENTE, to: user.email,
+          subject: 'Abbiamo ricevuto la tua richiesta di cancellazione',
+          html: `<p>Ciao,</p>
+                 <p>abbiamo ricevuto la tua richiesta di cancellazione dell'account e dei dati su GKSeason.
+                 La evaderemo entro 30 giorni come previsto dal GDPR. Se non l'hai richiesta tu, scrivici subito a ${TITOLARE}.</p>
+                 <p>GKSeason</p>`,
+        }),
+      }).catch((e) => console.error('Resend (utente) fallita:', e?.message))
+    } else {
+      console.warn('RESEND_API_KEY assente: richiesta registrata ma email non inviate.')
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('Errore richiesta cancellazione:', err)
+    return NextResponse.json({ error: 'Errore interno.' }, { status: 500 })
+  }
+}

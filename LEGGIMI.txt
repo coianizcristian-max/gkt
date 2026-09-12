@@ -1,0 +1,42 @@
+============================================================
+GKSeason — PACCHETTO COMPLETO Sicurezza & GDPR
+Un solo deploy per tutte le modifiche di codice.
+============================================================
+Scompatta sopra la cartella del progetto mantenendo le sottocartelle.
+
+CODICE (12 file) — vedi STATO-LAVORI.md per il dettaglio:
+  next.config.mjs
+  app/[locale]/privacy-policy/page.js
+  app/[locale]/cookie-policy/page.js
+  app/[locale]/termini-di-servizio/page.js
+  app/[locale]/registrati/RegistratiClient.js
+  app/components/PostHogProvider.js
+  app/components/PortiereForm.js
+  app/components/CercaAllenatoriBox.js
+  messages/it.json / en.json / de.json / es.json
+  app/components/LegalFooter.js  (nuovo: footer legale pagine pubbliche)
+  app/[locale]/*/layout.js  (nuovi/aggiornati: aggiungono il footer alle pagine pubbliche)
+
+DOCUMENTAZIONE (non deployata):
+  STATO-LAVORI.md ............... riepilogo di tutto e ordine di deploy
+  documentazione-gdpr/*.md ...... audit, registro, data breach, DPA, minori
+  documentazione-gdpr/passoC-rls-isolamento.sql ... da lanciare in Supabase DOPO il deploy
+
+VERIFICHE GIA' FATTE: esbuild su tutti i .js OK; parità i18n (2246 chiavi in 4
+lingue) OK; scope-check nessun bug; le 3 pagine legali provate su sito avviato
+tornano 200.
+
+COMANDI GIT (dalla cartella del progetto):
+  git config user.email "coianiz.cristian@gmail.com"
+  git add -A            # mette in stage tutti i file di questo pacchetto
+  git commit -m "Sicurezza + GDPR: pagine legali, header, consensi, minori, cognome, footer legale, prep isolamento RLS"
+  git push
+
+DOPO IL DEPLOY:
+  - apri /privacy-policy: deve mostrarsi (niente errore)
+  - la registrazione richiede la spunta privacy
+  - crei un portiere di prova: ha allenatore_id valorizzato
+  - controlla la console del browser per eventuali blocchi CSP (nel caso, aggiungi
+    il dominio in next.config.mjs)
+  Poi lancia il Passo C (documentazione-gdpr/passoC-rls-isolamento.sql), a sezioni.
+============================================================

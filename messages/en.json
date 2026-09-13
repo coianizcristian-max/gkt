@@ -495,7 +495,10 @@
     "feedbackPortieri": "Goalkeeper feedback"
   },
   "statistichePortiere": {
-    "teaser": "Detailed statistics include 7 interactive charts: training/match rating trends, cumulative goals conceded, comparative attendance, analysis by technical attribute and much more.",
+                "mediaGara": "Match rating",
+"profiloCompetenze": "Skills profile",
+    "radarTu": "Goalkeeper",
+"teaser": "Detailed statistics include 7 interactive charts: training/match rating trends, cumulative goals conceded, comparative attendance, analysis by technical attribute and much more.",
     "paywallLabel": "Detailed goalkeeper statistics",
     "confrontoSquadra": "Team comparison",
     "presenze": "Attendance",

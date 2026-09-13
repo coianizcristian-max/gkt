@@ -495,7 +495,10 @@
     "feedbackPortieri": "Feedback de porteros"
   },
   "statistichePortiere": {
-    "teaser": "Las estadísticas detalladas incluyen 7 gráficos interactivos: evolución de las notas de entrenamientos/partidos, goles encajados acumulados, asistencias comparativas, análisis por característica técnica y mucho más.",
+                "mediaGara": "Media partido",
+"profiloCompetenze": "Perfil de competencias",
+    "radarTu": "Portero",
+"teaser": "Las estadísticas detalladas incluyen 7 gráficos interactivos: evolución de las notas de entrenamientos/partidos, goles encajados acumulados, asistencias comparativas, análisis por característica técnica y mucho más.",
     "paywallLabel": "Estadísticas detalladas del portero",
     "confrontoSquadra": "Comparación con el equipo",
     "presenze": "Asistencias",

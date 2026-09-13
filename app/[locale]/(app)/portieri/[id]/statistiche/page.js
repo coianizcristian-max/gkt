@@ -8,6 +8,8 @@ import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { calcolaIndiceCrescita } from '@/lib/indiceCrescita'
 import { getStagioneAttiva } from '@/lib/tenant'
 import ConfrontoPortieri from '@/app/components/ConfrontoPortieri'
+import RadarCompetenze from '@/app/components/RadarCompetenze'
+import ScorecardPortiere from '@/app/components/ScorecardPortiere'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -72,6 +74,7 @@ export default async function StatistichePortierePage({ params }) {
   // ── Carica tutti i dati ─────────────────────────────────────────────────
   let vAll = [], vPar = [], punteggi = [], parametri = []
   let partiteRows = []
+  let radarCat = {}
 
   if (stagione) {
     // "Oggi" nel fuso italiano (Europe/Rome), non in UTC (vedi nota in statistiche/page.js).
@@ -134,6 +137,27 @@ export default async function StatistichePortierePage({ params }) {
       const { data: pp2 } = await supabase.from('valutazione_punteggi')
         .select('valutazione_id, parametro_id, punteggio').in('valutazione_id', valIds)
       punteggi = pp2 ?? []
+    }
+
+    // Media di categoria per parametro (per il radar competenze)
+    if (iscrizione?.squadra_id && allenIds.length) {
+      const { data: iscCatR } = await supabase.from('iscrizioni')
+        .select('portiere_id').eq('stagione_id', stagione.id).eq('squadra_id', iscrizione.squadra_id)
+      const catIdsR = (iscCatR ?? []).map((i) => i.portiere_id).filter((pid) => pid !== id)
+      if (catIdsR.length) {
+        const { data: vCat } = await supabase.from('valutazioni')
+          .select('id').in('portiere_id', catIdsR).in('allenamento_id', allenIds)
+        const vCatIds = (vCat ?? []).map((v) => v.id)
+        let ppCat = []
+        for (let i = 0; i < vCatIds.length; i += 500) {
+          const { data: pp } = await supabase.from('valutazione_punteggi')
+            .select('parametro_id, punteggio').in('valutazione_id', vCatIds.slice(i, i + 500))
+          ppCat = ppCat.concat(pp ?? [])
+        }
+        const acc = {}
+        for (const p of ppCat) { if (p.punteggio == null) continue; (acc[p.parametro_id] ??= []).push(Number(p.punteggio)) }
+        for (const k of Object.keys(acc)) radarCat[k] = acc[k].reduce((s, x) => s + x, 0) / acc[k].length
+      }
     }
   }
 
@@ -230,6 +254,13 @@ export default async function StatistichePortierePage({ params }) {
   }
   const mediaParam = (arr) => arr.length ? arr.reduce((s, x) => s + x, 0) / arr.length : null
 
+  const assiRadar = parametri.map((p) => ({
+    id: p.id,
+    nome: p.nome,
+    self: mediaParam(perParametro[p.id] ?? []),
+    cat: radarCat[p.id] ?? null,
+  }))
+
   const pctPresenza = disponibiliA ? Math.round(presenzeA / disponibiliA * 100) : null
 
   // Trend partite: confronto prima metà / seconda metà delle partite di campionato con voto
@@ -322,6 +353,25 @@ export default async function StatistichePortierePage({ params }) {
 
   const datiGrafici = { g1, g2, g3, g4, g5, g6, g7, mesi, votiMese }
 
+  // Tile della scorecard (dashboard) — riusa i valori già calcolati sopra
+  const sparkVoti = g2.map((p) => p.y)
+  const mediaGaraCamp = mediaVotiPar(parCamp)
+  const tilesScore = [
+    {
+      label: t('mediaVoto'), value: fmt(mediaA, 2), valColor: 'var(--azzurro)', spark: sparkVoti,
+      sub: trend != null ? (trend >= 0 ? '▲ +' : '▼ ') + fmt(Math.abs(trend), 2) : null,
+      subColor: trend != null ? (trend >= 0 ? 'var(--campo)' : 'var(--rosso)') : null,
+    },
+    { label: t('presenze'), value: `${presenzeA}/${disponibiliA}` },
+    {
+      label: t('disponib'), value: pctPresenza != null ? pctPresenza + '%' : '—',
+      valColor: pctPresenza == null ? undefined : pctPresenza >= 80 ? 'var(--campo)' : pctPresenza >= 60 ? 'var(--giallo)' : 'var(--rosso)',
+    },
+    { label: t('mediaGara'), value: fmt(mediaGaraCamp, 2), valColor: 'var(--azzurro)' },
+    { label: t('cleanSheet'), value: cleanSheet, valColor: 'var(--campo)' },
+    { label: t('golSubitiPartita'), value: fmt(gsCamp.media, 2) },
+  ]
+
   return (
     <>
       <div className="topbar">
@@ -332,20 +382,8 @@ export default async function StatistichePortierePage({ params }) {
         {navLinks}
         {soloPortiere && <ConfrontoPortieri stagioneId={stagione.id} titolo={t('confrontoSquadra')} />}
 
-        {/* KPI */}
-        <div className="stat-kpi-grid">
-          {[
-            [presenzeA + '/' + disponibiliA, t('presenze'), 'var(--ink)'],
-            [fmt(mediaA, 2), t('mediaVoto'), 'var(--azzurro)'],
-            [pctPresenza != null ? pctPresenza + '%' : '—', t('disponib'), pctPresenza >= 80 ? 'var(--campo)' : pctPresenza >= 60 ? 'var(--giallo)' : 'var(--rosso)'],
-            [cleanSheet, t('cleanSheet'), 'var(--campo)'],
-          ].map(([v, l, c], i) => (
-            <div key={i} className="stat-kpi">
-              <div className="stat-kpi-val" style={{ color: c }}>{v}</div>
-              <div className="stat-kpi-label">{l}</div>
-            </div>
-          ))}
-        </div>
+        {/* Scorecard KPI (dashboard) */}
+        <ScorecardPortiere tiles={tilesScore} />
 
         <IndiceCrescita
           provvisorio={indiceProvvisorio}
@@ -454,9 +492,18 @@ export default async function StatistichePortierePage({ params }) {
           </div>
         )}
 
+        <div className="dash-grid">
+        {/* Radar competenze */}
+        {assiRadar.filter((a) => a.self != null).length >= 3 && (
+          <div className="scheda">
+            <h3 style={{ marginTop: 0, marginBottom: 12 }}>{t('profiloCompetenze')}</h3>
+            <RadarCompetenze assi={assiRadar} labelTu={t('radarTu')} labelCat={t('mediaCategoria')} />
+          </div>
+        )}
+
         {/* Per caratteristica */}
         {parametri.length > 0 && Object.keys(perParametro).length > 0 && (
-          <div className="scheda" style={{ marginBottom: 14 }}>
+          <div className="scheda">
             <h3 style={{ marginTop: 0, marginBottom: 12 }}>{t('mediaPerCaratteristica')}</h3>
             {parametri.map((par) => {
               const arr = perParametro[par.id] ?? []
@@ -477,6 +524,7 @@ export default async function StatistichePortierePage({ params }) {
             })}
           </div>
         )}
+        </div>
 
         {/* Grafici (client component) */}
         <StatisticheGrafici dati={datiGrafici} nomPortiere={`${portiere.nome} ${portiere.cognome ?? ''}`} />

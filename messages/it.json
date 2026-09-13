@@ -495,7 +495,10 @@
     "feedbackPortieri": "Feedback portieri"
   },
   "statistichePortiere": {
-    "teaser": "Le statistiche dettagliate includono 7 grafici interattivi: andamento voti allenamenti/partite, gol subiti progressivi, presenze comparative, analisi per caratteristica tecnica e molto altro.",
+                "mediaGara": "Media gara",
+"profiloCompetenze": "Profilo competenze",
+    "radarTu": "Portiere",
+"teaser": "Le statistiche dettagliate includono 7 grafici interattivi: andamento voti allenamenti/partite, gol subiti progressivi, presenze comparative, analisi per caratteristica tecnica e molto altro.",
     "paywallLabel": "Statistiche dettaglio portiere",
     "confrontoSquadra": "Confronto squadra",
     "presenze": "Presenze",

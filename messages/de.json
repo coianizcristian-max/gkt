@@ -495,7 +495,10 @@
     "feedbackPortieri": "Torhüter-Feedback"
   },
   "statistichePortiere": {
-    "teaser": "Die detaillierten Statistiken umfassen 7 interaktive Diagramme: Notenverlauf Training/Spiel, kumulierte Gegentore, vergleichende Anwesenheit, Analyse nach technischem Merkmal und vieles mehr.",
+                "mediaGara": "Spiel-Note",
+"profiloCompetenze": "Kompetenzprofil",
+    "radarTu": "Torwart",
+"teaser": "Die detaillierten Statistiken umfassen 7 interaktive Diagramme: Notenverlauf Training/Spiel, kumulierte Gegentore, vergleichende Anwesenheit, Analyse nach technischem Merkmal und vieles mehr.",
     "paywallLabel": "Detaillierte Torhüter-Statistiken",
     "confrontoSquadra": "Mannschaftsvergleich",
     "presenze": "Anwesenheiten",

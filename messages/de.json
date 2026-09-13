@@ -2411,7 +2411,10 @@
     "disiscriviti": "Abmelden"
   },
   "statisticheClient": {
-        "andamentoSquadra": "Mannschaftsform",
+                "colPortiere": "Torwart",
+        "mediaGara": "Spiel-Note",
+        "golGara": "Gegentore/Spiel",
+"andamentoSquadra": "Mannschaftsform",
     "giocateCamp": "{n} Ligaspiele",
     "puntiCampionato": "Ligapunkte",
     "golFatti": "Erzielte Tore",

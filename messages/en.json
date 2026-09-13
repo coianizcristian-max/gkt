@@ -2411,7 +2411,10 @@
     "disiscriviti": "Unsubscribe"
   },
   "statisticheClient": {
-        "andamentoSquadra": "Team form",
+                "colPortiere": "Goalkeeper",
+        "mediaGara": "Match rating",
+        "golGara": "Goals conceded/game",
+"andamentoSquadra": "Team form",
     "giocateCamp": "{n} league matches",
     "puntiCampionato": "League points",
     "golFatti": "Goals scored",

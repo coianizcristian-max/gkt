@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Guida from '@/app/components/Guida'
+import RankingCategoria from '@/app/components/RankingCategoria'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
 
@@ -94,6 +95,17 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, andament
                     <h2>{cat.nome}</h2>
                     <span className="conta">{t('nPortieri', { n: lista.length })}</span>
                   </div>
+                  {!isPortiere && lista.length >= 2 && (
+                    <RankingCategoria righe={lista.map((s) => ({
+                      id: s.p.id,
+                      nome: `${s.p.nome ?? ''} ${(s.p.cognome ?? '').charAt(0)}${s.p.cognome ? '.' : ''}`.trim(),
+                      mediaA: s.mediaA,
+                      presenzaPct: s.disponibili ? Math.round((s.presenze / s.disponibili) * 100) : null,
+                      mediaP: s.mediaP,
+                      cleanSheet: s.cleanSheet,
+                      golSubitiGara: s.golSubitiGara,
+                    }))} />
+                  )}
                   <div className="stat-grid">
                     {(() => {
                       const a = andamentoByCat[cat.id]

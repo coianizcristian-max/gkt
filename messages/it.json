@@ -2411,7 +2411,10 @@
     "disiscriviti": "Disiscriviti"
   },
   "statisticheClient": {
-        "andamentoSquadra": "Andamento squadra",
+                "colPortiere": "Portiere",
+        "mediaGara": "Media gara",
+        "golGara": "Gol subiti/gara",
+"andamentoSquadra": "Andamento squadra",
     "giocateCamp": "{n} partite di campionato",
     "puntiCampionato": "Punti campionato",
     "golFatti": "Gol fatti",

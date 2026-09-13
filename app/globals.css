@@ -1449,6 +1449,20 @@ a.brand { text-decoration: none; color: inherit; }
 .dash-grid > .scheda { margin-bottom: 0; }
 @media (max-width: 720px) { .dash-grid { grid-template-columns: 1fr; } }
 
+/* Ranking KPI per categoria (vista coach) */
+.rank-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 14px; border: 1px solid var(--linea); border-radius: var(--r); background: var(--bianco); box-shadow: var(--ombra); }
+.rank-tab { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rank-tab th, .rank-tab td { padding: 9px 10px; text-align: right; white-space: nowrap; }
+.rank-tab thead th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-soft); border-bottom: 1px solid var(--linea); cursor: pointer; user-select: none; }
+.rank-tab thead th.rank-num, .rank-tab thead th.rank-nome { cursor: default; }
+.rank-tab tbody tr + tr td { border-top: 1px solid var(--linea); }
+.rank-num { width: 30px; text-align: center; color: var(--ink-soft); }
+.rank-nome { text-align: left; }
+.rank-link { color: var(--azzurro); text-decoration: none; font-weight: 600; }
+.rank-link:hover { text-decoration: underline; }
+.rank-tab td.rank-active { background: var(--carta); }
+.rank-tab thead th.rank-active { color: var(--azzurro); }
+
 /* ===== Demo paywall modal ===== */
 .demo-modal { max-width: 500px; max-height: 88vh; }
 .demo-header { margin-bottom: 16px; }

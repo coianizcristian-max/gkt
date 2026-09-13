@@ -114,7 +114,10 @@ export default async function StatistichePage() {
     const nPartite = vpCamp.length
     const persi = persiByPortiere[p.id] ?? 0
     const disponibili = Math.max(0, (totAllenByCat[p.squadra_id] ?? 0) - persi)
-    return { p, totAllen: totAllenByCat[p.squadra_id] ?? 0, disponibili, persi, presenze, mediaA, mediaP, nPartite, cleanSheet, punti }
+    const gsTot = vpCamp.reduce((s, x) => { const g = x.gol_subiti ?? golSubitiByPartita[x.partita_id]; return s + (g != null ? Number(g) : 0) }, 0)
+    const gsConteggio = vpCamp.filter((x) => (x.gol_subiti ?? golSubitiByPartita[x.partita_id]) != null).length
+    const golSubitiGara = gsConteggio ? gsTot / gsConteggio : null
+    return { p, totAllen: totAllenByCat[p.squadra_id] ?? 0, disponibili, persi, presenze, mediaA, mediaP, nPartite, cleanSheet, punti, golSubiti: gsTot, golSubitiGara }
   })
 
   // Statistiche feedback (P14)

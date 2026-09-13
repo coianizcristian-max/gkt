@@ -2414,7 +2414,14 @@
     "disiscriviti": "Darse de baja"
   },
   "statisticheClient": {
-                "colPortiere": "Portero",
+                                "gradimentoTitolo": "Valoración entrenamientos",
+                "gradimentoMedia": "Valoración media",
+                "gradimentoNVoti": "{n} valoraciones",
+                "distribuzioneVoti": "Distribución de valoraciones",
+                "andamentoGradimento": "Evolución por sesión",
+                "gradimentoVuoto": "Aún no hay valoraciones de los porteros",
+                "gradimentoPochiDati": "Se necesitan al menos 2 sesiones valoradas",
+"colPortiere": "Portero",
         "mediaGara": "Media partido",
         "golGara": "Goles enc./partido",
 "andamentoSquadra": "Rendimiento del equipo",

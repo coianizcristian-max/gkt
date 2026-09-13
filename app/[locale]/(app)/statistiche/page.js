@@ -55,7 +55,7 @@ export default async function StatistichePage() {
   const allenIds = (allen ?? []).map((a) => a.id)
   const partIds = (part ?? []).map((p) => p.id)
 
-  const [{ data: vAll }, { data: vPar }, { data: feedbackRows }] = await Promise.all([
+  const [{ data: vAll }, { data: vPar }, { data: feedbackRows }, { data: votiPortiereRows }] = await Promise.all([
     allenIds.length
       ? supabase.from('valutazioni').select('portiere_id, presente, voto, allenamento_id').in('allenamento_id', allenIds)
       : Promise.resolve({ data: [] }),
@@ -68,6 +68,9 @@ export default async function StatistichePage() {
         .in('allenamento_id', allenIds)
         .not('feedback_portiere', 'is', null)
         .order('allenamento_id')
+      : Promise.resolve({ data: [] }),
+    allenIds.length
+      ? supabase.from('valutazioni').select('voto_portiere, allenamento_id').in('allenamento_id', allenIds).not('voto_portiere', 'is', null)
       : Promise.resolve({ data: [] }),
   ])
 
@@ -133,6 +136,31 @@ export default async function StatistichePage() {
     totAllenamenti: allenIds.length,
   }
 
+  // GRADIMENTO ALLENAMENTI (voto del portiere 1-5) — solo preparatore.
+  // Usa TUTTI i voti del portiere, anche quelli senza commento scritto.
+  const allenInfo = {}
+  for (const a of allen ?? []) allenInfo[a.id] = { data: a.data, squadra_id: a.squadra_id }
+  const votiGrad = (votiPortiereRows ?? [])
+    .map((v) => ({ voto: Number(v.voto_portiere), data: allenInfo[v.allenamento_id]?.data ?? null, squadra_id: allenInfo[v.allenamento_id]?.squadra_id ?? null, allenamento_id: v.allenamento_id }))
+    .filter((v) => !isNaN(v.voto))
+  const gradMedia = votiGrad.length ? votiGrad.reduce((s, x) => s + x.voto, 0) / votiGrad.length : null
+  const distribuzione = [0, 0, 0, 0, 0]
+  for (const v of votiGrad) { const i = Math.round(v.voto); if (i >= 1 && i <= 5) distribuzione[i - 1]++ }
+  const perSedutaMap = {}
+  for (const v of votiGrad) {
+    if (!v.data) continue
+    ;(perSedutaMap[v.allenamento_id] ??= { data: v.data, somma: 0, n: 0 })
+    perSedutaMap[v.allenamento_id].somma += v.voto
+    perSedutaMap[v.allenamento_id].n += 1
+  }
+  const gradPerSeduta = Object.values(perSedutaMap)
+    .map((x) => ({ data: x.data, media: Math.round((x.somma / x.n) * 10) / 10, n: x.n }))
+    .sort((a, b) => a.data.localeCompare(b.data))
+  const gradimento = { media: gradMedia, nVoti: votiGrad.length, distribuzione, perSeduta: gradPerSeduta }
+  // La media mostrata nel tab ora riflette TUTTI i voti (non solo quelli con testo)
+  feedbackStats.mediaVotoPortiere = gradMedia
+  feedbackStats.conVoto = votiGrad.length
+
   // ANDAMENTO SQUADRA per categoria: solo partite di CAMPIONATO (tipo === 'campionato')
   // con risultato inserito (gol_fatti e gol_subiti non null). Le partite sono già
   // filtrate a data <= oggi (fuso Italia) dalla query sopra. Esito dal confronto gol:
@@ -183,6 +211,7 @@ export default async function StatistichePage() {
           andamentoByCat={andamentoByCat}
           feedbackStats={feedbackStats}
           feedback={feedbackRows ?? []}
+          gradimento={gradimento}
           isPortiere={isPortiere}
           myPortiereId={profilo?.portiere_id ?? null}
           canExport={canExport}

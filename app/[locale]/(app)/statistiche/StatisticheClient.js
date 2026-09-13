@@ -4,12 +4,13 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Guida from '@/app/components/Guida'
 import RankingCategoria from '@/app/components/RankingCategoria'
+import GradimentoGrafici from '@/app/components/GradimentoGrafici'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
 
 const NUM_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
 
-export default function StatisticheClient({ stats, categorieOrd, byCat, andamentoByCat = {}, feedbackStats, feedback, isPortiere, myPortiereId, canExport = true }) {
+export default function StatisticheClient({ stats, categorieOrd, byCat, andamentoByCat = {}, gradimento = null, feedbackStats, feedback, isPortiere, myPortiereId, canExport = true }) {
   const t = useTranslations('statisticheClient')
   const locale = useLocale()
   const nl = NUM_LOCALE[locale] || 'it-IT'
@@ -173,6 +174,7 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, andament
 
       {tab === 'feedback' && !isPortiere && (
         <div>
+          <GradimentoGrafici dati={gradimento} />
           <div className="scheda" style={{ marginBottom: 20 }}>
             <div className="stat-rows">
               <div className="stat-block">

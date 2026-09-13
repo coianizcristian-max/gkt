@@ -2414,7 +2414,14 @@
     "disiscriviti": "Disiscriviti"
   },
   "statisticheClient": {
-                "colPortiere": "Portiere",
+                                "gradimentoTitolo": "Gradimento allenamenti",
+                "gradimentoMedia": "Gradimento medio",
+                "gradimentoNVoti": "{n} voti",
+                "distribuzioneVoti": "Distribuzione voti",
+                "andamentoGradimento": "Andamento per seduta",
+                "gradimentoVuoto": "Ancora nessun voto dai portieri",
+                "gradimentoPochiDati": "Servono almeno 2 sedute votate",
+"colPortiere": "Portiere",
         "mediaGara": "Media gara",
         "golGara": "Gol subiti/gara",
 "andamentoSquadra": "Andamento squadra",

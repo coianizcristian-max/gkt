@@ -2414,7 +2414,14 @@
     "disiscriviti": "Abmelden"
   },
   "statisticheClient": {
-                "colPortiere": "Torwart",
+                                "gradimentoTitolo": "Trainingsbewertung",
+                "gradimentoMedia": "Durchschnittsbewertung",
+                "gradimentoNVoti": "{n} Bewertungen",
+                "distribuzioneVoti": "Bewertungsverteilung",
+                "andamentoGradimento": "Verlauf pro Einheit",
+                "gradimentoVuoto": "Noch keine Bewertungen der Torhüter",
+                "gradimentoPochiDati": "Mindestens 2 bewertete Einheiten nötig",
+"colPortiere": "Torwart",
         "mediaGara": "Spiel-Note",
         "golGara": "Gegentore/Spiel",
 "andamentoSquadra": "Mannschaftsform",

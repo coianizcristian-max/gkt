@@ -2414,7 +2414,14 @@
     "disiscriviti": "Unsubscribe"
   },
   "statisticheClient": {
-                "colPortiere": "Goalkeeper",
+                                "gradimentoTitolo": "Training rating",
+                "gradimentoMedia": "Average rating",
+                "gradimentoNVoti": "{n} ratings",
+                "distribuzioneVoti": "Rating distribution",
+                "andamentoGradimento": "Trend by session",
+                "gradimentoVuoto": "No ratings from goalkeepers yet",
+                "gradimentoPochiDati": "At least 2 rated sessions needed",
+"colPortiere": "Goalkeeper",
         "mediaGara": "Match rating",
         "golGara": "Goals conceded/game",
 "andamentoSquadra": "Team form",

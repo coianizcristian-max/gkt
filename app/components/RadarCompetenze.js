@@ -12,8 +12,8 @@ export default function RadarCompetenze({ assi = [], max = 10, labelTu = 'Portie
   if (punti.length < 3) return null
 
   const N = assi.length
-  const W = 340, H = 300
-  const cx = W / 2, cy = H / 2 + 6, R = 96
+  const W = 420, H = 300
+  const cx = W / 2, cy = H / 2 + 6, R = 94
   const ring = [0.25, 0.5, 0.75, 1]
   const ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / N
   const pt = (i, r) => [cx + r * Math.cos(ang(i)), cy + r * Math.sin(ang(i))]
@@ -41,7 +41,7 @@ export default function RadarCompetenze({ assi = [], max = 10, labelTu = 'Portie
           </span>
         )}
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', maxWidth: 420, margin: '0 auto' }}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', maxWidth: 460, margin: '0 auto' }}>
         {ring.map((f, i) => (
           <polygon key={i}
             points={assi.map((_, j) => pt(j, R * f).map((n) => n.toFixed(1)).join(',')).join(' ')}
@@ -62,13 +62,12 @@ export default function RadarCompetenze({ assi = [], max = 10, labelTu = 'Portie
           return <circle key={i} cx={x.toFixed(1)} cy={y.toFixed(1)} r="3" fill={AZZ} />
         })}
         {assi.map((a, i) => {
-          const [x, y] = pt(i, R + 16)
-          const anchor = Math.abs(x - cx) < 6 ? 'middle' : x > cx ? 'start' : 'end'
-          const nome = (a.nome ?? '').length > 16 ? (a.nome ?? '').slice(0, 15) + '…' : (a.nome ?? '')
+          const [x, y] = pt(i, R + 14)
+          const anchor = Math.abs(x - cx) < 8 ? 'middle' : x > cx ? 'start' : 'end'
+          const raw = a.nome ?? ''
+          const nome = raw.length > 14 ? raw.slice(0, 13) + '…' : raw
           return (
-            <text key={i} x={x.toFixed(1)} y={(y + 3).toFixed(1)} textAnchor={anchor} fontSize="10" fill="#4a5b68">
-              {nome} {a.self != null ? <tspan fontWeight="700" fill="#1a2b38">{Number(a.self).toFixed(1)}</tspan> : null}
-            </text>
+            <text key={i} x={x.toFixed(1)} y={(y + 3).toFixed(1)} textAnchor={anchor} fontSize="10" fill="#4a5b68">{nome}</text>
           )
         })}
       </svg>

@@ -1445,7 +1445,7 @@ a.brand { text-decoration: none; color: inherit; }
 .sc-val { font-family: var(--font-display); font-size: 24px; font-weight: 800; line-height: 1.1; color: var(--ink); }
 .sc-sub { font-size: 12px; font-weight: 500; }
 .sc-spark { margin-top: 6px; height: 26px; width: 100%; display: block; }
-.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; align-items: start; }
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; align-items: stretch; }
 .dash-grid > .scheda { margin-bottom: 0; }
 @media (max-width: 720px) { .dash-grid { grid-template-columns: 1fr; } }
 

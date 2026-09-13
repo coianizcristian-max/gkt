@@ -1448,6 +1448,8 @@ a.brand { text-decoration: none; color: inherit; }
 .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; align-items: stretch; }
 .dash-grid > .scheda { margin-bottom: 0; }
 @media (max-width: 720px) { .dash-grid { grid-template-columns: 1fr; } }
+.comp-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+@media (max-width: 720px) { .comp-grid { grid-template-columns: 1fr; gap: 16px; } }
 
 /* Ranking KPI per categoria (vista coach) */
 .rank-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 14px; border: 1px solid var(--linea); border-radius: var(--r); background: var(--bianco); box-shadow: var(--ombra); }

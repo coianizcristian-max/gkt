@@ -492,39 +492,37 @@ export default async function StatistichePortierePage({ params }) {
           </div>
         )}
 
-        <div className="dash-grid">
-        {/* Radar competenze */}
-        {assiRadar.filter((a) => a.self != null).length >= 3 && (
-          <div className="scheda">
-            <h3 style={{ marginTop: 0, marginBottom: 12 }}>{t('profiloCompetenze')}</h3>
-            <RadarCompetenze assi={assiRadar} labelTu={t('radarTu')} labelCat={t('mediaCategoria')} />
-          </div>
-        )}
-
-        {/* Per caratteristica */}
-        {parametri.length > 0 && Object.keys(perParametro).length > 0 && (
-          <div className="scheda">
-            <h3 style={{ marginTop: 0, marginBottom: 12 }}>{t('mediaPerCaratteristica')}</h3>
-            {parametri.map((par) => {
-              const arr = perParametro[par.id] ?? []
-              if (!arr.length) return null
-              const med = mediaParam(arr)
-              const col = med >= 7 ? 'var(--campo)' : med >= 6 ? 'var(--azzurro)' : 'var(--giallo)'
-              return (
-                <div key={par.id} style={{ marginBottom: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 }}>
-                    <span style={{ color: 'var(--ink-soft)' }}>{par.nome}</span>
-                    <b style={{ color: col }}>{fmt(med, 1)}</b>
-                  </div>
-                  <div style={{ height: 8, background: 'var(--linea)', borderRadius: 4 }}>
-                    <div style={{ width: `${Math.round((med / 10) * 100)}%`, height: '100%', background: col, borderRadius: 4 }} />
-                  </div>
+        {(assiRadar.filter((a) => a.self != null).length >= 3 || (parametri.length > 0 && Object.keys(perParametro).length > 0)) && (
+          <div className="scheda" style={{ marginBottom: 14 }}>
+            <h3 style={{ marginTop: 0, marginBottom: 14 }}>{t('profiloCompetenze')}</h3>
+            <div className="comp-grid">
+              {assiRadar.filter((a) => a.self != null).length >= 3 && (
+                <RadarCompetenze assi={assiRadar} labelTu={t('radarTu')} labelCat={t('mediaCategoria')} />
+              )}
+              {parametri.length > 0 && Object.keys(perParametro).length > 0 && (
+                <div>
+                  {parametri.map((par) => {
+                    const arr = perParametro[par.id] ?? []
+                    if (!arr.length) return null
+                    const med = mediaParam(arr)
+                    const col = med >= 7 ? 'var(--campo)' : med >= 6 ? 'var(--azzurro)' : 'var(--giallo)'
+                    return (
+                      <div key={par.id} style={{ marginBottom: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 }}>
+                          <span style={{ color: 'var(--ink-soft)' }}>{par.nome}</span>
+                          <b style={{ color: col }}>{fmt(med, 1)}</b>
+                        </div>
+                        <div style={{ height: 8, background: 'var(--linea)', borderRadius: 4 }}>
+                          <div style={{ width: `${Math.round((med / 10) * 100)}%`, height: '100%', background: col, borderRadius: 4 }} />
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-              )
-            })}
+              )}
+            </div>
           </div>
         )}
-        </div>
 
         {/* Grafici (client component) */}
         <StatisticheGrafici dati={datiGrafici} nomPortiere={`${portiere.nome} ${portiere.cognome ?? ''}`} />

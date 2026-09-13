@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 
 const COLORI = ['#0a7ec2', '#2fae66', '#e0a400', '#d6493b', '#7a5bd6', '#12a4a4', '#e0663b', '#4a5b68', '#c23fa0', '#5b8c00']
 
-export default function ConfrontoPortieri({ stagioneId, titolo }) {
+export default function ConfrontoPortieri({ stagioneId, titolo, mioId = null, anonimo = false }) {
   const t = useTranslations('confrontoPortieri')
   const titoloEff = titolo ?? t('titoloDefault')
   const [rows, setRows] = useState(null)
@@ -127,6 +127,47 @@ export default function ConfrontoPortieri({ stagioneId, titolo }) {
   portieriMedie.forEach((id, i) => { coloreMedie[id] = COLORI[i % COLORI.length] })
   const metricaLabel = metriche.find((m) => m.key === metrica)?.label ?? ''
 
+  // Vista portiere (anonimo): aggrega gli altri in un'unica "Media categoria",
+  // senza mostrare i nomi dei compagni. Riusa gli stessi grafici a barre.
+  const GRIGIO = '#9aa6b0'
+  let presView = { ids: portieriPres, portMap, colore, totale, perMese }
+  let medieView = {
+    ids: portieriMedie,
+    portMap: Object.fromEntries(portieriMedie.map((id) => [id, nomeById[id] ?? id])),
+    colore: coloreMedie, valori: medie ?? {},
+  }
+  if (anonimo && mioId) {
+    const altri = portieriPres.filter((x) => x !== mioId)
+    const meT = totale[mioId] ?? 0
+    const medT = altri.length ? Math.round((altri.reduce((s, x) => s + (totale[x] ?? 0), 0) / altri.length) * 10) / 10 : 0
+    const meMese = {}, medMese = {}
+    for (const m of mesi) {
+      meMese[m] = perMese[mioId]?.[m] ?? 0
+      medMese[m] = altri.length ? Math.round((altri.reduce((s, x) => s + (perMese[x]?.[m] ?? 0), 0) / altri.length) * 10) / 10 : 0
+    }
+    presView = {
+      ids: ['__me', '__media'],
+      portMap: { __me: t('tu'), __media: t('mediaCategoria') },
+      colore: { __me: COLORI[0], __media: GRIGIO },
+      totale: { __me: meT, __media: medT },
+      perMese: { __me: meMese, __media: medMese },
+    }
+    if (medie) {
+      const ids = Object.keys(medie)
+      const meV = medie[mioId] ?? null
+      const altriV = ids.filter((x) => x !== mioId).map((x) => medie[x]).filter((v) => v != null)
+      const medV = altriV.length ? Math.round((altriV.reduce((s, x) => s + x, 0) / altriV.length) * 10) / 10 : null
+      medieView = {
+        ids: ['__me', '__media'],
+        portMap: { __me: t('tu'), __media: t('mediaCategoria') },
+        colore: { __me: COLORI[0], __media: GRIGIO },
+        valori: { __me: meV, __media: medV },
+      }
+    } else {
+      medieView = { ids: [], portMap: {}, colore: {}, valori: {} }
+    }
+  }
+
   return (
     <div className="scheda" style={{ marginBottom: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
@@ -147,35 +188,32 @@ export default function ConfrontoPortieri({ stagioneId, titolo }) {
       {metrica === 'presenze' ? (
         <>
           <div style={legendaStyle}>
-            {portieriPres.map((id) => (
+            {presView.ids.map((id) => (
               <span key={id} style={legendaItem}>
-                <span style={{ ...legendaQuad, background: colore[id] }} />{portMap[id]}
+                <span style={{ ...legendaQuad, background: presView.colore[id] }} />{presView.portMap[id]}
               </span>
             ))}
           </div>
           <h4 style={sottoTitolo}>{t('presenzeTotali')}</h4>
-          <BarreValori portieri={portieriPres} portMap={portMap} colore={colore} valori={totale} decimali={0} />
+          <BarreValori portieri={presView.ids} portMap={presView.portMap} colore={presView.colore} valori={presView.totale} decimali={0} />
           <h4 style={{ ...sottoTitolo, marginTop: 16 }}>{t('presenzePerMese')}</h4>
           {mesi.length === 0
             ? <div className="empty" style={{ padding: '8px 0' }}>{t('nessunAllenamento')}</div>
-            : <BarreMensili mesi={mesi} portieri={portieriPres} colore={colore} perMese={perMese} portMap={portMap} />}
+            : <BarreMensili mesi={mesi} portieri={presView.ids} colore={presView.colore} perMese={presView.perMese} portMap={presView.portMap} />}
         </>
       ) : (
         <>
           <div style={legendaStyle}>
-            {portieriMedie.map((id) => (
+            {medieView.ids.map((id) => (
               <span key={id} style={legendaItem}>
-                <span style={{ ...legendaQuad, background: coloreMedie[id] }} />{nomeById[id] ?? id}
+                <span style={{ ...legendaQuad, background: medieView.colore[id] }} />{medieView.portMap[id]}
               </span>
             ))}
           </div>
           <h4 style={sottoTitolo}>{t('media', { label: metricaLabel.toLowerCase() })}{cat === 'all' ? t('suffTutte') : ''}</h4>
-          {portieriMedie.length === 0
+          {medieView.ids.length === 0
             ? <div className="empty" style={{ padding: '8px 0' }}>{t('nessunaValutazione')}</div>
-            : <BarreValori
-                portieri={portieriMedie}
-                portMap={Object.fromEntries(portieriMedie.map((id) => [id, nomeById[id] ?? id]))}
-                colore={coloreMedie} valori={medie} decimali={1} scalaMax={10} />}
+            : <BarreValori portieri={medieView.ids} portMap={medieView.portMap} colore={medieView.colore} valori={medieView.valori} decimali={1} scalaMax={10} />}
         </>
       )}
     </div>

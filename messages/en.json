@@ -2240,7 +2240,9 @@
     "elimina": "Delete"
   },
   "confrontoPortieri": {
-    "titoloDefault": "Goalkeeper comparison",
+        "tu": "You",
+    "mediaCategoria": "Category average",
+"titoloDefault": "Goalkeeper comparison",
     "categoriaFallback": "Category",
     "carico": "Loading…",
     "nessunDato": "No data.",

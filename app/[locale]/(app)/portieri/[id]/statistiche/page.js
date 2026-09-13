@@ -380,7 +380,7 @@ export default async function StatistichePortierePage({ params }) {
       </div>
       <div className="content">
         {navLinks}
-        {soloPortiere && <ConfrontoPortieri stagioneId={stagione.id} titolo={t('confrontoSquadra')} />}
+        {soloPortiere && <ConfrontoPortieri stagioneId={stagione.id} titolo={t('confrontoSquadra')} mioId={id} anonimo />}
 
         {/* Scorecard KPI (dashboard) */}
         <ScorecardPortiere tiles={tilesScore} />

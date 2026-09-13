@@ -2240,7 +2240,9 @@
     "elimina": "Elimina"
   },
   "confrontoPortieri": {
-    "titoloDefault": "Confronto portieri",
+        "tu": "Tu",
+    "mediaCategoria": "Media categoria",
+"titoloDefault": "Confronto portieri",
     "categoriaFallback": "Categoria",
     "carico": "Carico…",
     "nessunDato": "Nessun dato.",

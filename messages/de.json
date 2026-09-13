@@ -2240,7 +2240,9 @@
     "elimina": "Löschen"
   },
   "confrontoPortieri": {
-    "titoloDefault": "Torhüter-Vergleich",
+        "tu": "Du",
+    "mediaCategoria": "Kategorie-Schnitt",
+"titoloDefault": "Torhüter-Vergleich",
     "categoriaFallback": "Kategorie",
     "carico": "Wird geladen…",
     "nessunDato": "Keine Daten.",

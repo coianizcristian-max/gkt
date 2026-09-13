@@ -2240,7 +2240,9 @@
     "elimina": "Eliminar"
   },
   "confrontoPortieri": {
-    "titoloDefault": "Comparación de porteros",
+        "tu": "Tú",
+    "mediaCategoria": "Media categoría",
+"titoloDefault": "Comparación de porteros",
     "categoriaFallback": "Categoría",
     "carico": "Cargando…",
     "nessunDato": "Sin datos.",

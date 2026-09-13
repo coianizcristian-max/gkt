@@ -163,7 +163,8 @@
     "miaScheda": "Mein Profil"
   },
   "calendario": {
-    "titolo": "Kalender",
+        "daValutarePortiere": "Zu bewertende Trainings: {n}. Öffne sie im Kalender und gib deine Bewertung ab.",
+"titolo": "Kalender",
     "guidaTitolo": "So nutzt du den Kalender",
     "guidaP1": "Klicke auf die <b>Tageszahl</b>, um an diesem Datum ein neues Training zu erstellen. Du kannst auch <b>einen beliebigen Tag auswählen</b> (auch einen leeren): Die Schaltflächen <b>+ Neues Training</b> und <b>+ Neues Spiel</b> oben verwenden dann dieses Datum. Trainings in <verde>Grün</verde> sind bereits bewertet, in <rosso>Rot</rosso> noch zu bewerten. Spiele erscheinen in <viola>Violett</viola>: dunkel, wenn bereits gespielt, hell, wenn bevorstehend. Klicke auf einen beliebigen Block, um ihn zu öffnen.",
     "guidaP2": "Innerhalb eines Trainings kannst du: Anwesenheiten markieren, Note und Punkte pro Parameter für jeden Torhüter eingeben, die Übungen der Einheit hinzufügen und das Kennzeichen <b>„Keine Bewertung“</b> aktivieren, wenn das Training stattgefunden hat, du aber keine Noten eingeben möchtest (in diesem Fall erscheint es im Kalender trotzdem als grün/bewertet). Du kannst außerdem zwei Kategorien direkt im Formular zu einem gemeinsamen Training <b>zusammenlegen</b>.",

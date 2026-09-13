@@ -163,7 +163,8 @@
     "miaScheda": "La mia scheda"
   },
   "calendario": {
-    "titolo": "Calendario",
+        "daValutarePortiere": "Allenamenti da valutare: {n}. Aprili dal calendario e lascia il tuo voto.",
+"titolo": "Calendario",
     "guidaTitolo": "Come usare il calendario",
     "guidaP1": "Clicca sul <b>numero del giorno</b> per creare un nuovo allenamento in quella data. Puoi anche <b>selezionare un giorno qualsiasi</b> (anche vuoto): i pulsanti <b>+ Nuovo allenamento</b> e <b>+ Nuova partita</b> in alto useranno quella data. Gli allenamenti in <verde>verde</verde> sono già valutati, in <rosso>rosso</rosso> sono da valutare. Le partite appaiono in <viola>viola</viola>: scuro se già passate, chiaro se future. Clicca su qualsiasi blocco per aprirlo.",
     "guidaP2": "Dall’interno di un allenamento puoi: segnare le presenze, inserire voto e punteggi per parametro per ogni portiere, aggiungere gli esercizi della seduta, e attivare il flag <b>“Nessuna valutazione”</b> se l’allenamento si è svolto ma non vuoi inserire voti (in questo caso appare comunque come verde/valutato nel calendario). Puoi anche <b>accorpare</b> due categorie in un unico allenamento condiviso direttamente dal form.",

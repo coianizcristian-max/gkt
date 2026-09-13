@@ -163,7 +163,8 @@
     "miaScheda": "My profile"
   },
   "calendario": {
-    "titolo": "Calendar",
+        "daValutarePortiere": "Trainings to rate: {n}. Open them from the calendar and leave your rating.",
+"titolo": "Calendar",
     "guidaTitolo": "How to use the calendar",
     "guidaP1": "Click on the <b>day number</b> to create a new training on that date. You can also <b>select any day</b> (even empty): the <b>+ New training</b> and <b>+ New match</b> buttons at the top will use that date. Trainings in <verde>green</verde> are already rated, in <rosso>red</rosso> they still need rating. Matches appear in <viola>purple</viola>: dark if already played, light if upcoming. Click any block to open it.",
     "guidaP2": "Inside a training you can: mark attendance, enter a rating and per-parameter scores for each goalkeeper, add the session’s drills, and enable the <b>“No evaluation”</b> flag if the training took place but you don’t want to enter ratings (in that case it still appears as green/rated in the calendar). You can also <b>merge</b> two categories into a single shared training directly from the form.",

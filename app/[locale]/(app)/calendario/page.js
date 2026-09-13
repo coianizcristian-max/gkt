@@ -147,6 +147,12 @@ export default async function CalendarioPage() {
     }
   }
 
+  let daValutarePortiere = 0
+  if (isPortiere && stagione) {
+    const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
+    daValutarePortiere = (allenamenti ?? []).filter((a) => a.data <= oggiRoma && !a.ha_voto).length
+  }
+
   return (
     <>
       <div className="topbar topbar-row">
@@ -164,6 +170,11 @@ export default async function CalendarioPage() {
           <p style={{marginTop:10}}>{t.rich('guidaP3', { b: (ch) => <strong>{ch}</strong>, ricorrenze: (ch) => <a href="/ricorrenze" className="link-inline">{ch}</a> })}</p>
           <p style={{marginTop:10}}>{t.rich('guidaP4', { b: (ch) => <strong>{ch}</strong> })}</p>
         </Guida>
+        )}
+        {isPortiere && daValutarePortiere > 0 && (
+          <div className="scheda" style={{ marginBottom: 12, borderLeft: '4px solid var(--giallo)' }}>
+            <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-soft)' }}>{t('daValutarePortiere', { n: daValutarePortiere })}</p>
+          </div>
         )}
         {stagione
           ? <CalendarioMese allenamenti={allenamenti} partite={partite} categorie={categorie} vista={isPortiere ? 'portiere' : 'staff'} />

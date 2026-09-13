@@ -13,20 +13,18 @@ export default function ValutazionePortiere({ allenamentoId, portiereId, present
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
-  if (!presente) {
-    return (
-      <div className="scheda">
-        <p className="sub-intro">{t('nonPresente')}</p>
-      </div>
-    )
-  }
-
   async function salva() {
     setBusy(true); setError('')
     const supabase = createClient()
-    const { error } = await supabase.from('valutazioni')
-      .update({ voto_portiere: voto || null, feedback_portiere: feedback || null, nota_portiere: nota || null })
-      .eq('allenamento_id', allenamentoId).eq('portiere_id', portiereId)
+    // RPC sicura: registra il VOTO DEL PORTIERE sull'allenamento (gradimento
+    // 1-5 + feedback/nota). Scrive SOLO questi campi, mai presente/voto del
+    // coach, e crea la riga se manca. Il portiere è ricavato lato server da auth.
+    const { error } = await supabase.rpc('salva_valutazione_portiere', {
+      p_allenamento: allenamentoId,
+      p_voto: voto || null,
+      p_feedback: feedback || null,
+      p_nota: nota || null,
+    })
     if (error) { setError(error.message); setBusy(false); return }
     setDone(true); setBusy(false)
   }

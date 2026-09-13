@@ -163,7 +163,8 @@
     "miaScheda": "Mi ficha"
   },
   "calendario": {
-    "titolo": "Calendario",
+        "daValutarePortiere": "Entrenamientos por valorar: {n}. Ábrelos desde el calendario y deja tu valoración.",
+"titolo": "Calendario",
     "guidaTitolo": "Cómo usar el calendario",
     "guidaP1": "Pulsa el <b>número del día</b> para crear un nuevo entrenamiento en esa fecha. También puedes <b>seleccionar cualquier día</b> (incluso vacío): los botones <b>+ Nuevo entrenamiento</b> y <b>+ Nuevo partido</b> de arriba usarán esa fecha. Los entrenamientos en <verde>verde</verde> ya están evaluados, en <rosso>rojo</rosso> están por evaluar. Los partidos aparecen en <viola>morado</viola>: oscuro si ya han pasado, claro si son futuros. Pulsa cualquier bloque para abrirlo.",
     "guidaP2": "Desde dentro de un entrenamiento puedes: marcar las asistencias, introducir nota y puntuaciones por parámetro para cada portero, añadir los ejercicios de la sesión y activar la casilla <b>“Sin evaluación”</b> si el entrenamiento se realizó pero no quieres introducir notas (en ese caso aparece igualmente como verde/evaluado en el calendario). También puedes <b>unir</b> dos categorías en un único entrenamiento compartido directamente desde el formulario.",

@@ -77,7 +77,7 @@ export default async function StatistichePage() {
   // (quelli con almeno una valutazione salvata), non tutte le sedute generate a calendario.
   // Così la lista coach coincide col tab del singolo portiere (es. 1/1, non 1/3 con 2 sedute
   // solo generate dalla ricorrenza e mai valutate).
-  const allenValutatiSet = new Set((vAll ?? []).map((v) => v.allenamento_id))
+  const allenValutatiSet = new Set((vAll ?? []).filter((v) => v.presente != null).map((v) => v.allenamento_id))
   const totAllenByCat = {}
   for (const a of allen ?? []) {
     if (!allenValutatiSet.has(a.id)) continue

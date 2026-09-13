@@ -164,7 +164,7 @@ export default async function StatistichePortierePage({ params }) {
   // ── Calcoli allenamenti ──────────────────────────────────────────────────
   const presenzeA = vAll.filter((v) => v.presente).length
   const infortunatiA = vAll.filter((v) => v.infortunato).length
-  const totA = vAll.length
+  const totA = vAll.filter((v) => v.presente != null).length
   const disponibiliA = Math.max(0, totA - infortunatiA)
   const votiA = vAll.filter((v) => v.presente && v.voto != null).map((v) => Number(v.voto))
   const mediaA = votiA.length ? votiA.reduce((s, x) => s + x, 0) / votiA.length : null
@@ -172,6 +172,7 @@ export default async function StatistichePortierePage({ params }) {
   // Streak
   let streakMax = 0, streakAttuale = 0, curStreak = 0
   for (const v of vAll) {
+    if (v.presente == null) continue
     if (v.infortunato) continue
     if (v.presente) { curStreak++; streakMax = Math.max(streakMax, curStreak) }
     else curStreak = 0

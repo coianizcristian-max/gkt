@@ -49,7 +49,7 @@ export default async function StatistichePage() {
       .eq('stagione_id', stagione.id),
     supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
     supabase.from('allenamenti').select('id, squadra_id, data').eq('stagione_id', stagione.id).lte('data', oggiRoma),
-    supabase.from('partite').select('id, squadra_id, gol_subiti, tipo').eq('stagione_id', stagione.id).lte('data', oggiRoma),
+    supabase.from('partite').select('id, squadra_id, gol_fatti, gol_subiti, tipo, data').eq('stagione_id', stagione.id).lte('data', oggiRoma),
   ])
 
   const allenIds = (allen ?? []).map((a) => a.id)
@@ -130,6 +130,32 @@ export default async function StatistichePage() {
     totAllenamenti: allenIds.length,
   }
 
+  // ANDAMENTO SQUADRA per categoria: solo partite di CAMPIONATO (tipo === 'campionato')
+  // con risultato inserito (gol_fatti e gol_subiti non null). Le partite sono già
+  // filtrate a data <= oggi (fuso Italia) dalla query sopra. Esito dal confronto gol:
+  // vittoria +3, pareggio +1, sconfitta +0. "Serie" = striscia di vittorie consecutive
+  // più lunga della stagione (le gare sono ordinate per data crescente).
+  const partiteCampByCat = {}
+  for (const p of part ?? []) {
+    if (p.tipo !== 'campionato') continue
+    if (p.gol_fatti == null || p.gol_subiti == null) continue
+    ;(partiteCampByCat[p.squadra_id] ??= []).push(p)
+  }
+  const andamentoByCat = {}
+  for (const [sqId, lista] of Object.entries(partiteCampByCat)) {
+    lista.sort((a, b) => String(a.data).localeCompare(String(b.data)) || String(a.id).localeCompare(String(b.id)))
+    let punti = 0, golFatti = 0, golSubiti = 0, vittorie = 0, pareggi = 0, sconfitte = 0
+    let streak = 0, streakMax = 0
+    for (const p of lista) {
+      const gf = Number(p.gol_fatti), gs = Number(p.gol_subiti)
+      golFatti += gf; golSubiti += gs
+      if (gf > gs) { vittorie++; punti += 3; streak++; if (streak > streakMax) streakMax = streak }
+      else if (gf === gs) { pareggi++; punti += 1; streak = 0 }
+      else { sconfitte++; streak = 0 }
+    }
+    andamentoByCat[sqId] = { giocate: lista.length, punti, golFatti, golSubiti, vittorie, pareggi, sconfitte, serie: streakMax }
+  }
+
   const categorieOrd = (cats ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
   const byCat = {}
   for (const st of stats) (byCat[st.p.squadra_id] ??= []).push(st)
@@ -151,6 +177,7 @@ export default async function StatistichePage() {
           stats={stats}
           categorieOrd={categorieOrd}
           byCat={byCat}
+          andamentoByCat={andamentoByCat}
           feedbackStats={feedbackStats}
           feedback={feedbackRows ?? []}
           isPortiere={isPortiere}

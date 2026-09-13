@@ -2408,7 +2408,17 @@
     "disiscriviti": "Abmelden"
   },
   "statisticheClient": {
-    "tabPortieri": "Torhüter",
+        "andamentoSquadra": "Mannschaftsform",
+    "giocateCamp": "{n} Ligaspiele",
+    "puntiCampionato": "Ligapunkte",
+    "golFatti": "Erzielte Tore",
+    "golSubiti": "Gegentore",
+    "serieVittorie": "Siegesserie",
+    "vittorie": "Siege",
+    "pareggi": "Unentschieden",
+    "sconfitte": "Niederlagen",
+    "nessunaPartitaCamp": "Keine Ligaspiele erfasst",
+"tabPortieri": "Torhüter",
     "tabFeedback": "Feedback ({n})",
     "categoria": "Kategorie",
     "tutteCategorie": "Alle Kategorien",

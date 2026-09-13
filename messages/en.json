@@ -2408,7 +2408,17 @@
     "disiscriviti": "Unsubscribe"
   },
   "statisticheClient": {
-    "tabPortieri": "Goalkeepers",
+        "andamentoSquadra": "Team form",
+    "giocateCamp": "{n} league matches",
+    "puntiCampionato": "League points",
+    "golFatti": "Goals scored",
+    "golSubiti": "Goals conceded",
+    "serieVittorie": "Win streak",
+    "vittorie": "Wins",
+    "pareggi": "Draws",
+    "sconfitte": "Losses",
+    "nessunaPartitaCamp": "No league matches recorded",
+"tabPortieri": "Goalkeepers",
     "tabFeedback": "Feedback ({n})",
     "categoria": "Category",
     "tutteCategorie": "All categories",

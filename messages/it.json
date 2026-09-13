@@ -2408,7 +2408,17 @@
     "disiscriviti": "Disiscriviti"
   },
   "statisticheClient": {
-    "tabPortieri": "Portieri",
+        "andamentoSquadra": "Andamento squadra",
+    "giocateCamp": "{n} partite di campionato",
+    "puntiCampionato": "Punti campionato",
+    "golFatti": "Gol fatti",
+    "golSubiti": "Gol subiti",
+    "serieVittorie": "Serie vitt. consecutive",
+    "vittorie": "Vittorie",
+    "pareggi": "Pareggi",
+    "sconfitte": "Sconfitte",
+    "nessunaPartitaCamp": "Nessuna partita di campionato registrata",
+"tabPortieri": "Portieri",
     "tabFeedback": "Feedback ({n})",
     "categoria": "Categoria",
     "tutteCategorie": "Tutte le categorie",

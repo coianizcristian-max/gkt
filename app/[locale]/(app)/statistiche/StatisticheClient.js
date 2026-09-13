@@ -8,7 +8,7 @@ import { useTranslations, useLocale } from 'next-intl'
 
 const NUM_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
 
-export default function StatisticheClient({ stats, categorieOrd, byCat, feedbackStats, feedback, isPortiere, myPortiereId, canExport = true }) {
+export default function StatisticheClient({ stats, categorieOrd, byCat, andamentoByCat = {}, feedbackStats, feedback, isPortiere, myPortiereId, canExport = true }) {
   const t = useTranslations('statisticheClient')
   const locale = useLocale()
   const nl = NUM_LOCALE[locale] || 'it-IT'
@@ -94,6 +94,35 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, feedback
                     <h2>{cat.nome}</h2>
                     <span className="conta">{t('nPortieri', { n: lista.length })}</span>
                   </div>
+                  {(() => {
+                    const a = andamentoByCat[cat.id]
+                    return (
+                      <div className="stat-card" style={{ marginBottom: 14, borderLeft: '4px solid var(--campo)' }}>
+                        <div className="stat-head" style={{ marginBottom: a ? 12 : 0 }}>
+                          <div className="stat-foto" style={{ background: 'var(--campo)', color: '#fff', fontSize: 22 }}>📈</div>
+                          <div>
+                            <div className="stat-nome">{t('andamentoSquadra')}</div>
+                            <div className="stat-cat">{a ? t('giocateCamp', { n: a.giocate }) : t('nessunaPartitaCamp')}</div>
+                          </div>
+                        </div>
+                        {a && (
+                          <div className="stat-rows">
+                            <div className="stat-block">
+                              <div className="stat-line"><span>{t('puntiCampionato')}</span><b>{a.punti}</b></div>
+                              <div className="stat-line"><span>{t('golFatti')}</span><b>{a.golFatti}</b></div>
+                              <div className="stat-line"><span>{t('golSubiti')}</span><b>{a.golSubiti}</b></div>
+                              <div className="stat-line"><span>{t('serieVittorie')}</span><b>{a.serie}</b></div>
+                            </div>
+                            <div className="stat-block">
+                              <div className="stat-line"><span>{t('vittorie')}</span><b style={{ color: 'var(--campo)' }}>{a.vittorie}</b></div>
+                              <div className="stat-line"><span>{t('pareggi')}</span><b>{a.pareggi}</b></div>
+                              <div className="stat-line"><span>{t('sconfitte')}</span><b style={{ color: 'var(--rosso)' }}>{a.sconfitte}</b></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
                   <div className="stat-grid">
                     {lista.map((s) => (
                       <Link className="stat-card" key={s.p.id} href={`/portieri/${s.p.id}/statistiche`} style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}>

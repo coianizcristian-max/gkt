@@ -2408,7 +2408,17 @@
     "disiscriviti": "Darse de baja"
   },
   "statisticheClient": {
-    "tabPortieri": "Porteros",
+        "andamentoSquadra": "Rendimiento del equipo",
+    "giocateCamp": "{n} partidos de liga",
+    "puntiCampionato": "Puntos de liga",
+    "golFatti": "Goles a favor",
+    "golSubiti": "Goles en contra",
+    "serieVittorie": "Racha de victorias",
+    "vittorie": "Victorias",
+    "pareggi": "Empates",
+    "sconfitte": "Derrotas",
+    "nessunaPartitaCamp": "Sin partidos de liga registrados",
+"tabPortieri": "Porteros",
     "tabFeedback": "Feedback ({n})",
     "categoria": "Categoría",
     "tutteCategorie": "Todas las categorías",

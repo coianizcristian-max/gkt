@@ -1999,18 +1999,27 @@ a.brand { text-decoration: none; color: inherit; }
   .calx-rtime { min-width: 78px; font-size: 13px; }
   .calx-rcat { font-size: 14px; }
 }
-@media (max-width: 560px) {
-  .calx-cell { min-height: 60px; padding: 5px 4px; gap: 3px; }
-  .calx-num { font-size: 12px; }
-  .calx-ev { font-size: 9px; padding: 2px 4px; gap: 3px; border-radius: 6px; }
-  .calx-ev-label { display: none; }
-  .calx-edot { width: 6px; height: 6px; flex-basis: 6px; }
-  .calx-grid { gap: 4px; }
+@media (max-width: 600px) {
+  /* Mese su mobile: gli eventi diventano pallini colorati (niente testo
+     tagliato). Toccando il giorno si apre il dettaglio, leggibile a
+     tutta larghezza. */
+  .calx-cell { min-height: 62px; padding: 6px 5px 8px; gap: 5px; align-items: flex-start; }
+  .calx-num { font-size: 13px; }
+  .calx-num-link a { pointer-events: none; }
+  .calx-grid { gap: 5px; }
   .calx-dow { font-size: 10px; padding-left: 2px; }
-  .calx-row-top { gap: 10px; padding: 12px 12px; }
-  .calx-rtime { min-width: 66px; }
-  .calx-badge { padding: 4px 9px; }
+  .calx-evs { flex-direction: row; flex-wrap: wrap; gap: 5px; align-content: flex-start; }
+  .calx-ev { width: 11px; height: 11px; min-width: 11px; max-width: 11px; padding: 0; border-radius: 50%; gap: 0; overflow: visible; }
+  .calx-ev b, .calx-ev-label, .calx-edot { display: none; }
+  .calx-more { font-size: 10px; padding: 1px 6px; border-radius: 999px; align-self: center; }
+  /* pannello giorno */
+  .calx-panel-head { padding: 14px 14px 11px; }
   .calx-panel-title { font-size: 16px; }
+  .calx-rows { padding: 10px 10px 14px; }
+  .calx-row-top { gap: 10px; padding: 12px 12px; }
+  .calx-rtime { min-width: 62px; font-size: 13px; }
+  .calx-rcat { font-size: 14px; }
+  .calx-badge { padding: 4px 9px; }
 }
 
 /* =========================================================

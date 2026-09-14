@@ -179,7 +179,7 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, andament
             <div className="stat-rows">
               <div className="stat-block">
                 <div className="stat-line"><span>{t('allenValutati')}</span><b>{feedbackStats.allenValutati}/{feedbackStats.totAllenamenti}</b></div>
-                <div className="stat-line"><span>{t('feedbackScritti')}</span><b>{feedbackStats.totFeedback}</b></div>
+                <div className="stat-line"><span>{t('feedbackScritti')}</span><b>{feedbackStats.totScritti}</b></div>
               </div>
               <div className="stat-block">
                 <div className="stat-line"><span>{t('mediaVotoSeduta')}</span><b>{fmt(feedbackStats.mediaVotoPortiere)}</b></div>
@@ -201,7 +201,7 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, andament
                   )}
                   {f.voto_portiere != null && <span className="feedback-voto">{t('votoLabel')} <b>{f.voto_portiere}</b></span>}
                 </div>
-                <div className="feedback-testo">{f.feedback_portiere}</div>
+                {f.feedback_portiere && <div className="feedback-testo">{f.feedback_portiere}</div>}
               </div>
             ))
           }

@@ -176,7 +176,7 @@ export default async function AllenamentoPage({ params }) {
       supabase.from('valutazioni')
         .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
         .eq('allenamento_id', id)
-        .not('feedback_portiere', 'is', null)
+        .or('feedback_portiere.not.is.null,voto_portiere.not.is.null')
         .order('created_at', { ascending: false }),
       supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
     ]),

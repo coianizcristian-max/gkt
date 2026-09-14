@@ -66,7 +66,7 @@ export default async function StatistichePage() {
       ? supabase.from('valutazioni')
         .select('portiere_id, feedback_portiere, voto_portiere, allenamento_id, portieri(nome, cognome), allenamenti(data, squadra:squadre!allenamenti_squadra_id_fkey(nome))')
         .in('allenamento_id', allenIds)
-        .not('feedback_portiere', 'is', null)
+        .or('feedback_portiere.not.is.null,voto_portiere.not.is.null')
         .order('allenamento_id')
       : Promise.resolve({ data: [] }),
     allenIds.length
@@ -126,6 +126,7 @@ export default async function StatistichePage() {
   // Statistiche feedback (P14)
   const feedbackStats = {
     totFeedback: (feedbackRows ?? []).length,
+    totScritti: (feedbackRows ?? []).filter((f) => f.feedback_portiere != null).length,
     conVoto: (feedbackRows ?? []).filter((f) => f.voto_portiere != null).length,
     mediaVotoPortiere: (() => {
       const arr = (feedbackRows ?? []).filter((f) => f.voto_portiere != null).map((f) => Number(f.voto_portiere))

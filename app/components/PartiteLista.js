@@ -12,7 +12,7 @@ function RigaPartita({ p, compact = false }) {
   const t = useTranslations('partiteLista')
   const locale = useLocale()
   const dl = DATE_LOCALE[locale] || 'it-IT'
-  const fmtData = (d) => new Date(d + 'T00:00:00').toLocaleDateString(dl, { weekday: 'short', day: 'numeric', month: 'short' })
+  const fmtData = (d) => new Date(d + 'T00:00:00').toLocaleDateString(dl, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
   const haRis = p.gol_fatti != null && p.gol_subiti != null
   const esito = !haRis ? null : p.gol_fatti > p.gol_subiti ? 'V' : p.gol_fatti < p.gol_subiti ? 'P' : 'X'
   const esitoCol = { V: 'var(--campo)', P: 'var(--rosso)', X: 'var(--giallo)' }

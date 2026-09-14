@@ -21,11 +21,12 @@ export default async function DashboardPage() {
   const c = await getTranslations('common')
 
   const { data: profilo } = await supabase
-    .from('profili').select('ruolo, portiere_id, nome_visualizzato, nome_completo, via, citta, cap').eq('id', user.id).maybeSingle()
+    .from('profili').select('ruolo, portiere_id, benvenuto_visto, nome_visualizzato, nome_completo, via, citta, cap').eq('id', user.id).maybeSingle()
 
-  // I portieri hanno già la loro scheda come "home" — qui reindirizziamo
+  // Portieri: la PRIMA volta li mandiamo sulla loro scheda (per completare i
+  // dati); dalle volte successive direttamente sul calendario, piu' pratico.
   if (profilo?.ruolo === 'portiere' && profilo.portiere_id) {
-    redirect(`/portieri/${profilo.portiere_id}`)
+    redirect(profilo.benvenuto_visto ? '/calendario' : `/portieri/${profilo.portiere_id}`)
   }
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 

@@ -53,12 +53,14 @@ export default function LoginPage() {
       const invitoQuery = new URLSearchParams(window.location.search).get('invito')
       const invToken = invitoQuery || user?.user_metadata?.invito_token
       if (invToken) {
-        await fetch('/api/consuma-invito', {
+        const resInv = await fetch('/api/consuma-invito', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: invToken }),
         })
-        if (user?.user_metadata?.invito_token) {
+        // Azzera il token nei metadati SOLO se la consumazione è riuscita,
+        // altrimenti perderemmo il "paracadute" per ritentare al prossimo login.
+        if (resInv.ok && user?.user_metadata?.invito_token) {
           await supabase.auth.updateUser({ data: { invito_token: null } })
         }
       }

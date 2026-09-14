@@ -112,6 +112,7 @@ export default function RegistratiClient({ token, datiInvito }) {
     // In quel caso NON facciamo nulla qui: il token è salvato nei metadati
     // (options.data.invito_token) e verrà consumato in /auth/callback dopo la
     // conferma email, quando la sessione sarà con certezza quella dell'invitato.
+    let consumaErrore = null
     if (token && datiInvito && data.user && data.session && data.session.user?.id === data.user.id) {
       try {
         const res = await fetch('/api/consuma-invito', {
@@ -121,12 +122,21 @@ export default function RegistratiClient({ token, datiInvito }) {
         })
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
-          console.warn('consuma-invito:', body.error)
-          // Non blocchiamo la registrazione per questo — l'utente è già creato
+          consumaErrore = body.error || 'Collegamento invito non riuscito.'
+          console.warn('consuma-invito:', consumaErrore)
         }
       } catch (err) {
+        consumaErrore = err?.message || 'Collegamento invito non riuscito.'
         console.warn('consuma-invito fetch error:', err)
       }
+    }
+    // Se la consumazione dell'invito è fallita, NON proseguire in silenzio:
+    // mostra il motivo così l'utente/allenatore capisce (es. account già
+    // allenatore attivo) invece di ritrovarsi col ruolo sbagliato.
+    if (consumaErrore) {
+      setError(consumaErrore)
+      setLoading(false)
+      return
     }
 
     if (data.session) {

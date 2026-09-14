@@ -20,15 +20,19 @@ export async function GET(request) {
         const { data: { user } } = await supabase.auth.getUser()
         const token = user?.user_metadata?.invito_token
         if (user && token) {
-          await consumaInvito(token, user)
-          // Rimuovi il token dai metadati così non può essere riusato.
-          const admin = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-          )
-          const meta = { ...(user.user_metadata || {}) }
-          delete meta.invito_token
-          await admin.auth.admin.updateUserById(user.id, { user_metadata: meta })
+          const res = await consumaInvito(token, user)
+          // Rimuovi il token dai metadati SOLO se la consumazione è riuscita:
+          // se fallisce lo teniamo, così il login successivo può ritentare
+          // (altrimenti l'utente resterebbe 'allenatore' per sempre).
+          if (res?.ok) {
+            const admin = createAdminClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL,
+              process.env.SUPABASE_SERVICE_ROLE_KEY
+            )
+            const meta = { ...(user.user_metadata || {}) }
+            delete meta.invito_token
+            await admin.auth.admin.updateUserById(user.id, { user_metadata: meta })
+          }
         }
       } catch (e) {
         // Non bloccante: l'utente è comunque autenticato e può entrare.

@@ -47,6 +47,17 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
   const fmtMin = (m) => m >= 60 ? tm('oreMin', { h: Math.floor(m / 60), min: Math.round(m % 60) }) : tm('minuti', { min: Math.round(m) })
   const cid = (e) => `${e._tipo}-${e.id}`
 
+  // colore semantico dell'evento (come nella griglia), per riconoscerlo a colpo d'occhio
+  const coloreEvento = (e) => {
+    if (e._tipo === 'partita') return e.data > oggiStr ? '#a78bfa' : '#7c3aed'   // futura / passata
+    if (e.nessuna_valutazione) return '#2e9e5b'
+    if (e.presente === false) return '#9aa6b2'                                    // assente (neutro)
+    if (e.ha_voto) return '#2e9e5b'                                               // valutato
+    if (e.data <= oggiStr && e.presente === true) return '#c0392b'               // da valutare
+    if (e.data > oggiStr) return '#1f6feb'                                        // programmato
+    return '#9aa6b2'                                                              // passato non registrato
+  }
+
   async function toggle(e) {
     const c = cid(e)
     if (openId === c) { setOpenId(null); return }
@@ -145,6 +156,7 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
   const Riga = ({ e, badge, badgeClass }) => {
     const open = openId === cid(e)
     const isPart = e._tipo === 'partita'
+    const col = coloreEvento(e)
     const sub = isPart
       ? `${tm('badgePartita')} · ${e.casa === true ? '🏠' : e.casa === false ? '✈' : ''} ${e.avversario || ''}`.trim()
       : `${t('agendaAllenamento')}${e.ora_inizio ? ` · ${hhmm(e.ora_inizio)}` : ''}`
@@ -154,7 +166,10 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
           role="button" tabIndex={0}
           onClick={() => toggle(e)}
           onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(e) } }}>
-          <div className="agenda-date"><div className="d">{giorno(e.data)}</div><div className="m">{mese(e.data)}</div></div>
+          <div className="agenda-date" style={{ border: `2px solid ${col}`, background: `${col}14` }}>
+            <div className="d" style={{ color: col }}>{giorno(e.data)}</div>
+            <div className="m">{mese(e.data)}</div>
+          </div>
           <div className="agenda-info">
             <div className="t">{e.squadra_nome || t('titolo')}</div>
             <div className="s">{sub}</div>

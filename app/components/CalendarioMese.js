@@ -18,6 +18,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const [cursor, setCursor] = useState(() => new Date(oggi.getFullYear(), oggi.getMonth(), 1))
   const [filtro, setFiltro] = useState('')
   const [selectedDay, setSelectedDay] = useState(null)
+  const [openId, setOpenId] = useState(null)
   const [previewExtra, setPreviewExtra] = useState({})
   const [loadingExtra, setLoadingExtra] = useState(false)
   const [previewPartite, setPreviewPartite] = useState({})
@@ -67,31 +68,36 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const giorniShort = [1, 2, 3, 4, 5, 6, 7].map((n) => t('dowShort_' + n))
   const meseTitolo = new Date(year, month, 1).toLocaleDateString(dl, { month: 'long', year: 'numeric' })
 
-  const stylePortiere = (a) => {
-    if (a.ha_voto) return { background: '#2e9e5b', borderLeft: '3px solid #1a6b3a' }        // valutato
-    if (a.presente) return { background: '#e8a72c', color: '#3a2a00', borderLeft: '3px solid #b9821a' } // DA VALUTARE
-    return { background: '#3a6ea5', borderLeft: '3px solid #1d4a78' }                        // futuro / assente
-  }
+  const cid = (ev) => `${ev._tipo}-${ev.id}`
+  const hhmm = (v) => (v ? v.slice(0, 5) : '')
 
-  const stylePartita = (p) => {
+  // colore semantico del blocco / dot
+  const colorAllenamento = (a) => {
+    if (isPortiere) {
+      if (a.ha_voto) return { bg: '#2e9e5b', fg: '#fff' }
+      if (a.presente) return { bg: '#e8a72c', fg: '#3a2a00' }
+      return { bg: '#1f6feb', fg: '#fff' }
+    }
+    if (a.valutato) return { bg: '#2e9e5b', fg: '#fff' }
+    if (a.data < oggiStr) return { bg: '#c0392b', fg: '#fff' }
+    return { bg: '#1f6feb', fg: '#fff' }
+  }
+  const colorPartita = (p) => {
     const passata = p.data < oggiStr
-    if (!passata) return { background: '#c4b5fd', color: '#4c1d95', borderLeft: '3px solid #8b5cf6' }
-    if (p.ha_valutazioni) return { background: '#7c3aed', color: '#fff', borderLeft: '3px solid #5b21b6' }
-    return { background: '#7c3aed', color: '#fff', outline: '2px solid #c0392b', outlineOffset: '-2px' }
+    if (!passata) return { bg: '#c4b5fd', fg: '#4c1d95', dot: '#7c3aed' }
+    return { bg: '#7c3aed', fg: '#fff' }
+  }
+  const colorEv = (ev) => ev._tipo === 'partita' ? colorPartita(ev) : colorAllenamento(ev)
+
+  const labelPartitaCella = (p) => {
+    const icona = p.casa === true ? '🏠' : p.casa === false ? '✈' : ''
+    return `${p.squadra_nome}${p.avversario ? ` · ${icona} ${p.avversario}` : ''}`
   }
 
-  const labelPartita = (p) => {
-    const icona = p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'
-    return `${p.squadra_nome} · ${icona} ${p.avversario || t('partitaFallback')}`
-  }
-
-
-  async function handleCellClick(day) {
+  async function caricaGiorno(day) {
     const evs = byDay[day] ?? []
-    if (selectedDay === day) { setSelectedDay(null); return }
-    setSelectedDay(day)
 
-    const partIds = (byDay[day] ?? []).filter((e) => e._tipo === 'partita' && !previewPartite[e.id]).map((e) => e.id)
+    const partIds = evs.filter((e) => e._tipo === 'partita' && !previewPartite[e.id]).map((e) => e.id)
     if (partIds.length > 0) {
       try {
         const { createClient } = await import('@/lib/supabase/client')
@@ -156,6 +162,25 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     setLoadingExtra(false)
   }
 
+  function selezionaGiorno(day) {
+    const evs = byDay[day] ?? []
+    setSelectedDay(day)
+    setOpenId(evs.length === 1 ? cid(evs[0]) : null)
+    caricaGiorno(day)
+  }
+
+  function handleCellClick(day) {
+    if (selectedDay === day) { setSelectedDay(null); setOpenId(null); return }
+    selezionaGiorno(day)
+  }
+
+  function vaiGiorno(delta) {
+    if (!selectedDay) return
+    const nd = selectedDay + delta
+    if (nd < 1 || nd > daysInMonth) return
+    selezionaGiorno(nd)
+  }
+
   async function eliminaAllenamento(ev) {
     const dipendenti = (byDay[new Date(ev.data + 'T00:00:00').getDate()] ?? [])
       .filter((o) => o._tipo === 'allenamento' && o.id !== ev.id && o.accorpata_con === ev.squadra_id)
@@ -185,6 +210,10 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     return (a.ora_inizio ?? '').localeCompare(b.ora_inizio ?? '')
   }) : []
 
+  const nAll = selectedEvs.filter((e) => e._tipo === 'allenamento').length
+  const nPar = selectedEvs.filter((e) => e._tipo === 'partita').length
+  const singolo = selectedEvs.length === 1
+
   const selectedDateStr = selectedDay ? fmt(selectedDay) : null
   const selectedDateLabel = selectedDay
     ? new Date(selectedDateStr + 'T00:00:00').toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -193,251 +222,278 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const fmtMin = (m) => m >= 60 ? t('oreMin', { h: Math.floor(m / 60), min: Math.round(m % 60) }) : t('minuti', { min: Math.round(m) })
   const fmtDvData = (d) => new Date(d + 'T00:00:00').toLocaleDateString(dl, { day: 'numeric', month: 'short' })
 
+  const toggleRow = (ev) => { if (singolo) return; setOpenId((cur) => (cur === cid(ev) ? null : cid(ev))) }
+  const isOpen = (ev) => singolo || openId === cid(ev)
+
+  const MAX_CHIP = 4
+
   return (
-    <div className="cal">
-      <div className="cal-legenda">
+    <div className="calx">
+      <div className="calx-legenda">
         {isPortiere ? (
           <>
-            <span className="cal-leg-dot" style={{ background: '#2e9e5b' }} />{t('legValutato')}
-            <span className="cal-leg-dot" style={{ background: '#e8a72c' }} />{t('legDaValutare')}
+            <span><i className="calx-ldot" style={{ background: '#2e9e5b' }} />{t('legValutato')}</span>
+            <span><i className="calx-ldot" style={{ background: '#e8a72c' }} />{t('legDaValutare')}</span>
           </>
         ) : (
           <>
-            <span className="cal-leg-dot" style={{ background: '#2e9e5b' }} />{t('legValutato')}
-            <span className="cal-leg-dot" style={{ background: '#c0392b' }} />{t('legDaValutare')}
+            <span><i className="calx-ldot" style={{ background: '#2e9e5b' }} />{t('legValutato')}</span>
+            <span><i className="calx-ldot" style={{ background: '#c0392b' }} />{t('legDaValutare')}</span>
           </>
         )}
-        <span className="cal-leg-dot" style={{ background: '#7c3aed' }} />{t('legPartitaPassata')}
-        <span className="cal-leg-dot" style={{ background: '#c4b5fd', border: '1px solid #8b5cf6' }} />{t('legPartitaFutura')}
+        <span><i className="calx-ldot" style={{ background: '#7c3aed' }} />{t('legPartitaPassata')}</span>
+        <span><i className="calx-ldot" style={{ background: '#c4b5fd', border: '1px solid #8b5cf6' }} />{t('legPartitaFutura')}</span>
       </div>
 
-      <div className="cal-bar">
-        <div className="cal-nav">
-          <button type="button" onClick={() => { setCursor(new Date(year, month - 1, 1)); setSelectedDay(null) }} aria-label={t('mesePrec')}>‹</button>
-          <span className="cal-title">{meseTitolo}</span>
-          <button type="button" onClick={() => { setCursor(new Date(year, month + 1, 1)); setSelectedDay(null) }} aria-label={t('meseSucc')}>›</button>
+      <div className="calx-bar">
+        <div className="calx-nav">
+          <button type="button" onClick={() => { setCursor(new Date(year, month - 1, 1)); setSelectedDay(null); setOpenId(null) }} aria-label={t('mesePrec')}>‹</button>
+          <span className="calx-title">{meseTitolo}</span>
+          <button type="button" onClick={() => { setCursor(new Date(year, month + 1, 1)); setSelectedDay(null); setOpenId(null) }} aria-label={t('meseSucc')}>›</button>
         </div>
         {categorie.length > 1 && (
-          <select value={filtro} onChange={(e) => { setFiltro(e.target.value); setSelectedDay(null) }} aria-label={t('filtraCategoria')}>
+          <select value={filtro} onChange={(e) => { setFiltro(e.target.value); setSelectedDay(null); setOpenId(null) }} aria-label={t('filtraCategoria')}>
             <option value="">{t('tutteCategorie')}</option>
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select>
         )}
       </div>
 
-      <div className="cal-scroll">
-      <div className="cal-grid cal-head">
-        {giorniShort.map((g, i) => <div key={i} className="cal-dow">{g}</div>)}
+      <div className="calx-grid calx-head">
+        {giorniShort.map((g, i) => <div key={i} className="calx-dow">{g}</div>)}
       </div>
 
-      <div className="cal-grid">
+      <div className="calx-grid">
         {cells.map((day, i) => {
-          if (!day) return <div key={i} className="cal-cell empty" />
+          if (!day) return <div key={i} className="calx-cell empty" />
           const evs = (byDay[day] ?? []).sort((a, b) => {
             if (a._tipo !== b._tipo) return a._tipo === 'allenamento' ? -1 : 1
             return (a.ora_inizio ?? '').localeCompare(b.ora_inizio ?? '')
           })
           const isSelected = selectedDay === day
+          const extra = evs.length - MAX_CHIP
 
           return (
-            <div key={i} className={`cal-cell ${isOggi(day) ? 'oggi' : ''} ${isSelected ? 'cal-cell-selected' : ''}`}
-              onClick={() => handleCellClick(day)} style={{ cursor: 'pointer' }}>
+            <div key={i} className={`calx-cell ${isOggi(day) ? 'oggi' : ''} ${isSelected ? 'sel' : ''} ${evs.length ? 'has' : ''}`}
+              onClick={() => handleCellClick(day)}>
               {isPortiere
-                ? <span className="cal-day">{day}</span>
+                ? <span className="calx-num">{day}</span>
                 : (
-                  <span className="cal-day" onClick={(e) => { e.stopPropagation() }} title={t('nuovoAllenamento')}>
+                  <span className="calx-num calx-num-link" onClick={(e) => e.stopPropagation()} title={t('nuovoAllenamento')}>
                     <Link href={`/calendario/nuovo?data=${fmt(day)}`} onClick={(e) => e.stopPropagation()}>{day}</Link>
                   </span>
                 )}
-              <div className="cal-evs">
-                {evs.map((ev) => {
-                  if (ev._tipo === 'partita') {
-                    return (
-                      <span key={`p-${ev.id}`} className="cal-ev cal-ev-partita" style={stylePartita(ev)} title={`${ev.tipo} · ${ev.squadra_nome}`}>
-                        {labelPartita(ev)}
-                      </span>
-                    )
-                  }
-                  if (isPortiere) {
-                    return <span key={ev.id} className="cal-ev" style={stylePortiere(ev)}>{ev.squadra_nome}</span>
-                  }
-                  const cls = ev.valutato ? 'ev-verde' : (ev.data < oggiStr ? 'ev-rosso' : '')
-                  const eAccorpante = evs.some((o) => o._tipo === 'allenamento' && o.id !== ev.id && o.accorpata_con === ev.squadra_id)
-                  const bordoAccorpamento = ev.accorpata_con
+              <div className="calx-evs">
+                {evs.slice(0, MAX_CHIP).map((ev) => {
+                  const col = colorEv(ev)
+                  const eAccorpante = !isPortiere && ev._tipo === 'allenamento' && evs.some((o) => o._tipo === 'allenamento' && o.id !== ev.id && o.accorpata_con === ev.squadra_id)
+                  const bordo = ev._tipo === 'allenamento' && ev.accorpata_con
                     ? { outline: '2px solid var(--giallo)', outlineOffset: '-2px' }
                     : eAccorpante ? { outline: '2px solid var(--campo)', outlineOffset: '-2px' } : {}
                   return (
-                    <span key={ev.id} className={`cal-ev ${cls}`}
-                      title={eAccorpante ? t('categoriaAccorpanteTip') : undefined} style={bordoAccorpamento}>
-                      {ev.squadra_nome}
+                    <span key={cid(ev)} className="calx-ev" style={{ background: col.bg, color: col.fg, ...bordo }}>
+                      <i className="calx-edot" style={{ background: col.dot || 'rgba(255,255,255,.9)' }} />
+                      {hhmm(ev.ora_inizio) && <b>{hhmm(ev.ora_inizio)}</b>}
+                      <span className="calx-ev-label">{ev._tipo === 'partita' ? labelPartitaCella(ev) : ev.squadra_nome}</span>
                     </span>
                   )
                 })}
+                {extra > 0 && <span className="calx-more">+{extra}</span>}
               </div>
             </div>
           )
         })}
       </div>
-      </div>
 
       {selectedDay && (
-        <div className="cal-preview">
-          <div className="cal-preview-header">
-            <h3 className="cal-preview-titolo">📅 {selectedDateLabel}</h3>
-            <button className="cal-preview-close" type="button" onClick={() => setSelectedDay(null)}>✕</button>
+        <div className="calx-panel">
+          <div className="calx-panel-head">
+            <span className="calx-panel-ic">📅</span>
+            <h3 className="calx-panel-title">{selectedDateLabel}</h3>
+            <div className="calx-panel-actions">
+              <button type="button" className="calx-nb" onClick={() => vaiGiorno(-1)} disabled={selectedDay <= 1} aria-label={t('mesePrec')}>‹</button>
+              <button type="button" className="calx-nb" onClick={() => vaiGiorno(1)} disabled={selectedDay >= daysInMonth} aria-label={t('meseSucc')}>›</button>
+              <button type="button" className="calx-nb" onClick={() => { setSelectedDay(null); setOpenId(null) }} aria-label="Chiudi">✕</button>
+            </div>
           </div>
 
-          {selectedEvs.length === 0 && (
-            <p style={{ color: 'var(--ink-soft)', fontSize: 14, margin: '4px 0 0' }}>
-              {t('nessunEvento')}{!isPortiere && t('nessunEventoStaff')}
-            </p>
+          {selectedEvs.length > 0 && (
+            <div className="calx-summary">
+              {nAll > 0 && <span className="calx-chip">🏋 {t('sommarioAllenamenti', { n: nAll })}</span>}
+              {nPar > 0 && <span className="calx-chip">⚽ {t('sommarioPartite', { n: nPar })}</span>}
+            </div>
           )}
 
-          {selectedEvs.map((ev) => {
-            if (ev._tipo === 'partita') {
+          {selectedEvs.length === 0 && (
+            <p className="calx-empty">{t('nessunEvento')}{!isPortiere && t('nessunEventoStaff')}</p>
+          )}
+
+          <div className="calx-rows">
+            {selectedEvs.map((ev) => {
+              const col = colorEv(ev)
               const passata = ev.data < oggiStr
-              return (
-                <div key={`p-${ev.id}`} className="cal-preview-card cal-preview-partita">
-                  <div className="cal-preview-card-top">
-                    <div>
-                      <div className="cal-preview-badge" style={{ background: '#7c3aed', color: '#fff' }}>{t('badgePartita')}</div>
-                      <div className="cal-preview-categoria">{ev.squadra_nome}</div>
+              const open = isOpen(ev)
+
+              if (ev._tipo === 'partita') {
+                return (
+                  <div key={cid(ev)} className={`calx-row ${open ? 'open' : ''}`}>
+                    <div className="calx-row-top" onClick={() => toggleRow(ev)}>
+                      <i className="calx-rdot" style={{ background: col.dot || col.bg }} />
+                      <span className="calx-rtime">{hhmm(ev.ora_inizio) || hhmm(ev.ora_ritrovo) || '—'}</span>
+                      <div className="calx-rmain">
+                        <div className="calx-rcat">{ev.squadra_nome}</div>
+                        <div className="calx-rsub">{ev.casa === true ? '🏠' : ev.casa === false ? '✈' : ''} {t('vs')} {ev.avversario || '—'}</div>
+                        {ev.assenti_annunciati?.length > 0 && (
+                          <div className="calx-rabs">⚠ {t('assentiCount', { n: ev.assenti_annunciati.length })}</div>
+                        )}
+                      </div>
+                      <span className="calx-badge par">{t('badgePartita')}</span>
+                      {!singolo && <span className="calx-rchev">›</span>}
                     </div>
-                    <div className="cal-preview-meta">
-                      {ev.casa ? t('casa') : t('trasferta')}
-                      {ev.gol_fatti != null && <span className="cal-preview-risultato"> · {ev.gol_fatti} - {ev.gol_subiti}</span>}
+                    <div className="calx-detail">
+                      <div className="calx-detail-in">
+                        <div className="calx-state" style={{ color: 'var(--ink-soft)' }}>
+                          {ev.casa ? t('casa') : t('trasferta')}
+                        </div>
+                        {(ev.ora_ritrovo || ev.ora_inizio) && (
+                          <div style={{ marginBottom: 6, fontSize: 13, color: 'var(--ink-soft)' }}>
+                            {ev.ora_ritrovo && <>{t('ritrovo', { ora: hhmm(ev.ora_ritrovo) })}</>}
+                            {ev.ora_ritrovo && ev.ora_inizio && ' · '}
+                            {ev.ora_inizio && <>{t('inizioPartita', { ora: hhmm(ev.ora_inizio) })}</>}
+                          </div>
+                        )}
+                        {ev.assenti_annunciati?.length > 0 && (
+                          <div className="cal-preview-note" style={{ marginBottom: 8, background: '#fff8e6', border: '1px solid #f0d98a', borderRadius: 8, padding: '6px 8px' }}>
+                            <span className="cal-preview-esercizi-label">{t('assentiAnnunciati')}</span>
+                            <ul style={{ margin: '4px 0 0', paddingLeft: 16, fontSize: 13 }}>
+                              {ev.assenti_annunciati.map((x, i) => (
+                                <li key={i}><b>{x.nome}</b>{x.nota ? ` — ${x.nota}` : ' ' + t('assente')}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {passata && ev.gol_fatti != null && (
+                          <div style={{ margin: '6px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontWeight: 700, fontSize: 22, letterSpacing: 2 }}>{ev.gol_fatti} — {ev.gol_subiti}</span>
+                            {ev.gol_subiti === 0 && <span style={{ fontSize: 12, color: 'var(--campo)', fontWeight: 700 }}>{t('cleanSheet')}</span>}
+                          </div>
+                        )}
+                        {previewPartite[ev.id]?.valutazioni?.length > 0 && (
+                          <div style={{ margin: '8px 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {previewPartite[ev.id].valutazioni.map((v, vi) => (
+                              <div key={vi} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 8px', background: 'var(--carta)', borderRadius: 6 }}>
+                                <span>{v.portieri?.nome} {v.portieri?.cognome}</span>
+                                {v.voto != null && <span style={{ fontWeight: 700 }}>⭐ {v.voto}</span>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="cal-preview-actions">
+                          <Link href={`/partite/${ev.id}`} className="btn-mini">
+                            {passata && !ev.ha_valutazioni ? t('inserisciValutazioni') : t('apriPartita')}
+                          </Link>
+                          <button type="button" className="btn-mini btn-del" onClick={() => eliminaPartita(ev)}>{t('elimina')}</button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="cal-preview-avversario">{t('vs')} {ev.avversario || '—'}</div>
-                  {(ev.ora_ritrovo || ev.ora_inizio) && (
-                    <div style={{ marginTop: 4, fontSize: 13, color: 'var(--ink-soft)' }}>
-                      {ev.ora_ritrovo && <>{t('ritrovo', { ora: ev.ora_ritrovo.slice(0, 5) })}</>}
-                      {ev.ora_ritrovo && ev.ora_inizio && ' · '}
-                      {ev.ora_inizio && <>{t('inizioPartita', { ora: ev.ora_inizio.slice(0, 5) })}</>}
+                )
+              }
+
+              // allenamento
+              const daVal = passata && !ev.valutato
+              const statoTxt = ev.nessuna_valutazione ? t('nessunaValPrevista')
+                : ev.valutato ? t('valutato')
+                : daVal ? t('daValutare')
+                : t('programmato')
+              const statoColor = ev.nessuna_valutazione ? 'var(--campo)'
+                : ev.valutato ? 'var(--campo)'
+                : daVal ? 'var(--rosso)'
+                : 'var(--ink-soft)'
+
+              return (
+                <div key={cid(ev)} className={`calx-row ${open ? 'open' : ''} ${daVal ? 'daval' : ''}`}>
+                  <div className="calx-row-top" onClick={() => toggleRow(ev)}>
+                    <i className="calx-rdot" style={{ background: col.bg }} />
+                    <span className="calx-rtime">{hhmm(ev.ora_inizio) || '—'}{ev.ora_fine ? `–${hhmm(ev.ora_fine)}` : ''}</span>
+                    <div className="calx-rmain">
+                      <div className="calx-rcat">{ev.squadra_nome}</div>
+                      <div className="calx-rsub">
+                        {t('tipoAllenamento')}
+                        {ev.accorpata_con && <> · {t('accorpatoCon', { nome: ev.accorpata_nome || '…' })}</>}
+                      </div>
+                      {ev.assenti_annunciati?.length > 0 && (
+                        <div className="calx-rabs">⚠ {t('assentiCount', { n: ev.assenti_annunciati.length })}</div>
+                      )}
                     </div>
-                  )}
-                  {ev.assenti_annunciati?.length > 0 && (
-                    <div className="cal-preview-note" style={{ marginTop: 6, background: '#fff8e6', border: '1px solid #f0d98a', borderRadius: 8, padding: '6px 8px' }}>
-                      <span className="cal-preview-esercizi-label">{t('assentiAnnunciati')}</span>
-                      <ul style={{ margin: '4px 0 0', paddingLeft: 16, fontSize: 13 }}>
-                        {ev.assenti_annunciati.map((x, i) => (
-                          <li key={i}><b>{x.nome}</b>{x.nota ? ` — ${x.nota}` : ' ' + t('assente')}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {passata && ev.gol_fatti != null && (
-                    <div style={{ margin: '6px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontWeight: 700, fontSize: 22, letterSpacing: 2 }}>{ev.gol_fatti} — {ev.gol_subiti}</span>
-                      {ev.gol_subiti === 0 && <span style={{ fontSize: 12, color: 'var(--campo)', fontWeight: 700 }}>{t('cleanSheet')}</span>}
-                    </div>
-                  )}
-                  {previewPartite[ev.id]?.valutazioni?.length > 0 && (
-                    <div style={{ margin: '8px 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      {previewPartite[ev.id].valutazioni.map((v, vi) => (
-                        <div key={vi} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 8px', background: 'var(--carta)', borderRadius: 6 }}>
-                          <span>{v.portieri?.nome} {v.portieri?.cognome}</span>
-                          {v.voto != null && <span style={{ fontWeight: 700 }}>⭐ {v.voto}</span>}
+                    <span className="calx-badge all">{t('tipoAllenamento')}</span>
+                    {!singolo && <span className="calx-rchev">›</span>}
+                  </div>
+                  <div className="calx-detail">
+                    <div className="calx-detail-in">
+                      <div className="calx-state" style={{ color: statoColor }}>{statoTxt}</div>
+                      {ev.assenti_annunciati?.length > 0 && (
+                        <div className="cal-preview-note" style={{ marginBottom: 8, background: '#fff8e6', border: '1px solid #f0d98a', borderRadius: 8, padding: '6px 8px' }}>
+                          <span className="cal-preview-esercizi-label">{t('assentiAnnunciati')}</span>
+                          <ul style={{ margin: '4px 0 0', paddingLeft: 16, fontSize: 13 }}>
+                            {ev.assenti_annunciati.map((x, i) => (
+                              <li key={i}><b>{x.nome}</b>{x.nota ? ` — ${x.nota}` : ' ' + t('assente')}</li>
+                            ))}
+                          </ul>
                         </div>
-                      ))}
+                      )}
+                      {previewExtra[ev.id]?.obiettivi && (
+                        <div className="cal-preview-note" style={{ marginBottom: 6 }}>
+                          <span className="cal-preview-esercizi-label">{t('obiettivi')}</span>
+                          <p style={{ margin: '4px 0 0', fontSize: 13, whiteSpace: 'pre-wrap' }}>{previewExtra[ev.id].obiettivi}</p>
+                        </div>
+                      )}
+                      {previewExtra[ev.id]?.consuntivo && (
+                        <div className="cal-preview-note" style={{ marginBottom: 6 }}>
+                          <span className="cal-preview-esercizi-label">{t('consuntivo')}</span>
+                          <p style={{ margin: '4px 0 0', fontSize: 13, whiteSpace: 'pre-wrap' }}>{previewExtra[ev.id].consuntivo}</p>
+                        </div>
+                      )}
+                      {previewExtra[ev.id] && (
+                        <div className="cal-preview-esercizi">
+                          {previewExtra[ev.id].esercizi.length > 0
+                            ? <>
+                                <div className="cal-preview-esercizi-label">{t('eserciziLabel')}</div>
+                                <ol className="cal-preview-esercizi-list">
+                                  {previewExtra[ev.id].esercizi.map((e, i) => (
+                                    <li key={e.id}>
+                                      <span className="cal-preview-es-nome">{e.titolo}</span>
+                                      {e.tipologia && <span className="cal-preview-es-tipo"> · {e.tipologia}</span>}
+                                    </li>
+                                  ))}
+                                </ol>
+                              </>
+                            : <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{t('nessunEsercizioPian')}</div>}
+                        </div>
+                      )}
+                      {previewExtra[ev.id]?.totaleMinuti > 0 && (
+                        <div style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--ink-soft)' }}>
+                          {t('durataTotale')}{' '}
+                          <b style={{ color: 'var(--ink)' }}>{fmtMin(previewExtra[ev.id].totaleMinuti)}</b>
+                        </div>
+                      )}
+                      {loadingExtra && !previewExtra[ev.id] && (
+                        <div style={{ fontSize: 12, color: 'var(--ink-soft)', margin: '6px 0' }}>{t('caricamentoEsercizi')}</div>
+                      )}
+                      {!isPortiere && (
+                        <div className="cal-preview-actions">
+                          <Link href={`/calendario/${ev.id}`} className="btn-mini">
+                            {daVal ? t('inserisciValutazioniAllen') : t('apriAllenamento')}
+                          </Link>
+                          <button type="button" className="btn-mini btn-del" onClick={() => eliminaAllenamento(ev)}>{t('elimina')}</button>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <div className="cal-preview-actions">
-                    <Link href={`/partite/${ev.id}`} className="btn-mini">
-                      {passata && !ev.ha_valutazioni ? t('inserisciValutazioni') : t('apriPartita')}
-                    </Link>
-                    <button type="button" className="btn-mini btn-del" onClick={() => eliminaPartita(ev)}>{t('elimina')}</button>
                   </div>
                 </div>
               )
-            }
-
-            const passato = ev.data < oggiStr
-            const daVal = passato && !ev.valutato
-
-            return (
-              <div key={ev.id} className={`cal-preview-card ${daVal ? 'cal-preview-daval' : ''}`}>
-                <div className="cal-preview-card-top">
-                  <div>
-                    {ev.accorpata_con && (
-                      <div className="cal-preview-badge" style={{ background: 'var(--giallo)', color: '#000' }}>{t('accorpatoCon', { nome: ev.accorpata_nome || '...' })}</div>
-                    )}
-                    {!ev.accorpata_con && selectedEvs.some((o) => o._tipo === 'allenamento' && o.id !== ev.id && o.accorpata_con === ev.squadra_id) && (
-                      <div className="cal-preview-badge" style={{ background: 'var(--campo)', color: '#fff' }}>{t('categoriaAccorpante')}</div>
-                    )}
-                    <div className="cal-preview-categoria">{ev.squadra_nome}</div>
-                  </div>
-                  <div className="cal-preview-meta">
-                    {ev.ora_inizio ? ev.ora_inizio.slice(0, 5) : '—'}
-                    {ev.ora_fine ? ` → ${ev.ora_fine.slice(0, 5)}` : ''}
-                  </div>
-                </div>
-                <div className="cal-preview-stato">
-                  {ev.nessuna_valutazione
-                    ? <span style={{ color: 'var(--campo)' }}>{t('nessunaValPrevista')}</span>
-                    : ev.valutato
-                      ? <span style={{ color: 'var(--campo)' }}>{t('valutato')}</span>
-                      : daVal
-                        ? <span style={{ color: 'var(--rosso)' }}>{t('daValutare')}</span>
-                        : <span style={{ color: 'var(--ink-soft)' }}>{t('programmato')}</span>}
-                </div>
-                {ev.assenti_annunciati?.length > 0 && (
-                  <div className="cal-preview-note" style={{ marginTop: 6, background: '#fff8e6', border: '1px solid #f0d98a', borderRadius: 8, padding: '6px 8px' }}>
-                    <span className="cal-preview-esercizi-label">{t('assentiAnnunciati')}</span>
-                    <ul style={{ margin: '4px 0 0', paddingLeft: 16, fontSize: 13 }}>
-                      {ev.assenti_annunciati.map((x, i) => (
-                        <li key={i}><b>{x.nome}</b>{x.nota ? ` — ${x.nota}` : ' ' + t('assente')}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {previewExtra[ev.id]?.obiettivi && (
-                  <div className="cal-preview-note" style={{ marginBottom: 6 }}>
-                    <span className="cal-preview-esercizi-label">{t('obiettivi')}</span>
-                    <p style={{ margin: '4px 0 0', fontSize: 13, whiteSpace: 'pre-wrap' }}>{previewExtra[ev.id].obiettivi}</p>
-                  </div>
-                )}
-                {previewExtra[ev.id]?.consuntivo && (
-                  <div className="cal-preview-note" style={{ marginBottom: 6 }}>
-                    <span className="cal-preview-esercizi-label">{t('consuntivo')}</span>
-                    <p style={{ margin: '4px 0 0', fontSize: 13, whiteSpace: 'pre-wrap' }}>{previewExtra[ev.id].consuntivo}</p>
-                  </div>
-                )}
-                {previewExtra[ev.id] && (
-                  <div className="cal-preview-esercizi">
-                    {previewExtra[ev.id].esercizi.length > 0
-                      ? <>
-                          <div className="cal-preview-esercizi-label">{t('eserciziLabel')}</div>
-                          <ol className="cal-preview-esercizi-list">
-                            {previewExtra[ev.id].esercizi.map((e, i) => (
-                              <li key={e.id}>
-                                <span className="cal-preview-es-nome">{e.titolo}</span>
-                                {e.tipologia && <span className="cal-preview-es-tipo"> · {e.tipologia}</span>}
-                              </li>
-                            ))}
-                          </ol>
-                        </>
-                      : <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{t('nessunEsercizioPian')}</div>}
-                  </div>
-                )}
-                {previewExtra[ev.id]?.totaleMinuti > 0 && (
-                  <div style={{ marginTop: 8, fontSize: 13, fontWeight: 600, color: 'var(--ink-soft)' }}>
-                    {t('durataTotale')}{' '}
-                    <b style={{ color: 'var(--ink)' }}>{fmtMin(previewExtra[ev.id].totaleMinuti)}</b>
-                  </div>
-                )}
-                {loadingExtra && !previewExtra[ev.id] && (
-                  <div style={{ fontSize: 12, color: 'var(--ink-soft)', margin: '6px 0' }}>{t('caricamentoEsercizi')}</div>
-                )}
-                <div className="cal-preview-actions">
-                  <Link href={`/calendario/${ev.id}`} className="btn-mini">
-                    {daVal ? t('inserisciValutazioniAllen') : t('apriAllenamento')}
-                  </Link>
-                  <button type="button" className="btn-mini btn-del" onClick={() => eliminaAllenamento(ev)}>{t('elimina')}</button>
-                </div>
-              </div>
-            )
-          })}
+            })}
+          </div>
         </div>
       )}
 

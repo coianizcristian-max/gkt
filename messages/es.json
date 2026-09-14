@@ -2329,6 +2329,10 @@
     "ordineSalvato": "✓ Orden guardado"
   },
   "calendarioMese": {
+    "tipoAllenamento": "Entrenamiento",
+    "sommarioAllenamenti": "{n, plural, one {# entrenamiento} other {# entrenamientos}}",
+    "sommarioPartite": "{n, plural, one {# partido} other {# partidos}}",
+    "assentiCount": "{n, plural, one {# ausencia anunciada} other {# ausencias anunciadas}}",
     "dowShort_1": "Lun",
     "dowShort_2": "Mar",
     "dowShort_3": "Mié",

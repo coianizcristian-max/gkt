@@ -18,9 +18,9 @@ export default function CalendarioAzioni() {
 
   const q = data ? `?data=${data}` : ''
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div className="cal-azioni">
       <Link href={`/calendario/nuovo${q}`} className="btn-azione">{t('nuovoAllenamento')}</Link>
-      <Link href={`/partite/nuova${q}`} className="btn-azione" style={{ textAlign: 'center' }}>{t('nuovaPartita')}</Link>
+      <Link href={`/partite/nuova${q}`} className="btn-azione">{t('nuovaPartita')}</Link>
     </div>
   )
 }

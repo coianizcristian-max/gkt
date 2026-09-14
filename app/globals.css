@@ -2075,4 +2075,4 @@ a.brand { text-decoration: none; color: inherit; }
 
 /* agenda portiere: evidenzia "da valutare" con bordino rosso sul quadrato del giorno */
 .agenda-row.da { border-left: 1px solid var(--linea); }
-.agenda-row.da .agenda-date { border: 2px solid var(--rosso); }
+.agenda-row.da .agenda-date { outline: 2px solid #e8a72c; outline-offset: 2px; }

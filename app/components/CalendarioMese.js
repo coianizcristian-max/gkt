@@ -79,7 +79,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     if (isPortiere) {
       if (a.ha_voto) return { bg: '#2e9e5b', fg: '#fff' }
       if (a.presente === false) return { bg: '#9aa6b2', fg: '#fff' }
-      if (a.data < oggiStr && a.presente === true) return { bg: '#fffdf5', fg: '#9a6a12', dot: '#e8a72c', outline: '2px solid #e8a72c' }
+      if (a.data < oggiStr && a.presente === true) return { bg: '#1f6feb', fg: '#fff', outline: '2px solid #e8a72c' }
       return { bg: '#1f6feb', fg: '#fff' }
     }
     if (a.valutato) return { bg: '#2e9e5b', fg: '#fff' }
@@ -394,7 +394,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
         {isPortiere ? (
           <>
             <span><i className="calx-ldot" style={{ background: '#2e9e5b' }} />{t('legValutato')}</span>
-            <span><i className="calx-ldot" style={{ background: '#fff', border: '2px solid #e8a72c' }} />{t('legDaValutare')}</span>
+            <span><i className="calx-ldot" style={{ background: '#1f6feb', border: '2px solid #e8a72c' }} />{t('legDaValutare')}</span>
           </>
         ) : (
           <>

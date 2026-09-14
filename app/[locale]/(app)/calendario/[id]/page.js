@@ -144,7 +144,7 @@ export default async function AllenamentoPage({ params }) {
           <ValutazionePortiere
             allenamentoId={id}
             portiereId={profilo.portiere_id}
-            assente={mia?.presente === false}
+            presente={mia?.presente ?? null}
             votoIniziale={mia?.voto_portiere ?? 0}
             feedbackIniziale={mia?.feedback_portiere ?? ''}
             notaIniziale={mia?.nota_portiere ?? ''}

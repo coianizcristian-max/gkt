@@ -4,8 +4,12 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
-export default function ValutazionePortiere({ allenamentoId, portiereId, assente, votoIniziale, feedbackIniziale, notaIniziale }) {
+export default function ValutazionePortiere({ allenamentoId, portiereId, presente, votoIniziale, feedbackIniziale, notaIniziale }) {
   const t = useTranslations('valutazionePortiere')
+  // Modificabile SOLO se risulti PRESENTE (presente === true) sul DB.
+  // Assente (false) o nessuna registrazione (null, es. sedute a cui non
+  // risulti / future): tutto in sola lettura.
+  const readOnly = presente !== true
   const [voto, setVoto] = useState(votoIniziale ?? 0)
   const [feedback, setFeedback] = useState(feedbackIniziale ?? '')
   const [nota, setNota] = useState(notaIniziale ?? '')
@@ -14,11 +18,9 @@ export default function ValutazionePortiere({ allenamentoId, portiereId, assente
   const [error, setError] = useState('')
 
   async function salva() {
+    if (readOnly) return
     setBusy(true); setError('')
     const supabase = createClient()
-    // RPC sicura: registra il VOTO DEL PORTIERE sull'allenamento (gradimento
-    // 1-5 + feedback/nota). Scrive SOLO questi campi, mai presente/voto del
-    // coach, e crea la riga se manca. Il portiere è ricavato lato server da auth.
     const { error } = await supabase.rpc('salva_valutazione_portiere', {
       p_allenamento: allenamentoId,
       p_voto: voto || null,
@@ -29,39 +31,33 @@ export default function ValutazionePortiere({ allenamentoId, portiereId, assente
     setDone(true); setBusy(false)
   }
 
-  const stellaStyle = (on) => ({ fontSize: '2rem', lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', color: on ? '#f2b705' : 'var(--linea)', padding: '0 2px' })
-
-  // Se il coach l'ha segnato ASSENTE, non può dare il voto alla seduta.
-  if (assente) {
-    return (
-      <div className="scheda">
-        <p className="sub-intro">{t('nonPresente')}</p>
-      </div>
-    )
-  }
+  const stellaStyle = (on) => ({ fontSize: '2rem', lineHeight: 1, background: 'none', border: 'none', cursor: readOnly ? 'default' : 'pointer', color: on ? '#f2b705' : 'var(--linea)', padding: '0 2px' })
 
   return (
     <div className="scheda">
+      {readOnly && <p className="sub-intro" style={{ marginTop: 0 }}>{t('nonPresente')}</p>}
+
       <div className="field field-full">
         <label>{t('tuoVoto')}</label>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {[1, 2, 3, 4, 5].map((n) => (
-            <button key={n} type="button" style={stellaStyle(n <= voto)} onClick={() => { setVoto(n); setDone(false) }} aria-label={t('stelle', { n })}>&#9733;</button>
+            <button key={n} type="button" disabled={readOnly} style={stellaStyle(n <= voto)}
+              onClick={() => { if (readOnly) return; setVoto(n); setDone(false) }} aria-label={t('stelle', { n })}>&#9733;</button>
           ))}
-          {voto > 0 && <button type="button" className="btn-ghost" style={{ marginLeft: 8 }} onClick={() => { setVoto(0); setDone(false) }}>{t('azzera')}</button>}
+          {!readOnly && voto > 0 && <button type="button" className="btn-ghost" style={{ marginLeft: 8 }} onClick={() => { setVoto(0); setDone(false) }}>{t('azzera')}</button>}
         </div>
       </div>
       <div className="field field-full">
         <label>{t('feedbackLabel')}</label>
-        <textarea rows="3" value={feedback} onChange={(e) => { setFeedback(e.target.value); setDone(false) }} placeholder={t('feedbackPlaceholder')} />
+        <textarea rows="3" disabled={readOnly} value={feedback} onChange={(e) => { setFeedback(e.target.value); setDone(false) }} placeholder={t('feedbackPlaceholder')} />
       </div>
       <div className="field field-full">
         <label>{t('notaLabel')}</label>
-        <textarea rows="3" value={nota} onChange={(e) => { setNota(e.target.value); setDone(false) }} />
+        <textarea rows="3" disabled={readOnly} value={nota} onChange={(e) => { setNota(e.target.value); setDone(false) }} />
       </div>
       {error && <div className="err">{error}</div>}
       <div className="form-actions">
-        <button className="btn" type="button" onClick={salva} disabled={busy}>{busy ? t('salvataggio') : done ? t('salvato') : t('salva')}</button>
+        <button className="btn" type="button" onClick={salva} disabled={readOnly || busy}>{busy ? t('salvataggio') : done ? t('salvato') : t('salva')}</button>
       </div>
     </div>
   )

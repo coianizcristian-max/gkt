@@ -138,10 +138,15 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     try {
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
-      const [{ data: ae }, { data: allRows }] = await Promise.all([
+      const [{ data: ae }, { data: allRows }, { data: valRows }] = await Promise.all([
         supabase.from('allenamento_esercizi').select('allenamento_id, ordine, esercizi(id, titolo, tipologia, durata_minuti, recupero_minuti)').in('allenamento_id', allIds).order('ordine'),
         supabase.from('allenamenti').select('id, obiettivi, consuntivo').in('id', daCaricare.map((e) => e.id)),
+        !isPortiere
+          ? supabase.from('valutazioni').select('allenamento_id, voto, portieri(nome, cognome)').in('allenamento_id', daCaricare.map((e) => e.id)).eq('presente', true).not('voto', 'is', null).order('voto', { ascending: false })
+          : Promise.resolve({ data: [] }),
       ])
+      const byVal = {}
+      for (const v of (valRows ?? [])) (byVal[v.allenamento_id] ??= []).push(v)
       const byAll = {}
       for (const r of (ae ?? [])) {
         if (!byAll[r.allenamento_id]) byAll[r.allenamento_id] = []
@@ -157,6 +162,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
             esercizi: byAll[effId] ?? [],
             obiettivi: allMap[e.id]?.obiettivi ?? null,
             consuntivo: allMap[e.id]?.consuntivo ?? null,
+            valutazioni: byVal[e.id] ?? [],
             totaleMinuti: (byAll[effId] ?? []).reduce((tot, ex) => tot + (parseFloat(ex.durata_minuti) || 0) + (parseFloat(ex.recupero_minuti) || 0), 0),
           }
         }
@@ -313,6 +319,19 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                 <li key={i}><b>{x.nome}</b>{x.nota ? ` — ${x.nota}` : ' ' + t('assente')}</li>
               ))}
             </ul>
+          </div>
+        )}
+        {!isPortiere && previewExtra[ev.id]?.valutazioni?.length > 0 && (
+          <div className="cal-preview-note" style={{ marginBottom: 8 }}>
+            <span className="cal-preview-esercizi-label">{t('votiPortieri')}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+              {previewExtra[ev.id].valutazioni.map((v, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, background: 'var(--carta)', borderRadius: 6, padding: '4px 8px' }}>
+                  <span>{v.portieri?.nome} {v.portieri?.cognome}</span>
+                  <b>⭐ {v.voto}</b>
+                </div>
+              ))}
+            </div>
           </div>
         )}
         {previewExtra[ev.id]?.obiettivi && (

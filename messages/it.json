@@ -2344,6 +2344,7 @@
     "ordineSalvato": "✓ Ordine salvato"
   },
   "calendarioMese": {
+    "votiPortieri": "Voti portieri",
     "valutazioneAllenatore": "Valutazione dell'allenatore",
     "tipoAllenamento": "Allenamento",
     "sommarioAllenamenti": "{n, plural, one {# allenamento} other {# allenamenti}}",

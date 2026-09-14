@@ -2344,6 +2344,7 @@
     "ordineSalvato": "✓ Order saved"
   },
   "calendarioMese": {
+    "votiPortieri": "Goalkeeper ratings",
     "valutazioneAllenatore": "Coach's evaluation",
     "tipoAllenamento": "Training",
     "sommarioAllenamenti": "{n, plural, one {# training session} other {# training sessions}}",

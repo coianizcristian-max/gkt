@@ -2344,6 +2344,7 @@
     "ordineSalvato": "✓ Reihenfolge gespeichert"
   },
   "calendarioMese": {
+    "votiPortieri": "Torwart-Noten",
     "valutazioneAllenatore": "Bewertung des Trainers",
     "tipoAllenamento": "Training",
     "sommarioAllenamenti": "{n, plural, one {# Training} other {# Trainings}}",

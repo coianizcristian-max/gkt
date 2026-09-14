@@ -196,7 +196,15 @@ export default async function AppLayout({ children }) {
     ? sidebarOrdine.map((r) => r.chiave)
     : Object.keys(tutteLeVoci)
   // Aggiungi chiavi non coperte dall'ordine salvato (nuove voci future)
-  const tutteChiavi = [...ordineChiavi, ...Object.keys(tutteLeVoci).filter(k => !ordineChiavi.includes(k))]
+  let tutteChiavi = [...ordineChiavi, ...Object.keys(tutteLeVoci).filter(k => !ordineChiavi.includes(k))]
+  // Per il portiere, forza "Obiettivi" e "Percorso" subito dopo "Partite"
+  // (l'ordine salvato in DB non le contiene, altrimenti finirebbero in fondo).
+  if (isPortiere) {
+    tutteChiavi = tutteChiavi.filter((k) => k !== 'obiettivi-portiere' && k !== 'percorso-portiere')
+    const idx = tutteChiavi.indexOf('partite')
+    if (idx >= 0) tutteChiavi.splice(idx + 1, 0, 'obiettivi-portiere', 'percorso-portiere')
+    else tutteChiavi.push('obiettivi-portiere', 'percorso-portiere')
+  }
 
   const voci = [
     ...tutteChiavi.map((k) => tutteLeVoci[k]).filter(Boolean),

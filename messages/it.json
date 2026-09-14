@@ -1620,8 +1620,8 @@
     "noteRiabbonarti": "Potrai riabbonarti in qualsiasi momento."
   },
   "calendarioAzioni": {
-    "nuovoAllenamento": "+ Nuovo allenamento",
-    "nuovaPartita": "+ Nuova partita"
+    "nuovoAllenamento": "Nuovo allenamento",
+    "nuovaPartita": "Nuova partita"
   },
   "collegaSupervisore": {
     "inserisciCodice": "Inserisci il codice ricevuto.",

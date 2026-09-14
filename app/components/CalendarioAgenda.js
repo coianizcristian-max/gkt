@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
 
@@ -7,8 +8,12 @@ const DL = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
 
 export default function CalendarioAgenda({ allenamenti = [], oggiStr }) {
   const t = useTranslations('calendario')
+  const tm = useTranslations('calendarioMese')
   const locale = useLocale()
   const dl = DL[locale] || 'it-IT'
+
+  const [openId, setOpenId] = useState(null)
+  const [eserciziMap, setEserciziMap] = useState({})
 
   // 7 giorni fa (stringa YYYY-MM-DD)
   const d7 = new Date(oggiStr + 'T00:00:00')
@@ -32,23 +37,74 @@ export default function CalendarioAgenda({ allenamenti = [], oggiStr }) {
 
   const giorno = (s) => new Date(s + 'T00:00:00').getDate()
   const mese = (s) => new Date(s + 'T00:00:00').toLocaleDateString(dl, { month: 'short' }).replace('.', '')
-  const ora = (a) => (a.ora_inizio ? ` · ${String(a.ora_inizio).slice(0, 5)}` : '')
+  const hhmm = (v) => (v ? String(v).slice(0, 5) : '')
+  const ora = (a) => (a.ora_inizio ? ` · ${hhmm(a.ora_inizio)}` : '')
+
+  async function toggle(a) {
+    if (openId === a.id) { setOpenId(null); return }
+    setOpenId(a.id)
+    if (eserciziMap[a.id] !== undefined) return
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const ids = [a.id, a.accorpata_con].filter(Boolean)
+      const { data } = await supabase.from('allenamento_esercizi')
+        .select('ordine, esercizi(id, titolo, tipologia)')
+        .in('allenamento_id', ids).order('ordine')
+      const list = (data ?? []).map((r) => r.esercizi).filter(Boolean)
+      setEserciziMap((prev) => ({ ...prev, [a.id]: list }))
+    } catch (_) {
+      setEserciziMap((prev) => ({ ...prev, [a.id]: [] }))
+    }
+  }
 
   const Riga = ({ a, badge, badgeClass, da }) => {
-    const inner = (
-      <>
-        <div className="agenda-date"><div className="d">{giorno(a.data)}</div><div className="m">{mese(a.data)}</div></div>
-        <div className="agenda-info">
-          <div className="t">{a.squadra_nome || t('titolo')}</div>
-          <div className="s">{t('agendaAllenamento')}{ora(a)}</div>
-          {da && <span className="agenda-cta">{t('agendaTocca')} ›</span>}
+    const open = openId === a.id
+    const es = eserciziMap[a.id]
+    const orario = a.ora_inizio ? `${hhmm(a.ora_inizio)}${a.ora_fine ? '–' + hhmm(a.ora_fine) : ''}` : null
+    return (
+      <div className={`agenda-item ${open ? 'open' : ''}`}>
+        <div className={`agenda-row clic ${da ? 'da' : ''}`} role="button" tabIndex={0}
+          onClick={() => toggle(a)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(a) } }}>
+          <div className="agenda-date"><div className="d">{giorno(a.data)}</div><div className="m">{mese(a.data)}</div></div>
+          <div className="agenda-info">
+            <div className="t">{a.squadra_nome || t('titolo')}</div>
+            <div className="s">{t('agendaAllenamento')}{ora(a)}</div>
+          </div>
+          {badge && <span className={`agenda-badge ${badgeClass}`}>{badge}</span>}
+          <span className="agenda-chevron">›</span>
         </div>
-        {badge && <span className={`agenda-badge ${badgeClass}`}>{badge}</span>}
-      </>
+        <div className="agenda-detail">
+          <div className="agenda-detail-in">
+            {orario && <div className="agenda-d-line">🕒 {orario}</div>}
+            {a.ha_voto && <div className="agenda-d-line">{t('agendaTuoVoto')}: <b>{a.voto_portiere}★</b></div>}
+            <div className="agenda-d-es">
+              {es === undefined
+                ? <span className="agenda-d-muted">{tm('caricamentoEsercizi')}</span>
+                : es.length === 0
+                  ? <span className="agenda-d-muted">{tm('nessunEsercizioPian')}</span>
+                  : (
+                    <>
+                      <div className="agenda-d-label">{tm('eserciziLabel')}</div>
+                      <ol className="cal-preview-esercizi-list">
+                        {es.map((e) => (
+                          <li key={e.id}>
+                            <span className="cal-preview-es-nome">{e.titolo}</span>
+                            {e.tipologia && <span className="cal-preview-es-tipo"> · {e.tipologia}</span>}
+                          </li>
+                        ))}
+                      </ol>
+                    </>
+                  )}
+            </div>
+            <Link href={`/calendario/${a.id}`} className="btn-mini">
+              {da ? t('agendaTocca') : tm('apriAllenamento')}
+            </Link>
+          </div>
+        </div>
+      </div>
     )
-    return da
-      ? <Link href={`/calendario/${a.id}`} className="agenda-row da">{inner}</Link>
-      : <div className="agenda-row">{inner}</div>
   }
 
   const badgeRecente = (a) => {

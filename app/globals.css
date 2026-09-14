@@ -2056,3 +2056,19 @@ a.brand { text-decoration: none; color: inherit; }
 .sidebar .nav-ic { width: 18px; height: 18px; flex: 0 0 18px; opacity: .88; }
 .sidebar .nav-link:hover .nav-ic,
 .sidebar .nav-link.active .nav-ic { opacity: 1; }
+
+/* agenda portiere: righe cliccabili con dettaglio espandibile */
+.agenda-item { margin-bottom: 8px; }
+.agenda-item .agenda-row { margin-bottom: 0; cursor: pointer; }
+.agenda-row.clic:hover { border-color: #c7d3de; }
+.agenda-chevron { color: #a7b2bd; font-size: 16px; flex: 0 0 auto; transition: transform .2s; }
+.agenda-item.open .agenda-chevron { transform: rotate(90deg); }
+.agenda-item.open .agenda-row { border-bottom-left-radius: 0; border-bottom-right-radius: 0; box-shadow: none; }
+.agenda-detail { max-height: 0; overflow: hidden; transition: max-height .28s ease; }
+.agenda-item.open .agenda-detail { max-height: 900px; }
+.agenda-detail-in { border: 1px solid var(--linea); border-top: 1px dashed var(--linea); border-radius: 0 0 14px 14px; padding: 10px 14px 14px; background: var(--bianco); box-shadow: var(--ombra); }
+.agenda-d-line { font-size: 13px; margin-bottom: 6px; }
+.agenda-d-line b { font-weight: 800; }
+.agenda-d-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-soft); margin-bottom: 4px; }
+.agenda-d-muted { font-size: 12px; color: var(--ink-soft); }
+.agenda-d-es { margin: 4px 0 10px; }

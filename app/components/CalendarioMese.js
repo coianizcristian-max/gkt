@@ -78,7 +78,8 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const colorAllenamento = (a) => {
     if (isPortiere) {
       if (a.ha_voto) return { bg: '#2e9e5b', fg: '#fff' }
-      if (a.presente) return { bg: '#e8a72c', fg: '#3a2a00' }
+      if (a.presente === false) return { bg: '#9aa6b2', fg: '#fff' }
+      if (a.data < oggiStr && a.presente === true) return { bg: '#c0392b', fg: '#fff' }
       return { bg: '#1f6feb', fg: '#fff' }
     }
     if (a.valutato) return { bg: '#2e9e5b', fg: '#fff' }
@@ -294,6 +295,9 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     return (
       <div className="calx-detail-in">
         <div className="calx-state" style={{ color: statoColor }}>{statoTxt}</div>
+        {isPortiere && ev.ha_voto && (
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--campo)', margin: '2px 0 8px' }}>⭐ {ev.voto_portiere}</div>
+        )}
         {ev.assenti_annunciati?.length > 0 && (
           <div className="cal-preview-note" style={{ marginBottom: 8, background: '#fff8e6', border: '1px solid #f0d98a', borderRadius: 8, padding: '6px 8px' }}>
             <span className="cal-preview-esercizi-label">{t('assentiAnnunciati')}</span>
@@ -342,14 +346,12 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
         {loadingExtra && !previewExtra[ev.id] && (
           <div style={{ fontSize: 12, color: 'var(--ink-soft)', margin: '6px 0' }}>{t('caricamentoEsercizi')}</div>
         )}
-        {!isPortiere && (
-          <div className="cal-preview-actions">
-            <Link href={`/calendario/${ev.id}`} className="btn-mini">
-              {daVal ? t('inserisciValutazioniAllen') : t('apriAllenamento')}
-            </Link>
-            <button type="button" className="btn-mini btn-del" onClick={() => eliminaAllenamento(ev)}>{t('elimina')}</button>
-          </div>
-        )}
+        <div className="cal-preview-actions">
+          <Link href={`/calendario/${ev.id}`} className="btn-mini">
+            {isPortiere ? t('apriAllenamento') : (daVal ? t('inserisciValutazioniAllen') : t('apriAllenamento'))}
+          </Link>
+          {!isPortiere && <button type="button" className="btn-mini btn-del" onClick={() => eliminaAllenamento(ev)}>{t('elimina')}</button>}
+        </div>
       </div>
     )
   }
@@ -392,7 +394,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
         {isPortiere ? (
           <>
             <span><i className="calx-ldot" style={{ background: '#2e9e5b' }} />{t('legValutato')}</span>
-            <span><i className="calx-ldot" style={{ background: '#e8a72c' }} />{t('legDaValutare')}</span>
+            <span><i className="calx-ldot" style={{ background: '#c0392b' }} />{t('legDaValutare')}</span>
           </>
         ) : (
           <>

@@ -2049,6 +2049,7 @@
     "nuovaStagione": "+ Nueva temporada"
   },
   "valutazionePortiere": {
+    "nonAncoraSvolto": "Este entrenamiento aún no se ha realizado.",
     "nonPresente": "No constas como presente en este entrenamiento, así que no hay nada que evaluar.",
     "tuoVoto": "Tu nota del entrenamiento",
     "stelle": "{n} estrellas",

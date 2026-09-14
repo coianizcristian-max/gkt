@@ -2049,6 +2049,7 @@
     "nuovaStagione": "+ Nuova stagione"
   },
   "valutazionePortiere": {
+    "nonAncoraSvolto": "L'allenamento non si è ancora svolto.",
     "nonPresente": "Non risulti presente a questo allenamento, quindi non c'è nulla da valutare.",
     "tuoVoto": "Il tuo voto all'allenamento",
     "stelle": "{n} stelle",

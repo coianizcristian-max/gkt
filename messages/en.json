@@ -2049,6 +2049,7 @@
     "nuovaStagione": "+ New season"
   },
   "valutazionePortiere": {
+    "nonAncoraSvolto": "This session hasn't taken place yet.",
     "nonPresente": "You are not marked present at this training, so there is nothing to rate.",
     "tuoVoto": "Your rating for the training",
     "stelle": "{n} stars",

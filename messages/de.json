@@ -2049,6 +2049,7 @@
     "nuovaStagione": "+ Neue Saison"
   },
   "valutazionePortiere": {
+    "nonAncoraSvolto": "Diese Einheit hat noch nicht stattgefunden.",
     "nonPresente": "Du bist bei diesem Training nicht als anwesend markiert, daher gibt es nichts zu bewerten.",
     "tuoVoto": "Deine Bewertung für das Training",
     "stelle": "{n} Sterne",

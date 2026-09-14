@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
-export default function ValutazionePortiere({ allenamentoId, portiereId, presente, votoIniziale, feedbackIniziale, notaIniziale }) {
+export default function ValutazionePortiere({ allenamentoId, portiereId, presente, dataAllenamento, votoIniziale, feedbackIniziale, notaIniziale }) {
   const t = useTranslations('valutazionePortiere')
-  // Modificabile SOLO se risulti PRESENTE (presente === true) sul DB.
-  // Assente (false) o nessuna registrazione (null, es. sedute a cui non
-  // risulti / future): tutto in sola lettura.
-  const readOnly = presente !== true
+  // Modificabile SOLO se risulti PRESENTE (presente === true) sul DB E la
+  // seduta si e' gia' svolta. Assente (false), nessuna registrazione (null)
+  // o allenamento FUTURO: tutto in sola lettura.
+  const oggi = new Date(); oggi.setHours(0, 0, 0, 0)
+  const futura = dataAllenamento ? new Date(dataAllenamento + 'T00:00:00') > oggi : false
+  const readOnly = presente !== true || futura
   const [voto, setVoto] = useState(votoIniziale ?? 0)
   const [feedback, setFeedback] = useState(feedbackIniziale ?? '')
   const [nota, setNota] = useState(notaIniziale ?? '')
@@ -35,7 +37,7 @@ export default function ValutazionePortiere({ allenamentoId, portiereId, present
 
   return (
     <div className="scheda">
-      {readOnly && <p className="sub-intro" style={{ marginTop: 0 }}>{t('nonPresente')}</p>}
+      {readOnly && <p className="sub-intro" style={{ marginTop: 0 }}>{futura ? t('nonAncoraSvolto') : t('nonPresente')}</p>}
 
       <div className="field field-full">
         <label>{t('tuoVoto')}</label>

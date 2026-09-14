@@ -2344,6 +2344,7 @@
     "ordineSalvato": "✓ Order saved"
   },
   "calendarioMese": {
+    "valutazioneAllenatore": "Coach's evaluation",
     "tipoAllenamento": "Training",
     "sommarioAllenamenti": "{n, plural, one {# training session} other {# training sessions}}",
     "sommarioPartite": "{n, plural, one {# match} other {# matches}}",

@@ -2344,6 +2344,7 @@
     "ordineSalvato": "✓ Orden guardado"
   },
   "calendarioMese": {
+    "valutazioneAllenatore": "Valoración del entrenador",
     "tipoAllenamento": "Entrenamiento",
     "sommarioAllenamenti": "{n, plural, one {# entrenamiento} other {# entrenamientos}}",
     "sommarioPartite": "{n, plural, one {# partido} other {# partidos}}",

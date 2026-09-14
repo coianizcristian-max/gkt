@@ -2344,6 +2344,7 @@
     "ordineSalvato": "✓ Reihenfolge gespeichert"
   },
   "calendarioMese": {
+    "valutazioneAllenatore": "Bewertung des Trainers",
     "tipoAllenamento": "Training",
     "sommarioAllenamenti": "{n, plural, one {# Training} other {# Trainings}}",
     "sommarioPartite": "{n, plural, one {# Spiel} other {# Spiele}}",

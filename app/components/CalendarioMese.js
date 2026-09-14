@@ -298,6 +298,13 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
         {isPortiere && ev.ha_voto && (
           <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--campo)', margin: '2px 0 8px' }}>⭐ {ev.voto_portiere}</div>
         )}
+        {isPortiere && (ev.voto_coach != null || ev.note_coach) && (
+          <div className="cal-preview-note" style={{ marginBottom: 8 }}>
+            <span className="cal-preview-esercizi-label">{t('valutazioneAllenatore')}</span>
+            {ev.voto_coach != null && <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--campo)', margin: '2px 0' }}>⭐ {ev.voto_coach}</div>}
+            {ev.note_coach && <p style={{ margin: '2px 0 0', fontSize: 13, whiteSpace: 'pre-wrap' }}>{ev.note_coach}</p>}
+          </div>
+        )}
         {ev.assenti_annunciati?.length > 0 && (
           <div className="cal-preview-note" style={{ marginBottom: 8, background: '#fff8e6', border: '1px solid #f0d98a', borderRadius: 8, padding: '6px 8px' }}>
             <span className="cal-preview-esercizi-label">{t('assentiAnnunciati')}</span>

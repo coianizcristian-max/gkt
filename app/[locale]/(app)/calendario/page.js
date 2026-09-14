@@ -98,7 +98,7 @@ export default async function CalendarioPage() {
         : Promise.resolve({ data: [] }),
       isPortiere
         ? ((allIds.length && profilo?.portiere_id)
-          ? supabase.from('valutazioni').select('allenamento_id, presente, voto_portiere, voto').eq('portiere_id', profilo.portiere_id).in('allenamento_id', allIds)
+          ? supabase.from('valutazioni').select('allenamento_id, presente, voto_portiere, voto, note').eq('portiere_id', profilo.portiere_id).in('allenamento_id', allIds)
           : Promise.resolve({ data: [] }))
         : (allIds.length
           ? supabase.from('valutazioni').select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allIds)
@@ -120,6 +120,8 @@ export default async function CalendarioPage() {
         ha_voto: byAll[a.id]?.voto_portiere != null,
         voto_portiere: byAll[a.id]?.voto_portiere ?? null,
         valutato_coach: (byAll[a.id]?.voto != null) || !!a.nessuna_valutazione,
+        voto_coach: byAll[a.id]?.voto ?? null,
+        note_coach: byAll[a.id]?.note ?? null,
       }))
     } else {
       const valutati = new Set((vRes.data ?? []).map((r) => r.allenamento_id))

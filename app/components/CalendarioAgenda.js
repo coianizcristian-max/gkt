@@ -98,6 +98,13 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
         {(a.ora_inizio) && <div className="agenda-d-line">🕒 {hhmm(a.ora_inizio)}{a.ora_fine ? `–${hhmm(a.ora_fine)}` : ''}</div>}
         <div className="calx-state" style={{ color: stato.col, margin: '2px 0 8px' }}>{stato.txt}</div>
         {a.ha_voto && <div className="agenda-d-line">{t('agendaTuoVoto')}: <b>{a.voto_portiere}★</b></div>}
+        {(a.voto_coach != null || a.note_coach) && (
+          <div className="cal-preview-note" style={{ marginBottom: 8 }}>
+            <span className="cal-preview-esercizi-label">{tm('valutazioneAllenatore')}</span>
+            {a.voto_coach != null && <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--campo)', margin: '2px 0' }}>⭐ {a.voto_coach}</div>}
+            {a.note_coach && <p style={{ margin: '2px 0 0', fontSize: 13, whiteSpace: 'pre-wrap' }}>{a.note_coach}</p>}
+          </div>
+        )}
         {d?.obiettivi && (
           <div className="cal-preview-note" style={{ marginBottom: 6 }}>
             <span className="cal-preview-esercizi-label">{tm('obiettivi')}</span>

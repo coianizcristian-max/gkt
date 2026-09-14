@@ -326,7 +326,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
             <span className="cal-preview-esercizi-label">{t('votiPortieri')}</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
               {previewExtra[ev.id].valutazioni.map((v, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, background: 'var(--carta)', borderRadius: 6, padding: '4px 8px' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, background: 'var(--carta)', borderRadius: 6, padding: '4px 8px' }}>
                   <span>{v.portieri?.nome} {v.portieri?.cognome}</span>
                   <b>⭐ {v.voto}</b>
                 </div>

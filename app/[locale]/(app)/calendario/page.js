@@ -28,15 +28,28 @@ export default async function CalendarioPage() {
   let categorie = []
 
   if (stagione) {
+    // Per un PORTIERE il calendario deve mostrare SOLO gli eventi delle sue
+    // squadre (categoria): le ricaviamo dalle iscrizioni. Staff/allenatore
+    // vedono tutto (squadrePortiere resta null).
+    let squadrePortiere = null
+    if (isPortiere && profilo?.portiere_id) {
+      const { data: iscrPort } = await supabase.from('iscrizioni')
+        .select('squadra_id').eq('portiere_id', profilo.portiere_id).eq('stagione_id', stagione.id)
+      squadrePortiere = [...new Set((iscrPort ?? []).map((r) => r.squadra_id).filter(Boolean))]
+    }
+    const soloSueSquadre = (q) => squadrePortiere
+      ? q.in('squadra_id', squadrePortiere.length ? squadrePortiere : ['00000000-0000-0000-0000-000000000000'])
+      : q
+
     const [al, cat, par] = await Promise.all([
-      supabase.from('allenamenti')
+      soloSueSquadre(supabase.from('allenamenti')
         .select('id, data, squadra_id, ora_inizio, ora_fine, accorpata_con, nessuna_valutazione, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
-        .eq('stagione_id', stagione.id).order('data'),
+        .eq('stagione_id', stagione.id)).order('data'),
       supabase.from('stagione_categorie')
         .select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-      supabase.from('partite')
+      soloSueSquadre(supabase.from('partite')
         .select('id, data, squadra_id, avversario, casa, gol_fatti, gol_subiti, tipo, ora_ritrovo, ora_inizio, squadre(nome)')
-        .eq('stagione_id', stagione.id).order('data'),
+        .eq('stagione_id', stagione.id)).order('data'),
     ])
 
     const catMap = {}
@@ -70,7 +83,9 @@ export default async function CalendarioPage() {
       accorpata_nome: a.accorpata_con ? (catMap[a.accorpata_con] ?? '') : null,
       nessuna_valutazione: a.nessuna_valutazione,
     }))
-    categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
+    categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean)
+      .filter((s) => !squadrePortiere || squadrePortiere.includes(s.id))
+      .sort((a, b) => a.ordine - b.ordine)
 
     const partIds = partite.map((p) => p.id)
     const allIds = allenamenti.map((a) => a.id)

@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/routing'
 import { getTranslations } from 'next-intl/server'
 import NavLink from '@/app/components/NavLink'
+import NavIcon from '@/app/components/NavIcon'
 import VersionePopup from '@/app/components/VersionePopup'
 import BenvenutoPopup from '@/app/components/BenvenutoPopup'
 import SignOutButton from '@/app/components/SignOutButton'
@@ -231,7 +232,7 @@ export default async function AppLayout({ children }) {
           </div>
         )}
         {voci.filter(v => v.href && v.href !== '/').map((v) => (
-          <NavLink key={v.href} href={v.href} extraClass={v.href === '/supervisore' ? 'nav-link-supervisore' : ''}>{v.label}</NavLink>
+          <NavLink key={v.href} href={v.href} extraClass={v.href === '/supervisore' ? 'nav-link-supervisore' : ''}><NavIcon href={v.href} />{v.label}</NavLink>
         ))}
         <div className="sidebar-foot">
           <Link href="/" className="nav-link nav-sito">{t('vaiAlSito')}</Link>

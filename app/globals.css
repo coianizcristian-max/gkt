@@ -2049,3 +2049,8 @@ a.brand { text-decoration: none; color: inherit; }
 .sidebar .nav-link.nav-link-supervisore:hover { background: linear-gradient(135deg, #8c2637, #6b1e2c); color: #fff; }
 .sidebar .nav-link.nav-link-supervisore.active { background: linear-gradient(135deg, #a02a3d, #7a2130); }
 .sidebar .nav-sito { color: #33d17a !important; font-weight: 600; }
+
+/* icone voci sidebar desktop */
+.sidebar .nav-ic { width: 18px; height: 18px; flex: 0 0 18px; opacity: .88; }
+.sidebar .nav-link:hover .nav-ic,
+.sidebar .nav-link.active .nav-ic { opacity: 1; }

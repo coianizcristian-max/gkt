@@ -2,117 +2,177 @@
 
 import { useState } from 'react'
 import { Link } from '@/i18n/routing'
+import { createClient } from '@/lib/supabase/client'
 import { useTranslations, useLocale } from 'next-intl'
 
 const DL = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
 
-export default function CalendarioAgenda({ allenamenti = [], oggiStr }) {
+export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiStr }) {
   const t = useTranslations('calendario')
   const tm = useTranslations('calendarioMese')
   const locale = useLocale()
   const dl = DL[locale] || 'it-IT'
 
   const [openId, setOpenId] = useState(null)
-  const [eserciziMap, setEserciziMap] = useState({})
+  const [extra, setExtra] = useState({}) // dettaglio allenamenti caricato on-demand
 
-  // 7 giorni fa (stringa YYYY-MM-DD)
   const d7 = new Date(oggiStr + 'T00:00:00')
   d7.setDate(d7.getDate() - 7)
   const setteFa = d7.toISOString().slice(0, 10)
 
-  const daValutare = allenamenti
+  const A = allenamenti.map((a) => ({ ...a, _tipo: 'allenamento' }))
+  const P = (partite ?? []).map((p) => ({ ...p, _tipo: 'partita' }))
+
+  // "Da valutare" = solo allenamenti in cui il portiere era presente e non ha ancora dato il voto
+  const daValutare = A
     .filter((a) => a.presente === true && !a.ha_voto && a.data <= oggiStr)
     .sort((a, b) => b.data.localeCompare(a.data))
-
   const inDaValutare = new Set(daValutare.map((a) => a.id))
 
-  const recenti = allenamenti
-    .filter((a) => a.data <= oggiStr && a.data >= setteFa && !inDaValutare.has(a.id))
-    .sort((a, b) => b.data.localeCompare(a.data))
+  const recenti = [...A, ...P]
+    .filter((e) => e.data <= oggiStr && e.data >= setteFa && !(e._tipo === 'allenamento' && inDaValutare.has(e.id)))
+    .sort((a, b) => b.data.localeCompare(a.data) || (b.ora_inizio ?? '').localeCompare(a.ora_inizio ?? ''))
 
-  const prossimi = allenamenti
-    .filter((a) => a.data > oggiStr)
+  const prossimi = [...A, ...P]
+    .filter((e) => e.data > oggiStr)
     .sort((a, b) => a.data.localeCompare(b.data) || (a.ora_inizio ?? '').localeCompare(b.ora_inizio ?? ''))
-    .slice(0, 8)
+    .slice(0, 12)
 
   const giorno = (s) => new Date(s + 'T00:00:00').getDate()
   const mese = (s) => new Date(s + 'T00:00:00').toLocaleDateString(dl, { month: 'short' }).replace('.', '')
   const hhmm = (v) => (v ? String(v).slice(0, 5) : '')
-  const ora = (a) => (a.ora_inizio ? ` · ${hhmm(a.ora_inizio)}` : '')
+  const fmtMin = (m) => m >= 60 ? tm('oreMin', { h: Math.floor(m / 60), min: Math.round(m % 60) }) : tm('minuti', { min: Math.round(m) })
+  const cid = (e) => `${e._tipo}-${e.id}`
 
-  async function toggle(a) {
-    if (openId === a.id) { setOpenId(null); return }
-    setOpenId(a.id)
-    if (eserciziMap[a.id] !== undefined) return
+  async function toggle(e) {
+    const c = cid(e)
+    if (openId === c) { setOpenId(null); return }
+    setOpenId(c)
+    if (e._tipo !== 'allenamento' || extra[e.id] !== undefined) return
     try {
-      const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
-      const ids = [a.id, a.accorpata_con].filter(Boolean)
-      const { data } = await supabase.from('allenamento_esercizi')
-        .select('ordine, esercizi(id, titolo, tipologia)')
-        .in('allenamento_id', ids).order('ordine')
-      const list = (data ?? []).map((r) => r.esercizi).filter(Boolean)
-      setEserciziMap((prev) => ({ ...prev, [a.id]: list }))
+      const ids = [e.id, e.accorpata_con].filter(Boolean)
+      const [{ data: ae }, { data: row }] = await Promise.all([
+        supabase.from('allenamento_esercizi')
+          .select('ordine, esercizi(id, titolo, tipologia, durata_minuti, recupero_minuti)')
+          .in('allenamento_id', ids).order('ordine'),
+        supabase.from('allenamenti').select('id, obiettivi, consuntivo').eq('id', e.id).maybeSingle(),
+      ])
+      const esercizi = (ae ?? []).map((r) => r.esercizi).filter(Boolean)
+      const durata = esercizi.reduce((tot, ex) => tot + (parseFloat(ex.durata_minuti) || 0) + (parseFloat(ex.recupero_minuti) || 0), 0)
+      setExtra((prev) => ({ ...prev, [e.id]: { esercizi, durata, obiettivi: row?.obiettivi ?? null, consuntivo: row?.consuntivo ?? null } }))
     } catch (_) {
-      setEserciziMap((prev) => ({ ...prev, [a.id]: [] }))
+      setExtra((prev) => ({ ...prev, [e.id]: { esercizi: [], durata: 0, obiettivi: null, consuntivo: null } }))
     }
   }
 
-  const Riga = ({ a, badge, badgeClass, da }) => {
-    const open = openId === a.id
-    const es = eserciziMap[a.id]
-    const orario = a.ora_inizio ? `${hhmm(a.ora_inizio)}${a.ora_fine ? '–' + hhmm(a.ora_fine) : ''}` : null
+  // ---- dettaglio espanso ----
+  function dettaglioAllenamento(a) {
+    const passata = a.data <= oggiStr
+    const stato = a.nessuna_valutazione
+      ? { txt: tm('nessunaValPrevista'), col: 'var(--campo)' }
+      : a.ha_voto
+        ? { txt: tm('valutato'), col: 'var(--campo)' }
+        : passata
+          ? { txt: tm('daValutare'), col: 'var(--rosso)' }
+          : { txt: tm('programmato'), col: 'var(--ink-soft)' }
+    const d = extra[a.id]
     return (
-      <div className={`agenda-item ${open ? 'open' : ''}`}>
-        <div className={`agenda-row clic ${da ? 'da' : ''}`} role="button" tabIndex={0}
-          onClick={() => toggle(a)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(a) } }}>
-          <div className="agenda-date"><div className="d">{giorno(a.data)}</div><div className="m">{mese(a.data)}</div></div>
-          <div className="agenda-info">
-            <div className="t">{a.squadra_nome || t('titolo')}</div>
-            <div className="s">{t('agendaAllenamento')}{ora(a)}</div>
+      <div className="agenda-detail-in">
+        {(a.ora_inizio) && <div className="agenda-d-line">🕒 {hhmm(a.ora_inizio)}{a.ora_fine ? `–${hhmm(a.ora_fine)}` : ''}</div>}
+        <div className="calx-state" style={{ color: stato.col, margin: '2px 0 8px' }}>{stato.txt}</div>
+        {a.ha_voto && <div className="agenda-d-line">{t('agendaTuoVoto')}: <b>{a.voto_portiere}★</b></div>}
+        {d?.obiettivi && (
+          <div className="cal-preview-note" style={{ marginBottom: 6 }}>
+            <span className="cal-preview-esercizi-label">{tm('obiettivi')}</span>
+            <p style={{ margin: '4px 0 0', fontSize: 13, whiteSpace: 'pre-wrap' }}>{d.obiettivi}</p>
           </div>
-          {badge && <span className={`agenda-badge ${badgeClass}`}>{badge}</span>}
-          <span className="agenda-chevron">›</span>
-        </div>
-        <div className="agenda-detail">
-          <div className="agenda-detail-in">
-            {orario && <div className="agenda-d-line">🕒 {orario}</div>}
-            {a.ha_voto && <div className="agenda-d-line">{t('agendaTuoVoto')}: <b>{a.voto_portiere}★</b></div>}
-            <div className="agenda-d-es">
-              {es === undefined
-                ? <span className="agenda-d-muted">{tm('caricamentoEsercizi')}</span>
-                : es.length === 0
-                  ? <span className="agenda-d-muted">{tm('nessunEsercizioPian')}</span>
-                  : (
-                    <>
-                      <div className="agenda-d-label">{tm('eserciziLabel')}</div>
-                      <ol className="cal-preview-esercizi-list">
-                        {es.map((e) => (
-                          <li key={e.id}>
-                            <span className="cal-preview-es-nome">{e.titolo}</span>
-                            {e.tipologia && <span className="cal-preview-es-tipo"> · {e.tipologia}</span>}
-                          </li>
-                        ))}
-                      </ol>
-                    </>
-                  )}
-            </div>
-            <Link href={`/calendario/${a.id}`} className="btn-mini">
-              {da ? t('agendaTocca') : tm('apriAllenamento')}
-            </Link>
+        )}
+        {d?.consuntivo && (
+          <div className="cal-preview-note" style={{ marginBottom: 6 }}>
+            <span className="cal-preview-esercizi-label">{tm('consuntivo')}</span>
+            <p style={{ margin: '4px 0 0', fontSize: 13, whiteSpace: 'pre-wrap' }}>{d.consuntivo}</p>
           </div>
+        )}
+        {d === undefined
+          ? <span className="agenda-d-muted">{tm('caricamentoEsercizi')}</span>
+          : d.esercizi.length === 0
+            ? <span className="agenda-d-muted">{tm('nessunEsercizioPian')}</span>
+            : (
+              <div>
+                <div className="agenda-d-label">{tm('eserciziLabel')}</div>
+                <ol className="cal-preview-esercizi-list">
+                  {d.esercizi.map((ex) => (
+                    <li key={ex.id}><span className="cal-preview-es-nome">{ex.titolo}</span>{ex.tipologia && <span className="cal-preview-es-tipo"> · {ex.tipologia}</span>}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+        {d?.durata > 0 && <div className="agenda-d-line" style={{ marginTop: 8 }}>{tm('durataTotale')} <b>{fmtMin(d.durata)}</b></div>}
+        <div style={{ marginTop: 10 }}>
+          <Link href={`/calendario/${a.id}`} className="btn-mini">{tm('apriAllenamento')} →</Link>
         </div>
       </div>
     )
   }
 
-  const badgeRecente = (a) => {
+  function dettaglioPartita(p) {
+    const passata = p.data <= oggiStr
+    return (
+      <div className="agenda-detail-in">
+        <div className="agenda-d-line">{p.casa === true ? `🏠 ${tm('casa')}` : p.casa === false ? `✈ ${tm('trasferta')}` : ''} · {tm('vs')} <b>{p.avversario || '—'}</b></div>
+        {(p.ora_ritrovo || p.ora_inizio) && (
+          <div className="agenda-d-line">🕒 {p.ora_ritrovo ? `${tm('ritrovo', { ora: hhmm(p.ora_ritrovo) })}` : ''}{p.ora_ritrovo && p.ora_inizio ? ' · ' : ''}{p.ora_inizio ? `${tm('inizioPartita', { ora: hhmm(p.ora_inizio) })}` : ''}</div>
+        )}
+        {passata && p.gol_fatti != null && (
+          <div style={{ margin: '6px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontWeight: 700, fontSize: 22, letterSpacing: 2 }}>{p.gol_fatti} — {p.gol_subiti}</span>
+            {p.gol_subiti === 0 && <span style={{ fontSize: 12, color: 'var(--campo)', fontWeight: 700 }}>{tm('cleanSheet')}</span>}
+          </div>
+        )}
+        <div style={{ marginTop: 10 }}>
+          <Link href={`/partite/${p.id}`} className="btn-mini">{tm('apriPartita')} →</Link>
+        </div>
+      </div>
+    )
+  }
+
+  const Riga = ({ e, badge, badgeClass }) => {
+    const open = openId === cid(e)
+    const isPart = e._tipo === 'partita'
+    const sub = isPart
+      ? `${tm('badgePartita')} · ${e.casa === true ? '🏠' : e.casa === false ? '✈' : ''} ${e.avversario || ''}`.trim()
+      : `${t('agendaAllenamento')}${e.ora_inizio ? ` · ${hhmm(e.ora_inizio)}` : ''}`
+    return (
+      <div className={`agenda-item ${open ? 'open' : ''}`}>
+        <div className={`agenda-row clic ${!isPart && e.presente === true && !e.ha_voto && e.data <= oggiStr ? 'da' : ''}`}
+          role="button" tabIndex={0}
+          onClick={() => toggle(e)}
+          onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(e) } }}>
+          <div className="agenda-date"><div className="d">{giorno(e.data)}</div><div className="m">{mese(e.data)}</div></div>
+          <div className="agenda-info">
+            <div className="t">{e.squadra_nome || t('titolo')}</div>
+            <div className="s">{sub}</div>
+          </div>
+          {badge && <span className={`agenda-badge ${badgeClass}`}>{badge}</span>}
+          <span className="agenda-chevron">›</span>
+        </div>
+        <div className="agenda-detail">{isPart ? dettaglioPartita(e) : dettaglioAllenamento(e)}</div>
+      </div>
+    )
+  }
+
+  const badgeAllen = (a) => {
     if (a.ha_voto) return { badge: `${t('agendaTuoVoto')}: ${a.voto_portiere}★`, cls: 'b-val' }
     if (a.presente === false) return { badge: t('badgeAssente'), cls: 'b-ass' }
     if (a.valutato_coach) return { badge: t('badgeValutatoCoach'), cls: 'b-val' }
     return { badge: null, cls: '' }
   }
+  const badgePart = (p) => {
+    if (p.data <= oggiStr && p.gol_fatti != null) return { badge: `${p.gol_fatti}-${p.gol_subiti}`, cls: 'b-val' }
+    return { badge: t('badgeProgrammato'), cls: 'b-fut' }
+  }
+  const badgeDi = (e) => e._tipo === 'partita' ? badgePart(e) : badgeAllen(e)
 
   const vuoto = !daValutare.length && !recenti.length && !prossimi.length
 
@@ -123,21 +183,21 @@ export default function CalendarioAgenda({ allenamenti = [], oggiStr }) {
       {daValutare.length > 0 && (
         <>
           <div className="agenda-sec">⭐ {t('agendaDaValutare')}</div>
-          {daValutare.map((a) => <Riga key={a.id} a={a} da badge={t('badgeDaValutare')} badgeClass="b-da" />)}
+          {daValutare.map((a) => <Riga key={cid(a)} e={a} badge={t('badgeDaValutare')} badgeClass="b-da" />)}
         </>
       )}
 
       {recenti.length > 0 && (
         <>
           <div className="agenda-sec">{t('agendaRecenti')}</div>
-          {recenti.map((a) => { const b = badgeRecente(a); return <Riga key={a.id} a={a} badge={b.badge} badgeClass={b.cls} /> })}
+          {recenti.map((e) => { const b = badgeDi(e); return <Riga key={cid(e)} e={e} badge={b.badge} badgeClass={b.cls} /> })}
         </>
       )}
 
       {prossimi.length > 0 && (
         <>
           <div className="agenda-sec">{t('agendaProssimi')}</div>
-          {prossimi.map((a) => <Riga key={a.id} a={a} badge={t('badgeProgrammato')} badgeClass="b-fut" />)}
+          {prossimi.map((e) => { const b = badgeDi(e); return <Riga key={cid(e)} e={e} badge={b.badge} badgeClass={b.cls} /> })}
         </>
       )}
     </div>

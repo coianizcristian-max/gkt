@@ -16,7 +16,7 @@ export default function CalendarioPortiereTabs({ allenamenti, partite, categorie
         <button type="button" className={vista === 'mese' ? 'on' : ''} onClick={() => setVista('mese')}>{t('tabMese')}</button>
       </div>
       {vista === 'agenda'
-        ? <CalendarioAgenda allenamenti={allenamenti} oggiStr={oggiStr} />
+        ? <CalendarioAgenda allenamenti={allenamenti} partite={partite} oggiStr={oggiStr} />
         : <CalendarioMese allenamenti={allenamenti} partite={partite} categorie={categorie} vista="portiere" />}
     </div>
   )

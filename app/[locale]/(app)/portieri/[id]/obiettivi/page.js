@@ -18,6 +18,7 @@ export default async function ObiettiviPortierePage({ params }) {
   const { data: profiloViewer } = await supabase
     .from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle()
   if (profiloViewer?.ruolo === 'portiere' && profiloViewer.portiere_id !== id) notFound()
+  const soloPortiere = profiloViewer?.ruolo === 'portiere'
 
   const { data: portiere } = await supabase.from('portieri').select('id, nome, cognome').eq('id', id).maybeSingle()
   if (!portiere) notFound()
@@ -121,16 +122,18 @@ export default async function ObiettiviPortierePage({ params }) {
   return (
     <>
       <div className="topbar">
-        <div className="eyebrow"><Link href="/portieri">{tp('titolo')}</Link> · {portiere.nome} {portiere.cognome ?? ''}</div>
+        <div className="eyebrow">{soloPortiere ? tp('navObiettivi') : <><Link href="/portieri">{tp('titolo')}</Link> · {portiere.nome} {portiere.cognome ?? ''}</>}</div>
         <h1>{t('titolo')}</h1>
       </div>
       <div className="content">
-        <div className="sub-nav">
-          <Link href={`/portieri/${id}`} className="sub-nav-link">{tp('navScheda')}</Link>
-          <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link active">{tp('navObiettivi')}</Link>
-          <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">{tp('navStatistiche')}</Link>
-          <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">{tp('navPercorso')}</Link>
-        </div>
+        {!soloPortiere && (
+          <div className="sub-nav">
+            <Link href={`/portieri/${id}`} className="sub-nav-link">{tp('navScheda')}</Link>
+            <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link active">{tp('navObiettivi')}</Link>
+            <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">{tp('navStatistiche')}</Link>
+            <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">{tp('navPercorso')}</Link>
+          </div>
+        )}
         {canObiettivi ? <ObiettiviManager
           portiereId={id}
           stagioneId={stagione?.id ?? null}

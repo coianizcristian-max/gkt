@@ -49,6 +49,8 @@
     "jsonLdDescription": "Piattaforma per preparatori dei portieri: calendario allenamenti, valutazioni, statistiche, esercizi e gestione squadra in un'unica app."
   },
   "sidebar": {
+    "obiettivi": "Obiettivi",
+    "percorso": "Percorso",
     "dashboard": "Dashboard",
     "miaScheda": "La mia scheda",
     "portieri": "Portieri",

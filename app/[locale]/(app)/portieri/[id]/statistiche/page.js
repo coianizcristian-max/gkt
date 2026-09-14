@@ -48,7 +48,7 @@ export default async function StatistichePortierePage({ params }) {
   const navLinks = (
     <div className="sub-nav">
       <Link href={`/portieri/${id}`} className="sub-nav-link">{tp('navScheda')}</Link>
-      <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>
+      {!soloPortiere && <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>}
       <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link active">{tp('navStatistiche')}</Link>
     </div>
   )

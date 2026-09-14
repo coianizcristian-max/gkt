@@ -139,9 +139,9 @@ export default async function SchedaPortierePage({ params }) {
       <div className="content">
         <div className="sub-nav">
           <Link href={`/portieri/${id}`} className="sub-nav-link active">{tp('navScheda')}</Link>
-          <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>
+          {!soloPortiere && <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>}
           <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">{tp('navStatistiche')}</Link>
-          <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">{tp('navPercorso')}</Link>
+          {!soloPortiere && <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">{tp('navPercorso')}</Link>}
         </div>
         {soloPortiere && daValutare > 0 && (
           <Link href="/calendario" className="scheda" style={{ display: 'block', marginBottom: 16, borderLeft: '4px solid var(--giallo)', textDecoration: 'none', color: 'inherit' }}>

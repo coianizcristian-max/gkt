@@ -35,7 +35,7 @@ export default async function PercorsoCrescitaPage({ params }) {
   const canVedere = isUnlocked('statistiche_dettaglio', gatingCfg, abbAttivo) && isUnlocked('obiettivi_portieri', gatingCfg, abbAttivo)
   const canReport = isUnlocked('report_pdf_stagione', gatingCfg, abbAttivo)
 
-  const navLinks = (
+  const navLinks = soloPortiere ? null : (
     <div className="sub-nav">
       <Link href={`/portieri/${id}`} className="sub-nav-link">{tp('navScheda')}</Link>
       <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>

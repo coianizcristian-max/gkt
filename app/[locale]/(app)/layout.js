@@ -169,6 +169,8 @@ export default async function AppLayout({ children }) {
     'calendario':    (isPortiere || vedeAllenamenti) ? { href: '/calendario', label: t('calendario') } : null,
     'ricorrenze':    (isStaff && vedeAllenamenti) ? { href: '/ricorrenze', label: t('ricorrenze') } : null,
     'partite':       (isPortiere || vedePartite) ? { href: '/partite', label: t('partite') } : null,
+    'obiettivi-portiere': (isPortiere && portiereId) ? { href: `${schedaHref}/obiettivi`, label: t('obiettivi') } : null,
+    'percorso-portiere':  (isPortiere && portiereId) ? { href: `${schedaHref}/percorso`, label: t('percorso') } : null,
     'statistiche':   (isPortiere || vedeStatistiche) ? { href: '/statistiche', label: t('statistiche') } : null,
     'esercizi':      (isStaff && vedeAllenamenti) ? { href: '/esercizi', label: t('esercizi') } : null,
     'template-allenamenti': (isStaff && vedeAllenamenti) ? { href: '/template-allenamenti', label: t('templateAllenamenti') } : null,

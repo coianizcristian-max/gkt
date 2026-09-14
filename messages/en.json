@@ -49,6 +49,8 @@
     "jsonLdDescription": "Platform for goalkeeper coaches: training schedule, evaluations, statistics, drills and squad management in a single app."
   },
   "sidebar": {
+    "obiettivi": "Goals",
+    "percorso": "Path",
     "dashboard": "Dashboard",
     "miaScheda": "My profile",
     "portieri": "Goalkeepers",

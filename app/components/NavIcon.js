@@ -25,11 +25,16 @@ const PATHS = {
   account: 'M12 12a5 5 0 100-10 5 5 0 000 10zM3 21a9 9 0 0118 0z',
   supervisore: 'M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z',
   abbonati: 'M12 2l3 6.5 7 .6-5.3 4.6 1.6 6.8L12 17l-6.3 3.5 1.6-6.8L2 9.1l7-.6z',
+  obiettivi: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 8a4 4 0 100 8 4 4 0 000-8zM12 11.5a.5.5 0 100 1 .5.5 0 000-1z',
+  percorso: 'M3 17l6-6 4 4 8-8M21 7h-4M21 7v4',
 }
 const FALLBACK = 'M12 5v14M5 12h14'
 
 export default function NavIcon({ href = '' }) {
-  const key = String(href).split('/')[1] || ''
+  const parts = String(href).split('/').filter(Boolean)
+  let key = parts[0] || ''
+  if (parts.includes('obiettivi')) key = 'obiettivi'
+  else if (parts.includes('percorso')) key = 'percorso'
   const d = PATHS[key] || FALLBACK
   return (
     <svg className="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor"

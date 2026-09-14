@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
-export default function ValutazionePortiere({ allenamentoId, portiereId, presente, votoIniziale, feedbackIniziale, notaIniziale }) {
+export default function ValutazionePortiere({ allenamentoId, portiereId, assente, votoIniziale, feedbackIniziale, notaIniziale }) {
   const t = useTranslations('valutazionePortiere')
   const [voto, setVoto] = useState(votoIniziale ?? 0)
   const [feedback, setFeedback] = useState(feedbackIniziale ?? '')
@@ -30,6 +30,15 @@ export default function ValutazionePortiere({ allenamentoId, portiereId, present
   }
 
   const stellaStyle = (on) => ({ fontSize: '2rem', lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', color: on ? '#f2b705' : 'var(--linea)', padding: '0 2px' })
+
+  // Se il coach l'ha segnato ASSENTE, non può dare il voto alla seduta.
+  if (assente) {
+    return (
+      <div className="scheda">
+        <p className="sub-intro">{t('nonPresente')}</p>
+      </div>
+    )
+  }
 
   return (
     <div className="scheda">

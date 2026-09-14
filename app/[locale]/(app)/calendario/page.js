@@ -150,7 +150,7 @@ export default async function CalendarioPage() {
   let daValutarePortiere = 0
   if (isPortiere && stagione) {
     const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
-    daValutarePortiere = (allenamenti ?? []).filter((a) => a.data <= oggiRoma && !a.ha_voto).length
+    daValutarePortiere = (allenamenti ?? []).filter((a) => a.presente === true && a.data <= oggiRoma && !a.ha_voto).length
   }
 
   return (

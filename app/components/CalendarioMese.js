@@ -79,7 +79,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     if (isPortiere) {
       if (a.ha_voto) return { bg: '#2e9e5b', fg: '#fff' }
       if (a.presente === false) return { bg: '#9aa6b2', fg: '#fff' }
-      if (a.data < oggiStr && a.presente === true) return { bg: '#c0392b', fg: '#fff' }
+      if (a.data < oggiStr && a.presente === true) return { bg: '#fffdf5', fg: '#9a6a12', dot: '#e8a72c', outline: '2px solid #e8a72c' }
       return { bg: '#1f6feb', fg: '#fff' }
     }
     if (a.valutato) return { bg: '#2e9e5b', fg: '#fff' }
@@ -285,7 +285,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     } else if (isPortiere) {
       if (ev.presente === false) { statoTxt = t('assente').replace(/^./, (c) => c.toUpperCase()); statoColor = 'var(--ink-soft)' }
       else if (ev.ha_voto) { statoTxt = t('valutato'); statoColor = 'var(--campo)' }
-      else if (passata && ev.presente === true) { statoTxt = t('daValutare'); statoColor = 'var(--rosso)' }
+      else if (passata && ev.presente === true) { statoTxt = t('daValutare'); statoColor = '#9a6a12' }
       else { statoTxt = t('programmato'); statoColor = 'var(--ink-soft)' }
     } else {
       statoTxt = ev.valutato ? t('valutato') : daVal ? t('daValutare') : t('programmato')
@@ -394,7 +394,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
         {isPortiere ? (
           <>
             <span><i className="calx-ldot" style={{ background: '#2e9e5b' }} />{t('legValutato')}</span>
-            <span><i className="calx-ldot" style={{ background: '#c0392b' }} />{t('legDaValutare')}</span>
+            <span><i className="calx-ldot" style={{ background: '#fff', border: '2px solid #e8a72c' }} />{t('legDaValutare')}</span>
           </>
         ) : (
           <>
@@ -451,7 +451,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                     ? { outline: '2px solid var(--giallo)', outlineOffset: '-2px' }
                     : eAccorpante ? { outline: '2px solid var(--campo)', outlineOffset: '-2px' } : {}
                   return (
-                    <span key={cid(ev)} className="calx-ev" style={{ background: col.bg, color: col.fg, ...bordo }}>
+                    <span key={cid(ev)} className="calx-ev" style={{ background: col.bg, color: col.fg, ...(col.outline ? { outline: col.outline, outlineOffset: '-2px' } : {}), ...bordo }}>
                       <i className="calx-edot" style={{ background: col.dot || 'rgba(255,255,255,.9)' }} />
                       {hhmm(ev.ora_inizio) && <b>{hhmm(ev.ora_inizio)}</b>}
                       <span className="calx-ev-label">{ev._tipo === 'partita' ? labelPartitaCella(ev) : ev.squadra_nome}</span>

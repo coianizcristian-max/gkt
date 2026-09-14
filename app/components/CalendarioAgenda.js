@@ -53,7 +53,7 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
     if (e.nessuna_valutazione) return '#2e9e5b'
     if (e.presente === false) return '#9aa6b2'                                    // assente (neutro)
     if (e.ha_voto) return '#2e9e5b'                                               // valutato
-    if (e.data <= oggiStr && e.presente === true) return '#c0392b'               // da valutare
+    if (e.data <= oggiStr && e.presente === true) return '#e8a72c'               // da valutare (cornice gialla)
     if (e.data > oggiStr) return '#1f6feb'                                        // programmato
     return '#9aa6b2'                                                              // passato non registrato
   }

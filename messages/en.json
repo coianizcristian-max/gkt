@@ -1967,6 +1967,13 @@
     "confermaElim": "Delete the category \"{nome}\"?"
   },
   "invitiManager": {
+    "collegaTitolo": "Link an already-registered account",
+    "collegaIntro": "If a goalkeeper signed up but stayed as a coach, link their account to the right goalkeeper here (no email confirmation needed).",
+    "collegaEmail": "Account email",
+    "collegaBtn": "Link account",
+    "collegaBusy": "Linking...",
+    "collegaOk": "Account linked as goalkeeper: {nome}",
+    "collegaErrGenerico": "Linking failed.",
     "linkTitolo": "Invite link",
     "linkDesc": "Copy this link and send it. Whoever opens it can register and will be connected automatically.",
     "copiato": "✓ Copied",

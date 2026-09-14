@@ -40,6 +40,11 @@ export default function InvitiManager({ inviti: invitiIniziali, portieri, stagio
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [modalUrl, setModalUrl] = useState(null)
+  const [collegaEmail, setCollegaEmail] = useState('')
+  const [collegaPortiereId, setCollegaPortiereId] = useState('')
+  const [collegaBusy, setCollegaBusy] = useState(false)
+  const [collegaMsg, setCollegaMsg] = useState('')
+  const [collegaErr, setCollegaErr] = useState('')
 
   const linkOf = (token) => `${window.location.origin}/registrati?invito=${token}`
   const nomePortiere = (id) => { const p = portieri.find((x) => x.id === id); return p ? `${p.nome} ${p.cognome ?? ''}`.trim() : '' }
@@ -77,6 +82,25 @@ export default function InvitiManager({ inviti: invitiIniziali, portieri, stagio
     const supabase = createClient()
     await supabase.from('inviti').delete().eq('id', id)
     setInviti((prev) => prev.filter((i) => i.id !== id))
+  }
+
+  async function collega() {
+    setCollegaErr(''); setCollegaMsg(''); setCollegaBusy(true)
+    try {
+      const res = await fetch('/api/collega-portiere', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: collegaEmail.trim(), portiere_id: collegaPortiereId }),
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) { setCollegaErr(body.error || t('collegaErrGenerico')); setCollegaBusy(false); return }
+      setCollegaMsg(t('collegaOk', { nome: body.nome || '' }))
+      setCollegaEmail(''); setCollegaPortiereId('')
+      router.refresh()
+    } catch (e) {
+      setCollegaErr(e.message || t('collegaErrGenerico'))
+    }
+    setCollegaBusy(false)
   }
 
   return (
@@ -141,6 +165,34 @@ export default function InvitiManager({ inviti: invitiIniziali, portieri, stagio
               disabled={busy || !tipo || (tipo === 'portiere' && !portiereId) || ((tipo === 'collaboratore' || tipo === 'preparatore') && !canStaff)}
               type="button">
               {busy ? t('creazione') : t('creaInvito')}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="scheda" style={{ marginTop: 16 }}>
+        <h3 style={{ marginTop: 0 }}>{t('collegaTitolo')}</h3>
+        <p className="sub-intro">{t('collegaIntro')}</p>
+        {collegaErr && <div className="err">{collegaErr}</div>}
+        {collegaMsg && <div className="ok-msg">{collegaMsg}</div>}
+        <div className="form-grid">
+          <div className="field">
+            <label>{t('portiere')}</label>
+            <select value={collegaPortiereId} onChange={(e) => setCollegaPortiereId(e.target.value)}>
+              <option value="">{t('selezionaPortiereOpt')}</option>
+              {portieri.map((p) => <option key={p.id} value={p.id}>{p.nome} {p.cognome ?? ''}</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label>{t('collegaEmail')}</label>
+            <input type="email" value={collegaEmail} onChange={(e) => setCollegaEmail(e.target.value)}
+              placeholder="nome@email.com" autoComplete="off" />
+          </div>
+          <div className="field">
+            <button className="btn" type="button"
+              disabled={collegaBusy || !collegaPortiereId || !collegaEmail.trim()}
+              onClick={collega}>
+              {collegaBusy ? t('collegaBusy') : t('collegaBtn')}
             </button>
           </div>
         </div>

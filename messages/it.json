@@ -1967,6 +1967,13 @@
     "confermaElim": "Eliminare la categoria \"{nome}\"?"
   },
   "invitiManager": {
+    "collegaTitolo": "Collega un account già registrato",
+    "collegaIntro": "Se un portiere si è registrato ma è rimasto come allenatore, collega qui il suo account al portiere giusto (senza dipendere dalla conferma email).",
+    "collegaEmail": "Email dell'account",
+    "collegaBtn": "Collega account",
+    "collegaBusy": "Collegamento...",
+    "collegaOk": "Account collegato come portiere: {nome}",
+    "collegaErrGenerico": "Collegamento non riuscito.",
     "linkTitolo": "Link di invito",
     "linkDesc": "Copia questo link e invialo. Chi lo apre potrà registrarsi e verrà collegato automaticamente.",
     "copiato": "✓ Copiato",

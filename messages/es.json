@@ -1967,6 +1967,13 @@
     "confermaElim": "¿Eliminar la categoría \"{nome}\"?"
   },
   "invitiManager": {
+    "collegaTitolo": "Vincular una cuenta ya registrada",
+    "collegaIntro": "Si un portero se registró pero quedó como entrenador, vincula aquí su cuenta al portero correcto (sin depender de la confirmación por email).",
+    "collegaEmail": "Email de la cuenta",
+    "collegaBtn": "Vincular cuenta",
+    "collegaBusy": "Vinculando...",
+    "collegaOk": "Cuenta vinculada como portero: {nome}",
+    "collegaErrGenerico": "No se pudo vincular.",
     "linkTitolo": "Enlace de invitación",
     "linkDesc": "Copia este enlace y envíalo. Quien lo abra podrá registrarse y se vinculará automáticamente.",
     "copiato": "✓ Copiado",

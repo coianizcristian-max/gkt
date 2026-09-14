@@ -1967,6 +1967,13 @@
     "confermaElim": "Die Kategorie \"{nome}\" löschen?"
   },
   "invitiManager": {
+    "collegaTitolo": "Ein bereits registriertes Konto verknüpfen",
+    "collegaIntro": "Wenn sich ein Torwart registriert hat, aber als Trainer geblieben ist, verknüpfe hier sein Konto mit dem richtigen Torwart (ohne E-Mail-Bestätigung).",
+    "collegaEmail": "Konto-E-Mail",
+    "collegaBtn": "Konto verknüpfen",
+    "collegaBusy": "Verknüpfe...",
+    "collegaOk": "Konto als Torwart verknüpft: {nome}",
+    "collegaErrGenerico": "Verknüpfung fehlgeschlagen.",
     "linkTitolo": "Einladungslink",
     "linkDesc": "Kopiere diesen Link und sende ihn. Wer ihn öffnet, kann sich registrieren und wird automatisch verbunden.",
     "copiato": "✓ Kopiert",

@@ -1849,17 +1849,18 @@ a.brand { text-decoration: none; color: inherit; }
 .agenda-badge.b-ass { background: rgba(74,91,104,0.12); color: var(--ink-soft); }
 .agenda-badge.b-fut { background: rgba(58,110,165,0.12); color: #3a6ea5; }
 .agenda-empty { color: var(--ink-soft); font-size: 14px; padding: 10px 2px; }
-/* Griglia calendario su mobile: testo COMPLETO e leggibile (come all'inizio).
-   Le celle si adattano al contenuto; solo piccoli ritocchi estetici. */
+/* Griglia calendario su mobile: colonne larghe come nel desktop-ristretto
+   (parole intere, leggibile) con scorrimento orizzontale. Testo COMPLETO. */
 @media (max-width: 600px) {
-  .cal-ev { font-size: 9px; padding: 3px 5px; line-height: 1.3; }
-  .cal-evs { gap: 3px; }
-  .cal-cell { border-radius: 12px; padding: 6px 5px; }
-  .cal-grid { gap: 5px; }
-  .cal-day { font-size: 13px; width: 24px; height: 22px; }
+  .cal-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px 8px; }
+  .cal-scroll > .cal-grid { min-width: 580px; }
+  .cal-ev { font-size: 11px; padding: 3px 6px; line-height: 1.3; }
+  .cal-evs { gap: 4px; }
+  .cal-cell { min-height: 74px; border-radius: 12px; padding: 8px 6px; }
+  .cal-grid { gap: 6px; }
+  .cal-day { font-size: 14px; width: auto; height: auto; }
   /* Il numero del giorno non è cliccabile su mobile: evita di aprire "nuovo
-     allenamento" per sbaglio col dito. Il tocco apre l'anteprima del giorno;
-     per creare si usa il pulsante "Nuovo allenamento". */
+     allenamento" per sbaglio col dito. Il tocco apre l'anteprima del giorno. */
   .cal-day { pointer-events: none; }
 }
 

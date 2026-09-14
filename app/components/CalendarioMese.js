@@ -225,6 +225,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
         )}
       </div>
 
+      <div className="cal-scroll">
       <div className="cal-grid cal-head">
         {giorniShort.map((g, i) => <div key={i} className="cal-dow">{g}</div>)}
       </div>
@@ -276,6 +277,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
             </div>
           )
         })}
+      </div>
       </div>
 
       {selectedDay && (

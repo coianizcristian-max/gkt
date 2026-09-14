@@ -1849,9 +1849,21 @@ a.brand { text-decoration: none; color: inherit; }
 .agenda-badge.b-ass { background: rgba(74,91,104,0.12); color: var(--ink-soft); }
 .agenda-badge.b-fut { background: rgba(58,110,165,0.12); color: #3a6ea5; }
 .agenda-empty { color: var(--ink-soft); font-size: 14px; padding: 10px 2px; }
-/* Griglia calendario: ritocco leggibilita mobile */
+/* Griglia calendario: su mobile gli eventi diventano barrette colorate
+   (niente testo che va a capo); i dettagli si vedono toccando il giorno. */
 @media (max-width: 600px) {
-  .cal-ev { font-size: 8.5px; padding: 2px 4px; line-height: 1.25; letter-spacing: -0.2px; }
-  .cal-cell { min-height: 52px; border-radius: 12px; }
-  .cal-grid { gap: 4px; }
+  .cal-ev {
+    font-size: 0 !important;
+    line-height: 0 !important;
+    height: 8px;
+    min-height: 8px;
+    padding: 0 !important;
+    border-left: 0 !important;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .cal-evs { gap: 3px; }
+  .cal-cell { min-height: 58px; border-radius: 12px; padding: 6px 5px; }
+  .cal-grid { gap: 5px; }
+  .cal-day { font-size: 13px; width: 24px; height: 22px; }
 }

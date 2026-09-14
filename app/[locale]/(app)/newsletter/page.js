@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NewsletterRender } from '@/app/components/NewsletterManager'
 import { getTranslations } from 'next-intl/server'
 
@@ -14,7 +15,11 @@ export default async function NewsletterPage() {
     .eq('pubblicata', true).order('inviata_il', { ascending: false })
 
   if (user) {
-    await supabase.from('profili').update({ newsletter_vista_il: new Date().toISOString() }).eq('id', user.id)
+    // Il flag va scritto con il client admin: un portiere non può aggiornare
+    // il proprio profilo via RLS, quindi con il client normale la scrittura
+    // fallirebbe in silenzio e il pallino "non lette" resterebbe acceso.
+    const admin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+    await admin.from('profili').update({ newsletter_vista_il: new Date().toISOString() }).eq('id', user.id)
   }
 
   const ultima = invii?.[0]

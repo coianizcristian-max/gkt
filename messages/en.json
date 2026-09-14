@@ -499,6 +499,7 @@
     "onb3Desc": "The staff will enrol you in the current season’s category."
   },
   "allenamentoDettaglio": {
+    "eriAssente": "You were absent from this session",
     "eserciziSeduta": "Session drills",
     "nessunEsercizio": "No drill added to this session.",
     "tuaValutazione": "Your evaluation",

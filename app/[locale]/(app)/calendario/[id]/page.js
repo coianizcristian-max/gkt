@@ -24,6 +24,7 @@ export default async function AllenamentoPage({ params }) {
   const supabase = await createClient()
   const t = await getTranslations('allenamentoDettaglio')
   const tc = await getTranslations('calendario')
+  const tm = await getTranslations('calendarioMese')
   const user = await getUser()
 
   // profilo e allenamento sono indipendenti (il secondo dipende solo da :id):
@@ -89,6 +90,31 @@ export default async function AllenamentoPage({ params }) {
           <h1>{allenamento.squadra?.nome} · {dataLabel}</h1>
         </div>
         <div className="content">
+          {(allenamento.ora_inizio || allenamento.obiettivi || allenamento.consuntivo || mia?.presente === false) && (
+            <div className="scheda" style={{ marginBottom: 16 }}>
+              {allenamento.ora_inizio && (
+                <p className="sub-intro" style={{ marginTop: 0 }}>
+                  🕒 {String(allenamento.ora_inizio).slice(0, 5)}{allenamento.ora_fine ? `–${String(allenamento.ora_fine).slice(0, 5)}` : ''}
+                </p>
+              )}
+              {mia?.presente === false && (
+                <p style={{ color: 'var(--rosso)', fontWeight: 700, margin: '6px 0' }}>⚠ {t('eriAssente')}</p>
+              )}
+              {allenamento.obiettivi && (
+                <div style={{ marginTop: 8 }}>
+                  <div className="cal-preview-esercizi-label">{tm('obiettivi')}</div>
+                  <p style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}>{allenamento.obiettivi}</p>
+                </div>
+              )}
+              {allenamento.consuntivo && (
+                <div style={{ marginTop: 10 }}>
+                  <div className="cal-preview-esercizi-label">{tm('consuntivo')}</div>
+                  <p style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}>{allenamento.consuntivo}</p>
+                </div>
+              )}
+            </div>
+          )}
+
           <h2 className="sezione-titolo">{t('eserciziSeduta')}</h2>
           {esercizi.length > 0 ? (
             <div className="es-seduta-grid">

@@ -20,6 +20,10 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
   d7.setDate(d7.getDate() - 7)
   const setteFa = d7.toISOString().slice(0, 10)
 
+  const d7a = new Date(oggiStr + 'T00:00:00')
+  d7a.setDate(d7a.getDate() + 7)
+  const setteAvanti = d7a.toISOString().slice(0, 10)
+
   const A = allenamenti.map((a) => ({ ...a, _tipo: 'allenamento' }))
   const P = (partite ?? []).map((p) => ({ ...p, _tipo: 'partita' }))
 
@@ -34,9 +38,8 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
     .sort((a, b) => b.data.localeCompare(a.data) || (b.ora_inizio ?? '').localeCompare(a.ora_inizio ?? ''))
 
   const prossimi = [...A, ...P]
-    .filter((e) => e.data > oggiStr)
+    .filter((e) => e.data > oggiStr && e.data <= setteAvanti)
     .sort((a, b) => a.data.localeCompare(b.data) || (a.ora_inizio ?? '').localeCompare(b.ora_inizio ?? ''))
-    .slice(0, 12)
 
   const giorno = (s) => new Date(s + 'T00:00:00').getDate()
   const mese = (s) => new Date(s + 'T00:00:00').toLocaleDateString(dl, { month: 'short' }).replace('.', '')
@@ -183,13 +186,6 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
     <div>
       {vuoto && <div className="agenda-empty">{t('agendaVuoto')}</div>}
 
-      {daValutare.length > 0 && (
-        <>
-          <div className="agenda-sec">⭐ {t('agendaDaValutare')}</div>
-          {daValutare.map((a) => <Riga key={cid(a)} e={a} badge={t('badgeDaValutare')} badgeClass="b-da" />)}
-        </>
-      )}
-
       {recenti.length > 0 && (
         <>
           <div className="agenda-sec">{t('agendaRecenti')}</div>
@@ -201,6 +197,13 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
         <>
           <div className="agenda-sec">{t('agendaProssimi')}</div>
           {prossimi.map((e) => { const b = badgeDi(e); return <Riga key={cid(e)} e={e} badge={b.badge} badgeClass={b.cls} /> })}
+        </>
+      )}
+
+      {daValutare.length > 0 && (
+        <>
+          <div className="agenda-sec">⭐ {t('agendaDaValutare')}</div>
+          {daValutare.map((a) => <Riga key={cid(a)} e={a} badge={t('badgeDaValutare')} badgeClass="b-da" />)}
         </>
       )}
     </div>

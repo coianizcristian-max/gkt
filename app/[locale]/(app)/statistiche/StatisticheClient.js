@@ -189,20 +189,22 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, andament
           {feedback.length === 0
             ? <div className="empty">{t('nessunFeedback')}</div>
             : feedback.map((f, i) => (
-              <div key={i} className="feedback-riga">
+              <Link key={i} href={`/calendario/${f.allenamento_id}`} className="feedback-riga"
+                style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                 <div className="feedback-head">
                   <span className="feedback-nome">
                     {f.portieri ? `${f.portieri.nome} ${f.portieri.cognome ?? ''}`.trim() : '—'}
                   </span>
                   {f.allenamenti && (
                     <span className="feedback-voto">
-                      {f.allenamenti.squadre?.nome} · {new Date(f.allenamenti.data + 'T00:00:00').toLocaleDateString(nl, { day: 'numeric', month: 'short' })}
+                      {f.allenamenti.squadre?.nome} · {new Date(f.allenamenti.data + 'T00:00:00').toLocaleDateString(nl, { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   )}
                   {f.voto_portiere != null && <span className="feedback-voto">{t('votoLabel')} <b>{f.voto_portiere}</b></span>}
+                  <span style={{ marginLeft: 'auto', color: 'var(--ink-soft)' }}>›</span>
                 </div>
                 {f.feedback_portiere && <div className="feedback-testo">{f.feedback_portiere}</div>}
-              </div>
+              </Link>
             ))
           }
         </div>

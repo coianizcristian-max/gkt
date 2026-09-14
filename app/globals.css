@@ -1827,3 +1827,31 @@ a.brand { text-decoration: none; color: inherit; }
   padding: 16px 24px 24px; border-top: 1px solid var(--linea);
   display: flex; justify-content: flex-end;
 }
+
+/* ===== Calendario portiere: tab Agenda/Mese + vista Agenda ===== */
+.calview-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.calview-tabs button { flex: 1; max-width: 180px; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--linea); background: var(--bianco); font: inherit; font-size: 14px; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
+.calview-tabs button.on { background: var(--azzurro); border-color: var(--azzurro); color: #fff; }
+.agenda-sec { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 700; margin: 16px 2px 8px; }
+.agenda-sec:first-child { margin-top: 0; }
+.agenda-row { display: flex; align-items: center; gap: 12px; background: var(--bianco); border: 1px solid var(--linea); border-radius: 14px; padding: 12px; margin-bottom: 8px; box-shadow: var(--ombra); text-decoration: none; color: inherit; }
+.agenda-row.da { border-left: 4px solid var(--giallo); }
+.agenda-date { width: 48px; flex-shrink: 0; text-align: center; border-radius: 10px; padding: 6px 0; background: var(--carta); border: 1px solid var(--linea); }
+.agenda-date .d { font-size: 18px; font-weight: 800; line-height: 1; color: var(--ink); }
+.agenda-date .m { font-size: 10px; text-transform: uppercase; color: var(--ink-soft); }
+.agenda-info { flex: 1; min-width: 0; }
+.agenda-info .t { font-weight: 700; font-size: 15px; }
+.agenda-info .s { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+.agenda-cta { display: block; font-size: 12px; color: var(--azzurro); font-weight: 700; margin-top: 2px; }
+.agenda-badge { flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 999px; white-space: nowrap; }
+.agenda-badge.b-da { background: rgba(232,167,44,0.16); color: #a5741a; }
+.agenda-badge.b-val { background: rgba(31,138,76,0.12); color: var(--campo); }
+.agenda-badge.b-ass { background: rgba(74,91,104,0.12); color: var(--ink-soft); }
+.agenda-badge.b-fut { background: rgba(58,110,165,0.12); color: #3a6ea5; }
+.agenda-empty { color: var(--ink-soft); font-size: 14px; padding: 10px 2px; }
+/* Griglia calendario: ritocco leggibilita mobile */
+@media (max-width: 600px) {
+  .cal-ev { font-size: 8.5px; padding: 2px 4px; line-height: 1.25; letter-spacing: -0.2px; }
+  .cal-cell { min-height: 52px; border-radius: 12px; }
+  .cal-grid { gap: 4px; }
+}

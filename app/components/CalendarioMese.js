@@ -68,9 +68,9 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const meseTitolo = new Date(year, month, 1).toLocaleDateString(dl, { month: 'long', year: 'numeric' })
 
   const stylePortiere = (a) => {
-    if (!a.presente) return { background: '#3a6ea5', borderLeft: '3px solid #1d4a78' }
-    if (a.ha_voto) return { background: '#2e9e5b', borderLeft: '3px solid #1a6b3a' }
-    return { background: '#c0392b', borderLeft: '3px solid #8b1a10' }
+    if (a.ha_voto) return { background: '#2e9e5b', borderLeft: '3px solid #1a6b3a' }        // valutato
+    if (a.presente) return { background: '#e8a72c', color: '#3a2a00', borderLeft: '3px solid #b9821a' } // DA VALUTARE
+    return { background: '#3a6ea5', borderLeft: '3px solid #1d4a78' }                        // futuro / assente
   }
 
   const stylePartita = (p) => {
@@ -195,7 +195,12 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   return (
     <div className="cal">
       <div className="cal-legenda">
-        {!isPortiere && (
+        {isPortiere ? (
+          <>
+            <span className="cal-leg-dot" style={{ background: '#2e9e5b' }} />{t('legValutato')}
+            <span className="cal-leg-dot" style={{ background: '#e8a72c' }} />{t('legDaValutare')}
+          </>
+        ) : (
           <>
             <span className="cal-leg-dot" style={{ background: '#2e9e5b' }} />{t('legValutato')}
             <span className="cal-leg-dot" style={{ background: '#c0392b' }} />{t('legDaValutare')}

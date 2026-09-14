@@ -1,6 +1,7 @@
 import { createClient, getUser } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
 import CalendarioMese from '@/app/components/CalendarioMese'
+import CalendarioPortiereTabs from '@/app/components/CalendarioPortiereTabs'
 import CalendarioAzioni from '@/app/components/CalendarioAzioni'
 import Guida from '@/app/components/Guida'
 import { getTranslations } from 'next-intl/server'
@@ -82,7 +83,7 @@ export default async function CalendarioPage() {
         : Promise.resolve({ data: [] }),
       isPortiere
         ? ((allIds.length && profilo?.portiere_id)
-          ? supabase.from('valutazioni').select('allenamento_id, presente, voto_portiere').eq('portiere_id', profilo.portiere_id).in('allenamento_id', allIds)
+          ? supabase.from('valutazioni').select('allenamento_id, presente, voto_portiere, voto').eq('portiere_id', profilo.portiere_id).in('allenamento_id', allIds)
           : Promise.resolve({ data: [] }))
         : (allIds.length
           ? supabase.from('valutazioni').select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allIds)
@@ -102,6 +103,8 @@ export default async function CalendarioPage() {
         ...a,
         presente: byAll[a.id]?.presente ?? false,
         ha_voto: byAll[a.id]?.voto_portiere != null,
+        voto_portiere: byAll[a.id]?.voto_portiere ?? null,
+        valutato_coach: (byAll[a.id]?.voto != null) || !!a.nessuna_valutazione,
       }))
     } else {
       const valutati = new Set((vRes.data ?? []).map((r) => r.allenamento_id))
@@ -147,11 +150,7 @@ export default async function CalendarioPage() {
     }
   }
 
-  let daValutarePortiere = 0
-  if (isPortiere && stagione) {
-    const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
-    daValutarePortiere = (allenamenti ?? []).filter((a) => a.presente === true && a.data <= oggiRoma && !a.ha_voto).length
-  }
+  const oggiStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
 
   return (
     <>
@@ -171,13 +170,10 @@ export default async function CalendarioPage() {
           <p style={{marginTop:10}}>{t.rich('guidaP4', { b: (ch) => <strong>{ch}</strong> })}</p>
         </Guida>
         )}
-        {isPortiere && daValutarePortiere > 0 && (
-          <div className="scheda" style={{ marginBottom: 12, borderLeft: '4px solid var(--giallo)' }}>
-            <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-soft)' }}>{t('daValutarePortiere', { n: daValutarePortiere })}</p>
-          </div>
-        )}
         {stagione
-          ? <CalendarioMese allenamenti={allenamenti} partite={partite} categorie={categorie} vista={isPortiere ? 'portiere' : 'staff'} />
+          ? (isPortiere
+            ? <CalendarioPortiereTabs allenamenti={allenamenti} partite={partite} categorie={categorie} oggiStr={oggiStr} />
+            : <CalendarioMese allenamenti={allenamenti} partite={partite} categorie={categorie} vista="staff" />)
           : <div className="empty">{c('nessunaStagione')}</div>}
       </div>
     </>

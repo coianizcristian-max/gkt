@@ -1849,25 +1849,18 @@ a.brand { text-decoration: none; color: inherit; }
 .agenda-badge.b-ass { background: rgba(74,91,104,0.12); color: var(--ink-soft); }
 .agenda-badge.b-fut { background: rgba(58,110,165,0.12); color: #3a6ea5; }
 .agenda-empty { color: var(--ink-soft); font-size: 14px; padding: 10px 2px; }
-/* Griglia calendario su mobile: gli eventi restano LEGGIBILI (testo visibile),
-   ma limitati a 2 righe con "..." — niente più colonna di 4-5 righe spezzate.
-   Il coach con più categorie le vede una per riga; il dettaglio pieno è nel
-   tocco sul giorno. */
+/* Griglia calendario su mobile: testo COMPLETO e leggibile (come all'inizio).
+   Le celle si adattano al contenuto; solo piccoli ritocchi estetici. */
 @media (max-width: 600px) {
-  .cal-ev {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    font-size: 9px;
-    padding: 3px 5px;
-    line-height: 1.25;
-    word-break: break-word;
-  }
+  .cal-ev { font-size: 9px; padding: 3px 5px; line-height: 1.3; }
   .cal-evs { gap: 3px; }
-  .cal-cell { min-height: 58px; border-radius: 12px; padding: 6px 5px; }
+  .cal-cell { border-radius: 12px; padding: 6px 5px; }
   .cal-grid { gap: 5px; }
   .cal-day { font-size: 13px; width: 24px; height: 22px; }
+  /* Il numero del giorno non è cliccabile su mobile: evita di aprire "nuovo
+     allenamento" per sbaglio col dito. Il tocco apre l'anteprima del giorno;
+     per creare si usa il pulsante "Nuovo allenamento". */
+  .cal-day { pointer-events: none; }
 }
 
 /* ===== Calendario: azioni Nuovo allenamento/partita compatte ===== */

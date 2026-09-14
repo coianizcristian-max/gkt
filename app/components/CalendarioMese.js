@@ -85,6 +85,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     return `${p.squadra_nome} · ${icona} ${p.avversario || t('partitaFallback')}`
   }
 
+
   async function handleCellClick(day) {
     const evs = byDay[day] ?? []
     if (selectedDay === day) { setSelectedDay(null); return }

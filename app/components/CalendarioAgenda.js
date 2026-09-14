@@ -71,11 +71,13 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
     const passata = a.data <= oggiStr
     const stato = a.nessuna_valutazione
       ? { txt: tm('nessunaValPrevista'), col: 'var(--campo)' }
-      : a.ha_voto
-        ? { txt: tm('valutato'), col: 'var(--campo)' }
-        : passata
-          ? { txt: tm('daValutare'), col: 'var(--rosso)' }
-          : { txt: tm('programmato'), col: 'var(--ink-soft)' }
+      : a.presente === false
+        ? { txt: t('badgeAssente'), col: 'var(--ink-soft)' }
+        : a.ha_voto
+          ? { txt: tm('valutato'), col: 'var(--campo)' }
+          : (passata && a.presente === true)
+            ? { txt: tm('daValutare'), col: 'var(--rosso)' }
+            : { txt: tm('programmato'), col: 'var(--ink-soft)' }
     const d = extra[a.id]
     return (
       <div className="agenda-detail-in">
@@ -165,6 +167,7 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
   const badgeAllen = (a) => {
     if (a.ha_voto) return { badge: `${t('agendaTuoVoto')}: ${a.voto_portiere}★`, cls: 'b-val' }
     if (a.presente === false) return { badge: t('badgeAssente'), cls: 'b-ass' }
+    if (a.data > oggiStr) return { badge: t('badgeProgrammato'), cls: 'b-fut' }
     if (a.valutato_coach) return { badge: t('badgeValutatoCoach'), cls: 'b-val' }
     return { badge: null, cls: '' }
   }

@@ -278,14 +278,18 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     }
 
     const daVal = passata && !ev.valutato
-    const statoTxt = ev.nessuna_valutazione ? t('nessunaValPrevista')
-      : ev.valutato ? t('valutato')
-      : daVal ? t('daValutare')
-      : t('programmato')
-    const statoColor = ev.nessuna_valutazione ? 'var(--campo)'
-      : ev.valutato ? 'var(--campo)'
-      : daVal ? 'var(--rosso)'
-      : 'var(--ink-soft)'
+    let statoTxt, statoColor
+    if (ev.nessuna_valutazione) {
+      statoTxt = t('nessunaValPrevista'); statoColor = 'var(--campo)'
+    } else if (isPortiere) {
+      if (ev.presente === false) { statoTxt = t('assente').replace(/^./, (c) => c.toUpperCase()); statoColor = 'var(--ink-soft)' }
+      else if (ev.ha_voto) { statoTxt = t('valutato'); statoColor = 'var(--campo)' }
+      else if (passata && ev.presente === true) { statoTxt = t('daValutare'); statoColor = 'var(--rosso)' }
+      else { statoTxt = t('programmato'); statoColor = 'var(--ink-soft)' }
+    } else {
+      statoTxt = ev.valutato ? t('valutato') : daVal ? t('daValutare') : t('programmato')
+      statoColor = ev.valutato ? 'var(--campo)' : daVal ? 'var(--rosso)' : 'var(--ink-soft)'
+    }
 
     return (
       <div className="calx-detail-in">

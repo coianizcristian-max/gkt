@@ -116,7 +116,7 @@ export default async function CalendarioPage() {
       for (const v of mie) byAll[v.allenamento_id] = v
       allenamenti = allenamenti.map((a) => ({
         ...a,
-        presente: byAll[a.id]?.presente ?? false,
+        presente: byAll[a.id]?.presente ?? null,
         ha_voto: byAll[a.id]?.voto_portiere != null,
         voto_portiere: byAll[a.id]?.voto_portiere ?? null,
         valutato_coach: (byAll[a.id]?.voto != null) || !!a.nessuna_valutazione,

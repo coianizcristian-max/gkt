@@ -501,6 +501,10 @@
     "onb3Desc": "Lo staff ti iscriverà alla categoria della stagione corrente."
   },
   "allenamentoDettaglio": {
+    "valutazioneAllenatore": "Valutazione dell'allenatore",
+    "votoLabel": "Voto",
+    "noteAllenatore": "Note dell'allenatore",
+    "nessunaValutazioneCoach": "L'allenatore non ha ancora inserito la tua valutazione.",
     "eriAssente": "Eri assente a questa seduta",
     "eserciziSeduta": "Esercizi della seduta",
     "nessunEsercizio": "Nessun esercizio inserito per questa seduta.",

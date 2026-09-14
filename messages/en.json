@@ -501,6 +501,10 @@
     "onb3Desc": "The staff will enrol you in the current season’s category."
   },
   "allenamentoDettaglio": {
+    "valutazioneAllenatore": "Coach's evaluation",
+    "votoLabel": "Rating",
+    "noteAllenatore": "Coach's notes",
+    "nessunaValutazioneCoach": "The coach hasn't added your evaluation yet.",
     "eriAssente": "You were absent from this session",
     "eserciziSeduta": "Session drills",
     "nessunEsercizio": "No drill added to this session.",

@@ -74,7 +74,7 @@ export default async function AllenamentoPage({ params }) {
   if (profilo?.ruolo === 'portiere') {
     const [{ data: mia }, { data: aeRows }] = await Promise.all([
       supabase.from('valutazioni')
-        .select('presente, voto_portiere, feedback_portiere, nota_portiere')
+        .select('id, presente, voto, note, voto_portiere, feedback_portiere, nota_portiere')
         .eq('allenamento_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
       supabase.from('allenamento_esercizi')
         .select('ordine, esercizi(id, titolo, tipologia, descrizione_breve, descrizione, immagine_url)')
@@ -82,6 +82,21 @@ export default async function AllenamentoPage({ params }) {
     ])
     const esercizi = (aeRows ?? [])
       .map((r) => r.esercizi).filter(Boolean)
+
+    // Valutazione dell'allenatore: voto + punteggi per parametro
+    let punteggiCoach = []
+    if (mia?.id && mia.voto != null) {
+      const [{ data: pun }, { data: par }] = await Promise.all([
+        supabase.from('valutazione_punteggi').select('parametro_id, punteggio').eq('valutazione_id', mia.id),
+        supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
+      ])
+      const parMap = {}
+      for (const p of par ?? []) parMap[p.id] = p
+      punteggiCoach = (pun ?? [])
+        .map((x) => ({ nome: parMap[x.parametro_id]?.nome, ordine: parMap[x.parametro_id]?.ordine ?? 0, punteggio: x.punteggio }))
+        .filter((x) => x.nome != null)
+        .sort((a, b) => a.ordine - b.ordine)
+    }
 
     return (
       <>
@@ -138,6 +153,30 @@ export default async function AllenamentoPage({ params }) {
             </div>
           ) : (
             <div className="empty">{t('nessunEsercizio')}</div>
+          )}
+
+          <h2 className="sezione-titolo">{t('valutazioneAllenatore')}</h2>
+          {mia?.voto != null ? (
+            <div className="scheda">
+              <div style={{ fontSize: 22, fontWeight: 800 }}>{t('votoLabel')}: <span style={{ color: 'var(--campo)' }}>{mia.voto}</span></div>
+              {punteggiCoach.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                  {punteggiCoach.map((p, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, background: 'var(--carta)', borderRadius: 8, padding: '6px 10px' }}>
+                      <span>{p.nome}</span><b>{p.punteggio}</b>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {mia.note && (
+                <div style={{ marginTop: 10 }}>
+                  <div className="cal-preview-esercizi-label">{t('noteAllenatore')}</div>
+                  <p style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}>{mia.note}</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="empty">{t('nessunaValutazioneCoach')}</div>
           )}
 
           <h2 className="sezione-titolo">{t('tuaValutazione')}</h2>

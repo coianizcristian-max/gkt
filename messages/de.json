@@ -501,6 +501,10 @@
     "onb3Desc": "Das Staff meldet dich in der Kategorie der aktuellen Saison an."
   },
   "allenamentoDettaglio": {
+    "valutazioneAllenatore": "Bewertung des Trainers",
+    "votoLabel": "Note",
+    "noteAllenatore": "Notizen des Trainers",
+    "nessunaValutazioneCoach": "Der Trainer hat deine Bewertung noch nicht eingetragen.",
     "eriAssente": "Du warst bei dieser Einheit abwesend",
     "eserciziSeduta": "Übungen der Einheit",
     "nessunEsercizio": "Keine Übung für diese Einheit hinzugefügt.",

@@ -2012,3 +2012,31 @@ a.brand { text-decoration: none; color: inherit; }
   .calx-badge { padding: 4px 9px; }
   .calx-panel-title { font-size: 16px; }
 }
+
+/* =========================================================
+   Sidebar desktop — restyle (override, solo .sidebar desktop)
+   ========================================================= */
+.sidebar {
+  background: linear-gradient(180deg, #12283a 0%, #0b1a28 100%);
+  gap: 2px;
+}
+.brand .glove {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, #2f8fe0, #1657c4);
+  box-shadow: 0 4px 12px rgba(31, 111, 235, .40);
+}
+.sidebar .nav-link {
+  border-radius: 11px; padding: 9px 12px; color: #c3d0db; font-weight: 500;
+}
+.sidebar .nav-link:hover { background: rgba(255, 255, 255, .06); color: #fff; }
+.sidebar .nav-link.active {
+  background: linear-gradient(135deg, #2f8fe0, #1f6feb); color: #fff;
+  box-shadow: 0 4px 14px rgba(31, 111, 235, .45); font-weight: 600;
+}
+.sidebar .nav-link.nav-link-supervisore {
+  background: linear-gradient(135deg, #7a2130, #5e1a26); color: #f6cfd5;
+  box-shadow: 0 4px 14px rgba(122, 33, 48, .40); font-weight: 600;
+}
+.sidebar .nav-link.nav-link-supervisore:hover { background: linear-gradient(135deg, #8c2637, #6b1e2c); color: #fff; }
+.sidebar .nav-link.nav-link-supervisore.active { background: linear-gradient(135deg, #a02a3d, #7a2130); }
+.sidebar .nav-sito { color: #33d17a !important; font-weight: 600; }

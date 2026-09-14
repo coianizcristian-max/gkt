@@ -477,7 +477,8 @@
     "votoSuffix": " — nota {voto}"
   },
   "schedaPortiere": {
-    "onb1Titolo": "Completa tus datos",
+        "daValutarePortiere": "Entrenamientos por valorar: {n}. Ábrelos desde el calendario y deja tu valoración.",
+"onb1Titolo": "Completa tus datos",
     "onb1Desc": "Añade nombre, apellidos y fecha de nacimiento en tu ficha.",
     "onb2Titolo": "Añade una foto de perfil",
     "onb2Desc": "Sube tu foto para que el cuerpo técnico pueda reconocerte.",

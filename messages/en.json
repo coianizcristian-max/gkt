@@ -477,7 +477,8 @@
     "votoSuffix": " — rating {voto}"
   },
   "schedaPortiere": {
-    "onb1Titolo": "Complete your details",
+        "daValutarePortiere": "Trainings to rate: {n}. Open them from the calendar and leave your rating.",
+"onb1Titolo": "Complete your details",
     "onb1Desc": "Add your first name, last name and date of birth to your profile.",
     "onb2Titolo": "Add a profile photo",
     "onb2Desc": "Upload your photo so the staff can recognize you.",

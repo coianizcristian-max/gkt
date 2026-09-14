@@ -477,7 +477,8 @@
     "votoSuffix": " — Note {voto}"
   },
   "schedaPortiere": {
-    "onb1Titolo": "Vervollständige deine Daten",
+        "daValutarePortiere": "Zu bewertende Trainings: {n}. Öffne sie im Kalender und gib deine Bewertung ab.",
+"onb1Titolo": "Vervollständige deine Daten",
     "onb1Desc": "Füge Vorname, Nachname und Geburtsdatum in deinem Profil hinzu.",
     "onb2Titolo": "Profilfoto hinzufügen",
     "onb2Desc": "Lade dein Foto hoch, damit das Staff dich erkennt.",

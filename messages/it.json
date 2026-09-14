@@ -477,7 +477,8 @@
     "votoSuffix": " — voto {voto}"
   },
   "schedaPortiere": {
-    "onb1Titolo": "Completa i tuoi dati",
+        "daValutarePortiere": "Allenamenti da valutare: {n}. Aprili dal calendario e lascia il tuo voto.",
+"onb1Titolo": "Completa i tuoi dati",
     "onb1Desc": "Aggiungi nome, cognome e data di nascita nella tua scheda.",
     "onb2Titolo": "Aggiungi una foto profilo",
     "onb2Desc": "Carica la tua foto per essere riconoscibile dallo staff.",

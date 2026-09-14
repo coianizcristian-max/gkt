@@ -98,6 +98,22 @@ export default async function SchedaPortierePage({ params }) {
     infortunioAperto = infA ?? null
   }
 
+  // Promemoria "allenamenti da valutare" — solo per il portiere sulla sua home.
+  // Conta le sedute passate della sua categoria in cui è PRESENTE ma non ha
+  // ancora dato il voto. Esclude assenze e sedute non ancora marcate dal coach.
+  let daValutare = 0
+  if (soloPortiere && stagione && iscrizione?.squadra_id) {
+    const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
+    const { data: allR } = await supabase.from('allenamenti')
+      .select('id').eq('stagione_id', stagione.id).eq('squadra_id', iscrizione.squadra_id).lte('data', oggiRoma)
+    const allIds = (allR ?? []).map((a) => a.id)
+    if (allIds.length) {
+      const { data: valR } = await supabase.from('valutazioni')
+        .select('presente, voto_portiere').eq('portiere_id', id).in('allenamento_id', allIds)
+      daValutare = (valR ?? []).filter((v) => v.presente === true && v.voto_portiere == null).length
+    }
+  }
+
   // Assenze annunciate (solo staff): promemoria informativo, mai in statistiche/presenze.
   let assenzePreviste = []
   if (!soloPortiere && iscrizione?.id) {
@@ -127,6 +143,11 @@ export default async function SchedaPortierePage({ params }) {
           <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">{tp('navStatistiche')}</Link>
           <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">{tp('navPercorso')}</Link>
         </div>
+        {soloPortiere && daValutare > 0 && (
+          <Link href="/calendario" className="scheda" style={{ display: 'block', marginBottom: 16, borderLeft: '4px solid var(--giallo)', textDecoration: 'none', color: 'inherit' }}>
+            <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-soft)' }}>{t('daValutarePortiere', { n: daValutare })}</p>
+          </Link>
+        )}
         {soloPortiere && (
           <OnboardingChecklist checks={[
             {

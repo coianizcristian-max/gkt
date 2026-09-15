@@ -171,6 +171,7 @@ export default async function AppLayout({ children }) {
     'partite':       (isPortiere || vedePartite) ? { href: '/partite', label: t('partite') } : null,
     'obiettivi-portiere': (isPortiere && portiereId) ? { href: `${schedaHref}/obiettivi`, label: t('obiettivi') } : null,
     'percorso-portiere':  (isPortiere && portiereId) ? { href: `${schedaHref}/percorso`, label: t('percorso') } : null,
+    'andamento-portiere': (isPortiere && portiereId) ? { href: `${schedaHref}/andamento`, label: t('andamento') } : null,
     'statistiche':   (isPortiere || vedeStatistiche) ? { href: '/statistiche', label: t('statistiche') } : null,
     'esercizi':      (isStaff && vedeAllenamenti) ? { href: '/esercizi', label: t('esercizi') } : null,
     'template-allenamenti': (isStaff && vedeAllenamenti) ? { href: '/template-allenamenti', label: t('templateAllenamenti') } : null,
@@ -200,10 +201,10 @@ export default async function AppLayout({ children }) {
   // Per il portiere, forza "Obiettivi" e "Percorso" subito dopo "Partite"
   // (l'ordine salvato in DB non le contiene, altrimenti finirebbero in fondo).
   if (isPortiere) {
-    tutteChiavi = tutteChiavi.filter((k) => k !== 'obiettivi-portiere' && k !== 'percorso-portiere')
+    tutteChiavi = tutteChiavi.filter((k) => k !== 'obiettivi-portiere' && k !== 'percorso-portiere' && k !== 'andamento-portiere')
     const idx = tutteChiavi.indexOf('partite')
-    if (idx >= 0) tutteChiavi.splice(idx + 1, 0, 'obiettivi-portiere', 'percorso-portiere')
-    else tutteChiavi.push('obiettivi-portiere', 'percorso-portiere')
+    if (idx >= 0) tutteChiavi.splice(idx + 1, 0, 'obiettivi-portiere', 'percorso-portiere', 'andamento-portiere')
+    else tutteChiavi.push('obiettivi-portiere', 'percorso-portiere', 'andamento-portiere')
   }
 
   const voci = [

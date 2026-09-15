@@ -50,7 +50,7 @@ export default async function StatistichePortierePage({ params }) {
       <Link href={`/portieri/${id}`} className="sub-nav-link">{tp('navScheda')}</Link>
       {!soloPortiere && <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>}
       <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link active">{tp('navStatistiche')}</Link>
-      <Link href={`/portieri/${id}/andamento`} className="sub-nav-link">{tp('navAndamento')}</Link>
+      {!soloPortiere && <Link href={`/portieri/${id}/andamento`} className="sub-nav-link">{tp('navAndamento')}</Link>}
       {!soloPortiere && <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">{tp('navPercorso')}</Link>}
     </div>
   )

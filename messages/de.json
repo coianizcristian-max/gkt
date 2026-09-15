@@ -49,6 +49,7 @@
     "jsonLdDescription": "Plattform für Torwarttrainer: Trainingskalender, Bewertungen, Statistiken, Übungen und Kaderverwaltung in einer App."
   },
   "sidebar": {
+    "andamento": "Verlauf",
     "obiettivi": "Ziele",
     "percorso": "Verlauf",
     "dashboard": "Dashboard",

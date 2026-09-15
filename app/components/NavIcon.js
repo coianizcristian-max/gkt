@@ -27,6 +27,7 @@ const PATHS = {
   abbonati: 'M12 2l3 6.5 7 .6-5.3 4.6 1.6 6.8L12 17l-6.3 3.5 1.6-6.8L2 9.1l7-.6z',
   obiettivi: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 8a4 4 0 100 8 4 4 0 000-8zM12 11.5a.5.5 0 100 1 .5.5 0 000-1z',
   percorso: 'M3 17l6-6 4 4 8-8M21 7h-4M21 7v4',
+  andamento: 'M3 3v18h18M7 15l4-5 3 3 5-7',
 }
 const FALLBACK = 'M12 5v14M5 12h14'
 
@@ -34,6 +35,7 @@ export default function NavIcon({ href = '' }) {
   const parts = String(href).split('/').filter(Boolean)
   let key = parts[0] || ''
   if (parts.includes('obiettivi')) key = 'obiettivi'
+  else if (parts.includes('andamento')) key = 'andamento'
   else if (parts.includes('percorso')) key = 'percorso'
   const d = PATHS[key] || FALLBACK
   return (

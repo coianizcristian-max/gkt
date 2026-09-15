@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { renderToBuffer, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
+import { renderToBuffer, Document, Page, Text, View, StyleSheet, Font, Svg, Line, Polyline, Circle } from '@react-pdf/renderer'
 import { getStagioneAttiva } from '@/lib/tenant'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
@@ -31,14 +31,80 @@ const styles = StyleSheet.create({
   tabCellaHead: { flex: 1, fontSize: 8, textAlign: 'right', color: '#4a5b68', fontWeight: 700 },
   tabCellaMeseHead: { width: '13%', fontSize: 8, color: '#4a5b68', fontWeight: 700 },
   nota: { fontSize: 8, color: '#8899a8', marginTop: 6 },
+  legenda: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4, marginBottom: 8 },
+  legendaVoce: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  legendaPallino: { width: 8, height: 3, borderRadius: 2 },
+  legendaTesto: { fontSize: 8, color: '#4a5b68' },
+  evento: { flexDirection: 'row', paddingVertical: 3, borderBottom: '0.5 solid #e2e6e1' },
+  eventoData: { width: '18%', fontSize: 8, color: '#4a5b68' },
+  eventoTesto: { flex: 1, fontSize: 9 },
+  eventoTipo: { width: '22%', fontSize: 8, color: '#8899a8', textAlign: 'right' },
   footer: { position: 'absolute', bottom: 24, left: 40, right: 40, fontSize: 8, color: '#8899a8', textAlign: 'center', borderTop: '0.5 solid #e2e6e1', paddingTop: 8 },
 })
 
-function TabellaMesi({ titolo, intestazioni, righe, nota }) {
+const COLORI = ['#0a7ec2', '#1f8a4c', '#7f77dd', '#d85a30', '#e8a72c', '#1d9e75']
+
+function GraficoMesi({ etichette, serie }) {
+  const vis = serie.filter((s) => s.punti.some((p) => p != null))
+  if (!vis.length || etichette.length < 2) return null
+  const vals = vis.flatMap((s) => s.punti.filter((p) => p != null))
+  const lo = Math.floor(Math.min(...vals) * 2) / 2 - 0.25
+  const hi = Math.ceil(Math.max(...vals) * 2) / 2 + 0.25
+  const range = hi - lo || 1
+  const W = 515, H = 110, PL = 26, PR = 6, PT = 8, PB = 16
+  const iw = W - PL - PR, ih = H - PT - PB
+  const n = etichette.length
+  const px = (i) => PL + (i / (n - 1)) * iw
+  const py = (v) => PT + ih - ((v - lo) / range) * ih
+  const ticks = [lo, (lo + hi) / 2, hi]
+  return (
+    <View>
+      <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+        {ticks.map((v, i) => (
+          <Line key={`g${i}`} x1={PL} x2={W - PR} y1={py(v)} y2={py(v)} strokeWidth={0.5} stroke="#e2e6e1" />
+        ))}
+        {ticks.map((v, i) => (
+          <Text key={`t${i}`} x={PL - 4} y={py(v) + 2.5} style={{ fontSize: 6, fill: '#8899a8', textAnchor: 'end' }}>
+            {v.toFixed(1)}
+          </Text>
+        ))}
+        {etichette.map((m, i) => (
+          <Text key={`m${i}`} x={px(i)} y={H - 4} style={{ fontSize: 6, fill: '#8899a8', textAnchor: 'middle' }}>{m}</Text>
+        ))}
+        {vis.map((s, si) => {
+          const segmenti = []
+          let cur = []
+          s.punti.forEach((v, i) => {
+            if (v == null) { if (cur.length) segmenti.push(cur); cur = [] }
+            else cur.push(`${px(i)},${py(v)}`)
+          })
+          if (cur.length) segmenti.push(cur)
+          return segmenti.map((seg, k) => (
+            <Polyline key={`${si}-${k}`} points={seg.join(' ')} fill="none" stroke={s.colore} strokeWidth={1.4} />
+          ))
+        })}
+        {vis.map((s, si) => s.punti.map((v, i) => v == null ? null : (
+          <Circle key={`c${si}-${i}`} cx={px(i)} cy={py(v)} r={1.6} fill={s.colore} />
+        )))}
+      </Svg>
+      <View style={styles.legenda}>
+        {vis.map((s, i) => (
+          <View key={i} style={styles.legendaVoce}>
+            <View style={[styles.legendaPallino, { backgroundColor: s.colore }]} />
+            <Text style={styles.legendaTesto}>{s.nome}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  )
+}
+
+function TabellaMesi({ titolo, intestazioni, righe, nota, grafico }) {
   if (!righe.length) return null
   return (
     <View style={styles.sezione}>
       <Text style={styles.sezioneTitolo}>{titolo}</Text>
+      {grafico ? <GraficoMesi etichette={grafico.etichette} serie={grafico.serie} /> : null}
       <View style={styles.tabHead}>
         <Text style={styles.tabCellaMeseHead}>Mese</Text>
         {intestazioni.map((h) => <Text key={h} style={styles.tabCellaHead}>{h}</Text>)}
@@ -54,7 +120,16 @@ function TabellaMesi({ titolo, intestazioni, righe, nota }) {
   )
 }
 
-function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviAperti, commenti, andamento }) {
+const ETICHETTA_EVENTO = {
+  obiettivo_creato: 'Obiettivo fissato',
+  obiettivo_raggiunto: 'Obiettivo raggiunto',
+  voto_alto: 'Prestazione alta',
+  voto_basso: 'Prestazione bassa',
+  clean_sheet: 'Porta inviolata',
+  partita: 'Partita',
+}
+
+function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviAperti, commenti, andamento, percorso }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -136,12 +211,14 @@ function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviApert
             titolo="Voti e partite — mese per mese"
             intestazioni={andamento.intestazioniGen}
             righe={andamento.genMensile}
-            nota="Ogni riga usa solo i dati di quel mese. I mesi non ancora conclusi non compaiono."
+            grafico={andamento.graficoGenMensile}
+            nota="Ogni riga usa solo i dati di quel mese. I mesi non ancora conclusi non compaiono. Il grafico mostra le medie voto."
           />
           <TabellaMesi
             titolo="Voti e partite — progressivo"
             intestazioni={andamento.intestazioniGen}
             righe={andamento.genProgressivo}
+            grafico={andamento.graficoGenProgressivo}
             nota="Ogni riga usa i dati da inizio stagione fino a quel mese incluso."
           />
           <Text style={styles.footer}>
@@ -161,17 +238,42 @@ function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviApert
             titolo="Parametri — mese per mese"
             intestazioni={andamento.intestazioniPar}
             righe={andamento.parMensile}
+            grafico={andamento.graficoParMensile}
           />
           <TabellaMesi
             titolo="Parametri — progressivo"
             intestazioni={andamento.intestazioniPar}
             righe={andamento.parProgressivo}
+            grafico={andamento.graficoParProgressivo}
           />
           <Text style={styles.footer}>
             Generato da GKSeason — Gestionale Allenamento Portieri · {new Date().toLocaleDateString('it-IT')}
           </Text>
         </Page>
       )}
+      {percorso && percorso.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>GKSeason — Percorso della stagione</Text>
+            <Text style={styles.titolo}>{portiere.nome} {portiere.cognome ?? ''}</Text>
+            <Text style={styles.sottotitolo}>Stagione {stagione.nome}</Text>
+          </View>
+          <View style={styles.sezione}>
+            <Text style={styles.sezioneTitolo}>Momenti della stagione ({percorso.length})</Text>
+            {percorso.map((e, i) => (
+              <View key={i} style={styles.evento}>
+                <Text style={styles.eventoData}>{e.data}</Text>
+                <Text style={styles.eventoTesto}>{e.titolo}</Text>
+                <Text style={styles.eventoTipo}>{ETICHETTA_EVENTO[e.tipo] ?? e.tipo}</Text>
+              </View>
+            ))}
+          </View>
+          <Text style={styles.footer}>
+            Generato da GKSeason — Gestionale Allenamento Portieri · {new Date().toLocaleDateString('it-IT')}
+          </Text>
+        </Page>
+      )}
+
     </Document>
   )
 }
@@ -321,8 +423,25 @@ export async function GET(request) {
     label: etich(k),
   }))
 
+  // Serie per i grafici: solo grandezze omogenee (medie voto), altrimenti la scala si rompe.
+  const serieVoto = (prog) => [
+    { nome: 'Media voto allenamenti', colore: COLORI[0],
+      punti: fette.map((f) => mediaPes(prog ? f.progressivo : f.mensile, (b) => b.vs, (b) => b.vn)) },
+    { nome: 'Media voto partite', colore: COLORI[2],
+      punti: fette.map((f) => mediaPes(prog ? f.progressivo : f.mensile, (b) => b.pvs, (b) => b.pvn)) },
+  ]
+  const seriePar = (prog) => parametri.map((p, i) => ({
+    nome: p.nome, colore: COLORI[i % COLORI.length],
+    punti: fette.map((f) => mediaPes(prog ? f.progressivo : f.mensile, (b) => b.par[p.id]?.s ?? 0, (b) => b.par[p.id]?.n ?? 0)),
+  }))
+  const etichette = fette.map((f) => f.label)
+
   const andamento = {
     mesi: chiavi,
+    graficoGenMensile: { etichette, serie: serieVoto(false) },
+    graficoGenProgressivo: { etichette, serie: serieVoto(true) },
+    graficoParMensile: parametri.length ? { etichette, serie: seriePar(false) } : null,
+    graficoParProgressivo: parametri.length ? { etichette, serie: seriePar(true) } : null,
     intestazioniGen: ['Pres.', 'Voto all.', 'Giocate', 'Voto gara', 'Gol sub.', 'CS', 'Punti'],
     intestazioniPar: parametri.map((p) => (p.nome.length > 11 ? p.nome.slice(0, 10) + '.' : p.nome)),
     genMensile: fette.map((f) => rigaGen(f.mensile, f.label)),
@@ -330,6 +449,34 @@ export async function GET(request) {
     parMensile: parametri.length ? fette.map((f) => rigaPar(f.mensile, f.label)) : [],
     parProgressivo: parametri.length ? fette.map((f) => rigaPar(f.progressivo, f.label)) : [],
   }
+
+  // ── Percorso: i momenti salienti, come nella pagina Percorso ───────────
+  const percorso = []
+  for (const o of obiettiviRows ?? []) {
+    if (o.created_at) percorso.push({ tipo: 'obiettivo_creato', data: o.created_at.slice(0, 10), titolo: o.titolo })
+    if (o.stato === 'raggiunto' && o.updated_at) percorso.push({ tipo: 'obiettivo_raggiunto', data: o.updated_at.slice(0, 10), titolo: o.titolo })
+  }
+  for (const v of vAll ?? []) {
+    if (!v.presente || v.voto == null) continue
+    const voto = Number(v.voto)
+    const data = dataAllen.get(v.allenamento_id)
+    if (!data) continue
+    if (voto >= 8) percorso.push({ tipo: 'voto_alto', data, titolo: `Allenamento valutato ${voto}` })
+    if (voto <= 4) percorso.push({ tipo: 'voto_basso', data, titolo: `Allenamento valutato ${voto}` })
+  }
+  for (const v of vPar ?? []) {
+    if (!v.presente) continue
+    const p = partiteById[v.partita_id]
+    if (!p) continue
+    const cs = p.gol_subiti === 0
+    percorso.push({
+      tipo: cs ? 'clean_sheet' : 'partita',
+      data: p.data,
+      titolo: (p.avversario || 'Avversario') + (v.voto != null ? ` — voto ${v.voto}` : ''),
+    })
+  }
+  percorso.sort((a, b) => (b.data ?? '').localeCompare(a.data ?? ''))
+  const percorsoLimitato = percorso.slice(0, 60)
 
   const kpi = {
     presenze: `${presenze}/${(vAll ?? []).length}`,
@@ -343,6 +490,7 @@ export async function GET(request) {
       obiettiviRaggiunti={obiettiviRaggiunti} obiettiviAperti={obiettiviAperti}
       commenti={{ allenatore: commentiRow?.commento_allenatore, portiere: commentiRow?.commento_portiere }}
       andamento={andamento}
+      percorso={percorsoLimitato}
     />
   )
 

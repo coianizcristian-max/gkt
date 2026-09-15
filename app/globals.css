@@ -736,16 +736,16 @@ a { color: inherit; text-decoration: none; }
   max-width: 100%;
 }
 .sub-nav-link {
-  padding: 8px 16px; font-size: 14px; font-weight: 600; color: var(--ink-soft);
+  padding: 9px 18px; font-size: 15px; font-weight: 600; color: var(--ink-soft);
   border-radius: var(--r-sm); border: 1px solid transparent;
   transition: background .15s, color .15s, box-shadow .15s;
 }
 .sub-nav-link:hover { color: var(--ink); background: rgba(20, 32, 43, 0.05); }
 .sub-nav-link.active {
-  color: var(--azzurro); background: var(--bianco); border-color: var(--linea);
-  box-shadow: 0 1px 2px rgba(20, 32, 43, 0.08);
+  color: var(--bianco); background: var(--azzurro-scuro); border-color: var(--azzurro-scuro);
+  box-shadow: 0 1px 2px rgba(20, 32, 43, 0.12);
 }
-.sub-nav-link.active:hover { background: var(--bianco); }
+.sub-nav-link.active:hover { color: var(--bianco); background: var(--azzurro-scuro); }
 .sub-nav-link:focus-visible { outline: 2px solid var(--azzurro); outline-offset: 1px; }
 
 .lista-editor { max-width: 720px; display: flex; flex-direction: column; gap: 10px; }
@@ -856,7 +856,7 @@ a { color: inherit; text-decoration: none; }
 
 /* sub-nav-link usato anche come <button> (tab elenchi) */
 button.sub-nav-link { background: none; border: 1px solid transparent; cursor: pointer; font-family: inherit; }
-button.sub-nav-link.active { background: var(--bianco); border-color: var(--linea); }
+button.sub-nav-link.active { background: var(--azzurro-scuro); border-color: var(--azzurro-scuro); color: var(--bianco); }
 
 /* Obiettivi PNL */
 .obiettivo-card { border: 1px solid var(--linea); border-radius: var(--r); padding: 14px; margin-bottom: 12px; background: var(--bianco); border-left: 4px solid var(--linea); }
@@ -1319,7 +1319,7 @@ a.brand { text-decoration: none; color: inherit; }
 
   /* Sub-nav più compatta su mobile */
   .sub-nav { margin-bottom: 16px; padding: 3px; }
-  .sub-nav-link { padding: 8px 12px; font-size: 13px; }
+  .sub-nav-link { padding: 9px 14px; font-size: 14px; }
 
   /* Sezione statistiche: card full width */
   .stat-card { padding: 12px; }

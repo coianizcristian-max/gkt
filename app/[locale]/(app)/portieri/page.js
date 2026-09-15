@@ -93,6 +93,7 @@ export default async function PortieriPage() {
           <p style={{marginTop:10}}>{t.rich('guidaP2', { b: (ch) => <strong>{ch}</strong> })}</p>
           <p style={{marginTop:10}}>{t.rich('guidaP3', { b: (ch) => <strong>{ch}</strong> })}</p>
           <p style={{marginTop:10}}>{t.rich('guidaP4', { b: (ch) => <strong>{ch}</strong> })}</p>
+          <p style={{marginTop:10}}>{t.rich('guidaP5', { b: (ch) => <strong>{ch}</strong> })}</p>
         </Guida>
         {profilo?.ruolo === 'allenatore' && (
           <OnboardingChecklist checks={[

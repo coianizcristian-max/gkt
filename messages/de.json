@@ -103,7 +103,7 @@
     "couponGiorni": "🎟 Kostenloser Zeitraum: noch {giorni} Tage",
     "guidaTitolo": "So liest du das Dashboard",
     "guidaP1": "Das Dashboard ist dein Ausgangspunkt: Es zeigt sofort die <b>vergangenen, noch zu bewertenden Trainings und Spiele</b> (in Rot), das geplante <b>nächste Training</b> und die <b>Spiele in den nächsten 7 Tagen</b>.",
-    "guidaP2": "Das gelbe Feld <b>„Zu beobachtende Torhüter“</b> markiert automatisch Torhüter mit mindestens 2 Abwesenheiten bei den letzten 3 Nominierungen, einem deutlichen Leistungsabfall (−1,5 Punkte im Schnitt) oder einem überfälligen, noch nicht erreichten Ziel.",
+    "guidaP2": "Auf der Torwartseite findest du außerdem <b>Ziele</b> (Vorgaben mit Frist setzen und Status verfolgen), <b>Statistiken</b> (Anwesenheit, Durchschnitte, Wachstumsindex) und <b>Verlauf</b> (Entwicklung der Saison). Die <b>Tags</b> zur Einordnung der Eigenschaften werden direkt auf der Seite verwaltet.",
     "guidaP3": "Hier findest du auch die <b>Messungs-Erinnerungen</b> für fällige Ziele, damit du weißt, wann es Zeit ist, einen neuen Test zu erfassen.",
     "coseDaValutare": "{count, plural, one {# zu bewertende Sache} other {# zu bewertende Dinge}}",
     "allenamentoLabel": "Training",
@@ -136,7 +136,7 @@
     "guidaP1": "Trage Spiele mit <b>„+ Neues Spiel“</b> ein: Datum, Kategorie, Gegner, Heim/Auswärts und Ergebnis. Öffne jedes Spiel, um die <b>Torhüter-Bewertungen</b> einzugeben: Anwesenheit, Note, Punkte und Notizen. Weiße Westen werden automatisch aus den Spielen berechnet, in denen der Torhüter anwesend war und keine Gegentore kassiert hat.",
     "guidaP2": "Der Spieltyp zählt in den Statistiken: <b>Freundschaftsspiele</b> beeinflussen die Ligadurchschnitte nicht und werden separat gezählt. Verwende den Typ <b>„Liga“</b> für offizielle Spiele.",
     "guidaP3": "Um <b>mehrere Spiele gesammelt zu löschen</b> (z. B. versehentlich eingetragene) nutze den Bereich <ricorrenze>Serientermine → Massenlöschung</ricorrenze>, wo du nach Kategorie, Zeitraum und Vorhandensein oder Fehlen von Bewertungen filtern kannst.",
-    "guidaP4": "Du kannst auch die <b>Treffzeit</b> und die <b>Anstoßzeit</b> des Spiels angeben: Sie erscheinen im Spielblatt und in der Kalendervorschau.",
+    "guidaP4": "Unten auf dem Dashboard findest du die <b>Scorecard jedes Torwarts</b> mit dem Radar seiner Eigenschaften: eine schnelle Saisonübersicht, ohne die vollständigen Statistiken zu öffnen.",
     "nuovaTitolo": "Neues Spiel"
   },
   "portieri": {
@@ -395,7 +395,7 @@
     "guidaP2": "<b>Trainings</b>: Lege für jede Kategorie den festen wöchentlichen Trainingstag und die Uhrzeit fest und generiere dann automatisch alle Termine im Kalender. Bereits vorhandene Termine werden nicht dupliziert: Du kannst nach Änderungen problemlos neu generieren.",
     "guidaP3": "<b>Spiele</b>: zwei Wege, den Spielkalender zu füllen. <b>Methode 1</b> erzeugt leere Spiele (nur Datum und Kategorie) an einem festen Wochentag, nützlich, wenn du nur den Spieltag kennst und die Eingabe beschleunigen möchtest — Gegner und Heim/Auswärts fügst du später beim Öffnen des Spiels hinzu. <b>Methode 2</b> importiert einen bereits vollständigen offiziellen Spielplan aus einer Excel-Datei: Lade die Vorlage aus dem Bereich herunter, fülle sie mit Daten, Gegnern und Heim/Auswärts der Hinrunde aus und lade sie dann mit ausgewählter Kategorie hoch — das Programm erstellt automatisch sowohl die Hin- als auch die Rückspiele (Heim/Auswärts vertauscht).",
     "guidaP4": "Im Bereich <b>🗑 Massenlöschung</b> unten auf der Seite kannst du Trainings oder Spiele in einem Zeitraum gesammelt löschen. Du kannst nach Kategorie filtern und wählen, ob nur die <em>ohne Bewertungen</em> (typischerweise versehentlich angelegt), nur die <em>mit Bewertungen</em> oder alle gelöscht werden. Der Vorgang ist unumkehrbar: Vor dem Fortfahren wird immer eine Bestätigung verlangt.",
-    "guidaP5": "Die Vorlage von <b>Methode 2</b> enthält auch <b>getrennte Zeiten für Hin- und Rückspiel</b> (Treffen und Beginn). Wenn du die Datei nach einer Korrektur erneut hochlädst, werden die an diesen Daten bereits vorhandenen Spiele <b>aktualisiert</b>, nicht dupliziert.",
+    "guidaP5": "Neben der Tabelle gibt es den <b>Wachstumsindex</b> (0-100, aus erreichten Zielen, Trainings- und Spieltrend sowie Anwesenheit), das <b>Kompetenz-Radar</b> je Parameter, das nach jedem KPI sortierbare <b>Kategorie-Ranking</b>, die Diagramme zur <b>Trainingsbewertung</b> und den <b>Mannschaftstrend</b>. Im Feedback-Tab wählst du, wie viele Kommentare pro Seite erscheinen (10, 20, 50 oder alle), neueste zuerst.",
     "avviso": "Du hast für die Saison <b>{nome}</b> noch keine aktive Kategorie, daher gibt es hier nichts zu generieren. Gehe zu <cat>Meine Kategorien</cat> und aktiviere mindestens eine."
   },
   "esercizi": {

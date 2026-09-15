@@ -391,6 +391,7 @@ export default async function DashboardPage() {
           <p>{t.rich('guidaP1', { b: (ch) => <strong>{ch}</strong> })}</p>
           <p style={{marginTop:10}}>{t.rich('guidaP2', { b: (ch) => <strong>{ch}</strong> })}</p>
           <p style={{marginTop:10}}>{t.rich('guidaP3', { b: (ch) => <strong>{ch}</strong> })}</p>
+          <p style={{marginTop:10}}>{t.rich('guidaP4', { b: (ch) => <strong>{ch}</strong> })}</p>
         </Guida>
 
         {profilo?.ruolo === 'allenatore' && <OnboardingChecklist checks={checksOnboarding} />}

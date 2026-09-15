@@ -203,6 +203,7 @@ export default async function StatistichePage() {
           <p style={{marginTop:10}}>{t.rich('guidaP2', { b: (ch) => <strong>{ch}</strong> })}</p>
           <p style={{marginTop:10}}>{t.rich('guidaP3', { b: (ch) => <strong>{ch}</strong>, archivio: (ch) => <a href="/archivio" className="link-inline">{ch}</a> })}</p>
           <p style={{marginTop:10}}>{t.rich('guidaP4', { b: (ch) => <strong>{ch}</strong> })}</p>
+          <p style={{marginTop:10}}>{t.rich('guidaP5', { b: (ch) => <strong>{ch}</strong> })}</p>
         </Guida>
         <ConfrontoPortieri stagioneId={stagione.id} titolo={t('confrontoTitolo')} />
         <StatisticheClient

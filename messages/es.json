@@ -103,7 +103,7 @@
     "couponGiorni": "🎟 Periodo gratuito: {giorni} días restantes",
     "guidaTitolo": "Cómo leer el panel",
     "guidaP1": "El panel es el punto de partida: muestra enseguida los <b>entrenamientos y partidos pasados aún por evaluar</b> (en rojo), el <b>próximo entrenamiento</b> programado y los <b>partidos de los próximos 7 días</b>.",
-    "guidaP2": "El recuadro amarillo <b>“Porteros a vigilar”</b> señala automáticamente los porteros con al menos 2 ausencias en las últimas 3 convocatorias, una bajada de rendimiento significativa (−1.5 puntos de media) o un objetivo con plazo vencido aún no alcanzado.",
+    "guidaP2": "En la ficha del portero también tienes <b>Objetivos</b> (fija metas con fecha límite y controla su estado), <b>Estadísticas</b> (asistencia, medias, índice de crecimiento) y <b>Recorrido</b> (evolución de la temporada). Las <b>etiquetas</b> para clasificar las características del portero se gestionan en la propia ficha.",
     "guidaP3": "Aquí también encuentras los <b>recordatorios de las mediciones</b> de los objetivos que vencen, así sabes cuándo registrar una nueva prueba.",
     "coseDaValutare": "{count, plural, one {# cosa por evaluar} other {# cosas por evaluar}}",
     "allenamentoLabel": "Entrenamiento",
@@ -136,7 +136,7 @@
     "guidaP1": "Introduce los encuentros con <b>“+ Nuevo partido”</b>: fecha, categoría, rival, local/visitante y resultado. Abre cada partido para introducir las <b>evaluaciones de los porteros</b>: asistencia, nota, puntos y notas. Las porterías a cero se calculan automáticamente a partir de los partidos en los que el portero estuvo presente y los goles encajados son cero.",
     "guidaP2": "El tipo de partido cuenta en las estadísticas: los <b>amistosos</b> no influyen en las medias de liga y se contabilizan por separado. Usa el tipo <b>“Liga”</b> para los encuentros oficiales.",
     "guidaP3": "Para <b>eliminar varios partidos en bloque</b> (ej. introducidos por error) usa la sección <ricorrenze>Recurrencias → Eliminación masiva</ricorrenze>, donde puedes filtrar por categoría, intervalo de fechas y presencia o ausencia de evaluaciones.",
-    "guidaP4": "También puedes indicar la <b>hora de encuentro</b> y la <b>hora de inicio</b> del encuentro: aparecen en la ficha del partido y en la vista previa del calendario.",
+    "guidaP4": "Al final del panel encontrarás la <b>scorecard de cada portero</b> con el radar de sus características: un resumen rápido de la temporada sin abrir las estadísticas completas.",
     "nuovaTitolo": "Nuevo partido"
   },
   "portieri": {
@@ -395,7 +395,7 @@
     "guidaP2": "<b>Entrenamientos</b>: configura para cada categoría el día y el horario fijo de entrenamiento semanal, luego genera automáticamente todas las fechas en el calendario. Las fechas ya existentes no se duplican: puedes regenerar sin problemas tras modificaciones.",
     "guidaP3": "<b>Partidos</b>: dos formas de rellenar el calendario de partidos. El <b>Método 1</b> genera partidos vacíos (solo fecha y categoría) en un día fijo de la semana, útil cuando solo conoces el día de juego y quieres agilizar la introducción — el rival y local/visitante los añades después abriendo el partido. El <b>Método 2</b> importa un calendario oficial ya completo desde un archivo Excel: descarga la plantilla de la sección, rellénala con fechas, rivales y local/visitante de ida, luego súbela seleccionando la categoría — el programa crea automáticamente tanto los partidos de ida como los de vuelta (invirtiendo local/visitante).",
     "guidaP4": "En la sección <b>🗑 Eliminación masiva</b> al final de la página puedes borrar en bloque entrenamientos o partidos en un intervalo de fechas. Puedes filtrar por categoría, elegir si eliminar solo los <em>sin evaluaciones</em> (normalmente introducidos por error), solo los <em>con evaluaciones</em>, o todos indistintamente. La operación es irreversible: siempre se pide una confirmación antes de proceder.",
-    "guidaP5": "La plantilla del <b>Método 2</b> incluye también los <b>horarios separados para ida y vuelta</b> (encuentro e inicio). Si recargas el archivo tras una corrección, los partidos ya presentes en esas fechas <b>se actualizan</b>, no se duplican.",
+    "guidaP5": "Además de la tabla encontrarás el <b>Índice de Crecimiento</b> (0-100, que combina objetivos logrados, evolución en entrenamientos y partidos y asistencia), el <b>radar de competencias</b> por parámetro, el <b>ranking de categoría</b> ordenable por cada KPI, los gráficos de <b>valoración de los entrenamientos</b> y la <b>evolución del equipo</b>. En la pestaña Feedback puedes elegir cuántos comentarios ver por página (10, 20, 50 o todos), del más reciente.",
     "avviso": "Aún no tienes ninguna categoría activa para la temporada <b>{nome}</b>, por lo que aquí no verás nada que generar. Ve a <cat>Mis categorías</cat> y activa al menos una."
   },
   "esercizi": {

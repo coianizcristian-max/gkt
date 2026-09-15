@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
 import { getTranslations } from 'next-intl/server'
 import AndamentoMensile from '@/app/components/AndamentoMensile'
+import ReportStagione from '@/app/components/ReportStagione'
+import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +31,18 @@ export default async function AndamentoPortierePage({ params }) {
   const { data: iscrizione } = stagione
     ? await supabase.from('iscrizioni').select('squadra_id, squadre(nome)')
         .eq('stagione_id', stagione.id).eq('portiere_id', id).maybeSingle()
+    : { data: null }
+
+  const [gatingCfg, abbAttivo] = await Promise.all([
+    getGatingConfig(supabase),
+    hasAbbonamento(supabase, user?.id),
+  ])
+  const canReport = isUnlocked('report_pdf_stagione', gatingCfg, abbAttivo)
+
+  const { data: commentoRow } = stagione
+    ? await supabase.from('report_commenti')
+        .select('commento_allenatore, commento_portiere')
+        .eq('portiere_id', id).eq('stagione_id', stagione.id).maybeSingle()
     : { data: null }
 
   const oggi = new Date().toISOString().slice(0, 10)
@@ -166,6 +180,15 @@ export default async function AndamentoPortierePage({ params }) {
         {!stagione || !iscrizione
           ? <div className="empty">{t('nessunaIscrizione')}</div>
           : <AndamentoMensile mesi={mesi} parametri={parametri} portiereId={id} />}
+        {stagione && (
+          <ReportStagione
+            portiereId={id}
+            stagioneId={stagione.id}
+            soloPortiere={soloPortiere}
+            commentoIniziale={{ allenatore: commentoRow?.commento_allenatore, portiere: commentoRow?.commento_portiere }}
+            canReport={canReport}
+          />
+        )}
       </div>
     </>
   )

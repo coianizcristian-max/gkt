@@ -2458,6 +2458,11 @@
     "fbPrec": "‹ Zurück",
     "fbSucc": "Weiter ›",
     "fbConteggio": "{da}-{a} von {tot}",
+    "fbMostra": "Anzeigen",
+    "fbTutti": "Alle",
+    "fbPrec": "‹ Zurück",
+    "fbSucc": "Weiter ›",
+    "fbConteggio": "{da}-{a} von {tot}",
                                 "gradimentoTitolo": "Trainingsbewertung",
                 "gradimentoMedia": "Durchschnittsbewertung",
                 "gradimentoNVoti": "{n} Bewertungen",
@@ -2855,6 +2860,7 @@
     "rimuovi": "Entfernen"
   },
   "andamento": {
+      "meseInCorso": "Noch nicht abgeschlossene Monate zeigen keine Werte.",
       "titolo": "Verlauf",
       "bloccoGenerali": "Gesamtnoten und Spiele",
       "bloccoParametri": "Bewertungsparameter",

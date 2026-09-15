@@ -2458,6 +2458,11 @@
     "fbPrec": "‹ Previous",
     "fbSucc": "Next ›",
     "fbConteggio": "{da}-{a} of {tot}",
+    "fbMostra": "Show",
+    "fbTutti": "All",
+    "fbPrec": "‹ Previous",
+    "fbSucc": "Next ›",
+    "fbConteggio": "{da}-{a} of {tot}",
                                 "gradimentoTitolo": "Training rating",
                 "gradimentoMedia": "Average rating",
                 "gradimentoNVoti": "{n} ratings",
@@ -2855,6 +2860,7 @@
     "rimuovi": "Remove"
   },
   "andamento": {
+      "meseInCorso": "Months that are not yet finished show no values.",
       "titolo": "Trend",
       "bloccoGenerali": "Overall marks and matches",
       "bloccoParametri": "Evaluation parameters",

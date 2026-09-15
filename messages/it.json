@@ -2458,6 +2458,11 @@
     "fbPrec": "‹ Precedenti",
     "fbSucc": "Successivi ›",
     "fbConteggio": "{da}-{a} di {tot}",
+    "fbMostra": "Mostra",
+    "fbTutti": "Tutti",
+    "fbPrec": "‹ Precedenti",
+    "fbSucc": "Successivi ›",
+    "fbConteggio": "{da}-{a} di {tot}",
                                 "gradimentoTitolo": "Gradimento allenamenti",
                 "gradimentoMedia": "Gradimento medio",
                 "gradimentoNVoti": "{n} voti",
@@ -2855,6 +2860,7 @@
     "rimuovi": "Rimuovi"
   },
   "andamento": {
+      "meseInCorso": "I mesi non ancora conclusi non riportano valori.",
       "titolo": "Andamento",
       "bloccoGenerali": "Voti generali e partite",
       "bloccoParametri": "Parametri di valutazione",

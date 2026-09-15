@@ -51,6 +51,7 @@ export default async function StatistichePortierePage({ params }) {
       {!soloPortiere && <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>}
       <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link active">{tp('navStatistiche')}</Link>
       <Link href={`/portieri/${id}/andamento`} className="sub-nav-link">{tp('navAndamento')}</Link>
+      {!soloPortiere && <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">{tp('navPercorso')}</Link>}
     </div>
   )
 

@@ -116,8 +116,10 @@ export default async function AndamentoPortierePage({ params }) {
       if (v.punti != null) b.parPunti += Number(v.punti)
     })
 
+    // Un mese conta solo se e' concluso: il mese in corso resta senza valori.
+    const meseCorrente = oggi.slice(0, 7)
     const inizio = (stagione.data_inizio ?? oggi).slice(0, 7)
-    const fine = [(stagione.data_fine ?? oggi).slice(0, 7), oggi.slice(0, 7)].sort()[0]
+    const fine = [(stagione.data_fine ?? oggi).slice(0, 7), meseCorrente].sort()[0]
     const chiavi = []
     let [y, m] = inizio.split('-').map(Number)
     for (let i = 0; i < 24; i++) {
@@ -133,31 +135,38 @@ export default async function AndamentoPortierePage({ params }) {
         key: k, allTot: 0, allPres: 0, votoSum: 0, votoN: 0, stelleSum: 0, stelleN: 0,
         parGio: 0, parVotoSum: 0, parVotoN: 0, parGolSub: 0, parClean: 0, parPunti: 0, par: {},
       }
-      return { ...b, label: MESI_IT[Number(k.slice(5)) - 1] }
+      const parziale = k >= meseCorrente
+      const vuoto = {
+        key: k, allTot: 0, allPres: 0, votoSum: 0, votoN: 0, stelleSum: 0, stelleN: 0,
+        parGio: 0, parVotoSum: 0, parVotoN: 0, parGolSub: 0, parClean: 0, parPunti: 0, par: {},
+      }
+      return { ...(parziale ? vuoto : b), key: k, parziale, label: MESI_IT[Number(k.slice(5)) - 1] }
     })
   }
 
-  return (
-    <div className="wrap">
-      <div className="page-head">
-        <div className="eyebrow">
-          {soloPortiere ? t('titolo') : <><Link href="/portieri">{tp('titolo')}</Link> · {portiere.nome} {portiere.cognome ?? ''}</>}
-        </div>
-        <h1>{t('titolo')}</h1>
-        {iscrizione?.squadre?.nome && <p className="sub-intro">{iscrizione.squadre.nome}</p>}
-      </div>
-
-      <div className="sub-nav">
-        <Link href={`/portieri/${id}`} className="sub-nav-link">{tp('navScheda')}</Link>
-        {!soloPortiere && <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>}
-        <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">{tp('navStatistiche')}</Link>
-        <Link href={`/portieri/${id}/andamento`} className="sub-nav-link active">{tp('navAndamento')}</Link>
-        {!soloPortiere && <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">{tp('navPercorso')}</Link>}
-      </div>
-
-      {!stagione || !iscrizione
-        ? <div className="empty">{t('nessunaIscrizione')}</div>
-        : <AndamentoMensile mesi={mesi} parametri={parametri} portiereId={id} />}
+  const navLinks = (
+    <div className="sub-nav">
+      <Link href={`/portieri/${id}`} className="sub-nav-link">{tp('navScheda')}</Link>
+      {!soloPortiere && <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>}
+      <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">{tp('navStatistiche')}</Link>
+      <Link href={`/portieri/${id}/andamento`} className="sub-nav-link active">{tp('navAndamento')}</Link>
+      {!soloPortiere && <Link href={`/portieri/${id}/percorso`} className="sub-nav-link">{tp('navPercorso')}</Link>}
     </div>
+  )
+
+  return (
+    <>
+      <div className="topbar">
+        <div className="eyebrow">{soloPortiere ? tp('miaScheda') : <Link href="/portieri">{tp('titolo')}</Link>}</div>
+        <h1>{portiere.nome} {portiere.cognome ?? ''}</h1>
+      </div>
+      <div className="content">
+        {navLinks}
+        {iscrizione?.squadre?.nome && <p className="sub-intro">{iscrizione.squadre.nome}</p>}
+        {!stagione || !iscrizione
+          ? <div className="empty">{t('nessunaIscrizione')}</div>
+          : <AndamentoMensile mesi={mesi} parametri={parametri} portiereId={id} />}
+      </div>
+    </>
   )
 }

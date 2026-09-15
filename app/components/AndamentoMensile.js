@@ -106,10 +106,11 @@ function Blocco({ titolo, mesi, colonne, prefModo, prefColonne, nl, t }) {
 
   const cols = colonne.filter((c) => attive.includes(c.id))
 
-  const valori = useMemo(() => mesi.map((_, i) => {
-    const da = modo === 'progressivo' ? 0 : i
-    const fetta = mesi.slice(da, i + 1)
+  const valori = useMemo(() => mesi.map((m, i) => {
     const out = {}
+    if (m.parziale) { colonne.forEach((c) => { out[c.id] = { num: null, testo: '—' } }); return out }
+    const da = modo === 'progressivo' ? 0 : i
+    const fetta = mesi.slice(da, i + 1).filter((x) => !x.parziale)
     colonne.forEach((c) => { out[c.id] = c.calcola(fetta) })
     return out
   }), [mesi, modo, colonne])
@@ -135,7 +136,8 @@ function Blocco({ titolo, mesi, colonne, prefModo, prefColonne, nl, t }) {
       </div>
 
       <p style={{ margin: '0 0 10px', fontSize: 13, color: 'var(--ink-soft)' }}>
-        {modo === 'mensile' ? t('spiegaMensile') : t('spiegaProgressivo')}
+        {modo === 'mensile' ? t('spiegaMensile') : t('spiegaProgressivo')}{' '}
+        {mesi.some((m) => m.parziale) && t('meseInCorso')}
       </p>
 
       {aperto && (
@@ -171,7 +173,7 @@ function Blocco({ titolo, mesi, colonne, prefModo, prefColonne, nl, t }) {
                 <tbody>
                   {mesi.map((m, i) => (
                     <tr key={m.key} style={{ borderTop: '1px solid var(--linea)' }}>
-                      <td style={{ padding: '8px 10px' }}>{m.label}</td>
+                      <td style={{ padding: '8px 10px', color: m.parziale ? 'var(--ink-soft)' : undefined }}>{m.label}</td>
                       {cols.map((c) => (
                         <td key={c.id} style={{ textAlign: 'right', padding: '8px 10px' }}>
                           {valori[i][c.id]?.testo ?? '—'}

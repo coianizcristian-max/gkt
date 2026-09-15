@@ -40,6 +40,7 @@ export default async function PercorsoCrescitaPage({ params }) {
       <Link href={`/portieri/${id}`} className="sub-nav-link">{tp('navScheda')}</Link>
       <Link href={`/portieri/${id}/obiettivi`} className="sub-nav-link">{tp('navObiettivi')}</Link>
       <Link href={`/portieri/${id}/statistiche`} className="sub-nav-link">{tp('navStatistiche')}</Link>
+      <Link href={`/portieri/${id}/andamento`} className="sub-nav-link">{tp('navAndamento')}</Link>
       <Link href={`/portieri/${id}/percorso`} className="sub-nav-link active">{tp('navPercorso')}</Link>
     </div>
   )

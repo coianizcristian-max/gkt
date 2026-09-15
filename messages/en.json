@@ -84,6 +84,7 @@
     "provaBanner": "🎁 Free trial: {giorni} days left"
   },
   "dashboard": {
+    "guidaP4": "At the bottom of the dashboard you'll find each goalkeeper's <b>scorecard</b> with a radar of their characteristics: a quick season summary without opening the full statistics.",
     "saluto": "Hi 👋",
     "salutoNome": "Hi, {nome} 👋",
     "prossimoAllenamento": "📅 Next training",
@@ -103,7 +104,7 @@
     "couponGiorni": "🎟 Free period: {giorni} days left",
     "guidaTitolo": "How to read the dashboard",
     "guidaP1": "The dashboard is your starting point: it immediately shows the <b>past trainings and matches still to be rated</b> (in red), the scheduled <b>next training</b> and the <b>matches in the next 7 days</b>.",
-    "guidaP2": "The goalkeeper page also has <b>Objectives</b> (set targets with a deadline and track their status), <b>Statistics</b> (attendance, averages, growth index) and <b>Journey</b> (season growth timeline). The <b>tags</b> used to categorise a goalkeeper's characteristics are managed directly on the profile.",
+    "guidaP2": "The yellow <b>“Goalkeepers to watch”</b> box automatically flags goalkeepers with at least 2 absences in the last 3 call-ups, a significant drop in performance (−1.5 average points) or a goal past its deadline not yet achieved.",
     "guidaP3": "Here you also find the <b>measurement reminders</b> for goals coming due, so you know when it’s time to record a new test.",
     "coseDaValutare": "{count, plural, one {# thing to rate} other {# things to rate}}",
     "allenamentoLabel": "Training",
@@ -136,15 +137,17 @@
     "guidaP1": "Add games with <b>“+ New match”</b>: date, category, opponent, home/away and result. Open each match to enter the <b>goalkeeper evaluations</b>: attendance, rating, points and notes. Clean sheets are calculated automatically from matches where the goalkeeper was present and conceded zero goals.",
     "guidaP2": "The match type matters in statistics: <b>friendlies</b> do not affect league averages and are counted separately. Use the <b>“League”</b> type for official games.",
     "guidaP3": "To <b>delete multiple matches in bulk</b> (e.g. added by mistake) use the <ricorrenze>Recurrences → Bulk deletion</ricorrenze> section, where you can filter by category, date range and presence or absence of evaluations.",
-    "guidaP4": "At the bottom of the dashboard you'll find each goalkeeper's <b>scorecard</b> with a radar of their characteristics: a quick season summary without opening the full statistics.",
+    "guidaP4": "You can also set the <b>meeting time</b> and the <b>kick-off time</b> of the game: they appear in the match sheet and in the calendar preview.",
     "nuovaTitolo": "New match"
   },
   "portieri": {
+    "guidaP5": "Goalkeepers can rate each session with <b>1 to 5 stars</b>, plus feedback and a note. They can only do so if they are marked <b>present</b> and the session has <b>already taken place</b>: future sessions and absences stay read-only. From their own login they also see the mark and notes you entered.",
+    "navAndamento": "Trend",
     "titolo": "Goalkeepers",
     "guidaTitolo": "How to manage goalkeepers",
     "configuraStagione": "Set up the season",
     "guidaP1": "Add goalkeepers with <b>“+ New”</b> and enroll them in a category of the active season. From the goalkeeper’s profile you can edit all personal data, the photo, the shirt number and the enrollment category. To send access to the goalkeeper use the <inviti>Invitations</inviti> section: create an invite link and the goalkeeper registers on their own, getting automatically linked to their profile.",
-    "guidaP2": "From the goalkeeper profile you also find the tabs <b>Goals</b> (set targets with a deadline and track their status), <b>Feedback</b> (history of comments entered in the evaluations), <b>Path</b> (timeline of seasonal growth) and <b>Tags</b> (custom labels to categorize the goalkeeper’s characteristics). The growth index is calculated automatically by comparing recent ratings with previous ones.",
+    "guidaP2": "The goalkeeper page also has <b>Objectives</b> (set targets with a deadline and track their status), <b>Statistics</b> (attendance, averages, growth index), <b>Trend</b> (month-by-month data, monthly or cumulative) and <b>Journey</b> (season growth timeline). <b>Tags</b> are managed directly on the profile.",
     "guidaP3": "To deactivate a goalkeeper without deleting them (e.g. they are no longer in the team but you want to keep the historical data) use the <b>Active/Inactive</b> toggle on their profile.",
     "guidaP4": "The profile also includes <b>Announced absences</b>: flag in advance the days the goalkeeper will be absent and they appear in the calendar, without affecting attendance or statistics. In the <b>Goals</b> tab you can link <b>tests with a target value</b> and record measurements over time: progress is then calculated automatically from the tests. <b>Injuries</b> marked in the evaluation grid appear on the profile and are excluded from statistics (shown with 🩹).",
     "onbStagioneTitolo": "Set up your season",
@@ -188,6 +191,7 @@
     "nuovoTitolo": "New training"
   },
   "statistiche": {
+    "guidaP5": "Besides the table you'll find the <b>Growth Index</b> (0-100, combining objectives achieved, training and match trends and attendance), the <b>skills radar</b>, the <b>category ranking</b> sortable by any KPI, the <b>session rating</b> charts and the <b>team trend</b>. In the Feedback tab you choose how many comments to show per page (10, 20, 50 or all), newest first.",
     "titolo": "Statistics",
     "confrontoTitolo": "Goalkeeper comparison",
     "guidaTitolo": "How to read the statistics",
@@ -395,7 +399,7 @@
     "guidaP2": "<b>Trainings</b>: set the fixed weekly day and time of training for each category, then automatically generate all the dates in the calendar. Existing dates are not duplicated: you can regenerate safely after changes.",
     "guidaP3": "<b>Matches</b>: two ways to fill the match calendar. <b>Method 1</b> generates empty matches (date and category only) on a fixed day of the week, useful when you only know the match day and want to speed up entry — you add opponent and home/away later by opening the match. <b>Method 2</b> imports a complete official schedule from an Excel file: download the template from the section, fill it with dates, opponents and home/away for the first leg, then upload it selecting the category — the app automatically creates both the first-leg and the return matches (swapping home/away).",
     "guidaP4": "In the <b>🗑 Bulk deletion</b> section at the bottom of the page you can delete trainings or matches in bulk within a date range. You can filter by category and choose to delete only those <em>without evaluations</em> (typically added by mistake), only those <em>with evaluations</em>, or all of them. The operation is irreversible: a confirmation is always required before proceeding.",
-    "guidaP5": "Besides the table you'll find the <b>Growth Index</b> (0-100, combining objectives achieved, training and match trends and attendance), the <b>skills radar</b> per parameter, the <b>category ranking</b> sortable by any KPI, the <b>session rating</b> charts and the <b>team trend</b>. In the Feedback tab you can choose how many comments to show per page (10, 20, 50 or all), newest first.",
+    "guidaP5": "The <b>Method 2</b> template also includes <b>separate times for the first leg and the return</b> (meeting and kick-off). If you re-upload the file after a correction, matches already present on those dates <b>are updated</b>, not duplicated.",
     "avviso": "You don’t have any active category for the <b>{nome}</b> season yet, so there’s nothing to generate here. Go to <cat>My categories</cat> and activate at least one."
   },
   "esercizi": {
@@ -2849,5 +2853,27 @@
     "caricaImmagine": "Upload image",
     "cambiaImmagine": "Change image",
     "rimuovi": "Remove"
+  },
+  "andamento": {
+      "titolo": "Trend",
+      "bloccoGenerali": "Overall marks and matches",
+      "bloccoParametri": "Evaluation parameters",
+      "mensile": "Monthly",
+      "progressivo": "Cumulative",
+      "colonne": "Columns",
+      "mese": "Month",
+      "spiegaMensile": "Each row uses only that month's data.",
+      "spiegaProgressivo": "Each row uses the data from the start of the season up to and including that month.",
+      "presenze": "Attendance",
+      "mediaVoto": "Average mark",
+      "stelle": "Goalkeeper stars",
+      "giocate": "Played",
+      "votoPartita": "Match mark",
+      "golSubiti": "Goals conceded",
+      "cleanSheet": "Clean sheets",
+      "punti": "Points",
+      "nessunaColonna": "Select at least one column.",
+      "nessunDato": "No data for this season yet.",
+      "nessunaIscrizione": "This goalkeeper is not enrolled in a category of the active season."
   }
 }

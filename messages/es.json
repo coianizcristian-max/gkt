@@ -84,6 +84,7 @@
     "provaBanner": "🎁 Prueba gratuita: {giorni} días restantes"
   },
   "dashboard": {
+    "guidaP4": "Al final del panel encontrarás la <b>scorecard de cada portero</b> con el radar de sus características: un resumen rápido de la temporada sin abrir las estadísticas completas.",
     "saluto": "Hola 👋",
     "salutoNome": "Hola, {nome} 👋",
     "prossimoAllenamento": "📅 Próximo entrenamiento",
@@ -103,7 +104,7 @@
     "couponGiorni": "🎟 Periodo gratuito: {giorni} días restantes",
     "guidaTitolo": "Cómo leer el panel",
     "guidaP1": "El panel es el punto de partida: muestra enseguida los <b>entrenamientos y partidos pasados aún por evaluar</b> (en rojo), el <b>próximo entrenamiento</b> programado y los <b>partidos de los próximos 7 días</b>.",
-    "guidaP2": "En la ficha del portero también tienes <b>Objetivos</b> (fija metas con fecha límite y controla su estado), <b>Estadísticas</b> (asistencia, medias, índice de crecimiento) y <b>Recorrido</b> (evolución de la temporada). Las <b>etiquetas</b> para clasificar las características del portero se gestionan en la propia ficha.",
+    "guidaP2": "El recuadro amarillo <b>“Porteros a vigilar”</b> señala automáticamente los porteros con al menos 2 ausencias en las últimas 3 convocatorias, una bajada de rendimiento significativa (−1.5 puntos de media) o un objetivo con plazo vencido aún no alcanzado.",
     "guidaP3": "Aquí también encuentras los <b>recordatorios de las mediciones</b> de los objetivos que vencen, así sabes cuándo registrar una nueva prueba.",
     "coseDaValutare": "{count, plural, one {# cosa por evaluar} other {# cosas por evaluar}}",
     "allenamentoLabel": "Entrenamiento",
@@ -136,15 +137,17 @@
     "guidaP1": "Introduce los encuentros con <b>“+ Nuevo partido”</b>: fecha, categoría, rival, local/visitante y resultado. Abre cada partido para introducir las <b>evaluaciones de los porteros</b>: asistencia, nota, puntos y notas. Las porterías a cero se calculan automáticamente a partir de los partidos en los que el portero estuvo presente y los goles encajados son cero.",
     "guidaP2": "El tipo de partido cuenta en las estadísticas: los <b>amistosos</b> no influyen en las medias de liga y se contabilizan por separado. Usa el tipo <b>“Liga”</b> para los encuentros oficiales.",
     "guidaP3": "Para <b>eliminar varios partidos en bloque</b> (ej. introducidos por error) usa la sección <ricorrenze>Recurrencias → Eliminación masiva</ricorrenze>, donde puedes filtrar por categoría, intervalo de fechas y presencia o ausencia de evaluaciones.",
-    "guidaP4": "Al final del panel encontrarás la <b>scorecard de cada portero</b> con el radar de sus características: un resumen rápido de la temporada sin abrir las estadísticas completas.",
+    "guidaP4": "También puedes indicar la <b>hora de encuentro</b> y la <b>hora de inicio</b> del encuentro: aparecen en la ficha del partido y en la vista previa del calendario.",
     "nuovaTitolo": "Nuevo partido"
   },
   "portieri": {
+    "guidaP5": "El portero puede valorar cada sesión con <b>1 a 5 estrellas</b>, además de un comentario y una nota. Solo puede hacerlo si figura como <b>presente</b> y la sesión <b>ya se ha realizado</b>: las sesiones futuras y las ausencias quedan en solo lectura. Desde su acceso ve también la nota y los comentarios que has puesto tú.",
+    "navAndamento": "Evolución",
     "titolo": "Porteros",
     "guidaTitolo": "Cómo gestionar los porteros",
     "configuraStagione": "Configura la temporada",
     "guidaP1": "Añade los porteros con <b>“+ Nuevo”</b> e inscríbelos en una categoría de la temporada activa. Desde la ficha del portero puedes modificar todos los datos personales, la foto, el número de camiseta y la categoría de inscripción. Para enviar el acceso al portero usa la sección <inviti>Invitaciones</inviti>: crea un enlace de invitación y el portero se registra por su cuenta, quedando vinculado automáticamente a su ficha.",
-    "guidaP2": "Desde la ficha del portero también encuentras las pestañas <b>Objetivos</b> (fija metas con plazo y controla el estado), <b>Feedback</b> (histórico de los comentarios añadidos en las evaluaciones), <b>Trayectoria</b> (línea de tiempo del crecimiento de la temporada) y <b>Etiquetas</b> (etiquetas personalizadas para categorizar las características del portero). El índice de crecimiento se calcula automáticamente comparando las notas recientes con las anteriores.",
+    "guidaP2": "En la ficha del portero también tienes <b>Objetivos</b> (fija metas con fecha límite y controla su estado), <b>Estadísticas</b> (asistencia, medias, índice de crecimiento), <b>Evolución</b> (los datos mes a mes, en vista mensual o acumulada) y <b>Recorrido</b> (evolución de la temporada). Las <b>etiquetas</b> se gestionan en la propia ficha.",
     "guidaP3": "Para desactivar un portero sin eliminarlo (ej. ya no está en el equipo pero quieres conservar los datos históricos) usa el interruptor <b>Activo/No activo</b> en su ficha.",
     "guidaP4": "La ficha incluye también las <b>Ausencias anunciadas</b>: señalas con antelación los días en que el portero estará ausente y aparecen en el calendario, sin afectar a asistencias ni estadísticas. En la pestaña <b>Objetivos</b> puedes vincular <b>pruebas con un valor objetivo</b> y registrar las mediciones en el tiempo: el avance se calcula luego automáticamente a partir de las pruebas. Las <b>lesiones</b> marcadas en la parrilla de evaluación aparecen en la ficha y se excluyen de las estadísticas (indicadas con 🩹).",
     "onbStagioneTitolo": "Configura tu temporada",
@@ -188,6 +191,7 @@
     "nuovoTitolo": "Nuevo entrenamiento"
   },
   "statistiche": {
+    "guidaP5": "Además de la tabla encontrarás el <b>Índice de Crecimiento</b> (0-100, que combina objetivos logrados, evolución en entrenamientos y partidos y asistencia), el <b>radar de competencias</b>, el <b>ranking de categoría</b> ordenable por cada KPI, los gráficos de <b>valoración de los entrenamientos</b> y la <b>evolución del equipo</b>. En la pestaña Feedback eliges cuántos comentarios ver por página (10, 20, 50 o todos), del más reciente.",
     "titolo": "Estadísticas",
     "confrontoTitolo": "Comparación de porteros",
     "guidaTitolo": "Cómo leer las estadísticas",
@@ -395,7 +399,7 @@
     "guidaP2": "<b>Entrenamientos</b>: configura para cada categoría el día y el horario fijo de entrenamiento semanal, luego genera automáticamente todas las fechas en el calendario. Las fechas ya existentes no se duplican: puedes regenerar sin problemas tras modificaciones.",
     "guidaP3": "<b>Partidos</b>: dos formas de rellenar el calendario de partidos. El <b>Método 1</b> genera partidos vacíos (solo fecha y categoría) en un día fijo de la semana, útil cuando solo conoces el día de juego y quieres agilizar la introducción — el rival y local/visitante los añades después abriendo el partido. El <b>Método 2</b> importa un calendario oficial ya completo desde un archivo Excel: descarga la plantilla de la sección, rellénala con fechas, rivales y local/visitante de ida, luego súbela seleccionando la categoría — el programa crea automáticamente tanto los partidos de ida como los de vuelta (invirtiendo local/visitante).",
     "guidaP4": "En la sección <b>🗑 Eliminación masiva</b> al final de la página puedes borrar en bloque entrenamientos o partidos en un intervalo de fechas. Puedes filtrar por categoría, elegir si eliminar solo los <em>sin evaluaciones</em> (normalmente introducidos por error), solo los <em>con evaluaciones</em>, o todos indistintamente. La operación es irreversible: siempre se pide una confirmación antes de proceder.",
-    "guidaP5": "Además de la tabla encontrarás el <b>Índice de Crecimiento</b> (0-100, que combina objetivos logrados, evolución en entrenamientos y partidos y asistencia), el <b>radar de competencias</b> por parámetro, el <b>ranking de categoría</b> ordenable por cada KPI, los gráficos de <b>valoración de los entrenamientos</b> y la <b>evolución del equipo</b>. En la pestaña Feedback puedes elegir cuántos comentarios ver por página (10, 20, 50 o todos), del más reciente.",
+    "guidaP5": "La plantilla del <b>Método 2</b> incluye también los <b>horarios separados para ida y vuelta</b> (encuentro e inicio). Si recargas el archivo tras una corrección, los partidos ya presentes en esas fechas <b>se actualizan</b>, no se duplican.",
     "avviso": "Aún no tienes ninguna categoría activa para la temporada <b>{nome}</b>, por lo que aquí no verás nada que generar. Ve a <cat>Mis categorías</cat> y activa al menos una."
   },
   "esercizi": {
@@ -2849,5 +2853,27 @@
     "caricaImmagine": "Subir imagen",
     "cambiaImmagine": "Cambiar imagen",
     "rimuovi": "Quitar"
+  },
+  "andamento": {
+      "titolo": "Evolución",
+      "bloccoGenerali": "Notas generales y partidos",
+      "bloccoParametri": "Parámetros de valoración",
+      "mensile": "Mensual",
+      "progressivo": "Acumulado",
+      "colonne": "Columnas",
+      "mese": "Mes",
+      "spiegaMensile": "Cada fila usa solo los datos de ese mes.",
+      "spiegaProgressivo": "Cada fila usa los datos desde el inicio de temporada hasta ese mes incluido.",
+      "presenze": "Asistencia",
+      "mediaVoto": "Nota media",
+      "stelle": "Estrellas del portero",
+      "giocate": "Jugados",
+      "votoPartita": "Nota de partido",
+      "golSubiti": "Goles encajados",
+      "cleanSheet": "Porterías a cero",
+      "punti": "Puntos",
+      "nessunaColonna": "Selecciona al menos una columna.",
+      "nessunDato": "Todavía no hay datos de esta temporada.",
+      "nessunaIscrizione": "El portero no está inscrito en ninguna categoría de la temporada activa."
   }
 }

@@ -2449,6 +2449,11 @@
     "disiscriviti": "Abmelden"
   },
   "statisticheClient": {
+    "fbMostra": "Anzeigen",
+    "fbTutti": "Alle",
+    "fbPrec": "‹ Zurück",
+    "fbSucc": "Weiter ›",
+    "fbConteggio": "{da}-{a} von {tot}",
                                 "gradimentoTitolo": "Trainingsbewertung",
                 "gradimentoMedia": "Durchschnittsbewertung",
                 "gradimentoNVoti": "{n} Bewertungen",

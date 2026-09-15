@@ -2449,6 +2449,11 @@
     "disiscriviti": "Darse de baja"
   },
   "statisticheClient": {
+    "fbMostra": "Mostrar",
+    "fbTutti": "Todos",
+    "fbPrec": "‹ Anteriores",
+    "fbSucc": "Siguientes ›",
+    "fbConteggio": "{da}-{a} de {tot}",
                                 "gradimentoTitolo": "Valoración entrenamientos",
                 "gradimentoMedia": "Valoración media",
                 "gradimentoNVoti": "{n} valoraciones",

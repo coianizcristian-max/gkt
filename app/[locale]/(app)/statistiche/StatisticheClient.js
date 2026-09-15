@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import Guida from '@/app/components/Guida'
 import RankingCategoria from '@/app/components/RankingCategoria'
@@ -18,6 +18,18 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, andament
   const [tab, setTab] = useState('portieri')
   const [expCat, setExpCat] = useState('tutte')
   const [expMese, setExpMese] = useState('tutti')
+  // Feedback: ordinati per data decrescente e paginati (default 10 per pagina).
+  const [fbSize, setFbSize] = useState(10)
+  const [fbPage, setFbPage] = useState(0)
+  const feedbackOrd = useMemo(
+    () => [...(feedback ?? [])].sort((a, b) => (b.allenamenti?.data ?? '').localeCompare(a.allenamenti?.data ?? '')),
+    [feedback])
+  const fbTot = feedbackOrd.length
+  const fbPerPagina = fbSize === 'tutti' ? fbTot : fbSize
+  const fbPagine = fbPerPagina > 0 ? Math.max(1, Math.ceil(fbTot / fbPerPagina)) : 1
+  const fbCur = Math.min(fbPage, fbPagine - 1)
+  const fbDa = fbTot === 0 ? 0 : fbCur * fbPerPagina
+  const feedbackPag = fbSize === 'tutti' ? feedbackOrd : feedbackOrd.slice(fbDa, fbDa + fbPerPagina)
 
   const mesiOpzioni = []
   const _oggi = new Date()
@@ -186,9 +198,23 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, andament
               </div>
             </div>
           </div>
-          {feedback.length === 0
+          {fbTot > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
+              <label style={{ fontSize: 13, color: 'var(--ink-soft)' }}>{t('fbMostra')}</label>
+              <select value={fbSize} onChange={(e) => { const v = e.target.value; setFbSize(v === 'tutti' ? 'tutti' : Number(v)); setFbPage(0) }}>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value="tutti">{t('fbTutti')}</option>
+              </select>
+              <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--ink-soft)' }}>
+                {t('fbConteggio', { da: fbTot === 0 ? 0 : fbDa + 1, a: Math.min(fbDa + fbPerPagina, fbTot), tot: fbTot })}
+              </span>
+            </div>
+          )}
+          {fbTot === 0
             ? <div className="empty">{t('nessunFeedback')}</div>
-            : feedback.map((f, i) => (
+            : feedbackPag.map((f, i) => (
               <Link key={i} href={`/calendario/${f.allenamento_id}`} className="feedback-riga"
                 style={{ display: 'block', textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                 <div className="feedback-head">
@@ -207,6 +233,13 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, andament
               </Link>
             ))
           }
+          {fbSize !== 'tutti' && fbPagine > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 14 }}>
+              <button type="button" className="btn-ghost" disabled={fbCur === 0} onClick={() => setFbPage(fbCur - 1)}>{t('fbPrec')}</button>
+              <span style={{ fontSize: 13, color: 'var(--ink-soft)' }}>{fbCur + 1} / {fbPagine}</span>
+              <button type="button" className="btn-ghost" disabled={fbCur >= fbPagine - 1} onClick={() => setFbPage(fbCur + 1)}>{t('fbSucc')}</button>
+            </div>
+          )}
         </div>
       )}
     </>

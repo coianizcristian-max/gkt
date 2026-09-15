@@ -2449,6 +2449,11 @@
     "disiscriviti": "Disiscriviti"
   },
   "statisticheClient": {
+    "fbMostra": "Mostra",
+    "fbTutti": "Tutti",
+    "fbPrec": "‹ Precedenti",
+    "fbSucc": "Successivi ›",
+    "fbConteggio": "{da}-{a} di {tot}",
                                 "gradimentoTitolo": "Gradimento allenamenti",
                 "gradimentoMedia": "Gradimento medio",
                 "gradimentoNVoti": "{n} voti",

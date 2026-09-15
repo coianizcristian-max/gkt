@@ -2449,6 +2449,11 @@
     "disiscriviti": "Unsubscribe"
   },
   "statisticheClient": {
+    "fbMostra": "Show",
+    "fbTutti": "All",
+    "fbPrec": "‹ Previous",
+    "fbSucc": "Next ›",
+    "fbConteggio": "{da}-{a} of {tot}",
                                 "gradimentoTitolo": "Training rating",
                 "gradimentoMedia": "Average rating",
                 "gradimentoNVoti": "{n} ratings",

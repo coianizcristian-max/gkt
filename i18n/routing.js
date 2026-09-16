@@ -11,10 +11,13 @@ export const routing = defineRouting({
   // 'as-needed' => l'italiano (default) resta SENZA prefisso: tutti gli URL
   // attuali (gkseason.it/dashboard) non cambiano. Solo en/de prendono /en /de.
   localePrefix: 'as-needed',
-  // false => la "/" resta sempre italiana, niente redirect automatico in base
-  // alla lingua del browser. Il cambio lingua e' manuale (bandierina).
-  // Quando vorrai l'auto-detect, metti true.
-  localeDetection: false,
+  // true => alla PRIMA visita la lingua viene scelta cosi':
+  //   1) cookie NEXT_LOCALE, se c'e' (= l'utente ha gia' scelto con la bandierina)
+  //   2) altrimenti Accept-Language del browser/sistema
+  //   3) altrimenti italiano
+  // Il cookie ha la precedenza sul sistema, quindi una volta che l'utente
+  // cambia lingua quella scelta resta anche se il PC e' impostato diversamente.
+  localeDetection: true,
 })
 
 // Helper di navigazione "consapevoli della lingua": usali al posto di

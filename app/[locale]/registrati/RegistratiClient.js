@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { trackMetaEvento } from '@/app/components/MetaPixel'
 import { leggiAttribuzione } from '@/app/components/AttribuzioneUtm'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 
 const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '98743d70-a876-400c-a1c4-ee8af4ea495e'
@@ -15,6 +15,7 @@ const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '98743d70
 export default function RegistratiClient({ token, datiInvito }) {
   const router = useRouter()
   const t = useTranslations('registrati')
+  const locale = useLocale()
   const [nome, setNome] = useState(datiInvito?.nomeCompleto ?? '')
   const [email, setEmail] = useState(datiInvito?.email ?? '')
   const [password, setPassword] = useState('')
@@ -67,7 +68,7 @@ export default function RegistratiClient({ token, datiInvito }) {
       password,
       options: {
         captchaToken,
-        data: { nome_completo: nome.trim(), ...(token && datiInvito ? { invito_token: token } : {}) },
+        data: { nome_completo: nome.trim(), lingua: locale, ...(token && datiInvito ? { invito_token: token } : {}) },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/benvenuto`,
       },
     })

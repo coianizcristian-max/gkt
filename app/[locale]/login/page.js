@@ -5,7 +5,7 @@ import { Link } from '@/i18n/routing'
 import { useRouter } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 
 const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '98743d70-a876-400c-a1c4-ee8af4ea495e'
@@ -13,6 +13,7 @@ const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '98743d70
 export default function LoginPage() {
   const router = useRouter()
   const t = useTranslations('login')
+  const locale = useLocale()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -68,7 +69,10 @@ export default function LoginPage() {
       console.warn('consuma-invito post-login:', err)
     }
 
-    let linguaPref = 'it'
+    // Default = lingua con cui l'utente sta navigando ORA (rilevata dal browser
+    // o scelta con la bandierina). Solo se ha una preferenza salvata su profilo
+    // quella vince: cosi' chi non l'ha mai impostata non viene buttato in italiano.
+    let linguaPref = locale
     try {
       const { data: { user: u } } = await supabase.auth.getUser()
       if (u) {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
+import { mailTexts, tApi } from '@/lib/i18nServer'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const MITTENTE = 'GKSeason <notifiche@gkseason.it>'
@@ -12,36 +13,37 @@ const admin = createAdmin(
   { auth: { autoRefreshToken: false, persistSession: false } }
 )
 
-async function inviaConferma(email, id) {
+async function inviaConferma(email, id, m) {
   if (!RESEND_API_KEY) return false
   const link = `${SITE_URL}/api/newsletter/conferma?id=${id}`
-  const html = `<!doctype html><html><body style="margin:0;padding:24px 0;background:#eef2f5;">
+  const html = `<!doctype html><html lang="${m.htmlLang}"><body style="margin:0;padding:24px 0;background:#eef2f5;">
     <div style="max-width:520px;margin:0 auto;font-family:'Segoe UI',Arial,sans-serif;background:#ffffff;border-radius:12px;overflow:hidden;">
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
         <td bgcolor="#0a5a8a" style="background-color:#0a5a8a;padding:28px 32px;color:#ffffff;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#cfe4f2;">GKSeason &middot; Newsletter</div>
-          <h1 style="margin:6px 0 0;font-size:22px;color:#ffffff;">Conferma la tua iscrizione</h1>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#cfe4f2;">${m('nlEyebrow')}</div>
+          <h1 style="margin:6px 0 0;font-size:22px;color:#ffffff;">${m('nlTitolo')}</h1>
         </td>
       </tr></table>
       <div style="padding:28px 32px;color:#2a3b47;font-size:15px;line-height:1.7;">
-        <p style="margin:0 0 16px;">Ci sei quasi! Clicca il pulsante qui sotto per confermare l'iscrizione alla newsletter GKSeason.</p>
-        <p style="margin:0 0 20px;"><a href="${link}" style="display:inline-block;background:#0a7ec2;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;">Conferma iscrizione</a></p>
-        <p style="margin:0;font-size:12px;color:#8899a8;">Se non hai richiesto tu questa iscrizione, ignora pure questa email: senza conferma non riceverai nulla.</p>
+        <p style="margin:0 0 16px;">${m('nlTesto')}</p>
+        <p style="margin:0 0 20px;"><a href="${link}" style="display:inline-block;background:#0a7ec2;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;">${m('nlBottone')}</a></p>
+        <p style="margin:0;font-size:12px;color:#8899a8;">${m('nlDisclaimer')}</p>
       </div>
     </div></body></html>`
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: MITTENTE, to: email, subject: 'Conferma la tua iscrizione alla newsletter GKSeason', html }),
+    body: JSON.stringify({ from: MITTENTE, to: email, subject: m('nlSubject'), html }),
   })
   return res.ok
 }
 
 export async function POST(req) {
   try {
+    const m = mailTexts(req)
     const { email } = await req.json()
     const em = (email || '').trim().toLowerCase()
-    if (!EMAIL_RE.test(em)) return NextResponse.json({ error: 'Email non valida.' }, { status: 400 })
+    if (!EMAIL_RE.test(em)) return NextResponse.json({ error: tApi(req, 'Email non valida.') }, { status: 400 })
 
     const { data: esistente } = await admin.from('newsletter_iscritti')
       .select('id, attivo').eq('email', em).maybeSingle()
@@ -57,10 +59,10 @@ export async function POST(req) {
       if (error) throw error
       id = nuovo.id
     }
-    await inviaConferma(em, id)
+    await inviaConferma(em, id, m)
     return NextResponse.json({ ok: true, stato: 'conferma_inviata' })
   } catch (err) {
     console.error('[newsletter/iscrivi]', err)
-    return NextResponse.json({ error: 'Errore interno.' }, { status: 500 })
+    return NextResponse.json({ error: tApi(req, 'Errore interno.') }, { status: 500 })
   }
 }

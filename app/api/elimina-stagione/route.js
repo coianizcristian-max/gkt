@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { getOwnerId } from '@/lib/tenant'
 
@@ -12,15 +13,15 @@ export async function POST(request) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
     const ownerId = await getOwnerId(supabase, user.id)
-    if (!ownerId) return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    if (!ownerId) return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
 
     const body = await request.json()
     const { stagioneId, azione, nomeConferma } = body
     if (!stagioneId || typeof stagioneId !== 'string') {
-      return NextResponse.json({ error: 'ID stagione mancante' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'ID stagione mancante') }, { status: 400 })
     }
 
     // Verifica che la stagione esista e appartenga davvero a chi sta chiedendo.
@@ -28,7 +29,7 @@ export async function POST(request) {
     const { data: stagione, error: stErr } = await supabase
       .from('stagioni').select('id, nome, owner_id').eq('id', stagioneId).eq('owner_id', ownerId).maybeSingle()
     if (stErr) return NextResponse.json({ error: stErr.message }, { status: 500 })
-    if (!stagione) return NextResponse.json({ error: 'Stagione non trovata o non tua' }, { status: 404 })
+    if (!stagione) return NextResponse.json({ error: tApi(request, 'Stagione non trovata o non tua') }, { status: 404 })
 
     const { data: allIdsRows } = await supabase.from('allenamenti').select('id').eq('stagione_id', stagioneId)
     const { data: parIdsRows } = await supabase.from('partite').select('id').eq('stagione_id', stagioneId)
@@ -71,7 +72,7 @@ export async function POST(request) {
     // ── Eliminazione vera e propria ──────────────────────────────────────────
     if (azione === 'elimina') {
       if (!nomeConferma || nomeConferma.trim() !== stagione.nome) {
-        return NextResponse.json({ error: 'Il nome digitato non corrisponde esattamente al nome della stagione.' }, { status: 400 })
+        return NextResponse.json({ error: tApi(request, 'Il nome digitato non corrisponde esattamente al nome della stagione.') }, { status: 400 })
       }
 
       // Ordine: prima le tabelle "foglia" collegate ad allenamenti/partite di
@@ -103,7 +104,7 @@ export async function POST(request) {
       return NextResponse.json({ ok: true })
     }
 
-    return NextResponse.json({ error: 'Azione non valida' }, { status: 400 })
+    return NextResponse.json({ error: tApi(request, 'Azione non valida') }, { status: 400 })
   } catch (err) {
     return NextResponse.json({ error: err.message || 'Errore imprevisto' }, { status: 500 })
   }

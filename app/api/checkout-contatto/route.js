@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import Stripe from 'stripe'
 
 export async function POST(request) {
   try {
     const { allenatoreId } = await request.json()
-    if (!allenatoreId) return NextResponse.json({ error: 'allenatoreId mancante' }, { status: 400 })
+    if (!allenatoreId) return NextResponse.json({ error: tApi(request, 'allenatoreId mancante') }, { status: 400 })
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Accedi prima di procedere' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Accedi prima di procedere') }, { status: 401 })
 
     // Importo fee dal config
     const { data: feeRow } = await supabase

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import { newsletterHtml } from '@/lib/newsletterHtml'
@@ -22,26 +23,26 @@ export async function POST(req) {
     // Solo supervisore
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(req, 'Non autenticato.') }, { status: 401 })
     const { data: profilo } = await supabase.from('profili').select('supervisore').eq('id', user.id).maybeSingle()
-    if (!profilo?.supervisore) return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 })
+    if (!profilo?.supervisore) return NextResponse.json({ error: tApi(req, 'Non autorizzato.') }, { status: 403 })
 
     if (!RESEND_API_KEY) {
-      return NextResponse.json({ error: 'Invio email non configurato (RESEND_API_KEY mancante).' }, { status: 503 })
+      return NextResponse.json({ error: tApi(req, 'Invio email non configurato (RESEND_API_KEY mancante).') }, { status: 503 })
     }
 
     const { id } = await req.json()
-    if (!id) return NextResponse.json({ error: 'ID newsletter mancante.' }, { status: 400 })
+    if (!id) return NextResponse.json({ error: tApi(req, 'ID newsletter mancante.') }, { status: 400 })
 
     const { data: nl } = await admin.from('newsletter_invii')
       .select('id, titolo, contenuto, inviata_il, pubblicata').eq('id', id).maybeSingle()
-    if (!nl) return NextResponse.json({ error: 'Newsletter non trovata.' }, { status: 404 })
-    if (!nl.pubblicata) return NextResponse.json({ error: 'Pubblica la newsletter prima di inviarla.' }, { status: 400 })
+    if (!nl) return NextResponse.json({ error: tApi(req, 'Newsletter non trovata.') }, { status: 404 })
+    if (!nl.pubblicata) return NextResponse.json({ error: tApi(req, 'Pubblica la newsletter prima di inviarla.') }, { status: 400 })
 
     const { data: iscritti } = await admin.from('newsletter_iscritti')
       .select('id, email').eq('attivo', true)
     const destinatari = (iscritti ?? []).filter((i) => i.email)
-    if (destinatari.length === 0) return NextResponse.json({ error: 'Nessun iscritto attivo.' }, { status: 400 })
+    if (destinatari.length === 0) return NextResponse.json({ error: tApi(req, 'Nessun iscritto attivo.') }, { status: 400 })
 
     const dataStr = new Date(nl.inviata_il ?? Date.now())
       .toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -78,6 +79,6 @@ export async function POST(req) {
     return NextResponse.json({ ok: true, sent, total: destinatari.length })
   } catch (err) {
     console.error('[newsletter/invia]', err)
-    return NextResponse.json({ error: 'Errore interno durante l\'invio.' }, { status: 500 })
+    return NextResponse.json({ error: tApi(req, 'Errore interno durante l\'invio.') }, { status: 500 })
   }
 }

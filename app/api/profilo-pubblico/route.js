@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@supabase/supabase-js'
 
 // Usa service role per bypassare le RLS - questa è una route pubblica
@@ -11,7 +12,7 @@ const supabaseAdmin = createClient(
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const id = searchParams.get('id')
-  if (!id) return NextResponse.json({ error: 'ID mancante.' }, { status: 400 })
+  if (!id) return NextResponse.json({ error: tApi(request, 'ID mancante.') }, { status: 400 })
 
   const [{ data: profilo }, { data: feeConfig }, { data: feeImporto }] = await Promise.all([
     supabaseAdmin
@@ -32,7 +33,7 @@ export async function GET(request) {
   ])
 
   if (!profilo || (profilo.ruolo !== 'allenatore' && profilo.ruolo !== 'staff')) {
-    return NextResponse.json({ error: 'Profilo non trovato.' }, { status: 404 })
+    return NextResponse.json({ error: tApi(request, 'Profilo non trovato.') }, { status: 404 })
   }
 
   return NextResponse.json({

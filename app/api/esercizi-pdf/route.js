@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { renderToBuffer, Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { pdfLabels, tApi } from '@/lib/i18nServer'
 
 const s = StyleSheet.create({
   page: { padding: 36, fontFamily: 'Helvetica', backgroundColor: '#ffffff' },
@@ -27,11 +28,14 @@ const s = StyleSheet.create({
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const allenamentoId = searchParams.get('allenamento')
-  if (!allenamentoId) return NextResponse.json({ error: 'Parametro mancante' }, { status: 400 })
+  if (!allenamentoId) return NextResponse.json({ error: tApi(request, 'Parametro mancante') }, { status: 400 })
+
+  // Lingua dell'utente: ?locale= dal client, poi cookie/referer/browser.
+  const t = pdfLabels(request)
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
   // Carica allenamento
   const { data: allenamento } = await supabase.from('allenamenti')
@@ -49,31 +53,31 @@ export async function GET(request) {
     .filter(Boolean)
 
   const dataLabel = allenamento?.data
-    ? new Date(allenamento.data + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    ? new Date(allenamento.data + 'T00:00:00').toLocaleDateString(t.intlTag, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     : ''
   const catLabel = allenamento?.squadre?.nome ?? ''
   const oraLabel = allenamento?.ora ? allenamento.ora.slice(0, 5) : ''
 
   const stimaMinuti = esercizi.reduce((t, e) => t + (parseFloat(e.durata_minuti) || 0) + (parseFloat(e.recupero_minuti) || 0), 0)
   const stimaLabel = stimaMinuti > 0
-    ? stimaMinuti >= 60 ? `${Math.floor(stimaMinuti / 60)}h ${Math.round(stimaMinuti % 60)}min` : `${Math.round(stimaMinuti)} min`
+    ? stimaMinuti >= 60 ? `${Math.floor(stimaMinuti / 60)}h ${Math.round(stimaMinuti % 60)}${t('min')}` : `${Math.round(stimaMinuti)} ${t('min')}`
     : null
 
-  const oggi = new Date().toLocaleDateString('it-IT')
+  const oggi = new Date().toLocaleDateString(t.intlTag)
 
   const doc = (
     <Document>
       <Page size="A4" style={s.page}>
         {/* Header */}
         <View style={s.header}>
-          <Text style={s.headerTitle}>Seduta allenamento — {catLabel}</Text>
-          <Text style={s.headerSub}>{dataLabel}{oraLabel ? '  ·  ore ' + oraLabel : ''}  ·  {esercizi.length} esercizi{stimaLabel ? '  ·  stima: ' + stimaLabel : ''}</Text>
+          <Text style={s.headerTitle}>{t('seduta')} — {catLabel}</Text>
+          <Text style={s.headerSub}>{dataLabel}{oraLabel ? '  ·  ' + t('ore') + ' ' + oraLabel : ''}  ·  {t('nEsercizi', { n: esercizi.length })}{stimaLabel ? '  ·  ' + t('stima') + ': ' + stimaLabel : ''}</Text>
         </View>
 
         {/* Esercizi */}
         {esercizi.map((e, i) => (
           <View key={e.id} style={s.card}>
-            <Text style={s.cardNum}>Esercizio {i + 1}</Text>
+            <Text style={s.cardNum}>{t('esercizioN', { n: i + 1 })}</Text>
             <Text style={s.cardTitle}>{e.titolo}</Text>
             {e.tipologia && <Text style={s.cardType}>{e.tipologia}</Text>}
             <View style={s.cardRow}>
@@ -81,11 +85,11 @@ export async function GET(request) {
               <View style={s.cardBody}>
                 {e.descrizione_breve && <Text style={s.cardDesc}>{e.descrizione_breve}</Text>}
                 {e.descrizione && <Text style={s.cardDesc}>{e.descrizione}</Text>}
-                {e.note && <Text style={s.cardNote}>Note: {e.note}</Text>}
+                {e.note && <Text style={s.cardNote}>{t('note')}: {e.note}</Text>}
                 {(e.durata_minuti || e.recupero_minuti) && (
                   <View style={s.tempi}>
-                    {e.durata_minuti && <Text style={s.tempoLabel}>Durata: {e.durata_minuti} min</Text>}
-                    {e.recupero_minuti && <Text style={s.tempoLabel}>Recupero: {e.recupero_minuti} min</Text>}
+                    {e.durata_minuti && <Text style={s.tempoLabel}>{t('durata')}: {e.durata_minuti} {t('min')}</Text>}
+                    {e.recupero_minuti && <Text style={s.tempoLabel}>{t('recupero')}: {e.recupero_minuti} {t('min')}</Text>}
                   </View>
                 )}
               </View>
@@ -97,16 +101,16 @@ export async function GET(request) {
         {stimaLabel && (
           <View style={s.totale}>
             <View>
-              <Text style={s.totaleLabel}>Durata stimata totale: {stimaLabel}</Text>
-              <Text style={s.totaleSub}>Somma durata + recupero degli esercizi con tempi impostati</Text>
+              <Text style={s.totaleLabel}>{t('durataTotale')}: {stimaLabel}</Text>
+              <Text style={s.totaleSub}>{t('sommaTempi')}</Text>
             </View>
           </View>
         )}
 
         {/* Footer */}
         <View style={s.footer} fixed>
-          <Text>GKSeason — Gestionale Allenamento Portieri</Text>
-          <Text>Generato il {oggi}</Text>
+          <Text>{t('brand')}</Text>
+          <Text>{t('generatoIl')} {oggi}</Text>
         </View>
       </Page>
     </Document>

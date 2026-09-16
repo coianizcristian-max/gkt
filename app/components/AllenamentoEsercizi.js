@@ -6,11 +6,12 @@ import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
 import LavagnaEsercizioModal from '@/app/components/LavagnaEsercizioModal'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 // ─── Popup anteprima esercizio ────────────────────────────────────────────────
 function EsercizioPreview({ esercizio, onClose }) {
   const t = useTranslations('allenamentoEsercizi')
+  const locale = useLocale()
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
@@ -379,7 +380,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
     setPdfBusy(true)
     try {
       const a = document.createElement('a')
-      a.href = `/api/esercizi-pdf?allenamento=${allenamentoId}`
+      a.href = `/api/esercizi-pdf?allenamento=${allenamentoId}&locale=${locale}`
       a.download = 'allenamento-esercizi.pdf'
       a.rel = 'noopener'
       document.body.appendChild(a)

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { pdfLabels, tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { renderToBuffer, Document, Page, Text, View, StyleSheet, Font, Svg, Line, Polyline, Circle } from '@react-pdf/renderer'
 import { getStagioneAttiva } from '@/lib/tenant'
@@ -99,14 +100,14 @@ function GraficoMesi({ etichette, serie }) {
   )
 }
 
-function TabellaMesi({ titolo, intestazioni, righe, nota, grafico }) {
+function TabellaMesi({ t, titolo, intestazioni, righe, nota, grafico }) {
   if (!righe.length) return null
   return (
     <View style={styles.sezione}>
       <Text style={styles.sezioneTitolo}>{titolo}</Text>
       {grafico ? <GraficoMesi etichette={grafico.etichette} serie={grafico.serie} /> : null}
       <View style={styles.tabHead}>
-        <Text style={styles.tabCellaMeseHead}>Mese</Text>
+        <Text style={styles.tabCellaMeseHead}>{t('mese')}</Text>
         {intestazioni.map((h) => <Text key={h} style={styles.tabCellaHead}>{h}</Text>)}
       </View>
       {righe.map((r) => (
@@ -120,48 +121,48 @@ function TabellaMesi({ titolo, intestazioni, righe, nota, grafico }) {
   )
 }
 
-const ETICHETTA_EVENTO = {
-  obiettivo_creato: 'Obiettivo fissato',
-  obiettivo_raggiunto: 'Obiettivo raggiunto',
-  voto_alto: 'Prestazione alta',
-  voto_basso: 'Prestazione bassa',
-  clean_sheet: 'Porta inviolata',
-  partita: 'Partita',
+const CHIAVE_EVENTO = {
+  obiettivo_creato: 'evObCreato',
+  obiettivo_raggiunto: 'evObRaggiunto',
+  voto_alto: 'evVotoAlto',
+  voto_basso: 'evVotoBasso',
+  clean_sheet: 'evCleanSheet',
+  partita: 'evPartita',
 }
 
-function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviAperti, commenti, andamento, percorso }) {
+function ReportPDF({ t, portiere, stagione, kpi, obiettiviRaggiunti, obiettiviAperti, commenti, andamento, percorso }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>GKSeason — Report fine stagione</Text>
+          <Text style={styles.eyebrow}>{t('reportFine')}</Text>
           <Text style={styles.titolo}>{portiere.nome} {portiere.cognome ?? ''}</Text>
-          <Text style={styles.sottotitolo}>Stagione {stagione.nome}</Text>
+          <Text style={styles.sottotitolo}>{t('stagionePrefix')} {stagione.nome}</Text>
         </View>
 
         <View style={styles.sezione}>
-          <Text style={styles.sezioneTitolo}>Dati generali</Text>
+          <Text style={styles.sezioneTitolo}>{t('datiGenerali')}</Text>
           <View style={styles.kpiGrid}>
-            <View style={styles.kpiBox}><Text style={styles.kpiVal}>{kpi.presenze}</Text><Text style={styles.kpiLabel}>Presenze allenamenti</Text></View>
-            <View style={styles.kpiBox}><Text style={styles.kpiVal}>{kpi.mediaAllenamenti}</Text><Text style={styles.kpiLabel}>Media voto allenamenti</Text></View>
-            <View style={styles.kpiBox}><Text style={styles.kpiVal}>{kpi.partiteGiocate}</Text><Text style={styles.kpiLabel}>Partite giocate</Text></View>
-            <View style={styles.kpiBox}><Text style={styles.kpiVal}>{kpi.cleanSheet}</Text><Text style={styles.kpiLabel}>Clean sheet</Text></View>
+            <View style={styles.kpiBox}><Text style={styles.kpiVal}>{kpi.presenze}</Text><Text style={styles.kpiLabel}>{t('presenzeAll')}</Text></View>
+            <View style={styles.kpiBox}><Text style={styles.kpiVal}>{kpi.mediaAllenamenti}</Text><Text style={styles.kpiLabel}>{t('mediaAll')}</Text></View>
+            <View style={styles.kpiBox}><Text style={styles.kpiVal}>{kpi.partiteGiocate}</Text><Text style={styles.kpiLabel}>{t('partiteGiocate')}</Text></View>
+            <View style={styles.kpiBox}><Text style={styles.kpiVal}>{kpi.cleanSheet}</Text><Text style={styles.kpiLabel}>{t('cleanSheet')}</Text></View>
           </View>
         </View>
 
         <View style={styles.sezione}>
-          <Text style={styles.sezioneTitolo}>Statistiche dettagliate</Text>
-          <View style={styles.riga}><Text style={styles.rigaLabel}>Media voto partite</Text><Text style={styles.rigaVal}>{kpi.mediaPartite}</Text></View>
-          <View style={styles.riga}><Text style={styles.rigaLabel}>Punti portati alla squadra</Text><Text style={styles.rigaVal}>{kpi.puntiTotali}</Text></View>
-          <View style={styles.riga}><Text style={styles.rigaLabel}>% presenze allenamenti</Text><Text style={styles.rigaVal}>{kpi.pctPresenze}%</Text></View>
+          <Text style={styles.sezioneTitolo}>{t('statDettagliate')}</Text>
+          <View style={styles.riga}><Text style={styles.rigaLabel}>{t('mediaPart')}</Text><Text style={styles.rigaVal}>{kpi.mediaPartite}</Text></View>
+          <View style={styles.riga}><Text style={styles.rigaLabel}>{t('puntiSquadra')}</Text><Text style={styles.rigaVal}>{kpi.puntiTotali}</Text></View>
+          <View style={styles.riga}><Text style={styles.rigaLabel}>{t('pctPresenze')}</Text><Text style={styles.rigaVal}>{kpi.pctPresenze}%</Text></View>
           {kpi.indiceCrescita != null && (
-            <View style={styles.riga}><Text style={styles.rigaLabel}>Indice di Crescita GKSeason</Text><Text style={styles.rigaVal}>{kpi.indiceCrescita} / 100</Text></View>
+            <View style={styles.riga}><Text style={styles.rigaLabel}>{t('indiceCrescita')}</Text><Text style={styles.rigaVal}>{kpi.indiceCrescita} / 100</Text></View>
           )}
         </View>
 
         <View style={styles.sezione}>
-          <Text style={styles.sezioneTitolo}>Obiettivi raggiunti ({obiettiviRaggiunti.length})</Text>
-          {obiettiviRaggiunti.length === 0 && <Text style={{ color: '#4a5b68', fontSize: 9 }}>Nessun obiettivo raggiunto questa stagione.</Text>}
+          <Text style={styles.sezioneTitolo}>{t('obRaggiunti', { n: obiettiviRaggiunti.length })}</Text>
+          {obiettiviRaggiunti.length === 0 && <Text style={{ color: '#4a5b68', fontSize: 9 }}>{t('nessunObRaggiunto')}</Text>}
           {obiettiviRaggiunti.map((o, i) => (
             <View key={i} style={styles.obiettivoBox}>
               <Text style={styles.obiettivoTitolo}>{o.titolo}</Text>
@@ -171,8 +172,8 @@ function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviApert
         </View>
 
         <View style={styles.sezione}>
-          <Text style={styles.sezioneTitolo}>Obiettivi non raggiunti ({obiettiviAperti.length})</Text>
-          {obiettiviAperti.length === 0 && <Text style={{ color: '#4a5b68', fontSize: 9 }}>Nessun obiettivo in sospeso.</Text>}
+          <Text style={styles.sezioneTitolo}>{t('obAperti', { n: obiettiviAperti.length })}</Text>
+          {obiettiviAperti.length === 0 && <Text style={{ color: '#4a5b68', fontSize: 9 }}>{t('nessunObSospeso')}</Text>}
           {obiettiviAperti.map((o, i) => (
             <View key={i} style={styles.obiettivoBox}>
               <Text style={styles.obiettivoTitolo}>{o.titolo} — {o.percentuale}%</Text>
@@ -182,47 +183,49 @@ function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviApert
         </View>
 
         <View style={styles.sezione}>
-          <Text style={styles.sezioneTitolo}>Commento allenatore</Text>
+          <Text style={styles.sezioneTitolo}>{t('commentoAll')}</Text>
           <View style={styles.commentoBox}>
-            <Text style={styles.commentoTesto}>{commenti.allenatore || 'Nessun commento inserito.'}</Text>
+            <Text style={styles.commentoTesto}>{commenti.allenatore || t('nessunCommento')}</Text>
           </View>
         </View>
 
         <View style={styles.sezione}>
-          <Text style={styles.sezioneTitolo}>Commento portiere</Text>
+          <Text style={styles.sezioneTitolo}>{t('commentoPort')}</Text>
           <View style={styles.commentoBox}>
-            <Text style={styles.commentoTesto}>{commenti.portiere || 'Nessun commento inserito.'}</Text>
+            <Text style={styles.commentoTesto}>{commenti.portiere || t('nessunCommento')}</Text>
           </View>
         </View>
 
         <Text style={styles.footer}>
-          Generato da GKSeason — Gestionale Allenamento Portieri · {new Date().toLocaleDateString('it-IT')}
+          {t('footerGenerato')} · {new Date().toLocaleDateString(t.intlTag)}
         </Text>
       </Page>
 
       {andamento && andamento.mesi.length > 0 && (
         <Page size="A4" style={styles.page}>
           <View style={styles.header}>
-            <Text style={styles.eyebrow}>GKSeason — Andamento della stagione</Text>
+            <Text style={styles.eyebrow}>{t('andamento')}</Text>
             <Text style={styles.titolo}>{portiere.nome} {portiere.cognome ?? ''}</Text>
-            <Text style={styles.sottotitolo}>Stagione {stagione.nome}</Text>
+            <Text style={styles.sottotitolo}>{t('stagionePrefix')} {stagione.nome}</Text>
           </View>
           <TabellaMesi
-            titolo="Voti e partite — mese per mese"
+            t={t}
+            titolo={t('votiMese')}
             intestazioni={andamento.intestazioniGen}
             righe={andamento.genMensile}
             grafico={andamento.graficoGenMensile}
-            nota="Ogni riga usa solo i dati di quel mese. I mesi non ancora conclusi non compaiono. Il grafico mostra le medie voto."
+            nota={t('notaMese')}
           />
           <TabellaMesi
-            titolo="Voti e partite — progressivo"
+            t={t}
+            titolo={t('votiProg')}
             intestazioni={andamento.intestazioniGen}
             righe={andamento.genProgressivo}
             grafico={andamento.graficoGenProgressivo}
-            nota="Ogni riga usa i dati da inizio stagione fino a quel mese incluso."
+            nota={t('notaProg')}
           />
           <Text style={styles.footer}>
-            Generato da GKSeason — Gestionale Allenamento Portieri · {new Date().toLocaleDateString('it-IT')}
+            {t('footerGenerato')} · {new Date().toLocaleDateString(t.intlTag)}
           </Text>
         </Page>
       )}
@@ -230,46 +233,48 @@ function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviApert
       {andamento && andamento.parMensile.length > 0 && (
         <Page size="A4" style={styles.page}>
           <View style={styles.header}>
-            <Text style={styles.eyebrow}>GKSeason — Parametri di valutazione</Text>
+            <Text style={styles.eyebrow}>{t('parametriVal')}</Text>
             <Text style={styles.titolo}>{portiere.nome} {portiere.cognome ?? ''}</Text>
-            <Text style={styles.sottotitolo}>Stagione {stagione.nome}</Text>
+            <Text style={styles.sottotitolo}>{t('stagionePrefix')} {stagione.nome}</Text>
           </View>
           <TabellaMesi
-            titolo="Parametri — mese per mese"
+            t={t}
+            titolo={t('paramMese')}
             intestazioni={andamento.intestazioniPar}
             righe={andamento.parMensile}
             grafico={andamento.graficoParMensile}
           />
           <TabellaMesi
-            titolo="Parametri — progressivo"
+            t={t}
+            titolo={t('paramProg')}
             intestazioni={andamento.intestazioniPar}
             righe={andamento.parProgressivo}
             grafico={andamento.graficoParProgressivo}
           />
           <Text style={styles.footer}>
-            Generato da GKSeason — Gestionale Allenamento Portieri · {new Date().toLocaleDateString('it-IT')}
+            {t('footerGenerato')} · {new Date().toLocaleDateString(t.intlTag)}
           </Text>
         </Page>
       )}
       {percorso && percorso.length > 0 && (
         <Page size="A4" style={styles.page}>
           <View style={styles.header}>
-            <Text style={styles.eyebrow}>GKSeason — Percorso della stagione</Text>
+            <Text style={styles.eyebrow}>{t('percorso')}</Text>
             <Text style={styles.titolo}>{portiere.nome} {portiere.cognome ?? ''}</Text>
-            <Text style={styles.sottotitolo}>Stagione {stagione.nome}</Text>
+            <Text style={styles.sottotitolo}>{t('stagionePrefix')} {stagione.nome}</Text>
           </View>
           <View style={styles.sezione}>
-            <Text style={styles.sezioneTitolo}>Momenti della stagione ({percorso.length})</Text>
+            <Text style={styles.sezioneTitolo}>{t('momenti', { n: percorso.length })}</Text>
             {percorso.map((e, i) => (
               <View key={i} style={styles.evento}>
                 <Text style={styles.eventoData}>{e.data}</Text>
                 <Text style={styles.eventoTesto}>{e.titolo}</Text>
-                <Text style={styles.eventoTipo}>{ETICHETTA_EVENTO[e.tipo] ?? e.tipo}</Text>
+                <Text style={styles.eventoTipo}>{CHIAVE_EVENTO[e.tipo] ? t(CHIAVE_EVENTO[e.tipo]) : e.tipo}</Text>
               </View>
             ))}
           </View>
           <Text style={styles.footer}>
-            Generato da GKSeason — Gestionale Allenamento Portieri · {new Date().toLocaleDateString('it-IT')}
+            {t('footerGenerato')} · {new Date().toLocaleDateString(t.intlTag)}
           </Text>
         </Page>
       )}
@@ -281,15 +286,16 @@ function ReportPDF({ portiere, stagione, kpi, obiettiviRaggiunti, obiettiviApert
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const portiereId = searchParams.get('portiere_id')
-  if (!portiereId) return NextResponse.json({ error: 'portiere_id mancante' }, { status: 400 })
+  const t = pdfLabels(request)
+  if (!portiereId) return NextResponse.json({ error: tApi(request, 'portiere_id mancante') }, { status: 400 })
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
   const { data: profiloViewer } = await supabase.from('profili').select('ruolo, portiere_id').eq('id', user.id).maybeSingle()
   if (profiloViewer?.ruolo === 'portiere' && profiloViewer.portiere_id !== portiereId) {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
   }
 
   const [gatingCfg, abbAttivo] = await Promise.all([
@@ -297,14 +303,14 @@ export async function GET(request) {
     hasAbbonamento(supabase, user.id),
   ])
   if (!isUnlocked('report_pdf_stagione', gatingCfg, abbAttivo)) {
-    return NextResponse.json({ error: 'Funzionalità non disponibile con il tuo piano.' }, { status: 402 })
+    return NextResponse.json({ error: tApi(request, 'Funzionalità non disponibile con il tuo piano.') }, { status: 402 })
   }
 
   const { data: portiere } = await supabase.from('portieri').select('id, nome, cognome').eq('id', portiereId).maybeSingle()
-  if (!portiere) return NextResponse.json({ error: 'Portiere non trovato' }, { status: 404 })
+  if (!portiere) return NextResponse.json({ error: tApi(request, 'Portiere non trovato') }, { status: 404 })
 
   const { stagione } = await getStagioneAttiva(supabase, user.id)
-  if (!stagione) return NextResponse.json({ error: 'Nessuna stagione attiva' }, { status: 400 })
+  if (!stagione) return NextResponse.json({ error: tApi(request, 'Nessuna stagione attiva') }, { status: 400 })
 
   // ── Dati aggregati ─────────────────────────────────────────────────────
   const { data: allenamenti } = await supabase.from('allenamenti').select('id, data').eq('stagione_id', stagione.id)
@@ -338,7 +344,7 @@ export async function GET(request) {
     .select('commento_allenatore, commento_portiere').eq('portiere_id', portiereId).eq('stagione_id', stagione.id).maybeSingle()
 
   // ── Andamento mese per mese ────────────────────────────────────────────
-  const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
+  const MESI = t.raw('mesi')
   const meseCorrente = new Date().toISOString().slice(0, 7)
   const dataAllen = new Map((allenamenti ?? []).map((a) => [a.id, a.data]))
   const dataPart = new Map((partite ?? []).map((p) => [p.id, p.data]))
@@ -425,9 +431,9 @@ export async function GET(request) {
 
   // Serie per i grafici: solo grandezze omogenee (medie voto), altrimenti la scala si rompe.
   const serieVoto = (prog) => [
-    { nome: 'Media voto allenamenti', colore: COLORI[0],
+    { nome: t('mediaAll'), colore: COLORI[0],
       punti: fette.map((f) => mediaPes(prog ? f.progressivo : f.mensile, (b) => b.vs, (b) => b.vn)) },
-    { nome: 'Media voto partite', colore: COLORI[2],
+    { nome: t('mediaPart'), colore: COLORI[2],
       punti: fette.map((f) => mediaPes(prog ? f.progressivo : f.mensile, (b) => b.pvs, (b) => b.pvn)) },
   ]
   const seriePar = (prog) => parametri.map((p, i) => ({
@@ -442,7 +448,7 @@ export async function GET(request) {
     graficoGenProgressivo: { etichette, serie: serieVoto(true) },
     graficoParMensile: parametri.length ? { etichette, serie: seriePar(false) } : null,
     graficoParProgressivo: parametri.length ? { etichette, serie: seriePar(true) } : null,
-    intestazioniGen: ['Pres.', 'Voto all.', 'Giocate', 'Voto gara', 'Gol sub.', 'CS', 'Punti'],
+    intestazioniGen: t.raw('thGen'),
     intestazioniPar: parametri.map((p) => (p.nome.length > 11 ? p.nome.slice(0, 10) + '.' : p.nome)),
     genMensile: fette.map((f) => rigaGen(f.mensile, f.label)),
     genProgressivo: fette.map((f) => rigaGen(f.progressivo, f.label)),
@@ -472,7 +478,7 @@ export async function GET(request) {
     percorso.push({
       tipo: cs ? 'clean_sheet' : 'partita',
       data: p.data,
-      titolo: (p.avversario || 'Avversario') + (v.voto != null ? ` — voto ${v.voto}` : ''),
+      titolo: (p.avversario || t('avversario')) + (v.voto != null ? ` — ${t('voto')} ${v.voto}` : ''),
     })
   }
   percorso.sort((a, b) => (b.data ?? '').localeCompare(a.data ?? ''))
@@ -486,6 +492,7 @@ export async function GET(request) {
 
   const buffer = await renderToBuffer(
     <ReportPDF
+      t={t}
       portiere={portiere} stagione={stagione} kpi={kpi}
       obiettiviRaggiunti={obiettiviRaggiunti} obiettiviAperti={obiettiviAperti}
       commenti={{ allenatore: commentiRow?.commento_allenatore, portiere: commentiRow?.commento_portiere }}

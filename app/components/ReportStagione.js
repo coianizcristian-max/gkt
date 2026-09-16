@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ReportStagione({ portiereId, stagioneId, soloPortiere, commentoIniziale, canReport = true }) {
   const t = useTranslations('reportStagione')
+  const locale = useLocale()
   const [commentoAllenatore, setCommentoAllenatore] = useState(commentoIniziale.allenatore ?? '')
   const [commentoPortiere, setCommentoPortiere] = useState(commentoIniziale.portiere ?? '')
   const [busy, setBusy] = useState(false)
@@ -50,7 +51,7 @@ export default function ReportStagione({ portiereId, stagioneId, soloPortiere, c
           {busy ? t('salvataggio') : saved ? t('salvato') : t('salvaCommento')}
         </button>
         {canReport
-          ? <a className="btn" href={`/api/report-stagione?portiere_id=${portiereId}`} target="_blank" rel="noopener noreferrer">{t('scaricaPdf')}</a>
+          ? <a className="btn" href={`/api/report-stagione?portiere_id=${portiereId}&locale=${locale}`} target="_blank" rel="noopener noreferrer">{t('scaricaPdf')}</a>
           : <a className="btn-ghost" href="/abbonati" style={{ color: 'var(--ink-soft)' }}>{t('pdfLocked')}</a>}
       </div>
     </div>

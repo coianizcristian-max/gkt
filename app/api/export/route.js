@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
@@ -17,11 +18,11 @@ function toCSV(rows, cols) {
 export async function GET(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (profilo?.ruolo !== 'allenatore' && profilo?.ruolo !== 'staff') {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
   }
 
   const [gatingCfg, abbAttivo] = await Promise.all([
@@ -29,7 +30,7 @@ export async function GET(request) {
     hasAbbonamento(supabase, user.id),
   ])
   if (!isUnlocked('export_dati', gatingCfg, abbAttivo)) {
-    return NextResponse.json({ error: 'Funzionalità non disponibile con il tuo piano.' }, { status: 402 })
+    return NextResponse.json({ error: tApi(request, 'Funzionalità non disponibile con il tuo piano.') }, { status: 402 })
   }
 
   const url = new URL(request.url)

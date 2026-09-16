@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { consumaInvito } from '@/lib/consumaInvito'
 
@@ -20,6 +21,6 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, tipo: res.tipo })
   } catch (err) {
     console.error('consuma-invito route error:', err)
-    return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
+    return NextResponse.json({ error: tApi(request, 'Errore interno') }, { status: 500 })
   }
 }

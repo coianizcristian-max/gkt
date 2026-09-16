@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
@@ -27,19 +28,19 @@ export async function POST(request) {
   try {
     const { email, portiere_id } = await request.json()
     if (!email || !portiere_id) {
-      return NextResponse.json({ error: 'Dati mancanti (email e portiere).' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Dati mancanti (email e portiere).') }, { status: 400 })
     }
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
     const { data: profilo } = await supabase.from('profili').select('ruolo, allenatore_id').eq('id', user.id).maybeSingle()
     if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) {
-      return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+      return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
     }
     const ownerId = profilo.ruolo === 'allenatore' ? user.id : profilo.allenatore_id
-    if (!ownerId) return NextResponse.json({ error: 'Nessun allenatore collegato' }, { status: 422 })
+    if (!ownerId) return NextResponse.json({ error: tApi(request, 'Nessun allenatore collegato') }, { status: 422 })
 
     const admin = getAdmin()
 
@@ -47,16 +48,16 @@ export async function POST(request) {
     const { data: portiere } = await admin
       .from('portieri').select('id, nome, cognome, allenatore_id').eq('id', portiere_id).maybeSingle()
     if (!portiere || portiere.allenatore_id !== ownerId) {
-      return NextResponse.json({ error: 'Portiere non valido o non collegato al tuo account.' }, { status: 403 })
+      return NextResponse.json({ error: tApi(request, 'Portiere non valido o non collegato al tuo account.') }, { status: 403 })
     }
 
     // Trova l'account registrato con quella email.
     const target = await trovaUtentePerEmail(admin, String(email).trim().toLowerCase())
     if (!target) {
-      return NextResponse.json({ error: 'Nessun account registrato con questa email. Deve prima registrarsi.' }, { status: 404 })
+      return NextResponse.json({ error: tApi(request, 'Nessun account registrato con questa email. Deve prima registrarsi.') }, { status: 404 })
     }
     if (target.id === user.id) {
-      return NextResponse.json({ error: 'Non puoi collegare te stesso come portiere.' }, { status: 422 })
+      return NextResponse.json({ error: tApi(request, 'Non puoi collegare te stesso come portiere.') }, { status: 422 })
     }
 
     // Non trasformare in portiere un allenatore GIÀ ATTIVO (stagioni con attività).
@@ -69,7 +70,7 @@ export async function POST(request) {
       ])
       if ((nAll ?? 0) > 0 || (nPar ?? 0) > 0) {
         return NextResponse.json({
-          error: 'Questo account è già un allenatore attivo (ha allenamenti o partite) e non può essere collegato come portiere.',
+          error: tApi(request, 'Questo account è già un allenatore attivo (ha allenamenti o partite) e non può essere collegato come portiere.'),
           status: 409,
         }, { status: 409 })
       }
@@ -92,6 +93,6 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, nome: `${portiere.nome} ${portiere.cognome ?? ''}`.trim() })
   } catch (err) {
     console.error('collega-portiere error:', err)
-    return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
+    return NextResponse.json({ error: tApi(request, 'Errore interno') }, { status: 500 })
   }
 }

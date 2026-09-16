@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { pdfLabels, tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { renderToBuffer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { getStagioneAttiva } from '@/lib/tenant'
@@ -60,11 +61,11 @@ function Barra({ pct, colore }) {
   )
 }
 
-function BloccoCaratteristiche({ dati }) {
+function BloccoCaratteristiche({ t, dati }) {
   return (
     <View style={s.block}>
-      <Text style={s.blockT}>Media per caratteristica</Text>
-      {dati.length === 0 && <Text style={{ fontSize: 6.5, color: GRIGIO }}>Nessun dato nel periodo.</Text>}
+      <Text style={s.blockT}>{t('mediaCaratteristica')}</Text>
+      {dati.length === 0 && <Text style={{ fontSize: 6.5, color: GRIGIO }}>{t('nessunDatoPeriodo')}</Text>}
       {dati.map((d, i) => (
         <View key={i} style={s.barRow}>
           <Text style={s.barLbl}>{d.nome}</Text>
@@ -76,58 +77,58 @@ function BloccoCaratteristiche({ dati }) {
   )
 }
 
-function BloccoVoti({ st }) {
+function BloccoVoti({ t, st }) {
   return (
     <View style={s.block}>
-      <Text style={s.blockT}>Rendimento</Text>
-      <View style={s.barRow}><Text style={s.barLbl}>Media allenamenti</Text><Barra pct={(st.mediaAll ?? 0) / 10 * 100} colore={colVoto(st.mediaAll)} /><Text style={s.barVal}>{fix(st.mediaAll, 2)}</Text></View>
-      <View style={s.barRow}><Text style={s.barLbl}>Media partite</Text><Barra pct={(st.mediaPart ?? 0) / 10 * 100} colore={colVoto(st.mediaPart)} /><Text style={s.barVal}>{fix(st.mediaPart, 2)}</Text></View>
-      <View style={s.barRow}><Text style={s.barLbl}>Partite giocate</Text><Barra pct={0} colore="#fff" /><Text style={s.barVal}>{st.nPartite}</Text></View>
+      <Text style={s.blockT}>{t('rendimento')}</Text>
+      <View style={s.barRow}><Text style={s.barLbl}>{t('mediaAllenamenti')}</Text><Barra pct={(st.mediaAll ?? 0) / 10 * 100} colore={colVoto(st.mediaAll)} /><Text style={s.barVal}>{fix(st.mediaAll, 2)}</Text></View>
+      <View style={s.barRow}><Text style={s.barLbl}>{t('mediaPartite')}</Text><Barra pct={(st.mediaPart ?? 0) / 10 * 100} colore={colVoto(st.mediaPart)} /><Text style={s.barVal}>{fix(st.mediaPart, 2)}</Text></View>
+      <View style={s.barRow}><Text style={s.barLbl}>{t('partiteGiocate')}</Text><Barra pct={0} colore="#fff" /><Text style={s.barVal}>{st.nPartite}</Text></View>
     </View>
   )
 }
 
-function BloccoPrestazioni({ st }) {
+function BloccoPrestazioni({ t, st }) {
   return (
     <View style={s.block}>
-      <Text style={s.blockT}>Presenze & prestazioni</Text>
-      <View style={s.barRow}><Text style={s.barLbl}>Presenze</Text><Barra pct={st.pct} colore={st.pct >= 90 ? VERDE : st.pct >= 70 ? AMBRA : ROSSO} /><Text style={s.barVal}>{st.presenze}/{st.disp}</Text></View>
-      <View style={s.barRow}><Text style={s.barLbl}>Clean sheet</Text><Barra pct={st.nPartite ? st.cleanSheet / st.nPartite * 100 : 0} colore={VERDE} /><Text style={s.barVal}>{st.cleanSheet}</Text></View>
-      <View style={s.barRow}><Text style={s.barLbl}>Gol / partita</Text><Barra pct={st.gpp != null ? Math.min(st.gpp, 5) / 5 * 100 : 0} colore={ROSSO} /><Text style={s.barVal}>{fix(st.gpp, 1)}</Text></View>
+      <Text style={s.blockT}>{t('presPrest')}</Text>
+      <View style={s.barRow}><Text style={s.barLbl}>{t('presenze')}</Text><Barra pct={st.pct} colore={st.pct >= 90 ? VERDE : st.pct >= 70 ? AMBRA : ROSSO} /><Text style={s.barVal}>{st.presenze}/{st.disp}</Text></View>
+      <View style={s.barRow}><Text style={s.barLbl}>{t('cleanSheet')}</Text><Barra pct={st.nPartite ? st.cleanSheet / st.nPartite * 100 : 0} colore={VERDE} /><Text style={s.barVal}>{st.cleanSheet}</Text></View>
+      <View style={s.barRow}><Text style={s.barLbl}>{t('golPartita')}</Text><Barra pct={st.gpp != null ? Math.min(st.gpp, 5) / 5 * 100 : 0} colore={ROSSO} /><Text style={s.barVal}>{fix(st.gpp, 1)}</Text></View>
     </View>
   )
 }
 
-function Colonna({ titolo, st, full }) {
+function Colonna({ t, titolo, st, full }) {
   return (
     <View style={[s.col, full ? { width: '100%' } : null]}>
       <Text style={s.colH}>{titolo}</Text>
-      <BloccoCaratteristiche dati={st.caratteristiche} />
-      <BloccoVoti st={st} />
-      <BloccoPrestazioni st={st} />
+      <BloccoCaratteristiche t={t} dati={st.caratteristiche} />
+      <BloccoVoti t={t} st={st} />
+      <BloccoPrestazioni t={t} st={st} />
     </View>
   )
 }
 
-function ReportPDF({ meta, presenze, categorie }) {
+function ReportPDF({ t, meta, presenze, categorie }) {
   return (
     <Document>
       <Page size="A4" style={s.page} wrap>
         <View style={s.head}>
           <Text style={s.brand}>GKSeason</Text>
-          <Text style={s.headMeta}>Report statistiche portieri{'\n'}Estrazione {meta.oggi}</Text>
+          <Text style={s.headMeta}>{t('reportStatTitolo')}{'\n'}{t('estrazione')} {meta.oggi}</Text>
         </View>
-        <Text style={s.filters}>Stagione {meta.stagione}   ·   Periodo: {meta.periodoLabel}   ·   Categoria: {meta.categoriaLabel}</Text>
+        <Text style={s.filters}>{t('stagionePrefix')} {meta.stagione}   ·   {t('periodo')}: {meta.periodoLabel}   ·   {t('categoria')}: {meta.categoriaLabel}</Text>
 
-        <Text style={s.sec}>Presenze — {meta.periodoLabel}</Text>
+        <Text style={s.sec}>{t('presenze')} — {meta.periodoLabel}</Text>
         <View style={s.th}>
-          <Text style={[s.cNome, s.thTxt]}>Portiere</Text>
-          <Text style={[s.cCat, s.thTxt]}>Categoria</Text>
-          <Text style={[s.cNum, s.thTxt]}>Presenze</Text>
-          <Text style={[s.cNum, s.thTxt]}>Disp.</Text>
-          <Text style={[s.cNum, s.thTxt]}>Media</Text>
+          <Text style={[s.cNome, s.thTxt]}>{t('portiere')}</Text>
+          <Text style={[s.cCat, s.thTxt]}>{t('categoria')}</Text>
+          <Text style={[s.cNum, s.thTxt]}>{t('presenze')}</Text>
+          <Text style={[s.cNum, s.thTxt]}>{t('disp')}</Text>
+          <Text style={[s.cNum, s.thTxt]}>{t('media')}</Text>
         </View>
-        {presenze.length === 0 && <Text style={{ fontSize: 7.5, color: GRIGIO, marginTop: 4 }}>Nessuna presenza registrata nel periodo.</Text>}
+        {presenze.length === 0 && <Text style={{ fontSize: 7.5, color: GRIGIO, marginTop: 4 }}>{t('nessunaPresenzaPeriodo')}</Text>}
         {presenze.map((r, i) => (
           <View key={i} style={s.tr}>
             <Text style={s.cNome}>{r.nome}</Text>
@@ -146,18 +147,18 @@ function ReportPDF({ meta, presenze, categorie }) {
                 <View style={s.gkHead}>
                   <Text style={s.gkName}>{p.nome}</Text>
                   <View style={s.kpis}>
-                    <View style={s.kpi}><Text style={s.kpiV}>{p.head.presenze}/{p.head.disp}</Text><Text style={s.kpiL}>Presenze</Text></View>
-                    <View style={s.kpi}><Text style={[s.kpiV, { color: colVoto(p.head.mediaAll) }]}>{fix(p.head.mediaAll, 2)}</Text><Text style={s.kpiL}>Media voto</Text></View>
+                    <View style={s.kpi}><Text style={s.kpiV}>{p.head.presenze}/{p.head.disp}</Text><Text style={s.kpiL}>{t('presenze')}</Text></View>
+                    <View style={s.kpi}><Text style={[s.kpiV, { color: colVoto(p.head.mediaAll) }]}>{fix(p.head.mediaAll, 2)}</Text><Text style={s.kpiL}>{t('mediaVoto')}</Text></View>
                   </View>
                 </View>
                 <View style={s.cols}>
                   {meta.soloPeriodo ? (
                     <>
-                      <Colonna titolo="Da inizio stagione" st={p.cumulativo} full={false} />
-                      <Colonna titolo={meta.periodoLabel} st={p.periodo} full={false} />
+                      <Colonna t={t} titolo={t('daInizioStagione')} st={p.cumulativo} full={false} />
+                      <Colonna t={t} titolo={meta.periodoLabel} st={p.periodo} full={false} />
                     </>
                   ) : (
-                    <Colonna titolo="Stagione completa" st={p.cumulativo} full={true} />
+                    <Colonna t={t} titolo={t('stagioneCompleta')} st={p.cumulativo} full={true} />
                   )}
                 </View>
               </View>
@@ -165,7 +166,7 @@ function ReportPDF({ meta, presenze, categorie }) {
           </View>
         ))}
 
-        <Text style={s.footer} fixed>GKSeason — documento di analisi condiviso con lo staff tecnico · gkseason.it · {new Date().toLocaleDateString('it-IT')}</Text>
+        <Text style={s.footer} fixed>{t('footerStat')} · {new Date().toLocaleDateString(t.intlTag)}</Text>
       </Page>
     </Document>
   )
@@ -181,17 +182,18 @@ function rangeMese(mese) {
 const inRange = (d, r) => !r ? true : (!!d && d >= r.da && d <= r.a)
 
 export async function GET(request) {
+  const t = pdfLabels(request)
   const { searchParams } = new URL(request.url)
   const mese = searchParams.get('mese') || 'tutti'
   const categoria = searchParams.get('categoria') || 'tutte'
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) {
-    return NextResponse.json({ error: 'Solo lo staff può esportare le statistiche.' }, { status: 403 })
+    return NextResponse.json({ error: tApi(request, 'Solo lo staff può esportare le statistiche.') }, { status: 403 })
   }
 
   const [gatingCfg, abbAttivo] = await Promise.all([
@@ -199,11 +201,11 @@ export async function GET(request) {
     hasAbbonamento(supabase, user.id),
   ])
   if (!isUnlocked('report_pdf_statistiche', gatingCfg, abbAttivo)) {
-    return NextResponse.json({ error: "Report disponibile con l'abbonamento." }, { status: 402 })
+    return NextResponse.json({ error: tApi(request, "Report disponibile con l'abbonamento.") }, { status: 402 })
   }
 
   const { stagione } = await getStagioneAttiva(supabase, user.id)
-  if (!stagione) return NextResponse.json({ error: 'Nessuna stagione attiva' }, { status: 400 })
+  if (!stagione) return NextResponse.json({ error: tApi(request, 'Nessuna stagione attiva') }, { status: 400 })
 
   const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
   const rPeriodo = mese === 'tutti' ? null : (() => {
@@ -211,8 +213,8 @@ export async function GET(request) {
     return { da: r.da, a: r.a < oggiRoma ? r.a : oggiRoma } // non oltre oggi
   })()
   const periodoLabel = mese === 'tutti'
-    ? 'tutta la stagione'
-    : new Date(mese + '-01').toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })
+    ? t('tuttaStagione')
+    : new Date(mese + '-01').toLocaleDateString(t.intlTag, { month: 'long', year: 'numeric' })
 
   // Categorie della stagione
   const { data: catRows } = await supabase
@@ -220,7 +222,7 @@ export async function GET(request) {
   let categorieDef = (catRows ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => (a.ordine ?? 0) - (b.ordine ?? 0))
   if (categoria !== 'tutte') categorieDef = categorieDef.filter((c) => c.id === categoria)
   const catNome = {}; categorieDef.forEach((c) => { catNome[c.id] = c.nome })
-  const categoriaLabel = categoria === 'tutte' ? 'tutte' : (catNome[categoria] || '—')
+  const categoriaLabel = categoria === 'tutte' ? t('tutteCategorie') : (catNome[categoria] || '—')
 
   // Iscritti (roster)
   const { data: iscr } = await supabase
@@ -315,8 +317,8 @@ export async function GET(request) {
     }),
   })).filter((c) => c.portieri.length > 0)
 
-  const meta = { oggi: new Date().toLocaleDateString('it-IT'), stagione: stagione.nome, periodoLabel, categoriaLabel, soloPeriodo }
-  const buffer = await renderToBuffer(<ReportPDF meta={meta} presenze={presenzeTab} categorie={categorie} />)
+  const meta = { oggi: new Date().toLocaleDateString(t.intlTag), stagione: stagione.nome, periodoLabel, categoriaLabel, soloPeriodo }
+  const buffer = await renderToBuffer(<ReportPDF t={t} meta={meta} presenze={presenzeTab} categorie={categorie} />)
 
   return new NextResponse(buffer, {
     headers: {

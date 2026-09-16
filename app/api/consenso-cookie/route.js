@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 
@@ -10,7 +11,7 @@ export async function POST(req) {
   try {
     const { consent_id, scelta, versione, categorie } = await req.json()
     if (scelta !== 'accepted' && scelta !== 'rejected') {
-      return NextResponse.json({ error: 'Scelta non valida.' }, { status: 400 })
+      return NextResponse.json({ error: tApi(req, 'Scelta non valida.') }, { status: 400 })
     }
 
     let userId = null

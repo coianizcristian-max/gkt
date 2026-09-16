@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato.') }, { status: 401 })
 
   const { data: profilo } = await supabase
     .from('profili').select('supervisore').eq('id', user.id).maybeSingle()
-  if (!profilo?.supervisore) return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 })
+  if (!profilo?.supervisore) return NextResponse.json({ error: tApi(request, 'Non autorizzato.') }, { status: 403 })
 
   const { voci } = await request.json() // [{ chiave, ordine, label }]
-  if (!Array.isArray(voci)) return NextResponse.json({ error: 'Payload non valido.' }, { status: 400 })
+  if (!Array.isArray(voci)) return NextResponse.json({ error: tApi(request, 'Payload non valido.') }, { status: 400 })
 
   const { error } = await supabase
     .from('sidebar_ordine')

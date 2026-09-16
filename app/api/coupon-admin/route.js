@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import Stripe from 'stripe'
@@ -18,11 +19,11 @@ export async function POST(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!await checkSupervisore(supabase, user))
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
 
   const body = await request.json()
   const { codice, tipo = 'accesso_gratuito', scadenza_attivazione, max_utilizzi } = body
-  if (!codice?.trim()) return NextResponse.json({ error: 'Codice mancante' }, { status: 400 })
+  if (!codice?.trim()) return NextResponse.json({ error: tApi(request, 'Codice mancante') }, { status: 400 })
   const codiceNorm = codice.trim().toUpperCase()
 
   const admin = getAdmin()
@@ -31,10 +32,10 @@ export async function POST(request) {
     const scontoPercento = Number(body.sconto_percento)
     const scontoMesi = Number(body.sconto_mesi)
     if (!scontoPercento || scontoPercento < 1 || scontoPercento > 100) {
-      return NextResponse.json({ error: 'Percentuale di sconto non valida' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Percentuale di sconto non valida') }, { status: 400 })
     }
     if (!scontoMesi || scontoMesi < 1) {
-      return NextResponse.json({ error: 'Numero di mesi non valido' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Numero di mesi non valido') }, { status: 400 })
     }
 
     try {
@@ -68,7 +69,7 @@ export async function POST(request) {
       return NextResponse.json({ ok: true })
     } catch (err) {
       console.error('stripe coupon error:', err)
-      return NextResponse.json({ error: 'Errore Stripe: ' + err.message }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Errore Stripe: ') + err.message }, { status: 400 })
     }
   }
 
@@ -91,7 +92,7 @@ export async function PATCH(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!await checkSupervisore(supabase, user))
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
 
   const { id, attivo } = await request.json()
   const admin = getAdmin()
@@ -103,7 +104,7 @@ export async function PATCH(request) {
       await stripe.promotionCodes.update(riga.stripe_promotion_code_id, { active: attivo })
     } catch (err) {
       console.error('stripe promotion code toggle error:', err)
-      return NextResponse.json({ error: 'Errore Stripe: ' + err.message }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Errore Stripe: ') + err.message }, { status: 400 })
     }
   }
 

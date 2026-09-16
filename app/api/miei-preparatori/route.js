@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
@@ -11,15 +12,15 @@ function getAdmin() {
 
 // GET /api/miei-preparatori
 // Restituisce la lista dei preparatori collegati al responsabile loggato
-export async function GET() {
+export async function GET(request) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
     // Verifica ruolo allenatore
     const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
-    if (profilo?.ruolo !== 'allenatore') return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    if (profilo?.ruolo !== 'allenatore') return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
 
     const admin = getAdmin()
 
@@ -68,6 +69,6 @@ export async function GET() {
 
   } catch (err) {
     console.error('miei-preparatori error:', err)
-    return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
+    return NextResponse.json({ error: tApi(request, 'Errore interno') }, { status: 500 })
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
@@ -19,7 +20,7 @@ export async function GET(request) {
     const idsRaw = searchParams.get('ids')
 
     if (!tipo || !preparatoreId || !idsRaw) {
-      return NextResponse.json({ error: 'Parametri mancanti' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Parametri mancanti') }, { status: 400 })
     }
 
     const ids = idsRaw.split(',').filter(Boolean)
@@ -28,7 +29,7 @@ export async function GET(request) {
     // Verifica autenticazione e relazione supervisore→preparatore
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
     const admin = getAdmin()
 
@@ -40,7 +41,7 @@ export async function GET(request) {
       .eq('attivo', true)
       .maybeSingle()
 
-    if (!rel) return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    if (!rel) return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
 
     // ── Preview allenamenti ───────────────────────────────────────────────
     if (tipo === 'preview_allenamenti') {
@@ -95,10 +96,10 @@ export async function GET(request) {
       return NextResponse.json({ data })
     }
 
-    return NextResponse.json({ error: 'Tipo non riconosciuto' }, { status: 400 })
+    return NextResponse.json({ error: tApi(request, 'Tipo non riconosciuto') }, { status: 400 })
 
   } catch (err) {
     console.error('supervisione-dati:', err)
-    return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
+    return NextResponse.json({ error: tApi(request, 'Errore interno') }, { status: 500 })
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import { rateLimit, getClientIp } from '@/lib/rateLimit'
@@ -12,24 +13,24 @@ const admin = createAdmin(
 export async function POST(req) {
   try {
     if (!rateLimit(`contatto:${getClientIp(req)}`, { max: 5, windowMs: 10 * 60 * 1000 })) {
-      return NextResponse.json({ error: 'Troppe richieste. Riprova tra qualche minuto.' }, { status: 429 })
+      return NextResponse.json({ error: tApi(req, 'Troppe richieste. Riprova tra qualche minuto.') }, { status: 429 })
     }
 
     const { allenatoreId, nome, email, telefono, societa, messaggio } = await req.json()
 
     // Validazione base
     if (!allenatoreId || !nome?.trim() || !email?.trim() || !messaggio?.trim()) {
-      return NextResponse.json({ error: 'Dati mancanti.' }, { status: 400 })
+      return NextResponse.json({ error: tApi(req, 'Dati mancanti.') }, { status: 400 })
     }
     if (messaggio.trim().length < 20) {
-      return NextResponse.json({ error: 'Il messaggio è troppo breve (minimo 20 caratteri).' }, { status: 400 })
+      return NextResponse.json({ error: tApi(req, 'Il messaggio è troppo breve (minimo 20 caratteri).') }, { status: 400 })
     }
 
     // Verifica che l'allenatore esista e sia disponibile
     const { data: profilo } = await admin.from('profili')
       .select('nome_completo, disponibile').eq('id', allenatoreId).maybeSingle()
-    if (!profilo) return NextResponse.json({ error: 'Allenatore non trovato.' }, { status: 404 })
-    if (!profilo.disponibile) return NextResponse.json({ error: 'Allenatore non disponibile.' }, { status: 400 })
+    if (!profilo) return NextResponse.json({ error: tApi(req, 'Allenatore non trovato.') }, { status: 404 })
+    if (!profilo.disponibile) return NextResponse.json({ error: tApi(req, 'Allenatore non disponibile.') }, { status: 400 })
 
     // Recupera email allenatore da auth.users (mai esposta pubblicamente)
     const { data: authUser } = await admin.auth.admin.getUserById(allenatoreId)
@@ -62,6 +63,6 @@ export async function POST(req) {
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[invia-contatto]', err)
-    return NextResponse.json({ error: 'Errore interno. Riprova.' }, { status: 500 })
+    return NextResponse.json({ error: tApi(req, 'Errore interno. Riprova.') }, { status: 500 })
   }
 }

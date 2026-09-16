@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { getOwnerId } from '@/lib/tenant'
 
@@ -7,20 +8,20 @@ export async function POST(request) {
     const { tipo, dal, al, categoriaId, stagioneId, filtroVal, dryRun } = await request.json()
 
     if (!tipo || !dal || !al || !stagioneId)
-      return NextResponse.json({ error: 'Parametri mancanti.' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Parametri mancanti.') }, { status: 400 })
     if (!['allenamenti', 'partite'].includes(tipo))
-      return NextResponse.json({ error: 'Tipo non valido.' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Tipo non valido.') }, { status: 400 })
     if (dal > al)
-      return NextResponse.json({ error: 'Data "dal" successiva alla data "al".' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Data "dal" successiva alla data "al".') }, { status: 400 })
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato.') }, { status: 401 })
 
     const ownerId = await getOwnerId(supabase, user.id)
     const { data: stagione } = await supabase
       .from('stagioni').select('id').eq('id', stagioneId).eq('owner_id', ownerId).maybeSingle()
-    if (!stagione) return NextResponse.json({ error: 'Stagione non trovata.' }, { status: 403 })
+    if (!stagione) return NextResponse.json({ error: tApi(request, 'Stagione non trovata.') }, { status: 403 })
 
     if (tipo === 'allenamenti') {
       let q = supabase.from('allenamenti')

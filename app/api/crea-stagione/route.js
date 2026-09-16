@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { getOwnerId } from '@/lib/tenant'
 
 export async function POST(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato.') }, { status: 401 })
 
   const { data: profilo } = await supabase
     .from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'))
-    return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 })
+    return NextResponse.json({ error: tApi(request, 'Non autorizzato.') }, { status: 403 })
 
   const { annoNome, societa, dataInizio, dataFine, categorie, renderAttiva = true } = await request.json()
-  if (!annoNome) return NextResponse.json({ error: 'Anno mancante.' }, { status: 400 })
+  if (!annoNome) return NextResponse.json({ error: tApi(request, 'Anno mancante.') }, { status: 400 })
 
   const ownerId = await getOwnerId(supabase, user.id)
 

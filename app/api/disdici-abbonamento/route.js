@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 
-export async function POST() {
+export async function POST(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato.') }, { status: 401 })
 
   // Trova abbonamento attivo
   const { data: abb, error: selErr } = await supabase
@@ -15,9 +16,9 @@ export async function POST() {
     .maybeSingle()
 
   if (selErr) return NextResponse.json({ error: selErr.message }, { status: 500 })
-  if (!abb) return NextResponse.json({ error: 'Nessun abbonamento attivo da disdire.' }, { status: 404 })
+  if (!abb) return NextResponse.json({ error: tApi(request, 'Nessun abbonamento attivo da disdire.') }, { status: 404 })
   if (abb.piano === 'lifetime') {
-    return NextResponse.json({ error: 'Il piano Lifetime non può essere disdetto.' }, { status: 400 })
+    return NextResponse.json({ error: tApi(request, 'Il piano Lifetime non può essere disdetto.') }, { status: 400 })
   }
 
   // Imposta stato = 'disdetto' — rimane attivo fino alla scadenza

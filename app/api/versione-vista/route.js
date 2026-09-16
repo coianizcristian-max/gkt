@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato.') }, { status: 401 })
 
   const { versione_id } = await request.json()
-  if (!versione_id) return NextResponse.json({ error: 'versione_id mancante.' }, { status: 400 })
+  if (!versione_id) return NextResponse.json({ error: tApi(request, 'versione_id mancante.') }, { status: 400 })
 
   await supabase.from('versioni_viste').upsert(
     { user_id: user.id, versione_id },

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import { rateLimit } from '@/lib/rateLimit'
@@ -11,14 +12,14 @@ function getAdmin() {
 export async function POST(request) {
   try {
     const { codice } = await request.json()
-    if (!codice?.trim()) return NextResponse.json({ error: 'Inserisci un codice' }, { status: 400 })
+    if (!codice?.trim()) return NextResponse.json({ error: tApi(request, 'Inserisci un codice') }, { status: 400 })
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
     if (!rateLimit(`coupon:${user.id}`, { max: 10, windowMs: 10 * 60 * 1000 })) {
-      return NextResponse.json({ error: 'Troppi tentativi. Riprova tra qualche minuto.' }, { status: 429 })
+      return NextResponse.json({ error: tApi(request, 'Troppi tentativi. Riprova tra qualche minuto.') }, { status: 429 })
     }
 
     const admin = getAdmin()
@@ -27,23 +28,23 @@ export async function POST(request) {
     const { data: coupon } = await admin.from('coupon')
       .select('id, codice, tipo, durata_gg, attivo, scadenza_attivazione, max_utilizzi, target_abbonamento')
       .eq('codice', codice.trim().toUpperCase()).maybeSingle()
-    if (!coupon || !coupon.attivo) return NextResponse.json({ error: 'Codice non valido o scaduto' }, { status: 404 })
+    if (!coupon || !coupon.attivo) return NextResponse.json({ error: tApi(request, 'Codice non valido o scaduto') }, { status: 404 })
 
     if (coupon.tipo === 'sconto_stripe') {
-      return NextResponse.json({ error: 'Questo codice è uno sconto: inseriscilo nella pagina di pagamento al momento dell\'abbonamento, non qui.' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Questo codice è uno sconto: inseriscilo nella pagina di pagamento al momento dell\'abbonamento, non qui.') }, { status: 400 })
     }
 
     if (coupon.scadenza_attivazione && new Date() > new Date(coupon.scadenza_attivazione + 'T23:59:59')) {
-      return NextResponse.json({ error: 'Il periodo per attivare questo codice è scaduto.' }, { status: 410 })
+      return NextResponse.json({ error: tApi(request, 'Il periodo per attivare questo codice è scaduto.') }, { status: 410 })
     }
 
     if (coupon.target_abbonamento && coupon.target_abbonamento !== 'tutti') {
       const abbonato = await hasAbbonamento(supabase, user.id)
       if (coupon.target_abbonamento === 'abbonati' && !abbonato) {
-        return NextResponse.json({ error: 'Questo coupon è riservato a chi ha già un abbonamento attivo.' }, { status: 403 })
+        return NextResponse.json({ error: tApi(request, 'Questo coupon è riservato a chi ha già un abbonamento attivo.') }, { status: 403 })
       }
       if (coupon.target_abbonamento === 'non_abbonati' && abbonato) {
-        return NextResponse.json({ error: 'Questo coupon è riservato a chi non ha ancora un abbonamento attivo.' }, { status: 403 })
+        return NextResponse.json({ error: tApi(request, 'Questo coupon è riservato a chi non ha ancora un abbonamento attivo.') }, { status: 403 })
       }
     }
 
@@ -65,7 +66,7 @@ export async function POST(request) {
       const { count } = await admin.from('coupon_utilizzi')
         .select('id', { count: 'exact', head: true }).eq('coupon_id', coupon.id)
       if ((count ?? 0) >= coupon.max_utilizzi) {
-        return NextResponse.json({ error: 'Limite di utilizzi di questo coupon raggiunto.' }, { status: 410 })
+        return NextResponse.json({ error: tApi(request, 'Limite di utilizzi di questo coupon raggiunto.') }, { status: 410 })
       }
     }
 
@@ -88,7 +89,7 @@ export async function POST(request) {
 }
 
 // GET: verifica coupon attivo per l'utente corrente
-export async function GET() {
+export async function GET(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ attivo: false })

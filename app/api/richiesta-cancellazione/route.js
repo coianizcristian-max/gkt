@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { mailTexts, tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 
@@ -9,11 +10,12 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY
 const MITTENTE = 'GKSeason <notifiche@gkseason.it>'
 const TITOLARE = 'info@gkseason.it'
 
-export async function POST() {
+export async function POST(request) {
+  const m = mailTexts(request)
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato.') }, { status: 401 })
 
     const { data: profilo } = await supabase
       .from('profili').select('ruolo, nome_completo').eq('id', user.id).maybeSingle()
@@ -52,10 +54,9 @@ export async function POST() {
         headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: MITTENTE, to: user.email,
-          subject: 'Abbiamo ricevuto la tua richiesta di cancellazione',
-          html: `<p>Ciao,</p>
-                 <p>abbiamo ricevuto la tua richiesta di cancellazione dell'account e dei dati su GKSeason.
-                 La evaderemo entro 30 giorni come previsto dal GDPR. Se non l'hai richiesta tu, scrivici subito a ${TITOLARE}.</p>
+          subject: m('gdprSubject'),
+          html: `<p>${m('gdprSaluto')}</p>
+                 <p>${m('gdprCorpo', { email: TITOLARE })}</p>
                  <p>GKSeason</p>`,
         }),
       }).catch((e) => console.error('Resend (utente) fallita:', e?.message))
@@ -66,6 +67,6 @@ export async function POST() {
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('Errore richiesta cancellazione:', err)
-    return NextResponse.json({ error: 'Errore interno.' }, { status: 500 })
+    return NextResponse.json({ error: tApi(request, 'Errore interno.') }, { status: 500 })
   }
 }

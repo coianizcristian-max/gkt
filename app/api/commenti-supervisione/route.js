@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
@@ -14,11 +15,11 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const preparatoreId = searchParams.get('preparatore_id')
-    if (!preparatoreId) return NextResponse.json({ error: 'preparatore_id mancante' }, { status: 400 })
+    if (!preparatoreId) return NextResponse.json({ error: tApi(request, 'preparatore_id mancante') }, { status: 400 })
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
     const admin = getAdmin()
 
@@ -31,7 +32,7 @@ export async function GET(request) {
       .or(`preparatore_id.eq.${preparatoreId},supervisore_id.eq.${preparatoreId}`)
       .maybeSingle()
 
-    if (!rel) return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    if (!rel) return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
 
     let query = admin
       .from('commenti_supervisione')
@@ -62,7 +63,7 @@ export async function GET(request) {
     return NextResponse.json({ commenti: result })
   } catch (err) {
     console.error('GET commenti-supervisione:', err)
-    return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
+    return NextResponse.json({ error: tApi(request, 'Errore interno') }, { status: 500 })
   }
 }
 
@@ -72,12 +73,12 @@ export async function POST(request) {
   try {
     const { preparatore_id, testo, contesto } = await request.json()
     if (!preparatore_id || !testo?.trim()) {
-      return NextResponse.json({ error: 'Dati mancanti' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Dati mancanti') }, { status: 400 })
     }
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
     const admin = getAdmin()
 
@@ -90,7 +91,7 @@ export async function POST(request) {
       .eq('attivo', true)
       .maybeSingle()
 
-    if (!rel) return NextResponse.json({ error: 'Non sei il supervisore di questo preparatore' }, { status: 403 })
+    if (!rel) return NextResponse.json({ error: tApi(request, 'Non sei il supervisore di questo preparatore') }, { status: 403 })
 
     const { data: commento, error: insErr } = await admin
       .from('commenti_supervisione')
@@ -108,6 +109,6 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, commento })
   } catch (err) {
     console.error('POST commenti-supervisione:', err)
-    return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
+    return NextResponse.json({ error: tApi(request, 'Errore interno') }, { status: 500 })
   }
 }

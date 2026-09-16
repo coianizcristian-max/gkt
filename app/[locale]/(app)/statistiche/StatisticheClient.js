@@ -44,7 +44,7 @@ export default function StatisticheClient({ stats, categorieOrd, byCat, andament
   const selStyle = { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--bordo, #d0d7dd)', background: '#fff', fontSize: 14, color: 'var(--ink, #14202b)' }
 
   function esportaPdf() {
-    const params = new URLSearchParams({ mese: expMese, categoria: expCat })
+    const params = new URLSearchParams({ mese: expMese, categoria: expCat, locale })
     window.open(`/api/statistiche-pdf?${params.toString()}`, '_blank')
   }
 

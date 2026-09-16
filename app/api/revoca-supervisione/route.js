@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
@@ -14,14 +15,14 @@ function getAdmin() {
 export async function POST(request) {
   try {
     const { preparatore_id } = await request.json()
-    if (!preparatore_id) return NextResponse.json({ error: 'preparatore_id mancante' }, { status: 400 })
+    if (!preparatore_id) return NextResponse.json({ error: tApi(request, 'preparatore_id mancante') }, { status: 400 })
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
     const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
-    if (profilo?.ruolo !== 'allenatore') return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 })
+    if (profilo?.ruolo !== 'allenatore') return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
 
     const admin = getAdmin()
 
@@ -45,6 +46,6 @@ export async function POST(request) {
 
   } catch (err) {
     console.error('revoca-supervisione error:', err)
-    return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
+    return NextResponse.json({ error: tApi(request, 'Errore interno') }, { status: 500 })
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 
 // Notifica via email a support@gkseason.it quando arriva un nuovo suggerimento.
 // Richiede la variabile d'ambiente RESEND_API_KEY (vedi .env.local.example).
@@ -15,7 +16,7 @@ export async function POST(req) {
     const { testo, categoria, nome, email } = await req.json()
 
     if (!testo?.trim()) {
-      return NextResponse.json({ error: 'Testo mancante.' }, { status: 400 })
+      return NextResponse.json({ error: tApi(req, 'Testo mancante.') }, { status: 400 })
     }
 
     if (!RESEND_API_KEY) {

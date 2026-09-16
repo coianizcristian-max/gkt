@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import Stripe from 'stripe'
 
@@ -17,19 +18,19 @@ export async function POST(request) {
   try {
     const { piano, ruolo = 'allenatore' } = await request.json()
     if (!['mensile', 'annuale', 'lifetime'].includes(piano)) {
-      return NextResponse.json({ error: 'Piano non valido' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Piano non valido') }, { status: 400 })
     }
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
     // Il piano "A vita" può essere disattivato dal Supervisore, per ruolo.
     if (piano === 'lifetime') {
       const { data: ltRow } = await supabase
         .from('funzionalita_config').select('free').eq('chiave', `lifetime_attivo_${ruolo}`).maybeSingle()
       if (ltRow && ltRow.free === false) {
-        return NextResponse.json({ error: 'Il piano «A vita» non è al momento disponibile.' }, { status: 400 })
+        return NextResponse.json({ error: tApi(request, 'Il piano «A vita» non è al momento disponibile.') }, { status: 400 })
       }
     }
 

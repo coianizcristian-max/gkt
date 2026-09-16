@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
-export async function POST() {
+export async function POST(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato.') }, { status: 401 })
 
   // Client admin: un portiere non può aggiornare il proprio profilo via RLS,
   // quindi con il client normale l'update fallirebbe in silenzio e il popup

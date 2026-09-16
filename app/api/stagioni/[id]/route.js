@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { getOwnerId } from '@/lib/tenant'
 
@@ -14,20 +15,20 @@ export async function PATCH(request, { params }) {
     const { id } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato.') }, { status: 401 })
 
     const { data: profilo } = await supabase
       .from('profili').select('ruolo').eq('id', user.id).maybeSingle()
     if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'))
-      return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 })
+      return NextResponse.json({ error: tApi(request, 'Non autorizzato.') }, { status: 403 })
 
     const ownerId = await getOwnerId(supabase, user.id)
     if (!ownerId || !(await checkOwnership(supabase, id, ownerId)))
-      return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 })
+      return NextResponse.json({ error: tApi(request, 'Non autorizzato.') }, { status: 403 })
 
     const { nome, societaNome, dataInizio, dataFine } = await request.json()
     if (!nome || !nome.trim())
-      return NextResponse.json({ error: 'Il nome della stagione è obbligatorio.' }, { status: 400 })
+      return NextResponse.json({ error: tApi(request, 'Il nome della stagione è obbligatorio.') }, { status: 400 })
 
     const { error: updErr } = await supabase.from('stagioni').update({
       nome: nome.trim(),
@@ -48,16 +49,16 @@ export async function DELETE(request, { params }) {
     const { id } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Non autenticato.' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato.') }, { status: 401 })
 
     const { data: profilo } = await supabase
       .from('profili').select('ruolo').eq('id', user.id).maybeSingle()
     if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'))
-      return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 })
+      return NextResponse.json({ error: tApi(request, 'Non autorizzato.') }, { status: 403 })
 
     const ownerId = await getOwnerId(supabase, user.id)
     if (!ownerId || !(await checkOwnership(supabase, id, ownerId)))
-      return NextResponse.json({ error: 'Non autorizzato.' }, { status: 403 })
+      return NextResponse.json({ error: tApi(request, 'Non autorizzato.') }, { status: 403 })
 
     // Sicurezza: blocca l'eliminazione se la stagione contiene già dati reali
     // (allenamenti, partite o portieri iscritti). In quel caso l'utente deve

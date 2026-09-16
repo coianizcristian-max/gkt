@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import TraduzioniEditor from '@/app/components/TraduzioniEditor'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -93,6 +94,13 @@ export default function VersioniManager({ versioni }) {
               {(v.note ?? []).map((n, i) => <li key={i}>{n}</li>)}
             </ul>
           )}
+
+          {/* Traduzioni del changelog: il titolo e le note (una per riga). */}
+          <TraduzioniEditor tabella="versioni" rigaId={v.id}
+            campi={[
+              { campo: 'titolo', label: t('titoloOpz'), it: v.titolo ?? '' },
+              { campo: 'note', label: t('noteLabel'), it: (v.note ?? []).join('\n') },
+            ]} />
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button className="btn-mini" onClick={() => { setEditId(v.id); setEditNote((v.note ?? []).join('\n')) }} type="button" disabled={editId === v.id}>

@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing'
+import { caricaTraduzioni } from '@/lib/traduzioni'
 import { getTranslations } from 'next-intl/server'
 import NavLink from '@/app/components/NavLink'
 import NavIcon from '@/app/components/NavIcon'
@@ -146,6 +147,20 @@ export default async function AppLayout({ children }) {
       .limit(1)
       .maybeSingle()
 
+    // Changelog tradotto: 'note' e' un array, in contenuti_traduzioni viaggia
+    // come testo unico a capo-per-riga e qui torna array.
+    if (ultimaVersione) {
+      try {
+        const locale = await getLocale()
+        const trV = await caricaTraduzioni(supabase, 'versioni', [ultimaVersione.id], locale)
+        const titoloTr = trV(ultimaVersione.id, 'titolo')
+        const noteTr = trV(ultimaVersione.id, 'note')
+        if (titoloTr) ultimaVersione.titolo = titoloTr
+        if (noteTr) ultimaVersione.note = noteTr.split('\n').map((r) => r.trim()).filter(Boolean)
+      } catch (e) {
+        // tradotto non disponibile: resta l'italiano
+      }
+    }
     if (ultimaVersione) {
       const { data: giàVista } = await supabase
         .from('versioni_viste')

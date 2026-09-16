@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { pdfLabels, tApi } from '@/lib/i18nServer'
+import { caricaParametri } from '@/lib/parametri'
 import { createClient } from '@/lib/supabase/server'
 import { renderToBuffer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { getStagioneAttiva } from '@/lib/tenant'
@@ -245,8 +246,7 @@ export async function GET(request) {
   const partIds = (part ?? []).map((p) => p.id)
 
   // Parametri
-  const { data: parametri } = await supabase.from('parametri_valutazione')
-    .select('id, nome, ordine').eq('attivo', true).order('ordine')
+  const { data: parametri } = await caricaParametri(supabase, t.locale)
 
   // Valutazioni allenamento + punteggi
   const { data: vAll } = allenIds.length

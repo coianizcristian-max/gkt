@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useTranslations } from 'next-intl'
+import { caricaParametri } from '@/lib/parametri'
+import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
 const COLORI = ['#0a7ec2', '#2fae66', '#e0a400', '#d6493b', '#7a5bd6', '#12a4a4', '#e0663b', '#4a5b68', '#c23fa0', '#5b8c00']
 
 export default function ConfrontoPortieri({ stagioneId, titolo, mioId = null, anonimo = false }) {
   const t = useTranslations('confrontoPortieri')
+  const locale = useLocale()
   const titoloEff = titolo ?? t('titoloDefault')
   const [rows, setRows] = useState(null)
   const [med, setMed] = useState(null)
@@ -31,7 +33,7 @@ export default function ConfrontoPortieri({ stagioneId, titolo, mioId = null, an
       const supabase = createClient()
       const [{ data: allen }, { data: par }] = await Promise.all([
         supabase.from('allenamenti').select('id, squadra_id').eq('stagione_id', stagioneId),
-        supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
+        caricaParametri(supabase, locale),
       ])
       const allenById = new Map((allen ?? []).map((a) => [a.id, a.squadra_id]))
       const allenIds = [...allenById.keys()]

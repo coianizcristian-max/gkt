@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { Link } from '@/i18n/routing'
 import { getTranslations } from 'next-intl/server'
+import { getLocale } from 'next-intl/server'
+import { caricaParametri } from '@/lib/parametri'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,7 +64,7 @@ export default async function SupervisioneAllenamento({ params }) {
   ] = await Promise.all([
     admin.from('iscrizioni').select('portieri(id, nome, cognome)')
       .eq('stagione_id', all.stagione_id).eq('squadra_id', all.squadra_id),
-    admin.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
+    caricaParametri(admin, await getLocale()),
     admin.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', allenamentoId),
     admin.from('allenamento_esercizi')
       .select('esercizio_id, ordine, esercizi(id, titolo, tipologia, descrizione_breve, descrizione, immagine_url, video_url, durata_minuti, recupero_minuti)')

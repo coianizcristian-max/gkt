@@ -6,6 +6,8 @@ import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getStagioneAttiva, getOwnerId } from '@/lib/tenant'
 import { getTranslations } from 'next-intl/server'
+import { getLocale } from 'next-intl/server'
+import { caricaParametri } from '@/lib/parametri'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,7 +56,7 @@ export default async function ObiettiviPortierePage({ params }) {
   if (canObiettivi && obIds.length > 0) {
     const ownerId = await getOwnerId(supabase, user?.id)
     const [{ data: parRows }, { data: esRows }, { data: obParRows }, { data: obEsRows }] = await Promise.all([
-      supabase.from('parametri_valutazione').select('id, nome').eq('attivo', true).order('ordine'),
+      caricaParametri(supabase, await getLocale()),
       supabase.from('esercizi').select('id, titolo').eq('allenatore_id', ownerId).eq('archiviato', false).order('titolo'),
       supabase.from('obiettivo_parametri').select('obiettivo_id, parametro_id, parametri_valutazione(nome)').in('obiettivo_id', obIds),
       supabase.from('obiettivo_esercizi').select('obiettivo_id, esercizio_id').in('obiettivo_id', obIds),

@@ -3,6 +3,8 @@ import Guida from '@/app/components/Guida'
 import { createClient } from '@/lib/supabase/server'
 import ParametriValutazioneManager from '@/app/components/ParametriValutazioneManager'
 import { getTranslations } from 'next-intl/server'
+import { getLocale } from 'next-intl/server'
+import { caricaParametri } from '@/lib/parametri'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,7 +18,7 @@ export default async function ParametriValutazionePage() {
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
   const [{ data: parametri }, { data: selezione }] = await Promise.all([
-    supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
+    caricaParametri(supabase, await getLocale()),
     supabase.from('allenatore_parametri').select('parametro_id, attivo').eq('allenatore_id', user.id),
   ])
 

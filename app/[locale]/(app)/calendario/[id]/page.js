@@ -16,6 +16,8 @@ import FeedbackAllenamento from '@/app/components/FeedbackAllenamento'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getTranslations } from 'next-intl/server'
+import { getLocale } from 'next-intl/server'
+import { caricaParametri } from '@/lib/parametri'
 
 export const dynamic = 'force-dynamic'
 
@@ -88,7 +90,7 @@ export default async function AllenamentoPage({ params }) {
     if (mia?.id && mia.voto != null) {
       const [{ data: pun }, { data: par }] = await Promise.all([
         supabase.from('valutazione_punteggi').select('parametro_id, punteggio').eq('valutazione_id', mia.id),
-        supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
+        caricaParametri(supabase, await getLocale()),
       ])
       const parMap = {}
       for (const p of par ?? []) parMap[p.id] = p
@@ -234,7 +236,7 @@ export default async function AllenamentoPage({ params }) {
       supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
       supabase.from('iscrizioni').select('id, portieri(id, nome, cognome)')
         .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
-      supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
+      caricaParametri(supabase, await getLocale()),
       supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
       supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
       supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, profili(ruolo), esercizio_attributi(attributo_id)').order('titolo'),

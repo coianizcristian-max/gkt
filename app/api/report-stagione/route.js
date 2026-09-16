@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { pdfLabels, tApi } from '@/lib/i18nServer'
+import { traduciParametri } from '@/lib/parametri'
 import { createClient } from '@/lib/supabase/server'
 import { renderToBuffer, Document, Page, Text, View, StyleSheet, Font, Svg, Line, Polyline, Circle } from '@react-pdf/renderer'
 import { getStagioneAttiva } from '@/lib/tenant'
@@ -361,10 +362,13 @@ export async function GET(request) {
     const p = r.parametri_valutazione
     if (p && !paramMap.has(p.id)) paramMap.set(p.id, { id: p.id, nome: p.nome, ordine: p.ordine ?? 0 })
   }
-  const parametri = [...paramMap.values()]
+  // NB: il filtro RPE e l'ordinamento lavorano sui nomi ITALIANI (quelli a DB);
+  // la traduzione arriva dopo, cosi' non dipende da come e' tradotto il nome.
+  const parametriIt = [...paramMap.values()]
     .filter((p) => !/^rpe/i.test(p.nome))
     .sort((a, b) => a.ordine - b.ordine)
     .slice(0, 6)
+  const parametri = await traduciParametri(supabase, parametriIt, t.locale)
 
   const meseDiVal = new Map((vAll ?? []).map((v) => [v.id, (dataAllen.get(v.allenamento_id) ?? '').slice(0, 7)]))
   const bucket = new Map()

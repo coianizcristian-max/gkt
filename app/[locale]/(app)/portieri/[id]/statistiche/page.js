@@ -11,6 +11,8 @@ import ConfrontoPortieri from '@/app/components/ConfrontoPortieri'
 import RadarCompetenze from '@/app/components/RadarCompetenze'
 import ScorecardPortiere from '@/app/components/ScorecardPortiere'
 import { getTranslations } from 'next-intl/server'
+import { getLocale } from 'next-intl/server'
+import { caricaParametri } from '@/lib/parametri'
 
 export const dynamic = 'force-dynamic'
 
@@ -108,7 +110,7 @@ export default async function StatistichePortierePage({ params }) {
             .select('partita_id, presente, voto, punti, gol_subiti, fuori_categoria')
             .eq('portiere_id', id).in('partita_id', partIds)
         : Promise.resolve({ data: [] }),
-      supabase.from('parametri_valutazione').select('id, nome, ordine').eq('attivo', true).order('ordine'),
+      caricaParametri(supabase, await getLocale()),
     ])
 
     vAll = (va.data ?? []).map((v) => ({ ...v, data: allenByDate[v.allenamento_id] }))

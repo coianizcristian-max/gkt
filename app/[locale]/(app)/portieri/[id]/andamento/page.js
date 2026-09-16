@@ -2,7 +2,8 @@ import { Link } from '@/i18n/routing'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
-import { getTranslations } from 'next-intl/server'
+import { traduciParametri } from '@/lib/parametri'
+import { getTranslations, getLocale } from 'next-intl/server'
 import AndamentoMensile from '@/app/components/AndamentoMensile'
 import ReportStagione from '@/app/components/ReportStagione'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
@@ -83,9 +84,11 @@ export default async function AndamentoPortierePage({ params }) {
       const p = r.parametri_valutazione
       if (p && !mappaPar.has(p.id)) mappaPar.set(p.id, { id: p.id, nome: p.nome, ordine: p.ordine ?? 0 })
     })
-    parametri = [...mappaPar.values()]
+    // Il flag RPE si ricava dal nome ITALIANO, poi si traduce il nome mostrato.
+    const parametriIt = [...mappaPar.values()]
       .sort((a, b) => a.ordine - b.ordine)
       .map((p) => ({ ...p, rpe: /^rpe/i.test(p.nome) }))
+    parametri = await traduciParametri(supabase, parametriIt, await getLocale())
 
     const dataAllen = new Map((allen ?? []).map((a) => [a.id, a.data]))
     const dataPart = new Map((part ?? []).map((p) => [p.id, p.data]))

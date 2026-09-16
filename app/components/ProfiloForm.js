@@ -35,6 +35,15 @@ export default function ProfiloForm({ profilo, userId }) {
   const mkSet = (arr, setArr) => (i, v) => { setArr(arr.map((x, idx) => (idx === i ? v : x))); setDone(false) }
   const mkAdd = (arr, setArr) => () => { setArr([...arr, '']); setDone(false) }
   const mkDel = (arr, setArr) => (i) => { setArr(arr.filter((_, idx) => idx !== i)); setDone(false) }
+  // Sposta una voce di un posto. Frecce e non trascinamento: il drag & drop
+  // nativo non parte al tocco, quindi da tablet e telefono sarebbe inutilizzabile.
+  const mkMove = (arr, setArr) => (i, direzione) => {
+    const j = i + direzione
+    if (j < 0 || j >= arr.length) return
+    const copia = [...arr]
+    ;[copia[i], copia[j]] = [copia[j], copia[i]]
+    setArr(copia); setDone(false)
+  }
 
   async function salva() {
     setError('')
@@ -142,9 +151,11 @@ export default function ProfiloForm({ profilo, userId }) {
         </div>
       </div>
       <ListaEditabile titolo={t('esperienze')} items={esperienze}
-        onSet={mkSet(esperienze, setEsperienze)} onAdd={mkAdd(esperienze, setEsperienze)} onDel={mkDel(esperienze, setEsperienze)} ph={t('phEsperienze')} />
+        onSet={mkSet(esperienze, setEsperienze)} onAdd={mkAdd(esperienze, setEsperienze)} onDel={mkDel(esperienze, setEsperienze)}
+        onMove={mkMove(esperienze, setEsperienze)} ph={t('phEsperienze')} />
       <ListaEditabile titolo={t('certificati')} items={certificati}
-        onSet={mkSet(certificati, setCertificati)} onAdd={mkAdd(certificati, setCertificati)} onDel={mkDel(certificati, setCertificati)} ph={t('phCertificati')} />
+        onSet={mkSet(certificati, setCertificati)} onAdd={mkAdd(certificati, setCertificati)} onDel={mkDel(certificati, setCertificati)}
+        onMove={mkMove(certificati, setCertificati)} ph={t('phCertificati')} />
       <div className="form-actions">
         <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? t('salvataggio') : done ? t('salvato') : t('salva')}</button>
       </div>
@@ -152,8 +163,9 @@ export default function ProfiloForm({ profilo, userId }) {
   )
 }
 
-function ListaEditabile({ titolo, items, onSet, onAdd, onDel, ph }) {
+function ListaEditabile({ titolo, items, onSet, onAdd, onDel, onMove, ph }) {
   const t = useTranslations('profiloForm')
+  const stileFreccia = { padding: '4px 8px', lineHeight: 1, minWidth: 30 }
   return (
     <div className="elenco-blocco">
       <h3>{titolo}</h3>
@@ -161,6 +173,14 @@ function ListaEditabile({ titolo, items, onSet, onAdd, onDel, ph }) {
       {items.map((v, i) => (
         <div className="lista-riga" key={i}>
           <input className="lista-nome" style={{ flex: 1 }} value={v} placeholder={ph} onChange={(e) => onSet(i, e.target.value)} />
+          {onMove && (
+            <>
+              <button className="btn-mini" style={stileFreccia} onClick={() => onMove(i, -1)} type="button"
+                disabled={i === 0} title={t('spostaSu')} aria-label={t('spostaSu')}>↑</button>
+              <button className="btn-mini" style={stileFreccia} onClick={() => onMove(i, 1)} type="button"
+                disabled={i === items.length - 1} title={t('spostaGiu')} aria-label={t('spostaGiu')}>↓</button>
+            </>
+          )}
           <button className="btn-mini btn-del" onClick={() => onDel(i)} type="button">{t('rimuovi')}</button>
         </div>
       ))}

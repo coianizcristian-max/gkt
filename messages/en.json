@@ -1632,8 +1632,8 @@
     "noteRiabbonarti": "You can resubscribe at any time."
   },
   "calendarioAzioni": {
-    "nuovoAllenamento": "+ New training",
-    "nuovaPartita": "+ New match"
+    "nuovoAllenamento": "New training",
+    "nuovaPartita": "New match"
   },
   "collegaSupervisore": {
     "inserisciCodice": "Enter the code you received.",

@@ -153,7 +153,11 @@ function FaqRiga({ f, onChanged }) {
         <textarea rows="2" value={risposta} onChange={(e) => { setRisposta(e.target.value); setDone(false) }} />
       </div>
       <TraduzioniEditor tabella="faq_interne" rigaId={f.id}
-        campi={[{ campo: 'domanda', label: t('domanda'), it: f.domanda }, { campo: 'risposta', label: t('risposta'), it: f.risposta }]} />
+        campi={[
+          { campo: 'categoria', label: t('nomeCategoria'), it: f.categoria },
+          { campo: 'domanda', label: t('domanda'), it: f.domanda },
+          { campo: 'risposta', label: t('risposta'), it: f.risposta },
+        ]} />
       <div className="form-actions" style={{ marginTop: 10 }}>
         <button className="btn-ghost btn-del" onClick={elimina} type="button">{t('elimina')}</button>
         <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? t('salvataggio') : done ? t('salvato') : t('salva')}</button>

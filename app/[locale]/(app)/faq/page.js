@@ -32,7 +32,15 @@ export default async function FaqPage() {
   const locale = await getLocale()
   const righeArr = righe ?? []
   const trFaq = await caricaTraduzioni(supabase, 'faq_interne', righeArr.map((r) => r.id), locale)
-  const righeTr = righeArr.map((r) => ({ ...r, domanda: trFaq(r.id, 'domanda') ?? r.domanda, risposta: trFaq(r.id, 'risposta') ?? r.risposta }))
+  // NB: la categoria si traduce PRIMA del raggruppamento; l'ordine resta quello
+  // della query (per categoria italiana), e tutte le righe di una categoria
+  // ricevono la stessa traduzione, quindi i gruppi restano compatti.
+  const righeTr = righeArr.map((r) => ({
+    ...r,
+    categoria: trFaq(r.id, 'categoria') ?? r.categoria,
+    domanda: trFaq(r.id, 'domanda') ?? r.domanda,
+    risposta: trFaq(r.id, 'risposta') ?? r.risposta,
+  }))
   const gruppi = raggruppa(righeTr)
 
   return (

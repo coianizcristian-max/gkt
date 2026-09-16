@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { etichettaTag } from '@/lib/tagPortiere'
 import { Link } from '@/i18n/routing'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
@@ -16,6 +17,7 @@ function calcEta(dataNascita) {
 
 export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPortiere = {}, stagioneId, puoEliminare = false }) {
   const t = useTranslations('portieriSearch')
+  const tTag = useTranslations('tagManager')
   const [q, setQ] = useState('')
   const [items, setItems] = useState(iscrizioni)
   const [modal, setModal] = useState(null)   // { portiereId, nome, altreStagioni | null }
@@ -136,7 +138,7 @@ export default function PortieriSearch({ squadre, iscrizioni, stats, tagPerPorti
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
                             {tagPerPortiere[p.id].map((tag) => (
                               <span key={tag} style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 999, background: 'rgba(10,126,194,0.12)', color: 'var(--azzurro)' }}>
-                                {tag}
+                                {etichettaTag(tag, tTag)}
                               </span>
                             ))}
                           </div>

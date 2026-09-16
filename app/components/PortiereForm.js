@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { piedeTradotto } from '@/lib/elenchi'
 import { useRouter } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
 import { useTranslations, useLocale } from 'next-intl'
@@ -295,7 +296,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         <div className="field"><label>{t('piedePreferito')}</label>
           <select value={f.piede} onChange={upd('piede')}>
             <option value="">—</option>
-            {piedi.map((p) => <option key={p} value={p}>{p}</option>)}
+            {piedi.map((p) => <option key={p} value={p}>{piedeTradotto(p, locale)}</option>)}
           </select></div>
         <div className="field"><label>{t('squadraProvenienza')}</label>
           <input value={f.squadra_provenienza} onChange={upd('squadra_provenienza')} /></div>

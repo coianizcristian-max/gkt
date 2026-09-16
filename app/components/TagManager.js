@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
+import { etichettaTag } from '@/lib/tagPortiere'
 
 const COLORI = {
   'Capitano': '#0a7ec2',
@@ -12,21 +13,15 @@ const COLORI = {
   'Recupero infortunio': '#c0392b',
 }
 const colore = (tag) => COLORI[tag] ?? '#1f8a4c'
-// I valori dei tag sono memorizzati nel DB in italiano; qui solo l'etichetta mostrata è localizzata.
-const LABEL_KEY = {
-  'Capitano': 'tag_capitano',
-  'Talento': 'tag_talento',
-  'Leader': 'tag_leader',
-  'Da osservare': 'tag_daOsservare',
-  'Recupero infortunio': 'tag_recuperoInfortunio',
-}
+// I valori dei tag restano in italiano nel DB; qui si localizza solo l'etichetta.
+// Mappa condivisa con PortieriSearch: vedi lib/tagPortiere.js
 
 export default function TagManager({ portiereId, tagAttivi, tagDisponibili }) {
   const t = useTranslations('tagManager')
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const attiviSet = new Set(tagAttivi)
-  const labelTag = (tag) => (LABEL_KEY[tag] ? t(LABEL_KEY[tag]) : tag)
+  const labelTag = (tag) => etichettaTag(tag, t)
 
   async function toggle(tag) {
     setBusy(true)

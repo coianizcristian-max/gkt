@@ -33,7 +33,7 @@ function EsercizioPreview({ esercizio, onClose }) {
             <button onClick={onClose} type="button" style={{ background: 'var(--carta)', border: 'none', borderRadius: '50%', width: 34, height: 34, cursor: 'pointer', fontSize: 16 }}>✕</button>
           </div>
           <div style={{ padding: '18px 20px' }}>
-            {e.immagine_url && <img src={e.immagine_url} alt="" style={{ width: '100%', borderRadius: 10, marginBottom: 14, objectFit: 'cover', maxHeight: 240 }} />}
+            {e.immagine_url && <img loading="lazy" decoding="async" src={e.immagine_url} alt="" style={{ width: '100%', borderRadius: 10, marginBottom: 14, objectFit: 'cover', maxHeight: 240 }} />}
             {e.tipologia && <p style={{ margin: '0 0 8px', fontSize: 12, color: 'var(--azzurro)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{tipologiaTradotta(e.tipologia, locale)}</p>}
             {(e.durata_minuti || e.recupero_minuti) && (
               <div style={{ display: 'flex', gap: 16, margin: '0 0 12px', fontSize: 14 }}>

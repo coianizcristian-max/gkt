@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { comprimiImmagine, MISURE, CACHE_LUNGA } from '@/lib/immagini'
 import { tipologiaTradotta } from '@/lib/elenchi'
 import { createClient } from '@/lib/supabase/client'
 import { useTranslations, useLocale } from 'next-intl'
@@ -78,8 +79,10 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
           let immagine_url = esercizio?.immagine_url || null
           if (d.thumbnail) {
             const blob = dataUrlToBlob(d.thumbnail)
-            const path = `esercizi/${resolvedAllenatoreId}/lavagna-${Date.now()}.png`
-            const { error: upErr } = await supabase.storage.from('sito').upload(path, blob, { upsert: true, contentType: 'image/png' })
+            const img = await comprimiImmagine(blob, MISURE.schema)
+            const path = `esercizi/${resolvedAllenatoreId}/lavagna-${Date.now()}.${img.originale ? 'png' : img.ext}`
+            const { error: upErr } = await supabase.storage.from('sito')
+              .upload(path, img.blob, { upsert: true, contentType: img.originale ? 'image/png' : img.contentType, cacheControl: CACHE_LUNGA })
             if (upErr) throw upErr
             immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
           }
@@ -109,9 +112,10 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
           let immagine_url = null
           if (d.thumbnail) {
             const blob = dataUrlToBlob(d.thumbnail)
-            const path = `esercizi/${resolvedAllenatoreId}/lavagna-${Date.now()}.png`
-            const { error: upErr } = await supabase.storage.from('sito').upload(path, blob, {
-              upsert: true, contentType: 'image/png',
+            const img = await comprimiImmagine(blob, MISURE.schema)
+            const path = `esercizi/${resolvedAllenatoreId}/lavagna-${Date.now()}.${img.originale ? 'png' : img.ext}`
+            const { error: upErr } = await supabase.storage.from('sito').upload(path, img.blob, {
+              upsert: true, contentType: img.originale ? 'image/png' : img.contentType, cacheControl: CACHE_LUNGA,
             })
             if (upErr) throw upErr
             immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
@@ -196,7 +200,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
             {error && <div className="err" style={{ marginBottom: 12 }}>{error}</div>}
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap' }}>
               {dati?.immagine_url && (
-                <img
+                <img loading="lazy" decoding="async"
                   src={dati.immagine_url}
                   alt=""
                   style={{ width: 160, borderRadius: 10, border: '1px solid var(--line, #e4ebef)', flex: 'none' }}

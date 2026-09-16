@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { comprimiImmagine, MISURE, CACHE_LUNGA } from '@/lib/immagini'
 import { tipologiaTradotta } from '@/lib/elenchi'
 import { createClient } from '@/lib/supabase/client'
 import { useTranslations, useLocale } from 'next-intl'
@@ -91,9 +92,10 @@ function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
     try {
       let immagine_url = null
       if (file) {
-        const ext = file.name.split('.').pop()
-        const path = `esercizi/${allenatoreId}/${Date.now()}.${ext}`
-        const { error: upErr } = await supabase.storage.from('sito').upload(path, file, { upsert: true })
+        const img = await comprimiImmagine(file, MISURE.esercizio)
+        const path = `esercizi/${allenatoreId}/${Date.now()}.${img.ext}`
+        const { error: upErr } = await supabase.storage.from('sito')
+          .upload(path, img.blob, { upsert: true, contentType: img.contentType, cacheControl: CACHE_LUNGA })
         if (upErr) throw upErr
         immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
       }
@@ -148,7 +150,7 @@ function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
         <div className="field field-full">
           <label>{t('immagine')}</label>
           <input type="file" accept="image/*" onChange={onFile} />
-          {preview && <img src={preview} alt="" style={{ marginTop: 8, maxHeight: 120, borderRadius: 6, objectFit: 'cover' }} />}
+          {preview && <img loading="lazy" decoding="async" src={preview} alt="" style={{ marginTop: 8, maxHeight: 120, borderRadius: 6, objectFit: 'cover' }} />}
         </div>
         <div className="field field-full">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>

@@ -159,7 +159,7 @@ export default async function SupervisioneAllenamento({ params }) {
                 {esercizi.map((e, i) => (
                   <details key={e.id} className="es-seduta-card">
                     <summary>
-                      {e.immagine_url && <img src={e.immagine_url} className="es-seduta-thumb" alt="" />}
+                      {e.immagine_url && <img loading="lazy" decoding="async" src={e.immagine_url} className="es-seduta-thumb" alt="" />}
                       <div>
                         <span style={{ fontSize: 11, color: 'var(--ink-soft)', marginRight: 6 }}>{i + 1}.</span>
                         <span className="es-seduta-titolo">{e.titolo}</span>

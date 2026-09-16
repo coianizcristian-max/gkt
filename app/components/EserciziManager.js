@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { comprimiImmagine, MISURE, CACHE_LUNGA } from '@/lib/immagini'
 import { tipologiaTradotta } from '@/lib/elenchi'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -25,7 +26,7 @@ function EsercizioPopup({ esercizio, onClose, onOpenSchema }) {
           </div>
         )}
         {esercizio.immagine_url && (
-          <img src={esercizio.immagine_url} alt="" style={{ width: '100%', borderRadius: 'var(--r)', marginBottom: 14, maxHeight: 280, objectFit: 'cover' }} />
+          <img loading="lazy" decoding="async" src={esercizio.immagine_url} alt="" style={{ width: '100%', borderRadius: 'var(--r)', marginBottom: 14, maxHeight: 280, objectFit: 'cover' }} />
         )}
         {esercizio.descrizione_breve && <p style={{ fontStyle: 'italic', color: 'var(--ink-soft)', margin: '0 0 10px' }}>{esercizio.descrizione_breve}</p>}
         {esercizio.descrizione && <p style={{ margin: '0 0 10px', lineHeight: 1.65 }}>{esercizio.descrizione}</p>}
@@ -48,7 +49,7 @@ function EsercizioTile({ esercizio, onDetail, onEdit, onRemoveFav }) {
     <div className="es-lib-tile">
       <button className="es-lib-img-wrap" type="button" onClick={() => onDetail(esercizio)} title={t('vediDettaglio')}>
         {esercizio.immagine_url
-          ? <img src={esercizio.immagine_url} alt="" />
+          ? <img loading="lazy" decoding="async" src={esercizio.immagine_url} alt="" />
           : <div className="es-lib-no-img">📋</div>}
       </button>
       <div className="es-lib-info">
@@ -285,7 +286,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
                       <div key={e.id} className="es-lib-tile" style={{ position: 'relative' }}>
                         <button className="es-lib-img-wrap" type="button" onClick={() => setPopup(e)} title={t('vediDettaglio')}>
                           {e.immagine_url
-                            ? <img src={e.immagine_url} alt="" />
+                            ? <img loading="lazy" decoding="async" src={e.immagine_url} alt="" />
                             : <div className="es-lib-no-img">📋</div>}
                         </button>
                         <div className="es-lib-info">
@@ -382,9 +383,10 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
     try {
       let immagine_url = imgUrl
       if (file) {
-        const ext = file.name.split('.').pop()
-        const path = `esercizi/${allenatoreId}/${Date.now()}.${ext}`
-        const { error: upErr } = await supabase.storage.from('sito').upload(path, file, { upsert: true })
+        const img = await comprimiImmagine(file, MISURE.esercizio)
+        const path = `esercizi/${allenatoreId}/${Date.now()}.${img.ext}`
+        const { error: upErr } = await supabase.storage.from('sito')
+          .upload(path, img.blob, { upsert: true, contentType: img.contentType, cacheControl: CACHE_LUNGA })
         if (upErr) throw upErr
         immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
       }
@@ -479,7 +481,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
           <label className="foto-upload">{preview ? t('cambiaImmagine') : t('caricaImmagine')}
             <input type="file" accept="image/*" onChange={onFile} hidden />
           </label>
-          {preview && <img src={preview} alt="" style={{ marginTop: 8, maxWidth: 160, borderRadius: 'var(--r-sm)' }} />}
+          {preview && <img loading="lazy" decoding="async" src={preview} alt="" style={{ marginTop: 8, maxWidth: 160, borderRadius: 'var(--r-sm)' }} />}
         </div>
         <div className="field field-full"><label>{t('descrizioneBreve')}</label><input value={f.descrizione_breve} onChange={upd('descrizione_breve')} /></div>
         <div className="field field-full"><label>{t('descrizioneDettagliata')}</label><textarea rows="4" value={f.descrizione} onChange={upd('descrizione')} /></div>

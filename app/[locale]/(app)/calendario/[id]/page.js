@@ -140,7 +140,7 @@ export default async function AllenamentoPage({ params }) {
               {esercizi.map((e) => (
                 <details key={e.id} className="es-seduta-card">
                   <summary>
-                    {e.immagine_url && <img src={e.immagine_url} className="es-seduta-thumb" alt="" />}
+                    {e.immagine_url && <img loading="lazy" decoding="async" src={e.immagine_url} className="es-seduta-thumb" alt="" />}
                     <div>
                       <div className="es-seduta-titolo">{e.titolo}</div>
                       {e.tipologia && <span className="stat-cat">{tipologiaTradotta(e.tipologia, locale)}</span>}

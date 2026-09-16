@@ -171,7 +171,9 @@ export default async function Home() {
               {hasMobileHero && (
                 <picture style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
                   <source media="(max-width: 768px)" srcSet={h.immagine_mobile_url} />
-                  <img src={h.immagine_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  {/* Hero: elemento LCP, quindi caricamento immediato e priorita' alta.
+                      Niente loading="lazy" qui: peggiorerebbe il tempo di caricamento percepito. */}
+                  <img fetchPriority="high" decoding="async" src={h.immagine_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </picture>
               )}
               {!hasMobileHero && h.immagine_url && (
@@ -275,7 +277,7 @@ export default async function Home() {
                       <source media="(max-width: 768px)" srcSet={b.immagine_mobile_url} />
                     )}
                     {hasDesktop && (
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={b.immagine_url}
                         alt=""
                         style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}

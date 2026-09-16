@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { comprimiImmagine, MISURE, CACHE_LUNGA } from '@/lib/immagini'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -61,18 +62,20 @@ function SezioneCard({ sezione, onChanged }) {
     try {
       let immagine_url = s.immagine_url ?? null
       if (file) {
-        const ext = file.name.split('.').pop()
-        const path = `sez/${s.id}/${Date.now()}.${ext}`
-        const { error: e1 } = await supabase.storage.from('sito').upload(path, file, { upsert: true })
+        const img = await comprimiImmagine(file, MISURE.sezioneSito)
+        const path = `sez/${s.id}/${Date.now()}.${img.ext}`
+        const { error: e1 } = await supabase.storage.from('sito')
+          .upload(path, img.blob, { upsert: true, contentType: img.contentType, cacheControl: CACHE_LUNGA })
         if (e1) throw e1
         immagine_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
         setS((p) => ({ ...p, immagine_url }))
       }
       let immagine_mobile_url = s.immagine_mobile_url ?? null
       if (fileMobile) {
-        const ext = fileMobile.name.split('.').pop()
-        const path = `sez/${s.id}/mobile_${Date.now()}.${ext}`
-        const { error: e2 } = await supabase.storage.from('sito').upload(path, fileMobile, { upsert: true })
+        const imgM = await comprimiImmagine(fileMobile, MISURE.sezioneSito)
+        const path = `sez/${s.id}/mobile_${Date.now()}.${imgM.ext}`
+        const { error: e2 } = await supabase.storage.from('sito')
+          .upload(path, imgM.blob, { upsert: true, contentType: imgM.contentType, cacheControl: CACHE_LUNGA })
         if (e2) throw e2
         immagine_mobile_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
         setS((p) => ({ ...p, immagine_mobile_url }))
@@ -189,7 +192,7 @@ function SezioneCard({ sezione, onChanged }) {
       {s.tipo !== 'testo' && s.tipo !== 'prezzi' && s.tipo !== 'faq' && (
         <div className="sez-img">
           <div className="sez-thumb">
-            {preview ? <img src={preview} alt="" /> : <span>{t('nessunaImmagine')}</span>}
+            {preview ? <img loading="lazy" decoding="async" src={preview} alt="" /> : <span>{t('nessunaImmagine')}</span>}
           </div>
           <div>
             <label className="foto-upload">
@@ -209,7 +212,7 @@ function SezioneCard({ sezione, onChanged }) {
                 <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                   <div className="sez-thumb" style={{ width: 80, height: 60 }}>
                     {previewMobile
-                      ? <img src={previewMobile} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ? <img loading="lazy" decoding="async" src={previewMobile} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <span style={{ fontSize: 11 }}>{t('nessuna')}</span>}
                   </div>
                   <div>

@@ -125,7 +125,7 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
                     </a>
                   )}
                   {e.immagine_url && (
-                    <img src={e.immagine_url} alt="" style={{ flex: 1, minWidth: 0, maxHeight: 160, objectFit: 'cover', borderRadius: 6 }} />
+                    <img loading="lazy" decoding="async" src={e.immagine_url} alt="" style={{ flex: 1, minWidth: 0, maxHeight: 160, objectFit: 'cover', borderRadius: 6 }} />
                   )}
                 </div>
               )}

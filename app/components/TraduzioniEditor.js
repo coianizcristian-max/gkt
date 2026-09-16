@@ -8,6 +8,7 @@
 // se una lingua non ha la sua versione (gestito in fase di render).
 
 import { useState } from 'react'
+import { comprimiImmagine, MISURE, CACHE_LUNGA } from '@/lib/immagini'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
@@ -68,9 +69,10 @@ export default function TraduzioniEditor({ tabella, rigaId, campi }) {
         const key = `${lang}:${c.campo}`
         if (c.tipo === 'immagine' && files[key]) {
           const fl = files[key]
-          const ext = fl.name.split('.').pop()
-          const path = `sez/${rigaId}/${lang}_${c.campo}_${Date.now()}.${ext}`
-          const { error: e1 } = await supabase.storage.from('sito').upload(path, fl, { upsert: true })
+          const img = await comprimiImmagine(fl, MISURE.sezioneSito)
+          const path = `sez/${rigaId}/${lang}_${c.campo}_${Date.now()}.${img.ext}`
+          const { error: e1 } = await supabase.storage.from('sito')
+            .upload(path, img.blob, { upsert: true, contentType: img.contentType, cacheControl: CACHE_LUNGA })
           if (e1) throw e1
           v[key] = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
         }

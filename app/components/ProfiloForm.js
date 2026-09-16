@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { comprimiImmagine, MISURE, CACHE_LUNGA } from '@/lib/immagini'
 import { useRouter, usePathname } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -48,9 +49,10 @@ export default function ProfiloForm({ profilo, userId }) {
     try {
       let foto_url = profilo?.foto_url ?? null
       if (file) {
-        const ext = file.name.split('.').pop()
-        const path = `profili/${userId}/${Date.now()}.${ext}`
-        const { error: upErr } = await supabase.storage.from('sito').upload(path, file, { upsert: true })
+        const img = await comprimiImmagine(file, MISURE.profilo)
+        const path = `profili/${userId}/${Date.now()}.${img.ext}`
+        const { error: upErr } = await supabase.storage.from('sito')
+          .upload(path, img.blob, { upsert: true, contentType: img.contentType, cacheControl: CACHE_LUNGA })
         if (upErr) throw upErr
         foto_url = supabase.storage.from('sito').getPublicUrl(path).data.publicUrl
       }
@@ -88,7 +90,7 @@ export default function ProfiloForm({ profilo, userId }) {
       {error && <div className="err">{error}</div>}
       <p className="sub-intro" style={{ marginTop: 0, marginBottom: 12, fontSize: 13 }}>{t('intro')}</p>
       <div className="scheda-foto">
-        <div className="foto-box">{preview ? <img src={preview} alt="" /> : <span className="foto-ph">{t('nessunaFoto')}</span>}</div>
+        <div className="foto-box">{preview ? <img loading="lazy" decoding="async" src={preview} alt="" /> : <span className="foto-ph">{t('nessunaFoto')}</span>}</div>
         <label className="foto-upload">{preview ? t('cambiaFoto') : t('caricaFoto')}<input type="file" accept="image/*" onChange={onFile} hidden /></label>
       </div>
       <div className="form-grid">

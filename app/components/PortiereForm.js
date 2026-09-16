@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { comprimiImmagine, MISURE, CACHE_LUNGA } from '@/lib/immagini'
 import { piedeTradotto } from '@/lib/elenchi'
 import { useRouter } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
@@ -148,10 +149,10 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
 
       // Foto
       if (fotoFile) {
-        const ext = fotoFile.name.split('.').pop()
-        const path = `${portiereId}/${Date.now()}.${ext}`
+        const img = await comprimiImmagine(fotoFile, MISURE.profilo)
+        const path = `${portiereId}/${Date.now()}.${img.ext}`
         const { error: upErr } = await supabase.storage
-          .from('foto-portieri').upload(path, fotoFile, { upsert: true })
+          .from('foto-portieri').upload(path, img.blob, { upsert: true, contentType: img.contentType, cacheControl: CACHE_LUNGA })
         if (upErr) throw upErr
         const { data: pub } = supabase.storage.from('foto-portieri').getPublicUrl(path)
         await supabase.from('portieri').update({ foto_url: pub.publicUrl }).eq('id', portiereId)

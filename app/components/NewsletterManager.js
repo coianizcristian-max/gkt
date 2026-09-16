@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { comprimiImmagine, MISURE, CACHE_LUNGA } from '@/lib/immagini'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useTranslations, useLocale } from 'next-intl'
@@ -45,14 +46,14 @@ export function NewsletterRender({ titolo, sezioni, dataStr, societa }) {
               {s.foto_url && (
                 s.link_url ? (
                   <a href={s.link_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
-                    <img src={s.foto_url} alt={s.testo ?? ''} style={{
+                    <img loading="lazy" decoding="async" src={s.foto_url} alt={s.testo ?? ''} style={{
                       width: '100%', borderRadius: 8, display: 'block',
                       maxHeight: 340, objectFit: 'cover',
                       boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
                     }} />
                   </a>
                 ) : (
-                  <img src={s.foto_url} alt={s.testo ?? ''} style={{
+                  <img loading="lazy" decoding="async" src={s.foto_url} alt={s.testo ?? ''} style={{
                     width: '100%', borderRadius: 8, display: 'block',
                     maxHeight: 340, objectFit: 'cover',
                     boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
@@ -104,9 +105,10 @@ function EditorSezione({ sezione, idx, onUpdate, onRemove }) {
     if (!file) return
     setUploading(true)
     const supabase = createClient()
-    const ext = file.name.split('.').pop()
-    const path = `newsletter/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('sito').upload(path, file, { upsert: true })
+    const img = await comprimiImmagine(file, MISURE.newsletter)
+    const path = `newsletter/${Date.now()}.${img.ext}`
+    const { error } = await supabase.storage.from('sito')
+      .upload(path, img.blob, { upsert: true, contentType: img.contentType, cacheControl: CACHE_LUNGA })
     if (error) { alert(t('erroreUpload', { msg: error.message })); setUploading(false); return }
     const { data: { publicUrl } } = supabase.storage.from('sito').getPublicUrl(path)
     onUpdate({ ...sezione, foto_url: publicUrl })
@@ -140,7 +142,7 @@ function EditorSezione({ sezione, idx, onUpdate, onRemove }) {
               <input type="file" accept="image/*" onChange={handleFile} hidden disabled={uploading} />
             </label>
             {sezione.foto_url && (
-              <img src={sezione.foto_url} alt="" style={{ display: 'block', maxWidth: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 'var(--r-sm)', marginBottom: 8 }} />
+              <img loading="lazy" decoding="async" src={sezione.foto_url} alt="" style={{ display: 'block', maxWidth: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 'var(--r-sm)', marginBottom: 8 }} />
             )}
             <input value={sezione.testo ?? ''} onChange={(e) => onUpdate({ ...sezione, testo: e.target.value })}
               placeholder={t('phDidascalia')} style={{ width: '100%', boxSizing: 'border-box', fontSize: 13 }} />

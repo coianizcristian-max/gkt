@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { tipologiaTradotta } from '@/lib/elenchi'
 import { Link } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
 import { useTranslations, useLocale } from 'next-intl'
@@ -126,7 +127,7 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
                 <div className="agenda-d-label">{tm('eserciziLabel')}</div>
                 <ol className="cal-preview-esercizi-list">
                   {d.esercizi.map((ex) => (
-                    <li key={ex.id}><span className="cal-preview-es-nome">{ex.titolo}</span>{ex.tipologia && <span className="cal-preview-es-tipo"> · {ex.tipologia}</span>}</li>
+                    <li key={ex.id}><span className="cal-preview-es-nome">{ex.titolo}</span>{ex.tipologia && <span className="cal-preview-es-tipo"> · {tipologiaTradotta(ex.tipologia, locale)}</span>}</li>
                   ))}
                 </ol>
               </div>

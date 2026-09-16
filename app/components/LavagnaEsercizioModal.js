@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { tipologiaTradotta } from '@/lib/elenchi'
 import { createClient } from '@/lib/supabase/client'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 // Converte un dataURL (PNG) in Blob per l'upload su Storage
 function dataUrlToBlob(dataUrl) {
@@ -21,6 +22,7 @@ function dataUrlToBlob(dataUrl) {
 export default function LavagnaEsercizioModal({ mode = 'create', esercizio = null, allenatoreId, tipologie = [], onResult, onSaved, onClose }) {
   const iframeRef = useRef(null)
   const t = useTranslations('lavagnaEsercizio')
+  const locale = useLocale()
   const [fase, setFase] = useState('disegno') // 'disegno' | 'dettagli' | 'salvataggio'
   const [dati, setDati] = useState(null)       // { name, schema, immagine_url }
   const [error, setError] = useState('')
@@ -214,7 +216,7 @@ export default function LavagnaEsercizioModal({ mode = 'create', esercizio = nul
                 <label>{t('tipologia')}</label>
                 <select value={f.tipologia} onChange={upd('tipologia')}>
                   <option value="">—</option>
-                  {tipList.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
+                  {tipList.map((tp) => <option key={tp} value={tp}>{tipologiaTradotta(tp, locale)}</option>)}
                 </select>
               </div>
               <div className="field">

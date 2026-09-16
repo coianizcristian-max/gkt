@@ -1,21 +1,23 @@
 'use client'
 
 import { useState } from 'react'
+import { tipologiaTradotta } from '@/lib/elenchi'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import LavagnaEsercizioModal from '@/app/components/LavagnaEsercizioModal'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 // Popup dettaglio esercizio
 function EsercizioPopup({ esercizio, onClose, onOpenSchema }) {
   const t = useTranslations('eserciziManager')
+  const locale = useLocale()
   return (
     <div className="popup-overlay" onClick={onClose}>
       <div className="popup-box" onClick={(e) => e.stopPropagation()}>
         <button className="popup-close" onClick={onClose} type="button">✕</button>
         <h2 style={{ margin: '0 0 6px' }}>{esercizio.titolo}</h2>
         {((esercizio.tipologie?.length ? esercizio.tipologie : (esercizio.tipologia ? [esercizio.tipologia] : []))).map(tp => (
-          <span key={tp} className="stat-cat" style={{ marginBottom: 4, marginRight: 4, display: 'inline-block' }}>{tp}</span>
+          <span key={tp} className="stat-cat" style={{ marginBottom: 4, marginRight: 4, display: 'inline-block' }}>{tipologiaTradotta(tp, locale)}</span>
         ))}
         {esercizio.schema_json && onOpenSchema && (
           <div style={{ marginTop: 8, marginBottom: 12 }}>
@@ -66,6 +68,7 @@ function EsercizioTile({ esercizio, onDetail, onEdit, onRemoveFav }) {
 }
 
 export default function EserciziManager({ esercizi, eserciziPubblici = [], eserciziResponsabile = [], tipologie, attributiDisponibili = [], allenatoreId }) {
+  const locale = useLocale()
   const router = useRouter()
   const t = useTranslations('eserciziManager')
   const [editing, setEditing] = useState(null)
@@ -228,7 +231,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
               <button key={k} type="button"
                 className={`sub-nav-link ${tabCorrente === k ? 'active' : ''}`}
                 onClick={() => setTabAttivo(k)}>
-                {k} <span style={{ fontSize: 11, opacity: 0.7 }}>({gruppi[k].length})</span>
+                {tipologiaTradotta(k, locale)} <span style={{ fontSize: 11, opacity: 0.7 }}>({gruppi[k].length})</span>
               </button>
             ))}
           </div>
@@ -272,7 +275,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
                     <button key={k} type="button"
                       className={`sub-nav-link ${tabCorrScopri === k ? 'active' : ''}`}
                       onClick={() => setTabScopri(k)}>
-                      {k} <span style={{ fontSize: 11, opacity: 0.7 }}>({gruppiScopri[k].length})</span>
+                      {tipologiaTradotta(k, locale)} <span style={{ fontSize: 11, opacity: 0.7 }}>({gruppiScopri[k].length})</span>
                     </button>
                   ))}
                 </div>
@@ -322,6 +325,7 @@ export default function EserciziManager({ esercizi, eserciziPubblici = [], eserc
 }
 
 function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allenatoreId, onSaved, onCancel, onEditSchema }) {
+  const locale = useLocale()
   const t = useTranslations('eserciziManager')
   const c = useTranslations('common')
   const isEdit = !!esercizio
@@ -442,7 +446,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
                   color: (f.tipologie ?? []).includes(tp) ? 'var(--azzurro)' : 'var(--ink)',
                   fontWeight: (f.tipologie ?? []).includes(tp) ? 700 : 400,
                 }}>
-                {tp}
+                {tipologiaTradotta(tp, locale)}
               </button>
             ))}
             <button type="button" onClick={aggiungiTip}

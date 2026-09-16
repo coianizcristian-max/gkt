@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { tipologiaTradotta } from '@/lib/elenchi'
 import { createClient } from '@/lib/supabase/client'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 export default function NuovoEsercizioModal({ onSaved, onClose }) {
   const [tipologie, setTipologie] = useState([])
   const [allenatoreId, setAllenatoreId] = useState(null)
   const t = useTranslations('nuovoEsercizioModal')
+  const locale = useLocale()
 
   useEffect(() => {
     async function carica() {
@@ -44,6 +46,7 @@ export default function NuovoEsercizioModal({ onSaved, onClose }) {
 }
 
 function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
+  const locale = useLocale()
   const t = useTranslations('nuovoEsercizioModal')
   const c = useTranslations('common')
   const [f, setF] = useState({
@@ -122,7 +125,7 @@ function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
         <div className="field">
           <label>{t('tipologia')}</label>
           <select value={f.tipologia} onChange={onTip}>
-            {tipologie.map(tp => <option key={tp} value={tp}>{tp}</option>)}
+            {tipologie.map(tp => <option key={tp} value={tp}>{tipologiaTradotta(tp, locale)}</option>)}
             <option value="__nuova__">{t('nuovaTipologia')}</option>
           </select>
         </div>

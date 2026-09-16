@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { tipologiaTradotta } from '@/lib/elenchi'
 import { useRouter } from 'next/navigation'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
@@ -355,7 +356,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
                     {previewExtra[ev.id].esercizi.map((e, i) => (
                       <li key={e.id}>
                         <span className="cal-preview-es-nome">{e.titolo}</span>
-                        {e.tipologia && <span className="cal-preview-es-tipo"> · {e.tipologia}</span>}
+                        {e.tipologia && <span className="cal-preview-es-tipo"> · {tipologiaTradotta(e.tipologia, locale)}</span>}
                       </li>
                     ))}
                   </ol>

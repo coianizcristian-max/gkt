@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { tipologiaTradotta } from '@/lib/elenchi'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { Link } from '@/i18n/routing'
@@ -13,6 +14,7 @@ function getAdmin() {
 }
 
 export default async function SupervisioneAllenamento({ params }) {
+  const locale = await getLocale()
   const { id: preparatoreId, allenamentoId } = await params
 
   // Verifica supervisore
@@ -161,7 +163,7 @@ export default async function SupervisioneAllenamento({ params }) {
                       <div>
                         <span style={{ fontSize: 11, color: 'var(--ink-soft)', marginRight: 6 }}>{i + 1}.</span>
                         <span className="es-seduta-titolo">{e.titolo}</span>
-                        {e.tipologia && <span className="stat-cat" style={{ marginLeft: 6 }}>{e.tipologia}</span>}
+                        {e.tipologia && <span className="stat-cat" style={{ marginLeft: 6 }}>{tipologiaTradotta(e.tipologia, locale)}</span>}
                         {(e.durata_minuti || e.recupero_minuti) && (
                           <span style={{ fontSize: 11, color: 'var(--ink-soft)', marginLeft: 8 }}>
                             {e.durata_minuti ? `${e.durata_minuti}min` : ''}

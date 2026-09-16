@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { renderToBuffer, Document, Page, Text, View, Image, StyleSheet, Font } from '@react-pdf/renderer'
 import { pdfLabels, tApi } from '@/lib/i18nServer'
+import { tipologiaTradotta } from '@/lib/elenchi'
 
 const s = StyleSheet.create({
   page: { padding: 36, fontFamily: 'Helvetica', backgroundColor: '#ffffff' },
@@ -79,7 +80,7 @@ export async function GET(request) {
           <View key={e.id} style={s.card}>
             <Text style={s.cardNum}>{t('esercizioN', { n: i + 1 })}</Text>
             <Text style={s.cardTitle}>{e.titolo}</Text>
-            {e.tipologia && <Text style={s.cardType}>{e.tipologia}</Text>}
+            {e.tipologia && <Text style={s.cardType}>{tipologiaTradotta(e.tipologia, t.locale)}</Text>}
             <View style={s.cardRow}>
               {e.immagine_url && <Image src={e.immagine_url} style={s.cardImg} />}
               <View style={s.cardBody}>

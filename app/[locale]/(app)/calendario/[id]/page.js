@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/routing'
+import { tipologiaTradotta } from '@/lib/elenchi'
 import { notFound } from 'next/navigation'
 import { createClient, getUser } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
@@ -22,6 +23,7 @@ import { caricaParametri } from '@/lib/parametri'
 export const dynamic = 'force-dynamic'
 
 export default async function AllenamentoPage({ params }) {
+  const locale = await getLocale()
   const { id } = await params
   const supabase = await createClient()
   const t = await getTranslations('allenamentoDettaglio')
@@ -141,7 +143,7 @@ export default async function AllenamentoPage({ params }) {
                     {e.immagine_url && <img src={e.immagine_url} className="es-seduta-thumb" alt="" />}
                     <div>
                       <div className="es-seduta-titolo">{e.titolo}</div>
-                      {e.tipologia && <span className="stat-cat">{e.tipologia}</span>}
+                      {e.tipologia && <span className="stat-cat">{tipologiaTradotta(e.tipologia, locale)}</span>}
                     </div>
                   </summary>
                   {(e.descrizione_breve || e.descrizione) && (

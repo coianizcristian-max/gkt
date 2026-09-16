@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { tipologiaTradotta } from '@/lib/elenchi'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
 import LavagnaEsercizioModal from '@/app/components/LavagnaEsercizioModal'
@@ -33,7 +34,7 @@ function EsercizioPreview({ esercizio, onClose }) {
           </div>
           <div style={{ padding: '18px 20px' }}>
             {e.immagine_url && <img src={e.immagine_url} alt="" style={{ width: '100%', borderRadius: 10, marginBottom: 14, objectFit: 'cover', maxHeight: 240 }} />}
-            {e.tipologia && <p style={{ margin: '0 0 8px', fontSize: 12, color: 'var(--azzurro)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{e.tipologia}</p>}
+            {e.tipologia && <p style={{ margin: '0 0 8px', fontSize: 12, color: 'var(--azzurro)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{tipologiaTradotta(e.tipologia, locale)}</p>}
             {(e.durata_minuti || e.recupero_minuti) && (
               <div style={{ display: 'flex', gap: 16, margin: '0 0 12px', fontSize: 14 }}>
                 {e.durata_minuti && <span>{t('durataLabel')}<b>{e.durata_minuti} {t('min')}</b></span>}
@@ -58,6 +59,7 @@ function EsercizioPreview({ esercizio, onClose }) {
 
 // ─── Vista libreria: selezione esercizi ──────────────────────────────────────
 function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = [], sel, onToggle, attributiDisponibili }) {
+  const locale = useLocale()
   const [fonte, setFonte] = useState('mia')
   const [soloPref, setSoloPref] = useState(false)
   const [tipologiaAttiva, setTipologiaAttiva] = useState(null)
@@ -243,7 +245,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
                 onClick={() => setTipologiaAttiva(k)}
                 style={{ fontSize: 12 }}
               >
-                {k} ({gruppi[k].length})
+                {tipologiaTradotta(k, locale)} ({gruppi[k].length})
               </button>
             ))}
           </div>
@@ -332,6 +334,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
 
 // ─── Vista ordine: drag & drop + popup anteprima + stima + PDF ───────────────
 function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
+  const locale = useLocale()
   const dragIdx = useRef(null)
   const overIdx = useRef(null)
   const [preview, setPreview] = useState(null)
@@ -418,7 +421,7 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
               <button type="button" onClick={() => setPreview(e)} style={{ display: 'contents', cursor: 'pointer' }}>
                 <div className="drag-info">
                   <b>{e.titolo}</b>
-                  {e.tipologia && <span className="stat-cat">{e.tipologia}</span>}
+                  {e.tipologia && <span className="stat-cat">{tipologiaTradotta(e.tipologia, locale)}</span>}
                   {(e.durata_minuti || e.recupero_minuti) && (
                     <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 6 }}>
                       {e.durata_minuti ? `⏱ ${e.durata_minuti}min` : ''}

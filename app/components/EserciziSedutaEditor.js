@@ -1,13 +1,15 @@
 'use client'
 
 import Image from 'next/image'
+import { tipologiaTradotta } from '@/lib/elenchi'
 import { useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId }) {
   const t = useTranslations('eserciziSeduta')
+  const locale = useLocale()
   const router = useRouter()
   const [lista, setLista] = useState(iniziali ?? [])
   const [dragIdx, setDragIdx] = useState(null)
@@ -90,7 +92,7 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
             <span style={{ fontSize: 12, color: 'var(--ink-soft)', width: 22, flexShrink: 0 }}>{i + 1}.</span>
             <div className="drag-info" onClick={() => setOpenIdx((prev) => prev === i ? null : i)} style={{ cursor: 'pointer', flex: 1 }}>
               <b>{e.titolo}</b>
-              {e.tipologia && <span className="stat-cat" style={{ marginLeft: 6 }}>{e.tipologia}</span>}
+              {e.tipologia && <span className="stat-cat" style={{ marginLeft: 6 }}>{tipologiaTradotta(e.tipologia, locale)}</span>}
               {(e.durata_minuti || e.recupero_minuti) && (
                 <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginLeft: 8 }}>
                   {e.durata_minuti ? t('durataMin', { n: e.durata_minuti }) : ''}

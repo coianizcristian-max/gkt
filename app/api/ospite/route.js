@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { getDemoConfig, COOKIE_DEMO, COOKIE_DEMO_AVVISO, COOKIE_OSPITE } from '@/lib/demo'
+import { getDemoConfig, COOKIE_DEMO, COOKIE_DEMO_AVVISO, COOKIE_OSPITE, COOKIE_DA_NEWSLETTER } from '@/lib/demo'
 
 /**
  * Ingresso "vetrina": chi arriva da un QR code o da un link pubblico viene
@@ -30,9 +30,29 @@ import { getDemoConfig, COOKIE_DEMO, COOKIE_DEMO_AVVISO, COOKIE_OSPITE } from '@
  */
 export const dynamic = 'force-dynamic'
 
+/** Parametri di attribuzione da far sopravvivere al redirect. */
+const TRACCIAMENTO = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid']
+
 export async function GET(request) {
   const origin = request.nextUrl.origin
-  const vaiA = (percorso) => NextResponse.redirect(new URL(percorso, origin))
+
+  // /d?utm_source=... arriva fin qui (Next conserva la query nei redirect di
+  // next.config). Se li lasciassimo cadere, il visitatore atterrerebbe sulla
+  // dashboard con un indirizzo pulito e AttribuzioneUtm non avrebbe piu'
+  // niente da leggere: sapresti quanti entrano in demo, ma non da dove.
+  const qs = new URLSearchParams()
+  for (const k of TRACCIAMENTO) {
+    const v = request.nextUrl.searchParams.get(k)
+    if (v) qs.set(k, v)
+  }
+  const coda = qs.toString() ? `?${qs}` : ''
+
+  // Chi arriva da un link della newsletter e' gia' iscritto per definizione:
+  // proporgli l'iscrizione sarebbe assurdo.
+  const daNewsletter = (request.nextUrl.searchParams.get('utm_source') || '')
+    .toLowerCase() === 'newsletter'
+
+  const vaiA = (percorso) => NextResponse.redirect(new URL(percorso + coda, origin))
 
   // Questa e' la risposta "buona": i cookie di sessione vengono scritti qui
   // sopra dal client Supabase, quindi va restituita SOLO in caso di successo.
@@ -79,8 +99,28 @@ export async function GET(request) {
     const eOspite =
       (giaLoggato.email || '').toLowerCase() === email.toLowerCase() &&
       giaLoggato.id !== cfg.ownerId
-    if (!eOspite) return vaiA('/dashboard')
-    accendiDemo(risposta)
+
+    if (eOspite) {
+      accendiDemo(risposta, { ospite: true, daNewsletter })
+      return risposta
+    }
+
+    // E' un utente VERO e loggato: tipicamente un iscritto alla newsletter che
+    // clicca il link dal proprio telefono. Non lo slogghiamo e non lo mandiamo
+    // sulla SUA dashboard (vedrebbe i propri dati, cioe' l'opposto di quello
+    // che il link prometteva): lo facciamo entrare in modalita' demo CON IL
+    // SUO account, esattamente come la voce "stagione demo" nel menu.
+    const { data: profiloUtente } = await supabase
+      .from('profili').select('ruolo').eq('id', giaLoggato.id).maybeSingle()
+
+    const puoVedereDemo =
+      profiloUtente?.ruolo === 'allenatore' && giaLoggato.id !== cfg.ownerId
+
+    if (!puoVedereDemo) return vaiA('/dashboard')
+
+    // Niente cookie ospite: non e' un visitatore anonimo. Quindi nessuna
+    // proposta di newsletter e l'uscita lo riporta alla sua dashboard.
+    accendiDemo(risposta, { ospite: false, daNewsletter })
     return risposta
   }
 
@@ -134,7 +174,7 @@ export async function GET(request) {
   }
 
   // 7) Accendiamo la modalita' demo.
-  accendiDemo(risposta)
+  accendiDemo(risposta, { ospite: true, daNewsletter })
 
   return risposta
 }
@@ -144,7 +184,7 @@ export async function GET(request) {
  * Ogni passaggio da /d riarma il popup di benvenuto, cosi' il visitatore lo
  * vede sempre (e tu puoi riprovare senza chiudere la finestra in incognito).
  */
-function accendiDemo(risposta) {
+function accendiDemo(risposta, { ospite, daNewsletter }) {
   const opzioni = {
     httpOnly: true,
     sameSite: 'lax',
@@ -152,9 +192,16 @@ function accendiDemo(risposta) {
     secure: process.env.NODE_ENV === 'production',
   }
   risposta.cookies.set(COOKIE_DEMO, '1', opzioni)
-  // Marchia la sessione come "vetrina": l'uscita dalla demo lo riportera' sul
-  // sito pubblico invece che su una dashboard senza dati.
-  risposta.cookies.set(COOKIE_OSPITE, '1', opzioni)
+
+  // Cookie vetrina solo per il visitatore anonimo: e' quello che decide la
+  // proposta newsletter e l'uscita verso il sito pubblico. Un utente vero
+  // resta un utente vero anche mentre guarda la demo.
+  if (ospite) risposta.cookies.set(COOKIE_OSPITE, '1', opzioni)
+  else risposta.cookies.set(COOKIE_OSPITE, '', { ...opzioni, maxAge: 0 })
+
+  if (daNewsletter) risposta.cookies.set(COOKIE_DA_NEWSLETTER, '1', opzioni)
+  else risposta.cookies.set(COOKIE_DA_NEWSLETTER, '', { ...opzioni, maxAge: 0 })
+
   // Popup di benvenuto di nuovo da mostrare.
   risposta.cookies.set(COOKIE_DEMO_AVVISO, '', { ...opzioni, maxAge: 0 })
 }

@@ -7,8 +7,9 @@ import VersionePopup from '@/app/components/VersionePopup'
 import DemoBanner from '@/app/components/DemoBanner'
 import DemoGuardia from '@/app/components/DemoGuardia'
 import DemoPopup from '@/app/components/DemoPopup'
+import DemoTracker from '@/app/components/DemoTracker'
 import DemoEntra from '@/app/components/DemoEntra'
-import { getDemoConfig, inDemo, inOspite, avvisoDemoVisto, contestoDati } from '@/lib/demo'
+import { getDemoConfig, inDemo, inOspite, daNewsletter, avvisoDemoVisto, contestoDati } from '@/lib/demo'
 import BenvenutoPopup from '@/app/components/BenvenutoPopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
@@ -190,6 +191,9 @@ export default async function AppLayout({ children }) {
   const mostraDemoPopup = demoInCorso && !(await avvisoDemoVisto())
   // Sessione vetrina entrata da /d: l'uscita dalla demo la riporta sul sito.
   const demoOspite = demoInCorso && (await inOspite())
+  // Chi arriva da un link della newsletter e' gia' iscritto: vede il popup
+  // demo senza la proposta di iscrizione.
+  const proponiNewsletter = demoOspite && !(await daNewsletter())
 
   // Carica ordine sidebar personalizzato dal supervisore
   const { data: sidebarOrdineRows } = await supabase
@@ -328,11 +332,13 @@ export default async function AppLayout({ children }) {
       </div>
       {demoInCorso && <DemoBanner dataTaglio={demoCfg.dataTaglio} ospite={demoOspite} />}
       {demoInCorso && <DemoGuardia />}
+      {/* Evento di conversione per le campagne: solo per chi arriva da /d. */}
+      {demoOspite && <DemoTracker />}
       {/* Scaletta dei popup. In demo si ferma qui: dopo il popup demo NON
           deve subentrare quello di benvenuto (con i piani) ne' l'avviso di
           nuova versione. Fuori dalla demo il comportamento e' invariato. */}
       {mostraDemoPopup
-        ? <DemoPopup dataTaglio={demoCfg.dataTaglio} ospite={demoOspite} />
+        ? <DemoPopup dataTaglio={demoCfg.dataTaglio} ospite={proponiNewsletter} />
         : demoInCorso
           ? null
           : mostraBenvenuto

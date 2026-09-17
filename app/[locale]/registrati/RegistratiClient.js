@@ -71,7 +71,10 @@ export default function RegistratiClient({ token, datiInvito }) {
       options: {
         captchaToken,
         data: { nome_completo: nome.trim(), lingua: locale, ...(token && datiInvito ? { invito_token: token } : {}) },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/benvenuto`,
+        // Il token viaggia anche nel link di conferma: serve a /benvenuto per
+        // capire CHI ha confermato, invece di fidarsi della sessione presente
+        // nel browser (che puo' essere di tutt'altra persona).
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/benvenuto`${token && datiInvito ? `&invito=${encodeURIComponent(token)}` : ''}`,
       },
     })
 

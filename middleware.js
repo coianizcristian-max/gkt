@@ -65,7 +65,13 @@ export async function middleware(request) {
     return NextResponse.redirect(url)
   }
 
-  if (user && isLogin) {
+  // Eccezione: /login?invito=... deve restare raggiungibile anche con una
+  // sessione attiva. E' il caso di chi apre il link di conferma in un browser
+  // dove e' gia' loggato qualcun altro: rimbalzarlo sulla dashboard lo
+  // riporterebbe nell'account sbagliato, senza modo di uscirne.
+  const haInvito = request.nextUrl.searchParams.has('invito')
+
+  if (user && isLogin && !haInvito) {
     const url = request.nextUrl.clone()
     url.pathname = prefix + '/dashboard'
     return NextResponse.redirect(url)

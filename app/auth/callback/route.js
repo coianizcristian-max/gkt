@@ -7,6 +7,10 @@ export async function GET(request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
+  // Token invito propagato dal link di conferma: va conservato in TUTTE le
+  // uscite, cosi' /benvenuto sa a quale invito si riferisce la conferma.
+  const invito = searchParams.get('invito')
+  const q = invito ? `?invito=${encodeURIComponent(invito)}` : ''
 
   if (code) {
     const supabase = await createClient()
@@ -44,14 +48,14 @@ export async function GET(request) {
         // Non bloccante: l'utente è comunque autenticato e può entrare.
         console.warn('consuma-invito da callback fallito (non bloccante):', e)
       }
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(`${origin}${next}${next.includes('?') ? '' : q}`)
     }
 
     // Scambio fallito (tipico: link di conferma aperto in un browser diverso
     // da quello usato per registrarsi). L'email risulta comunque già
     // confermata lato server: mostriamo comunque la pagina di conferma,
     // che inviterà ad accedere invece che all'area riservata.
-    if (next === '/benvenuto') return NextResponse.redirect(`${origin}/benvenuto`)
+    if (next === '/benvenuto') return NextResponse.redirect(`${origin}/benvenuto${q}`)
   }
-  return NextResponse.redirect(`${origin}/login`)
+  return NextResponse.redirect(`${origin}/login${q}`)
 }

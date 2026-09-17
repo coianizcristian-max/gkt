@@ -55,21 +55,34 @@ export async function GET(request) {
     }
   )
 
-  // 1) Sessione gia' attiva: NON la tocchiamo mai. Se un utente vero (o tu)
-  //    apre il link per sbaglio, non deve ritrovarsi buttato fuori dal
-  //    proprio account. Lo lasciamo dov'e'.
-  const {
-    data: { user: giaLoggato },
-  } = await supabase.auth.getUser()
-  if (giaLoggato) return vaiA('/dashboard')
-
-  // 2) Identita' dell'ospite.
+  // 1) Identita' dell'ospite.
   const email = process.env.DEMO_OSPITE_EMAIL
   if (!email) return vaiA('/registrati')
 
-  // 3) La demo dev'essere accesa, altrimenti l'ospite vedrebbe un'app vuota.
+  // 2) La demo dev'essere accesa, altrimenti l'ospite vedrebbe un'app vuota.
   const cfg = await getDemoConfig()
   if (!cfg.attiva || !cfg.ownerId) return vaiA('/registrati')
+
+  // 3) Sessione gia' attiva. Due casi molto diversi:
+  //
+  //    a) e' un utente VERO (o tu): non tocchiamo niente, non deve ritrovarsi
+  //       buttato fuori dal proprio account perche' ha aperto il QR.
+  //    b) e' gia' la sessione VETRINA: i cookie di Supabase sopravvivono alla
+  //       chiusura della scheda, quindi senza questo ramo /d entrerebbe in
+  //       silenzio per sempre, senza piu' mostrare il popup di benvenuto.
+  //       Qui la riarmiamo: demo accesa e popup di nuovo da mostrare.
+  const {
+    data: { user: giaLoggato },
+  } = await supabase.auth.getUser()
+
+  if (giaLoggato) {
+    const eOspite =
+      (giaLoggato.email || '').toLowerCase() === email.toLowerCase() &&
+      giaLoggato.id !== cfg.ownerId
+    if (!eOspite) return vaiA('/dashboard')
+    accendiDemo(risposta)
+    return risposta
+  }
 
   // 4) Sessione dell'ospite, senza password e senza captcha:
   //    a) con la service_role generiamo un token monouso per quell'email
@@ -120,7 +133,18 @@ export async function GET(request) {
     return vaiA('/registrati')
   }
 
-  // 7) Accendiamo la modalita' demo, con le stesse opzioni di /api/demo.
+  // 7) Accendiamo la modalita' demo.
+  accendiDemo(risposta)
+
+  return risposta
+}
+
+/**
+ * Cookie dell'ingresso vetrina, con le stesse opzioni usate da /api/demo.
+ * Ogni passaggio da /d riarma il popup di benvenuto, cosi' il visitatore lo
+ * vede sempre (e tu puoi riprovare senza chiudere la finestra in incognito).
+ */
+function accendiDemo(risposta) {
   const opzioni = {
     httpOnly: true,
     sameSite: 'lax',
@@ -131,8 +155,6 @@ export async function GET(request) {
   // Marchia la sessione come "vetrina": l'uscita dalla demo lo riportera' sul
   // sito pubblico invece che su una dashboard senza dati.
   risposta.cookies.set(COOKIE_OSPITE, '1', opzioni)
-  // Nuovo ingresso: il popup di benvenuto deve comparire.
+  // Popup di benvenuto di nuovo da mostrare.
   risposta.cookies.set(COOKIE_DEMO_AVVISO, '', { ...opzioni, maxAge: 0 })
-
-  return risposta
 }

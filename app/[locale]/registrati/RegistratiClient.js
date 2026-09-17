@@ -8,9 +8,11 @@ import { trackEvento } from '@/app/components/PostHogProvider'
 import { trackMetaEvento } from '@/app/components/MetaPixel'
 import { leggiAttribuzione } from '@/app/components/AttribuzioneUtm'
 import { useTranslations, useLocale } from 'next-intl'
-import HCaptcha from '@hcaptcha/react-hcaptcha'
+import Captcha from '@/app/components/Captcha'
 
-const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '98743d70-a876-400c-a1c4-ee8af4ea495e'
+// Turnstile: se la variabile non c'e', il captcha non viene mostrato
+// (meglio nessun captcha che un widget che punta al fornitore sbagliato).
+const CAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''
 
 export default function RegistratiClient({ token, datiInvito }) {
   const router = useRouter()
@@ -52,7 +54,7 @@ export default function RegistratiClient({ token, datiInvito }) {
       setError(t('erroreEmail'))
       return
     }
-    if (HCAPTCHA_SITE_KEY && !captchaToken) {
+    if (CAPTCHA_SITE_KEY && !captchaToken) {
       setError(t('captchaMancante'))
       return
     }
@@ -288,11 +290,11 @@ export default function RegistratiClient({ token, datiInvito }) {
             <input type="checkbox" checked={iscriviNewsletter} onChange={(e) => setIscriviNewsletter(e.target.checked)} />
             {t('newsletter')}
           </label>
-          {HCAPTCHA_SITE_KEY && (
+          {CAPTCHA_SITE_KEY && (
             <div className="field" style={{ display: 'flex', justifyContent: 'center' }}>
-              <HCaptcha
+              <Captcha
                 ref={captchaRef}
-                sitekey={HCAPTCHA_SITE_KEY}
+                sitekey={CAPTCHA_SITE_KEY}
                 onVerify={(tok) => setCaptchaToken(tok)}
                 onExpire={() => setCaptchaToken(null)}
               />

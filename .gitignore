@@ -3,3 +3,21 @@ node_modules
 .env.local
 .DS_Store
 *.log
+
+# chiavi e credenziali — non devono MAI finire su GitHub
+chiavi.txt
+.env
+.env.*.local
+
+# cartelle degli script di manutenzione
+backup-storage/
+backup-orfani/
+log/
+
+# sorgenti grafici e archivi: pesano e non servono al sito
+*.psd
+*.ai
+*.zip
+*.rar
+*.7z
+mockup campagna/

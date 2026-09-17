@@ -6,9 +6,11 @@ import { useRouter } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { useTranslations, useLocale } from 'next-intl'
-import HCaptcha from '@hcaptcha/react-hcaptcha'
+import Captcha from '@/app/components/Captcha'
 
-const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '98743d70-a876-400c-a1c4-ee8af4ea495e'
+// Turnstile: se la variabile non c'e', il captcha non viene mostrato
+// (meglio nessun captcha che un widget che punta al fornitore sbagliato).
+const CAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''
 
 export default function LoginPage() {
   const router = useRouter()
@@ -32,7 +34,7 @@ export default function LoginPage() {
   async function handleLogin(e) {
     e.preventDefault()
     setError('')
-    if (HCAPTCHA_SITE_KEY && !captchaToken) {
+    if (CAPTCHA_SITE_KEY && !captchaToken) {
       setError(t('captchaMancante'))
       return
     }
@@ -98,7 +100,7 @@ export default function LoginPage() {
       setError(t('recuperaSenzaEmail'))
       return
     }
-    if (HCAPTCHA_SITE_KEY && !captchaToken) {
+    if (CAPTCHA_SITE_KEY && !captchaToken) {
       setError(t('recuperaCaptcha'))
       return
     }
@@ -149,11 +151,11 @@ export default function LoginPage() {
               {t('passwordDimenticata')}
             </button>
           </div>
-          {HCAPTCHA_SITE_KEY && (
+          {CAPTCHA_SITE_KEY && (
             <div className="field" style={{ display: 'flex', justifyContent: 'center' }}>
-              <HCaptcha
+              <Captcha
                 ref={captchaRef}
-                sitekey={HCAPTCHA_SITE_KEY}
+                sitekey={CAPTCHA_SITE_KEY}
                 onVerify={(tok) => setCaptchaToken(tok)}
                 onExpire={() => setCaptchaToken(null)}
               />

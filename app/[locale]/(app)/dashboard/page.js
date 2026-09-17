@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient, getUser } from '@/lib/supabase/server'
 import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,12 +31,14 @@ export default async function DashboardPage() {
   }
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
-  const { stagione } = await getStagioneAttiva(supabase, user.id)
+  // In modalita' demo cambiano la sorgente dei dati (sola lettura sull'account
+  // demo) e la data di riferimento. Fuori dalla demo: identico a prima.
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user.id)
 
   // "Oggi" nel fuso italiano (Europe/Rome), NON in UTC: con toISOString() tra mezzanotte
   // e le ~02:00 (ora legale) la data risultava ancora quella di ieri, e le sedute odierne
   // non comparivano come "da valutare"/"prossime". È la radice del vecchio bug "tutto valutato".
-  const oggiStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
+  const oggiStr = oggiCtx
   // +7 giorni sulla data (ancorati a mezzogiorno UTC per evitare problemi di confine giorno)
   const tra7ggDate = new Date(oggiStr + 'T12:00:00Z')
   tra7ggDate.setUTCDate(tra7ggDate.getUTCDate() + 7)
@@ -72,16 +75,16 @@ export default async function DashboardPage() {
     // La query "iscrizioni" serve sia per haPortieri sia per l'elenco portieri
     // usato piu' sotto: prima erano due query separate con select diversi.
     const [allRows, parRows, couponRow, catRow, iscrRows] = await Promise.all([
-      supabase.from('allenamenti')
+      db.from('allenamenti')
         .select('id, data, ora_inizio, nessuna_valutazione, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id).order('data'),
-      supabase.from('partite')
+      db.from('partite')
         .select('id, data, avversario, casa, tipo, squadre(nome)')
         .eq('stagione_id', stagione.id).order('data'),
       supabase.from('coupon_utilizzi').select('scade_il').eq('utente_id', user.id)
         .gt('scade_il', new Date().toISOString()).order('scade_il', { ascending: false }).limit(1).maybeSingle(),
-      supabase.from('stagione_categorie').select('id').eq('stagione_id', stagione.id).limit(1),
-      supabase.from('iscrizioni').select('portiere_id, portieri(id, nome, cognome, attivo)').eq('stagione_id', stagione.id),
+      db.from('stagione_categorie').select('id').eq('stagione_id', stagione.id).limit(1),
+      db.from('iscrizioni').select('portiere_id, portieri(id, nome, cognome, attivo)').eq('stagione_id', stagione.id),
     ])
 
     haCategorie = (catRow.data ?? []).length > 0
@@ -92,16 +95,21 @@ export default async function DashboardPage() {
     const partiteRows = parRows.data ?? []
     const allenIds = allenamenti.map((a) => a.id)
     const partitaIds = partiteRows.map((p) => p.id)
+    // In demo le sedute e le partite OLTRE la data di taglio restano visibili
+    // (programmate), ma non devono avere valutazioni: la stagione si vede
+    // "compilata fino a" e "ancora da compilare" dopo.
+    const allenIdsVal = taglio ? allenamenti.filter((a) => entroTaglio(a.data, taglio)).map((a) => a.id) : allenIds
+    const partitaIdsVal = taglio ? partiteRows.filter((p) => entroTaglio(p.data, taglio)).map((p) => p.id) : partitaIds
     const portieriList = (iscrRows.data ?? []).map((r) => r.portieri).filter(Boolean)
     const portiereIds = portieriList.map((p) => p.id)
 
     // Anche questo secondo batch e' indipendente al suo interno: valRows/valParRows
     // servono ai blocchi "da valutare", valPortRows/obRows al blocco "da attenzionare".
     const [valRows, valParRows, valPortRows, obRows] = await Promise.all([
-      allenIds.length ? supabase.from('valutazioni').select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allenIds) : Promise.resolve({ data: [] }),
-      partitaIds.length ? supabase.from('valutazioni_partita').select('partita_id').eq('presente', true).in('partita_id', partitaIds) : Promise.resolve({ data: [] }),
-      portiereIds.length ? supabase.from('valutazioni').select('portiere_id, allenamento_id, presente, voto').in('portiere_id', portiereIds).in('allenamento_id', allenIds) : Promise.resolve({ data: [] }),
-      portiereIds.length ? supabase.from('obiettivi').select('portiere_id, scadenza, stato').in('portiere_id', portiereIds) : Promise.resolve({ data: [] }),
+      allenIdsVal.length ? db.from('valutazioni').select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allenIdsVal) : Promise.resolve({ data: [] }),
+      partitaIdsVal.length ? db.from('valutazioni_partita').select('partita_id').eq('presente', true).in('partita_id', partitaIdsVal) : Promise.resolve({ data: [] }),
+      portiereIds.length && allenIdsVal.length ? db.from('valutazioni').select('portiere_id, allenamento_id, presente, voto').in('portiere_id', portiereIds).in('allenamento_id', allenIdsVal) : Promise.resolve({ data: [] }),
+      portiereIds.length ? db.from('obiettivi').select('portiere_id, scadenza, stato').in('portiere_id', portiereIds) : Promise.resolve({ data: [] }),
     ])
 
     const valutatiSet = new Set((valRows.data ?? []).map((v) => v.allenamento_id))

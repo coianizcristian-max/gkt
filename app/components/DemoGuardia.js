@@ -17,7 +17,7 @@ export default function DemoGuardia() {
   const [avviso, setAvviso] = useState(false)
 
   useEffect(() => {
-    const originale = window.fetch
+    const originale = window.fetch.bind(window)
     const SCRITTURE = ['POST', 'PUT', 'PATCH', 'DELETE']
     // Rotte che devono continuare a funzionare anche in demo.
     const CONSENTITE = ['/api/demo', '/auth/signout', '/api/benvenuto-visto', '/api/versione-vista']

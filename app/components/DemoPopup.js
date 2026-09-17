@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
 
 function dataLeggibile(iso, locale) {
@@ -13,20 +15,70 @@ function dataLeggibile(iso, locale) {
     { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-/** Popup di benvenuto in modalita' demo: stesso stile di VersionePopup. */
-export default function DemoPopup({ dataTaglio }) {
+/**
+ * Popup di benvenuto in modalita' demo: stesso stile di VersionePopup.
+ *
+ * `ospite` = visitatore arrivato da /d, quindi NON registrato: a lui, e solo
+ * a lui, il popup propone anche l'iscrizione alla newsletter. Il check e'
+ * attivo di default; se resta attivo l'email diventa obbligatoria, se lo
+ * toglie entra comunque senza lasciare nulla.
+ *
+ * Un preparatore gia' registrato che entra in demo dal menu vede il popup
+ * esattamente come prima.
+ */
+export default function DemoPopup({ dataTaglio, ospite = false }) {
   const t = useTranslations('demo')
+  const tn = useTranslations('newsletterSignup')
   const locale = useLocale()
   const [visible, setVisible] = useState(true)
   const [closing, setClosing] = useState(false)
+  const [iscrivi, setIscrivi] = useState(true)
+  const [email, setEmail] = useState('')
+  const [errore, setErrore] = useState('')
+  const [invio, setInvio] = useState(false)
 
-  async function chiudi() {
-    setClosing(true)
+  async function segnaVisto() {
     await fetch('/api/demo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ azione: 'avviso-visto' }),
     })
+  }
+
+  /** Chiusura dalla ✕: non iscrive e non blocca mai. */
+  async function chiudi() {
+    setClosing(true)
+    await segnaVisto()
+    setVisible(false)
+  }
+
+  /**
+   * Pulsante principale. Se il check e' attivo l'email e' obbligatoria e va
+   * a buon fine prima di entrare; se e' tolto si entra e basta.
+   */
+  async function conferma() {
+    setErrore('')
+
+    if (ospite && iscrivi) {
+      const em = email.trim()
+      if (!EMAIL_RE.test(em)) { setErrore(tn('emailInvalida')); return }
+      setInvio(true)
+      try {
+        const res = await fetch('/api/newsletter/iscrivi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: em }),
+        })
+        const dati = await res.json().catch(() => ({}))
+        if (!res.ok) { setErrore(dati.error || tn('erroreGenerico')); setInvio(false); return }
+      } catch {
+        setErrore(tn('erroreRete')); setInvio(false); return
+      }
+      setInvio(false)
+    }
+
+    setClosing(true)
+    await segnaVisto()
     setVisible(false)
   }
 
@@ -59,8 +111,49 @@ export default function DemoPopup({ dataTaglio }) {
           <div className="demo-uscita">{t('comeUscire')}</div>
         </div>
 
+        {ospite && (
+          <div style={{ padding: '0 24px 4px' }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
+              <input
+                type="checkbox"
+                checked={iscrivi}
+                onChange={(e) => { setIscrivi(e.target.checked); setErrore('') }}
+                style={{ marginTop: 3, width: 16, height: 16, flexShrink: 0 }}
+              />
+              <span>{tn('titolo')}</span>
+            </label>
+
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setErrore('') }}
+              onKeyDown={(e) => { if (e.key === 'Enter') conferma() }}
+              disabled={!iscrivi}
+              placeholder={tn('placeholder')}
+              autoComplete="email"
+              style={{
+                width: '100%', marginTop: 10, padding: '10px 12px', borderRadius: 8,
+                border: `1px solid ${errore ? 'var(--rosso, #d6493b)' : 'var(--linea, #d8dee4)'}`,
+                fontSize: 15, opacity: iscrivi ? 1 : 0.45,
+              }}
+            />
+
+            <div style={{ fontSize: 12, color: 'var(--ink-soft, #6b7e8e)', marginTop: 8 }}>
+              {tn('desc')}
+            </div>
+
+            {errore && (
+              <div style={{ fontSize: 13, color: 'var(--rosso, #d6493b)', marginTop: 8, fontWeight: 600 }}>
+                {errore}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="versione-footer">
-          <button className="btn" onClick={chiudi} type="button">{t('popupChiudi')}</button>
+          <button className="btn" onClick={conferma} type="button" disabled={invio}>
+            {invio ? '…' : t('popupChiudi')}
+          </button>
         </div>
       </div>
     </div>

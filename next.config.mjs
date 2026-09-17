@@ -46,6 +46,15 @@ const nextConfig = {
       { source: '/registrati', headers: [{ key: 'Cache-Control', value: 'no-store, max-age=0, must-revalidate' }] },
     ]
   },
+  // Scorciatoia pubblica per i QR code: /d resta stabile per sempre, la
+  // destinazione la cambi qui senza dover ristampare nulla.
+  // NB: 'permanent: false' e' voluto (302). Con un 301 i browser cachiano
+  // il redirect e non riusciresti piu' a spostarlo.
+  async redirects() {
+    return [
+      { source: '/d', destination: '/api/ospite', permanent: false },
+    ]
+  },
 }
 
 export default withNextIntl(nextConfig)

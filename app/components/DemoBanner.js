@@ -13,14 +13,25 @@ function dataLeggibile(iso, locale) {
     { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-/** Fascia fissa in alto: ricorda sempre che si sta guardando la demo. */
-export default function DemoBanner({ dataTaglio }) {
+/**
+ * Fascia fissa in alto: ricorda sempre che si sta guardando la demo.
+ *
+ * `ospite` = sessione vetrina entrata dal QR (/d). Quell'account non ha dati
+ * propri, quindi uscire dalla demo lo porterebbe su una dashboard vuota: lo
+ * mandiamo invece sul sito pubblico, chiudendo la sessione.
+ */
+export default function DemoBanner({ dataTaglio, ospite = false }) {
   const t = useTranslations('demo')
   const locale = useLocale()
   const [uscendo, setUscendo] = useState(false)
 
   async function esci() {
     setUscendo(true)
+    if (ospite) {
+      // signOut + pulizia cookie + ritorno alla home, in una sola navigazione
+      window.location.href = '/api/ospite/esci'
+      return
+    }
     await fetch('/api/demo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

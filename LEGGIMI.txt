@@ -1,42 +1,133 @@
-============================================================
-GKSeason — PACCHETTO COMPLETO Sicurezza & GDPR
-Un solo deploy per tutte le modifiche di codice.
-============================================================
-Scompatta sopra la cartella del progetto mantenendo le sottocartelle.
+GKSeason — INGRESSO OSPITE DA QR CODE  (/d -> demo senza registrazione)
+=======================================================================
+PACCHETTO COMPLETO — sostituisce quello precedente.
+Se non hai ancora deployato il primo zip, usa SOLO questo.
 
-CODICE (12 file) — vedi STATO-LAVORI.md per il dettaglio:
-  next.config.mjs
-  app/[locale]/privacy-policy/page.js
-  app/[locale]/cookie-policy/page.js
-  app/[locale]/termini-di-servizio/page.js
-  app/[locale]/registrati/RegistratiClient.js
-  app/components/PostHogProvider.js
-  app/components/PortiereForm.js
-  app/components/CercaAllenatoriBox.js
-  messages/it.json / en.json / de.json / es.json
-  app/components/LegalFooter.js  (nuovo: footer legale pagine pubbliche)
-  app/[locale]/*/layout.js  (nuovi/aggiornati: aggiungono il footer alle pagine pubbliche)
 
-DOCUMENTAZIONE (non deployata):
-  STATO-LAVORI.md ............... riepilogo di tutto e ordine di deploy
-  documentazione-gdpr/*.md ...... audit, registro, data breach, DPA, minori
-  documentazione-gdpr/passoC-rls-isolamento.sql ... da lanciare in Supabase DOPO il deploy
+COSA FA
+-------
+Chi inquadra il QR (gkseason.it/d) viene loggato automaticamente come
+utente OSPITE e atterra dentro la stagione demo, in sola lettura, senza
+registrarsi e senza digitare nulla.
 
-VERIFICHE GIA' FATTE: esbuild su tutti i .js OK; parità i18n (2246 chiavi in 4
-lingue) OK; scope-check nessun bug; le 3 pagine legali provate su sito avviato
-tornano 200.
+Quando preme "Esci dalla demo" nella fascia gialla, l'ospite NON finisce
+su una dashboard vuota: la sessione viene chiusa e viene riportato sulla
+home pubblica del sito. Per tutti gli altri preparatori l'uscita resta
+identica a prima (torna alla propria dashboard).
 
-COMANDI GIT (dalla cartella del progetto):
-  git config user.email "coianiz.cristian@gmail.com"
-  git add -A            # mette in stage tutti i file di questo pacchetto
-  git commit -m "Sicurezza + GDPR: pagine legali, header, consensi, minori, cognome, footer legale, prep isolamento RLS"
+Non c'e' impersonificazione e non c'e' login nascosto: l'ospite e' un
+utente vero con le sue credenziali. La sola lettura NON e' codice nuovo,
+arriva dall'impianto che hai gia' (cookie gk_demo -> contestoDati() usa
+lettoreDemo(), + DemoGuardia lato client).
+
+Se una sessione e' gia' attiva, la route NON la tocca: ti manda solo in
+dashboard. Quindi se apri il link mentre sei loggato col tuo account non
+rischi di essere buttato fuori.
+
+
+LA PASSWORD DELL'OSPITE — nessuno la digita
+-------------------------------------------
+Non serve nessun autocompletamento nella landing e l'ospite non vede mai
+la password. Il login avviene LATO SERVER dentro /api/ospite: la route
+legge DEMO_OSPITE_PASSWORD dalle variabili d'ambiente, chiama Supabase
+dal server e rimanda al browser solo i cookie di sessione gia' firmati.
+La password non e' nel sorgente, non e' nel bundle JavaScript, non passa
+da nessuna pagina.
+
+Quindi usane una lunga e casuale, che non dovrai mai riscrivere.
+
+
+FILE INCLUSI
+------------
+  app/api/ospite/route.js          NUOVO  - ingresso: login + modalita' demo
+  app/api/ospite/esci/route.js     NUOVO  - uscita: signout + home pubblica
+  lib/demo.js                      MODIF. - cookie gk_ospite + helper inOspite()
+  app/[locale]/(app)/layout.js     MODIF. - passa il flag ospite al banner
+  app/components/DemoBanner.js     MODIF. - uscita differenziata per l'ospite
+  next.config.mjs                  MODIF. - redirect /d -> /api/ospite
+  middleware.js                    MODIF. - /d escluso dal matcher next-intl
+
+Nessun file di traduzione toccato: le etichette restano quelle attuali.
+Nessuna migrazione SQL: il database non viene toccato.
+
+
+PRIMA DI DEPLOYARE — 3 passaggi
+-------------------------------
+
+1) CREA L'UTENTE OSPITE
+   Supabase -> Authentication -> Users -> Add user
+     Email:    ospite@gkseason.it
+     Password: quella che ti ho generato in chat (o una tua, lunga)
+     Spunta "Auto Confirm User" (altrimenti il login fallisce).
+
+   Il trigger sul database gli assegna ruolo 'allenatore' da solo: e'
+   quello che serve, perche' la demo la vedono solo i preparatori.
+
+   VERIFICA che NON sia lo stesso utente di demo@gkt.test. La route ha un
+   salvagente che blocca il caso, ma meglio non arrivarci.
+
+2) VARIABILI D'AMBIENTE  (Vercel -> Settings -> Environment Variables,
+   e anche in .env.local per lo sviluppo locale)
+
+     DEMO_OSPITE_EMAIL      = ospite@gkseason.it
+     DEMO_OSPITE_PASSWORD   = <la password del punto 1>
+
+   Su Vercel mettile su Production + Preview + Development.
+   Senza queste due la route non rompe nulla: manda su /registrati.
+
+3) DEMO ACCESA
+   Pannello supervisore -> tab Demo -> attiva = true
+   (oppure: update demo_config set valore='true' where chiave='attiva';)
+
+   Se la demo e' spenta, l'ospite viene mandato su /registrati invece di
+   ritrovarsi un'app vuota.
+
+
+DEPLOY
+------
+  cd D:\SITO\GKT
+  git add app/api/ospite lib/demo.js "app/[locale]/(app)/layout.js" ^
+          app/components/DemoBanner.js next.config.mjs middleware.js
+  git -c user.email="coianiz.cristian@gmail.com" -c user.name="Cristian Coianiz" ^
+      commit -m "Ingresso ospite da QR: /d entra in demo, uscita sul sito pubblico"
   git push
 
-DOPO IL DEPLOY:
-  - apri /privacy-policy: deve mostrarsi (niente errore)
-  - la registrazione richiede la spunta privacy
-  - crei un portiere di prova: ha allenatore_id valorizzato
-  - controlla la console del browser per eventuali blocchi CSP (nel caso, aggiungi
-    il dominio in next.config.mjs)
-  Poi lancia il Passo C (documentazione-gdpr/passoC-rls-isolamento.sql), a sezioni.
-============================================================
+
+COME PROVARLO (importante: finestra IN INCOGNITO)
+-------------------------------------------------
+Da finestra normale sei gia' loggato e la route ti manda solo in
+dashboard, quindi sembrerebbe non funzionare.
+
+  1. Apri una finestra in incognito
+  2. Vai su https://gkseason.it/d
+  3. Attesa: atterri sulla dashboard con la fascia gialla della demo,
+     il popup di benvenuto e i dati di Azzurra Sandrigo / Alta Padovana
+  4. Prova a salvare qualcosa: deve rifiutare
+  5. Premi "Esci dalla demo": devi finire sulla home pubblica, sloggato
+
+  6. Controprova con un TUO account preparatore: entra in demo dalla voce
+     di menu, esci, e verifica che torni sulla TUA dashboard come prima.
+
+
+VERIFICHE FATTE
+---------------
+  node --check      lib/demo.js, api/ospite/route.js,
+                    api/ospite/esci/route.js                        OK
+  npx esbuild       DemoBanner.js, (app)/layout.js                  OK
+  npx next build    completo, 270 pagine generate,
+                    /api/ospite e /api/ospite/esci registrate        OK
+
+  app/[locale]/layout.js e' stato toccato solo temporaneamente per
+  aggirare Google Fonts nel sandbox, poi ripristinato: NON e' nel
+  pacchetto e nel tuo repo resta invariato.
+
+
+NOTE
+----
+- Il cookie gk_ospite e' httpOnly e di sessione, come gli altri cookie
+  demo: sparisce chiudendo il browser.
+- L'account ospite e' condiviso fra tutti i visitatori. In demo non puo'
+  scrivere nulla. Se uno esce dalla demo viene sloggato, quindi non resta
+  in giro una sessione autenticata senza controllo.
+- Su PostHog vedrai le session recording dei visitatori che girano nella
+  demo: e' il posto migliore per capire dove si perdono.

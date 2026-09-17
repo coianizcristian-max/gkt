@@ -81,6 +81,7 @@ export async function middleware(request) {
 }
 
 export const config = {
-  // Esclude /api, /auth (callback OAuth!), gli interni di Next e i file statici.
-  matcher: ['/((?!api|auth|_next|_vercel|.*\\..*).*)'],
+  // Esclude /api, /auth (callback OAuth!), /d (scorciatoia QR gestita da un
+  // redirect in next.config), gli interni di Next e i file statici.
+  matcher: ['/((?!api|auth|d$|_next|_vercel|.*\\..*).*)'],
 }

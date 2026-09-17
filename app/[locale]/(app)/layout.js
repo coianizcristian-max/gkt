@@ -8,7 +8,7 @@ import DemoBanner from '@/app/components/DemoBanner'
 import DemoGuardia from '@/app/components/DemoGuardia'
 import DemoPopup from '@/app/components/DemoPopup'
 import DemoEntra from '@/app/components/DemoEntra'
-import { getDemoConfig, inDemo, avvisoDemoVisto, contestoDati } from '@/lib/demo'
+import { getDemoConfig, inDemo, inOspite, avvisoDemoVisto, contestoDati } from '@/lib/demo'
 import BenvenutoPopup from '@/app/components/BenvenutoPopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
@@ -188,6 +188,8 @@ export default async function AppLayout({ children }) {
   // quando si entra e messo a tacere quando lo si chiude, cosi' non
   // ricompare a ogni ricaricamento di pagina.
   const mostraDemoPopup = demoInCorso && !(await avvisoDemoVisto())
+  // Sessione vetrina entrata da /d: l'uscita dalla demo la riporta sul sito.
+  const demoOspite = demoInCorso && (await inOspite())
 
   // Carica ordine sidebar personalizzato dal supervisore
   const { data: sidebarOrdineRows } = await supabase
@@ -324,7 +326,7 @@ export default async function AppLayout({ children }) {
           <Link href="/termini-di-servizio">{t('termini')}</Link>
         </footer>
       </div>
-      {demoInCorso && <DemoBanner dataTaglio={demoCfg.dataTaglio} />}
+      {demoInCorso && <DemoBanner dataTaglio={demoCfg.dataTaglio} ospite={demoOspite} />}
       {demoInCorso && <DemoGuardia />}
       {mostraDemoPopup
         ? <DemoPopup dataTaglio={demoCfg.dataTaglio} />

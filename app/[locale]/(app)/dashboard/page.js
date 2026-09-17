@@ -13,6 +13,14 @@ function fmtData(d) {
   return new Date(d + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
 }
 function fmtOra(t) { return t ? t.slice(0, 5) : '' }
+// timestamptz -> "12 set, 18:40" nel fuso italiano
+function fmtQuando(ts) {
+  if (!ts) return ''
+  return new Date(ts).toLocaleString('it-IT', {
+    timeZone: 'Europe/Rome', day: 'numeric', month: 'short',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -43,12 +51,17 @@ export default async function DashboardPage() {
   const tra7ggDate = new Date(oggiStr + 'T12:00:00Z')
   tra7ggDate.setUTCDate(tra7ggDate.getUTCDate() + 7)
   const tra7ggStr = tra7ggDate.toISOString().slice(0, 10)
+  // -7 giorni: finestra dei feedback lasciati dai portieri sulle sedute recenti
+  const da7ggDate = new Date(oggiStr + 'T12:00:00Z')
+  da7ggDate.setUTCDate(da7ggDate.getUTCDate() - 7)
+  const da7ggStr = da7ggDate.toISOString().slice(0, 10)
 
   let daValutareAllenamenti = []
   let daValutarePartite = []
   let prossimoAllenamento = null
   let partiteImminenti = []
   let misurazioniDaFare = []
+  let feedbackRecenti = []
   let proposteDaGestire = []
   let coupon = null
 
@@ -253,6 +266,45 @@ export default async function DashboardPage() {
         }
       }
     }
+    // ── Feedback lasciati dai portieri sulle sedute degli ultimi 7 giorni ──
+    // Finestra sulla DATA DELL'ALLENAMENTO (non su quella del feedback): cosi'
+    // funziona anche sullo storico, dove feedback_portiere_il non e' valorizzato
+    // perche' la colonna e' stata aggiunta dopo.
+    const allenRecenti = allenamenti.filter((a) => a.data >= da7ggStr && a.data <= oggiStr)
+    if (allenRecenti.length) {
+      const recentiById = {}
+      for (const a of allenRecenti) recentiById[a.id] = a
+      const nomePort = {}
+      for (const p of portieriList) nomePort[p.id] = `${p.nome ?? ''} ${p.cognome ?? ''}`.trim()
+
+      const { data: fbRows } = await db
+        .from('valutazioni')
+        .select('allenamento_id, portiere_id, voto_portiere, feedback_portiere, feedback_portiere_il')
+        .in('allenamento_id', Object.keys(recentiById))
+        .or('feedback_portiere.not.is.null,voto_portiere.not.is.null')
+
+      feedbackRecenti = (fbRows ?? [])
+        .map((r) => {
+          const a = recentiById[r.allenamento_id]
+          if (!a) return null
+          return {
+            allenamentoId: r.allenamento_id,
+            portiereId: r.portiere_id,
+            portiere: nomePort[r.portiere_id] ?? '',
+            categoria: a.squadra?.nome ?? '',
+            dataAllenamento: a.data,
+            dataFeedback: r.feedback_portiere_il ?? null,
+            voto: r.voto_portiere,
+            testo: r.feedback_portiere,
+          }
+        })
+        .filter(Boolean)
+        // I piu' recenti in cima: per data del feedback quando c'e', altrimenti
+        // per data della seduta.
+        .sort((x, y) =>
+          (y.dataFeedback ?? y.dataAllenamento).localeCompare(x.dataFeedback ?? x.dataAllenamento))
+        .slice(0, 12)
+    }
   }
 
   const totDaValutare = daValutareAllenamenti.length + daValutarePartite.length
@@ -448,6 +500,32 @@ export default async function DashboardPage() {
                     </span>
                   ))}
                 </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {feedbackRecenti.length > 0 && (
+          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--campo)', maxWidth: 'none' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--campo)' }}>
+              💬 {t('feedbackRicevuti', { count: feedbackRecenti.length })}
+              <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--ink-soft)', marginLeft: 6 }}>
+                ({t('feedbackUltimi7')})
+              </span>
+            </h3>
+            {feedbackRecenti.map((f, i) => (
+              <Link key={i} href={`/calendario/${f.allenamentoId}`} className="dv-item" style={{ display: 'block' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <span style={{ fontWeight: 600 }}>{f.portiere}{f.categoria ? ` · ${f.categoria}` : ''}</span>
+                  {f.voto != null && <span className="dv-data"><b>{f.voto}</b></span>}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>
+                  {t('feedbackSeduta')}: {fmtData(f.dataAllenamento)}
+                  {f.dataFeedback ? ` · ${t('feedbackScrittoIl')} ${fmtQuando(f.dataFeedback)}` : ''}
+                </div>
+                {f.testo && (
+                  <div style={{ fontSize: 13, marginTop: 4 }}>{f.testo}</div>
+                )}
               </Link>
             ))}
           </div>

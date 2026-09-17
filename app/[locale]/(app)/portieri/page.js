@@ -27,7 +27,7 @@ export default async function PortieriPage() {
   }
 
   const ownerId = await ownerDati(supabase, user?.id)
-  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
+  const { db, stagione, taglio, oggi: oggiCtx, demo } = await contestoDati(supabase, user?.id)
 
   let squadre = []
   let iscrizioni = []
@@ -96,7 +96,7 @@ export default async function PortieriPage() {
           <p style={{marginTop:10}}>{t.rich('guidaP4', { b: (ch) => <strong>{ch}</strong> })}</p>
           <p style={{marginTop:10}}>{t.rich('guidaP5', { b: (ch) => <strong>{ch}</strong> })}</p>
         </Guida>
-        {profilo?.ruolo === 'allenatore' && (
+        {!demo && profilo?.ruolo === 'allenatore' && (
           <OnboardingChecklist checks={[
             {
               ok: !!stagione,

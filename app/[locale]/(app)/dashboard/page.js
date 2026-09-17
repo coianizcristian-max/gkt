@@ -41,7 +41,7 @@ export default async function DashboardPage() {
 
   // In modalita' demo cambiano la sorgente dei dati (sola lettura sull'account
   // demo) e la data di riferimento. Fuori dalla demo: identico a prima.
-  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user.id)
+  const { db, stagione, taglio, oggi: oggiCtx, demo } = await contestoDati(supabase, user.id)
 
   // "Oggi" nel fuso italiano (Europe/Rome), NON in UTC: con toISOString() tra mezzanotte
   // e le ~02:00 (ora legale) la data risultava ancora quella di ieri, e le sedute odierne
@@ -406,7 +406,7 @@ export default async function DashboardPage() {
           <p className="sub-intro" style={{ marginBottom: 16 }}>
             {t('introSetup')}
           </p>
-          <OnboardingChecklist checks={checksOnboarding} />
+          {!demo && <OnboardingChecklist checks={checksOnboarding} />}
 
           {proposteDaGestire.length > 0 && (
           <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--giallo)', maxWidth: 'none' }}>
@@ -454,7 +454,7 @@ export default async function DashboardPage() {
           <p style={{marginTop:10}}>{t.rich('guidaP4', { b: (ch) => <strong>{ch}</strong> })}</p>
         </Guida>
 
-        {profilo?.ruolo === 'allenatore' && <OnboardingChecklist checks={checksOnboarding} />}
+        {!demo && profilo?.ruolo === 'allenatore' && <OnboardingChecklist checks={checksOnboarding} />}
 
         {/* Widget principale: cosa devo fare oggi */}
         {totDaValutare > 0 && (

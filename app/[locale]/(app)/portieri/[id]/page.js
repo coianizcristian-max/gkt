@@ -24,7 +24,7 @@ export default async function SchedaPortierePage({ params }) {
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
   // Il contesto va risolto PRIMA: le letture successive usano il suo client.
-  const { db, stagione: selezionata, ownerId, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
+  const { db, stagione: selezionata, ownerId, taglio, oggi: oggiCtx, demo } = await contestoDati(supabase, user?.id)
 
   const [{ data: piediVoci }, { data: portiere }] = await Promise.all([
     supabase.from('elenco_voci').select('valore').eq('elenco', 'piede').eq('attivo', true).order('ordine'),
@@ -152,7 +152,7 @@ export default async function SchedaPortierePage({ params }) {
             <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-soft)' }}>{t('daValutarePortiere', { n: daValutare })}</p>
           </Link>
         )}
-        {soloPortiere && (
+        {!demo && soloPortiere && (
           <OnboardingChecklist checks={[
             {
               ok: !!(portiere.nome && portiere.cognome),

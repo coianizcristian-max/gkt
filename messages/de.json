@@ -203,6 +203,9 @@
     "guidaP4": "Einheiten, in denen ein Torhüter <b>verletzt</b> ist, werden aus den Durchschnitten ausgeschlossen (mit 🩹 gekennzeichnet). Im <b>Torhüter-Vergleich</b> kannst du neben den Anwesenheiten eine Kennzahl aus dem Menü wählen und den <b>Durchschnitt der einzelnen Bewertungspunkte</b> (Technik, RPE usw.) zwischen Torhütern oder nach Kategorie vergleichen."
   },
   "comeIniziare": {
+    "demoBadge": "DEMO",
+    "demoTitolo": "Wirf vorher einen Blick auf eine fertig gefüllte Saison",
+    "demoTesto": "Über „Demo-Saison“ unten im linken Menü kommst du in ein schreibgeschütztes Beispielarchiv: Kalender, Bewertungen, Ziele, Statistiken und Berichte voller Daten. Es zeigt dir nur, wohin es führt — freiwillig und ohne Einfluss auf die Schritte unten.",
     "titolo": "Erste Schritte",
     "introPortiere": "Hier sind die wichtigsten Bereiche von GKSeason und wie du sie als Torhüter nutzt.",
     "introAllenatore": "Folge diesen Schritten der Reihe nach, um GKSeason einzurichten und mit deinem Team zu nutzen.",
@@ -1809,6 +1812,7 @@
     "nuovaLabel": "Neuer persönlicher Zielvorschlag"
   },
   "benvenutoPopup": {
+    "demoSuggerimento": "Willst du gleich sehen, wie es mit einer fertig gefüllten Saison aussieht? Klicke unten im linken Menü auf „Demo-Saison“: Du kommst in ein schreibgeschütztes Beispielarchiv mit Einheiten, Bewertungen, Zielen und Statistiken. Du kannst jederzeit zu deinen Daten zurück.",
     "badge": "🎁 Willkommen",
     "titolo": "Hallo{nome}, willkommen an Bord von GKSeason.it!",
     "sottotitoloPortiere": "Deine Sportsaison und dein Wachstum zwischen den Pfosten beginnen hier.",

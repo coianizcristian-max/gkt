@@ -203,6 +203,9 @@
     "guidaP4": "Le sessioni in cui un portiere risulta <b>infortunato</b> sono escluse dalle medie (indicate con 🩹). Nel <b>Confronto portieri</b>, oltre alle presenze, puoi scegliere una metrica dal menu e confrontare la <b>media delle singole voci</b> di valutazione (tecnica, RPE, ecc.) tra i portieri o per categoria."
   },
   "comeIniziare": {
+    "demoBadge": "DEMO",
+    "demoTitolo": "Prima di iniziare, dai un'occhiata a una stagione già compilata",
+    "demoTesto": "Con «Stagione demo», in fondo al menu a sinistra, entri in un archivio dimostrativo in sola visualizzazione: calendario, valutazioni, obiettivi, statistiche e report già pieni di dati. Serve solo a farti vedere dove si arriva: non è obbligatorio e non influisce sui passi qui sotto.",
     "titolo": "Come iniziare",
     "introPortiere": "Ecco le sezioni principali di GKSeason e come usarle come portiere.",
     "introAllenatore": "Segui questi passaggi in ordine per configurare GKSeason e iniziare a usarlo con la tua squadra.",
@@ -1809,6 +1812,7 @@
     "nuovaLabel": "Nuova proposta di obiettivo personale"
   },
   "benvenutoPopup": {
+    "demoSuggerimento": "Vuoi vedere subito come funziona con una stagione già compilata? Clicca «Stagione demo» in fondo al menu a sinistra: entri in un archivio dimostrativo, in sola visualizzazione, con allenamenti, valutazioni, obiettivi e statistiche già inseriti. Puoi tornare ai tuoi dati quando vuoi.",
     "badge": "🎁 Benvenuto",
     "titolo": "Ciao{nome}, benvenuto a bordo di GKSeason.it!",
     "sottotitoloPortiere": "La tua stagione sportiva e la tua crescita tra i pali iniziano qui.",

@@ -203,6 +203,9 @@
     "guidaP4": "Las sesiones en las que un portero está <b>lesionado</b> se excluyen de las medias (indicadas con 🩹). En la <b>Comparación de porteros</b>, además de las asistencias, puedes elegir una métrica del menú y comparar la <b>media de cada apartado</b> de evaluación (técnica, RPE, etc.) entre los porteros o por categoría."
   },
   "comeIniziare": {
+    "demoBadge": "DEMO",
+    "demoTitolo": "Antes de empezar, echa un vistazo a una temporada ya rellenada",
+    "demoTesto": "Con «Temporada demo», al final del menú de la izquierda, entras en un archivo de muestra en solo lectura: calendario, valoraciones, objetivos, estadísticas e informes llenos de datos. Solo sirve para enseñarte adónde se llega: es opcional y no afecta a los pasos de abajo.",
     "titolo": "Cómo empezar",
     "introPortiere": "Estas son las secciones principales de GKSeason y cómo usarlas como portero.",
     "introAllenatore": "Sigue estos pasos en orden para configurar GKSeason y empezar a usarlo con tu equipo.",
@@ -1809,6 +1812,7 @@
     "nuovaLabel": "Nueva propuesta de objetivo personal"
   },
   "benvenutoPopup": {
+    "demoSuggerimento": "¿Quieres ver cómo funciona con una temporada ya rellenada? Pulsa «Temporada demo» al final del menú de la izquierda: entras en un archivo de muestra en solo lectura, con entrenamientos, valoraciones, objetivos y estadísticas ya cargados. Puedes volver a tus datos cuando quieras.",
     "badge": "🎁 Bienvenido",
     "titolo": "¡Hola{nome}, bienvenido a bordo de GKSeason.it!",
     "sottotitoloPortiere": "Tu temporada deportiva y tu crecimiento bajo palos empiezan aquí.",

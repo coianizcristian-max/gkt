@@ -185,7 +185,9 @@ export default async function AppLayout({ children }) {
   const demoAttiva = demoCfg.attiva && !!demoCfg.ownerId
   const demoVisibile = demoAttiva && ruoloUtente === 'allenatore' && user?.id !== demoCfg.ownerId
   const demoInCorso = demoVisibile && (await inDemo())
-  const mostraDemoPopup = demoInCorso && demoAvvisiVisti < demoCfg.avvisiIngresso
+  // Il popup demo compare a ogni ingresso: e' l'unico punto in cui si spiega
+  // che i dati non sono reali e come tornare indietro.
+  const mostraDemoPopup = demoInCorso
 
   // Carica ordine sidebar personalizzato dal supervisore
   const { data: sidebarOrdineRows } = await supabase
@@ -302,7 +304,7 @@ export default async function AppLayout({ children }) {
       {mostraDemoPopup
         ? <DemoPopup dataTaglio={demoCfg.dataTaglio} />
         : mostraBenvenuto
-          ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} ruolo={ruoloUtente} mostraPiani={mostraPiani} />
+          ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} ruolo={ruoloUtente} mostraPiani={mostraPiani} demoDisponibile={demoVisibile} />
           : (versioneNuova && <VersionePopup versione={versioneNuova} />)}
     </div>
   )

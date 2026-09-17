@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Link } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
 
-export default function BenvenutoPopup({ nome, giorni, ruolo, mostraPiani = false }) {
+export default function BenvenutoPopup({ nome, giorni, ruolo, mostraPiani = false, demoDisponibile = false }) {
   const t = useTranslations('benvenutoPopup')
   const [visible, setVisible] = useState(true)
   const [closing, setClosing] = useState(false)
@@ -39,6 +39,11 @@ export default function BenvenutoPopup({ nome, giorni, ruolo, mostraPiani = fals
             <p className="versione-intro" style={{ marginTop: 12 }}>
               {t.rich('prova', { giorni, b: (ch) => <b>{ch}</b> })}
             </p>
+          )}
+          {demoDisponibile && (
+            <div className="demo-uscita" style={{ marginTop: 14 }}>
+              {t('demoSuggerimento')}
+            </div>
           )}
           <p className="versione-intro" style={{ marginTop: 12, fontWeight: 600 }}>
             {t('buonLavoro')}

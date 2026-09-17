@@ -8,7 +8,6 @@ export default function DemoConfigEditor({ cfg, righe, riepilogo }) {
   const t = useTranslations('demoConfig')
   const [attiva, setAttiva] = useState(cfg.attiva === 'true')
   const [dataTaglio, setDataTaglio] = useState(cfg.data_taglio ?? '')
-  const [avvisi, setAvvisi] = useState(cfg.avvisi_ingresso ?? '3')
   const [salvando, setSalvando] = useState(false)
   const [esito, setEsito] = useState(null)
 
@@ -59,16 +58,9 @@ export default function DemoConfigEditor({ cfg, righe, riepilogo }) {
         <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 4 }}>{t('dataTaglioNota')}</p>
       </div>
 
-      <div className="campo">
-        <label htmlFor="demo-avvisi">{t('avvisi')}</label>
-        <input id="demo-avvisi" type="number" min="0" max="10" value={avvisi}
-          onChange={(e) => setAvvisi(e.target.value)} style={{ maxWidth: 120 }} />
-        <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 4 }}>{t('avvisiNota')}</p>
-      </div>
-
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
         <button type="button" className="btn" disabled={salvando}
-          onClick={() => salva({ data_taglio: dataTaglio, avvisi_ingresso: String(avvisi) })}>
+          onClick={() => salva({ data_taglio: dataTaglio })}>
           {salvando ? t('salvataggio') : t('salva')}
         </button>
         {esito === 'ok' && <span style={{ color: 'var(--campo)', fontSize: 13 }}>{t('salvato')}</span>}

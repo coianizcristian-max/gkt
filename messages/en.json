@@ -203,6 +203,9 @@
     "guidaP4": "Sessions where a goalkeeper is <b>injured</b> are excluded from the averages (shown with 🩹). In the <b>Goalkeeper comparison</b>, besides attendance, you can pick a metric from the menu and compare the <b>average of the individual evaluation items</b> (technique, RPE, etc.) between goalkeepers or by category."
   },
   "comeIniziare": {
+    "demoBadge": "DEMO",
+    "demoTitolo": "Before you start, take a look at a season already filled in",
+    "demoTesto": "With \"Demo season\", at the bottom of the left menu, you enter a read-only sample archive: calendar, ratings, objectives, statistics and reports already full of data. It just shows you where this leads: it is optional and does not affect the steps below.",
     "titolo": "Getting started",
     "introPortiere": "Here are the main sections of GKSeason and how to use them as a goalkeeper.",
     "introAllenatore": "Follow these steps in order to set up GKSeason and start using it with your team.",
@@ -1809,6 +1812,7 @@
     "nuovaLabel": "New personal goal proposal"
   },
   "benvenutoPopup": {
+    "demoSuggerimento": "Want to see how it works with a season already filled in? Click \"Demo season\" at the bottom of the left menu: you enter a read-only sample archive with sessions, ratings, objectives and statistics already there. You can go back to your own data whenever you like.",
     "badge": "🎁 Welcome",
     "titolo": "Hi{nome}, welcome aboard GKSeason.it!",
     "sottotitoloPortiere": "Your sporting season and your growth between the posts start here.",

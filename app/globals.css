@@ -2138,3 +2138,18 @@ body:has(.demo-banner) .shell { padding-top: 38px; }
   border-left: 3px solid var(--giallo);
   border-radius: var(--r-sm); font-size: 13px;
 }
+
+/* Richiamo alla stagione demo nella procedura guidata: informativo, non bloccante */
+.demo-richiamo {
+  display: flex; gap: 14px; align-items: flex-start;
+  margin: 18px 0 24px; padding: 14px 16px;
+  background: rgba(232, 167, 44, 0.12);
+  border: 1px solid var(--giallo); border-radius: var(--r);
+}
+.demo-richiamo-badge {
+  flex: 0 0 auto; background: var(--rosso); color: var(--bianco);
+  border-radius: var(--r-sm); padding: 3px 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+}
+.demo-richiamo-titolo { font-weight: 700; margin-bottom: 3px; }
+.demo-richiamo-testo { font-size: 14px; color: var(--ink-soft); line-height: 1.45; }

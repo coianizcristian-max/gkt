@@ -157,13 +157,21 @@ export default function CalendarioMeseSupervisione({ allenamenti, partite = [], 
 
   const MAX_CHIP = 4
 
+  const tipoPartitaLabel = (tipo) => {
+    const k = tipo || 'campionato'
+    try { return t(`tipo_${k}`) } catch { return k.charAt(0).toUpperCase() + k.slice(1) }
+  }
+
   function dettaglio(ev) {
     const passata = ev.data < oggiStr
     if (ev._tipo === 'partita') {
       return (
         <div className="calx-detail-in">
-          <div className="calx-state" style={{ color: 'var(--ink-soft)' }}>
-            {ev.casa ? t('casa') : t('trasferta')}
+          <div className="calx-state calx-state-partita" style={{ color: 'var(--ink-soft)' }}>
+            <IconaTipoPartita tipo={ev.tipo} size={16} className="calx-detail-tipo" />
+            <span>{tipoPartitaLabel(ev.tipo)}</span>
+            <span className="calx-detail-sep">·</span>
+            <span>{ev.casa ? t('casa') : t('trasferta')}</span>
           </div>
           {ev.assenti_annunciati?.length > 0 && (
             <div className="cal-preview-note" style={{ marginBottom: 8, background: '#fff8e6', border: '1px solid #f0d98a', borderRadius: 8, padding: '6px 8px' }}>

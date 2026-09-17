@@ -2189,3 +2189,8 @@ body:has(.demo-banner) .shell { padding-top: 38px; }
 }
 .brand-demo-societa { font-size: 13px; font-weight: 600; color: var(--giallo); }
 .brand-demo-stagione { font-size: 12px; color: #cbd6df; }
+
+/* Tipologia partita nella preview del giorno */
+.calx-state-partita { display: flex; align-items: center; gap: 6px; }
+.calx-detail-tipo { flex: 0 0 auto; opacity: 0.85; }
+.calx-detail-sep { opacity: 0.5; }

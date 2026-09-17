@@ -2357,6 +2357,10 @@
     "ordineSalvato": "✓ Orden guardado"
   },
   "calendarioMese": {
+    "tipo_campionato": "Liga",
+    "tipo_coppa": "Copa",
+    "tipo_torneo": "Torneo",
+    "tipo_amichevole": "Amistoso",
     "votiPortieri": "Notas porteros",
     "valutazioneAllenatore": "Valoración del entrenador",
     "tipoAllenamento": "Entrenamiento",

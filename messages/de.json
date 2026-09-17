@@ -2357,6 +2357,10 @@
     "ordineSalvato": "✓ Reihenfolge gespeichert"
   },
   "calendarioMese": {
+    "tipo_campionato": "Meisterschaft",
+    "tipo_coppa": "Pokal",
+    "tipo_torneo": "Turnier",
+    "tipo_amichevole": "Freundschaftsspiel",
     "votiPortieri": "Torwart-Noten",
     "valutazioneAllenatore": "Bewertung des Trainers",
     "tipoAllenamento": "Training",

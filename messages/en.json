@@ -2357,6 +2357,10 @@
     "ordineSalvato": "✓ Order saved"
   },
   "calendarioMese": {
+    "tipo_campionato": "League",
+    "tipo_coppa": "Cup",
+    "tipo_torneo": "Tournament",
+    "tipo_amichevole": "Friendly",
     "votiPortieri": "Goalkeeper ratings",
     "valutazioneAllenatore": "Coach's evaluation",
     "tipoAllenamento": "Training",

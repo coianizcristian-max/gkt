@@ -231,6 +231,12 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const fmtMin = (m) => m >= 60 ? t('oreMin', { h: Math.floor(m / 60), min: Math.round(m % 60) }) : t('minuti', { min: Math.round(m) })
   const fmtDvData = (d) => new Date(d + 'T00:00:00').toLocaleDateString(dl, { day: 'numeric', month: 'short' })
 
+  // Etichetta della tipologia: usa le traduzioni gia' presenti per le partite.
+  const tipoPartitaLabel = (tipo) => {
+    const k = tipo || 'campionato'
+    try { return t(`tipo_${k}`) } catch { return k.charAt(0).toUpperCase() + k.slice(1) }
+  }
+
   const isOpen = (ev) => singolo || openId === cid(ev)
 
   const MAX_CHIP = 4
@@ -241,8 +247,11 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
     if (ev._tipo === 'partita') {
       return (
         <div className="calx-detail-in">
-          <div className="calx-state" style={{ color: 'var(--ink-soft)' }}>
-            {ev.casa ? t('casa') : t('trasferta')}
+          <div className="calx-state calx-state-partita" style={{ color: 'var(--ink-soft)' }}>
+            <IconaTipoPartita tipo={ev.tipo} size={16} className="calx-detail-tipo" />
+            <span>{tipoPartitaLabel(ev.tipo)}</span>
+            <span className="calx-detail-sep">·</span>
+            <span>{ev.casa ? t('casa') : t('trasferta')}</span>
           </div>
           {(ev.ora_ritrovo || ev.ora_inizio) && (
             <div style={{ marginBottom: 6, fontSize: 13, color: 'var(--ink-soft)' }}>

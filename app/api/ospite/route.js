@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { getDemoConfig, COOKIE_DEMO, COOKIE_DEMO_AVVISO, COOKIE_OSPITE } from '@/lib/demo'
 
 /**
@@ -13,9 +14,15 @@ import { getDemoConfig, COOKIE_DEMO, COOKIE_DEMO_AVVISO, COOKIE_OSPITE } from '@
  * client), esattamente come per qualunque altro preparatore che entra in
  * demo dalla voce di menu.
  *
- * Variabili d'ambiente richieste (Vercel + .env.local):
+ * Variabile d'ambiente richiesta (Vercel + .env.local):
  *   DEMO_OSPITE_EMAIL
- *   DEMO_OSPITE_PASSWORD
+ *
+ * NIENTE PASSWORD: il progetto ha hCaptcha attivo sull'Auth, quindi ogni
+ * signInWithPassword fatto dal server viene rifiutato ("captcha protection:
+ * request disallowed"), perche' lato server non c'e' nessun captcha da
+ * risolvere. Apriamo la sessione con la service_role: generiamo un token
+ * monouso per l'ospite (generateLink, che NON invia mail) e lo consumiamo
+ * con verifyOtp. Il captcha non tocca questo percorso.
  *
  * Se qualcosa non e' a posto (demo spenta, credenziali mancanti, login
  * fallito) non mostriamo errori a un potenziale iscritto: lo mandiamo su
@@ -56,17 +63,41 @@ export async function GET(request) {
   } = await supabase.auth.getUser()
   if (giaLoggato) return vaiA('/dashboard')
 
-  // 2) Credenziali dell'ospite.
+  // 2) Identita' dell'ospite.
   const email = process.env.DEMO_OSPITE_EMAIL
-  const password = process.env.DEMO_OSPITE_PASSWORD
-  if (!email || !password) return vaiA('/registrati')
+  if (!email) return vaiA('/registrati')
 
   // 3) La demo dev'essere accesa, altrimenti l'ospite vedrebbe un'app vuota.
   const cfg = await getDemoConfig()
   if (!cfg.attiva || !cfg.ownerId) return vaiA('/registrati')
 
-  // 4) Login dell'ospite. I cookie di sessione finiscono su `risposta`.
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  // 4) Sessione dell'ospite, senza password e senza captcha:
+  //    a) con la service_role generiamo un token monouso per quell'email
+  //       (generateLink NON manda nessuna mail, restituisce solo il token);
+  //    b) lo consumiamo con verifyOtp sul client utente, che scrive i
+  //       cookie di sessione su `risposta`.
+  let hashedToken = null
+  try {
+    const admin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      { auth: { persistSession: false } },
+    )
+    const { data: link, error: errLink } = await admin.auth.admin.generateLink({
+      type: 'magiclink',
+      email,
+    })
+    if (errLink) return vaiA('/registrati')
+    hashedToken = link?.properties?.hashed_token ?? null
+  } catch {
+    return vaiA('/registrati')
+  }
+  if (!hashedToken) return vaiA('/registrati')
+
+  const { data, error } = await supabase.auth.verifyOtp({
+    type: 'magiclink',
+    token_hash: hashedToken,
+  })
   if (error || !data?.user) return vaiA('/registrati')
 
   // 5) Salvagente: l'ospite non deve MAI coincidere con il proprietario della

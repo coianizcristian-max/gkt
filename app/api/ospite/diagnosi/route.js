@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic'
 export async function GET(request) {
   const r = {
     envEmailPresente: !!process.env.DEMO_OSPITE_EMAIL,
-    envPasswordPresente: !!process.env.DEMO_OSPITE_PASSWORD,
+    servizioRolePresente: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
     emailConfigurata: process.env.DEMO_OSPITE_EMAIL ?? null,
     demoAttiva: null,
     demoOwnerEmail: null,
@@ -33,8 +33,8 @@ export async function GET(request) {
     esito: null,
   }
 
-  if (!r.envEmailPresente || !r.envPasswordPresente) {
-    r.esito = 'Variabili d\'ambiente mancanti in questo deploy. Aggiungile su Vercel e RIDEPLOYA: valgono dal deploy successivo.'
+  if (!r.envEmailPresente || !r.servizioRolePresente) {
+    r.esito = 'Manca DEMO_OSPITE_EMAIL o SUPABASE_SERVICE_ROLE_KEY in questo deploy. Aggiungile su Vercel e RIDEPLOYA: valgono dal deploy successivo.'
     return NextResponse.json(r)
   }
 
@@ -84,16 +84,45 @@ export async function GET(request) {
     },
   )
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: process.env.DEMO_OSPITE_EMAIL,
-    password: process.env.DEMO_OSPITE_PASSWORD,
+  // Stesso percorso della route vera: token monouso via service_role, poi
+  // verifyOtp. Niente password, quindi il captcha dell'Auth non interferisce.
+  let hashedToken = null
+  try {
+    const admin2 = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      { auth: { persistSession: false } },
+    )
+    const { data: link, error: errLink } = await admin2.auth.admin.generateLink({
+      type: 'magiclink',
+      email: process.env.DEMO_OSPITE_EMAIL,
+    })
+    if (errLink) {
+      r.loginOspite = 'generateLink FALLITO: ' + errLink.message
+      r.esito = 'La service_role non riesce a generare il token per l\'ospite. Controlla SUPABASE_SERVICE_ROLE_KEY e che l\'email dell\'ospite esista in Authentication.'
+      return NextResponse.json(r)
+    }
+    hashedToken = link?.properties?.hashed_token ?? null
+  } catch (e) {
+    r.loginOspite = 'generateLink eccezione: ' + (e?.message ?? 'sconosciuta')
+    r.esito = 'Errore contattando l\'Auth di Supabase con la service_role.'
+    return NextResponse.json(r)
+  }
+
+  if (!hashedToken) {
+    r.loginOspite = 'FALLITO: nessun token restituito da generateLink'
+    r.esito = 'generateLink non ha restituito hashed_token.'
+    return NextResponse.json(r)
+  }
+
+  const { data, error } = await supabase.auth.verifyOtp({
+    type: 'magiclink',
+    token_hash: hashedToken,
   })
 
   if (error || !data?.user) {
-    r.loginOspite = 'FALLITO: ' + (error?.message ?? 'nessun utente restituito')
-    r.esito = /confirm/i.test(error?.message ?? '')
-      ? 'Login fallito: email NON confermata. Supabase -> Authentication -> l\'utente ospite -> conferma l\'email (o ricrealo con "Auto Confirm User" spuntato).'
-      : 'Login fallito: email o password nelle variabili d\'ambiente non corrispondono a quelle dell\'utente su Supabase.'
+    r.loginOspite = 'verifyOtp FALLITO: ' + (error?.message ?? 'nessun utente restituito')
+    r.esito = 'Il token monouso e\' stato generato ma non accettato. Mandami questo messaggio.'
     return NextResponse.json(r)
   }
 

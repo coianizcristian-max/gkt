@@ -417,7 +417,9 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
           )}
         </div>
         <span className={`calx-badge ${ev._tipo === 'partita' ? 'par' : 'all'}`}>
-          {ev._tipo === 'partita' ? t('badgePartita') : t('tipoAllenamento')}
+          {ev._tipo === 'partita'
+            ? <><IconaTipoPartita tipo={ev.tipo} size={13} className="calx-badge-ico" />{tipoPartitaLabel(ev.tipo)}</>
+            : t('tipoAllenamento')}
         </span>
         {mostraChev && <span className="calx-rchev">›</span>}
       </div>

@@ -2194,3 +2194,7 @@ body:has(.demo-banner) .shell { padding-top: 38px; }
 .calx-state-partita { display: flex; align-items: center; gap: 6px; }
 .calx-detail-tipo { flex: 0 0 auto; opacity: 0.85; }
 .calx-detail-sep { opacity: 0.5; }
+
+/* Tipologia nella riga compatta della preview */
+.calx-badge { display: inline-flex; align-items: center; gap: 5px; }
+.calx-badge-ico { flex: 0 0 auto; opacity: 0.9; }

@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
+import { trackEvento } from '@/app/components/PostHogProvider'
+import { trackMetaEvento } from '@/app/components/MetaPixel'
+import { leggiAttribuzione } from '@/app/components/AttribuzioneUtm'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -71,6 +74,11 @@ export default function DemoPopup({ dataTaglio, ospite = false }) {
         })
         const dati = await res.json().catch(() => ({}))
         if (!res.ok) { setErrore(dati.error || tn('erroreGenerico')); setInvio(false); return }
+        // Contatto acquisito: e' la conversione che conta davvero, perche'
+        // e' l'unico dato che resta tuo anche se il visitatore non si iscrive.
+        const attribuzione = leggiAttribuzione() || {}
+        trackMetaEvento('Lead', { fonte: attribuzione.utm_source || 'demo' })
+        trackEvento('newsletter_da_demo', { ...attribuzione, esito: dati.stato || 'conferma_inviata' })
       } catch {
         setErrore(tn('erroreRete')); setInvio(false); return
       }

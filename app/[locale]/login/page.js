@@ -68,9 +68,13 @@ export default function LoginPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: invToken }),
         })
-        // Azzera il token nei metadati SOLO se la consumazione è riuscita,
-        // altrimenti perderemmo il "paracadute" per ritentare al prossimo login.
-        if (resInv.ok && user?.user_metadata?.invito_token) {
+        // Azzera il token nei metadati se la consumazione è riuscita OPPURE se
+        // l'invito è ormai esaurito (già consumato / inesistente): in quel caso
+        // ritentare a ogni login è inutile e genera un 410 a ripetizione.
+        // In tutti gli altri casi (es. errore temporaneo) il token resta:
+        // è il "paracadute" per riprovare al login successivo.
+        const esaurito = resInv.status === 404 || resInv.status === 410
+        if ((resInv.ok || esaurito) && user?.user_metadata?.invito_token) {
           await supabase.auth.updateUser({ data: { invito_token: null } })
         }
       }

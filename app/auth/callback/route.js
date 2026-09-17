@@ -21,10 +21,16 @@ export async function GET(request) {
         const token = user?.user_metadata?.invito_token
         if (user && token) {
           const res = await consumaInvito(token, user)
-          // Rimuovi il token dai metadati SOLO se la consumazione è riuscita:
-          // se fallisce lo teniamo, così il login successivo può ritentare
+          // Rimuovi il token dai metadati se la consumazione è riuscita oppure
+          // se l'invito è esaurito (già consumato / inesistente): tenerlo
+          // farebbe ritentare a vuoto a ogni login. Se invece l'errore è
+          // temporaneo lo teniamo, così il login successivo può ritentare
           // (altrimenti l'utente resterebbe 'allenatore' per sempre).
-          if (res?.ok) {
+          if (!res?.ok) {
+            console.error('consumaInvito da callback NON riuscito:', res?.status, res?.error)
+          }
+          const esaurito = res?.status === 404 || res?.status === 410
+          if (res?.ok || esaurito) {
             const admin = createAdminClient(
               process.env.NEXT_PUBLIC_SUPABASE_URL,
               process.env.SUPABASE_SERVICE_ROLE_KEY

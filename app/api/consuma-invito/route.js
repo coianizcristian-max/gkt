@@ -16,7 +16,12 @@ export async function POST(request) {
 
     const res = await consumaInvito(token, user)
     if (res.error) {
-      return NextResponse.json({ error: res.error }, { status: res.status })
+      // `esaurito` = l'invito non esiste più o è già stato consumato: il token
+      // nei metadati non servirà mai più, il chiamante può azzerarlo.
+      return NextResponse.json(
+        { error: res.error, esaurito: res.esaurito === true },
+        { status: res.status }
+      )
     }
     return NextResponse.json({ ok: true, tipo: res.tipo })
   } catch (err) {

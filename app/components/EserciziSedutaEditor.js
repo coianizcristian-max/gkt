@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { tipologiaTradotta } from '@/lib/elenchi'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -12,6 +12,18 @@ export default function EserciziSedutaEditor({ esercizi: iniziali, allenamentoId
   const locale = useLocale()
   const router = useRouter()
   const [lista, setLista] = useState(iniziali ?? [])
+
+  // Le props cambiano quando la pagina si rigenera dopo un salvataggio
+  // (router.refresh). useState pero' legge il valore iniziale solo al primo
+  // montaggio: senza questa sincronizzazione la lista restava quella di
+  // partenza — tipicamente vuota — finche' non si ricaricava la pagina.
+  const firmaProp = (iniziali ?? []).map((e) => e.id).join(',')
+  const ultimaFirma = useRef(firmaProp)
+  useEffect(() => {
+    if (ultimaFirma.current === firmaProp) return
+    ultimaFirma.current = firmaProp
+    setLista(iniziali ?? [])
+  }, [firmaProp, iniziali])
   const [dragIdx, setDragIdx] = useState(null)
   const [openIdx, setOpenIdx] = useState(null)
   const [busy, setBusy] = useState(false)

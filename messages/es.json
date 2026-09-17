@@ -2905,6 +2905,9 @@
       "soloLettura": "No disponible en modo demo: la temporada de ejemplo es solo de lectura."
   },
   "demoConfig": {
+    "stagione": "Temporada mostrada",
+    "stagioneAuto": "Automática (la que contiene la fecha)",
+    "stagioneNota": "Si la cuenta demo tiene varias temporadas activas, elige cuál mostrar. Con «Automática» se usa la que incluye la fecha de referencia.",
       "intro": "Configura la temporada demo que los preparadores pueden visitar en solo lectura.",
       "statoAttiva": "Demo activa",
       "statoSpenta": "Demo apagada",

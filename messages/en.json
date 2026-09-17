@@ -2905,6 +2905,9 @@
       "soloLettura": "Not available in demo mode: the sample season is read-only."
   },
   "demoConfig": {
+    "stagione": "Season shown",
+    "stagioneAuto": "Automatic (the one containing the date)",
+    "stagioneNota": "If the demo account has several active seasons, choose which one to show. With \"Automatic\" the season containing the reference date is used.",
       "intro": "Configure the demo season coaches can visit in read-only mode.",
       "statoAttiva": "Demo on",
       "statoSpenta": "Demo off",

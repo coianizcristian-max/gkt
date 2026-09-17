@@ -4,10 +4,11 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 /** Pannello supervisore: accende/spegne la demo e imposta la data di taglio. */
-export default function DemoConfigEditor({ cfg, righe, riepilogo }) {
+export default function DemoConfigEditor({ cfg, righe, riepilogo, stagioni = [] }) {
   const t = useTranslations('demoConfig')
   const [attiva, setAttiva] = useState(cfg.attiva === 'true')
   const [dataTaglio, setDataTaglio] = useState(cfg.data_taglio ?? '')
+  const [stagioneId, setStagioneId] = useState(cfg.stagione_id ?? '')
   const [salvando, setSalvando] = useState(false)
   const [esito, setEsito] = useState(null)
 
@@ -58,9 +59,22 @@ export default function DemoConfigEditor({ cfg, righe, riepilogo }) {
         <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 4 }}>{t('dataTaglioNota')}</p>
       </div>
 
+      <div className="campo">
+        <label htmlFor="demo-stagione">{t('stagione')}</label>
+        <select id="demo-stagione" value={stagioneId} onChange={(e) => setStagioneId(e.target.value)}>
+          <option value="">{t('stagioneAuto')}</option>
+          {stagioni.map((s) => (
+            <option key={s.id} value={s.id}>
+              {(s.societa_nome ? s.societa_nome + ' — ' : '') + s.nome}
+            </option>
+          ))}
+        </select>
+        <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 4 }}>{t('stagioneNota')}</p>
+      </div>
+
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
         <button type="button" className="btn" disabled={salvando}
-          onClick={() => salva({ data_taglio: dataTaglio })}>
+          onClick={() => salva({ data_taglio: dataTaglio, stagione_id: stagioneId })}>
           {salvando ? t('salvataggio') : t('salva')}
         </button>
         {esito === 'ok' && <span style={{ color: 'var(--campo)', fontSize: 13 }}>{t('salvato')}</span>}

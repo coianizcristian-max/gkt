@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
-const AMMESSE = ['attiva', 'data_taglio', 'avvisi_ingresso', 'owner_email']
+const AMMESSE = ['attiva', 'data_taglio', 'avvisi_ingresso', 'owner_email', 'stagione_id']
 
 /** Scrive demo_config. Solo supervisori. */
 export async function POST(request) {

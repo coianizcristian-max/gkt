@@ -29,6 +29,7 @@ export default async function SupervisoreDemoPage() {
 
   // riepilogo di cosa contiene la stagione demo, per conferma visiva
   let riepilogo = null
+  let stagioniDemo = []
   const { data: elenco } = await admin().auth.admin.listUsers({ page: 1, perPage: 200 })
   const ownerId = elenco?.users?.find((u) => u.email === cfg.owner_email)?.id ?? null
   if (ownerId) {
@@ -39,6 +40,11 @@ export default async function SupervisoreDemoPage() {
       a.from('esercizi').select('id', { count: 'exact', head: true }).eq('allenatore_id', ownerId),
     ])
     riepilogo = { ownerId, nStagioni: nStagioni ?? 0, nPortieri: nPortieri ?? 0, nEsercizi: nEsercizi ?? 0 }
+    const { data: stg } = await a.from('stagioni')
+      .select('id, nome, societa_nome, data_inizio, data_fine')
+      .eq('owner_id', ownerId).eq('attiva', true)
+      .order('created_at', { ascending: false })
+    stagioniDemo = stg ?? []
   }
 
   return (
@@ -50,7 +56,7 @@ export default async function SupervisoreDemoPage() {
       <div className="content">
         <SupervisoreNav />
         <p className="sub-intro">{td('intro')}</p>
-        <DemoConfigEditor cfg={cfg} righe={righe ?? []} riepilogo={riepilogo} />
+        <DemoConfigEditor cfg={cfg} righe={righe ?? []} riepilogo={riepilogo} stagioni={stagioniDemo} />
       </div>
     </>
   )

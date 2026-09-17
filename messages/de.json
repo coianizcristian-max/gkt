@@ -2905,6 +2905,9 @@
       "soloLettura": "Im Demo-Modus nicht verfügbar: die Beispielsaison ist schreibgeschützt."
   },
   "demoConfig": {
+    "stagione": "Angezeigte Saison",
+    "stagioneAuto": "Automatisch (die mit dem Stichtag)",
+    "stagioneNota": "Hat das Demo-Konto mehrere aktive Saisons, wähle die anzuzeigende. Mit „Automatisch“ wird die Saison mit dem Stichtag verwendet.",
       "intro": "Konfiguriere die Demo-Saison, die Trainer schreibgeschützt ansehen können.",
       "statoAttiva": "Demo aktiv",
       "statoSpenta": "Demo aus",

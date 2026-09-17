@@ -118,6 +118,7 @@
     "feedbackUltimi7": "last 7 days",
     "feedbackSeduta": "session",
     "feedbackScrittoIl": "written on",
+    "feedbackVoto": "rating",
     "obiettivoLabel": "goal",
     "ultimaMisuraLabel": "last measurement",
     "motivoAssenze": "{assenze} absences in the last {tot} call-ups",

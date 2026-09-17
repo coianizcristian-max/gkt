@@ -515,9 +515,27 @@ export default async function DashboardPage() {
             </h3>
             {feedbackRecenti.map((f, i) => (
               <Link key={i} href={`/calendario/${f.allenamentoId}`} className="dv-item" style={{ display: 'block' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                   <span style={{ fontWeight: 600 }}>{f.portiere}{f.categoria ? ` · ${f.categoria}` : ''}</span>
-                  {f.voto != null && <span className="dv-data"><b>{f.voto}</b></span>}
+                  {/* Il voto sta ATTACCATO al nome: con justify-content space-between
+                      finiva al bordo destro e su schermi larghi sembrava assente. */}
+                  {f.voto != null && (
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      fontSize: 12, fontWeight: 700, color: 'var(--ink-soft)',
+                      background: 'rgba(242,183,5,0.14)', padding: '2px 9px', borderRadius: 999,
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {t('feedbackVoto')} {f.voto}
+                      {/* Stesse stelle (1-5, ambra) della schermata in cui il portiere
+                          assegna il voto, cosi' il riquadro si legge a colpo d'occhio. */}
+                      <span aria-hidden="true" style={{ letterSpacing: 1 }}>
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <span key={n} style={{ color: n <= Math.round(Number(f.voto)) ? '#f2b705' : 'var(--linea)' }}>★</span>
+                        ))}
+                      </span>
+                    </span>
+                  )}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>
                   {t('feedbackSeduta')}: {fmtData(f.dataAllenamento)}

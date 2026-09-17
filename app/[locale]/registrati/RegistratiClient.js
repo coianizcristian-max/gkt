@@ -90,7 +90,11 @@ export default function RegistratiClient({ token, datiInvito }) {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
       setLoading(false)
-      trackEvento('registrazione_fallita', { tipo_invito: datiInvito?.tipo ?? null })
+      trackEvento('registrazione_fallita', {
+        tipo_invito: datiInvito?.tipo ?? null,
+        motivo: signUpError.code || signUpError.name || 'sconosciuto',
+        stato_http: signUpError.status ?? null,
+      })
       return
     }
 

@@ -44,7 +44,14 @@ export default function LoginPage() {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
       setLoading(false)
-      trackEvento('login_fallito')
+      // Perche' e' fallito: senza questo, in PostHog vedi solo QUANTI login
+      // falliscono, non se e' password sbagliata, email non confermata o
+      // captcha. NB: si registra solo il codice tecnico dell'errore, mai
+      // email o password.
+      trackEvento('login_fallito', {
+        motivo: error.code || error.name || 'sconosciuto',
+        stato_http: error.status ?? null,
+      })
       return
     }
     trackEvento('login_riuscito')

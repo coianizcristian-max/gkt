@@ -74,7 +74,7 @@ export default function RegistratiClient({ token, datiInvito }) {
         // Il token viaggia anche nel link di conferma: serve a /benvenuto per
         // capire CHI ha confermato, invece di fidarsi della sessione presente
         // nel browser (che puo' essere di tutt'altra persona).
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/benvenuto`${token && datiInvito ? `&invito=${encodeURIComponent(token)}` : ''}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/benvenuto${token && datiInvito ? `&invito=${encodeURIComponent(token)}` : ''}`,
       },
     })
 

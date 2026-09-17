@@ -7,7 +7,7 @@ import VersionePopup from '@/app/components/VersionePopup'
 import DemoBanner from '@/app/components/DemoBanner'
 import DemoPopup from '@/app/components/DemoPopup'
 import DemoEntra from '@/app/components/DemoEntra'
-import { getDemoConfig, inDemo } from '@/lib/demo'
+import { getDemoConfig, inDemo, avvisoDemoVisto } from '@/lib/demo'
 import BenvenutoPopup from '@/app/components/BenvenutoPopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
@@ -41,18 +41,16 @@ export default async function AppLayout({ children }) {
   let altreStagioni = []
   let newsletterNonLette = 0
   let contattiNonLetti = 0
-  let demoAvvisiVisti = 0
 
   if (user) {
     const { data: profilo } = await supabase
-      .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore, newsletter_vista_il, nome_visualizzato, nome_completo, prova_creata, benvenuto_visto, demo_avvisi_visti').eq('id', user.id).maybeSingle()
+      .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore, newsletter_vista_il, nome_visualizzato, nome_completo, prova_creata, benvenuto_visto').eq('id', user.id).maybeSingle()
     const { stagione, ownerId } = await getStagioneAttiva(supabase, user.id)
     isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
     isSupervisore = profilo?.supervisore === true
     isPortiere = profilo?.ruolo === 'portiere'
     portiereId = profilo?.portiere_id ?? null
     ruoloUtente = profilo?.ruolo ?? null
-    demoAvvisiVisti = Number(profilo?.demo_avvisi_visti ?? 0)
     societa = stagione?.societa_nome ?? null
     logo = stagione?.logo_url ?? null
     stagioneNome = stagione?.nome ?? null
@@ -185,9 +183,10 @@ export default async function AppLayout({ children }) {
   const demoAttiva = demoCfg.attiva && !!demoCfg.ownerId
   const demoVisibile = demoAttiva && ruoloUtente === 'allenatore' && user?.id !== demoCfg.ownerId
   const demoInCorso = demoVisibile && (await inDemo())
-  // Il popup demo compare a ogni ingresso: e' l'unico punto in cui si spiega
-  // che i dati non sono reali e come tornare indietro.
-  const mostraDemoPopup = demoInCorso
+  // Il popup compare una volta per ogni ingresso in demo: viene riarmato
+  // quando si entra e messo a tacere quando lo si chiude, cosi' non
+  // ricompare a ogni ricaricamento di pagina.
+  const mostraDemoPopup = demoInCorso && !(await avvisoDemoVisto())
 
   // Carica ordine sidebar personalizzato dal supervisore
   const { data: sidebarOrdineRows } = await supabase

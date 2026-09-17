@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import { getDemoConfig, COOKIE_DEMO } from '@/lib/demo'
+import { getDemoConfig, COOKIE_DEMO, COOKIE_DEMO_AVVISO } from '@/lib/demo'
 
 /**
  * Gestisce l'ingresso e l'uscita dalla modalita' demo.
@@ -20,6 +20,7 @@ export async function POST(request) {
   // Uscire dalla demo e' sempre permesso, senza altri controlli.
   if (azione === 'esci') {
     store.delete(COOKIE_DEMO)
+    store.delete(COOKIE_DEMO_AVVISO)
     return NextResponse.json({ ok: true, demo: false })
   }
 
@@ -45,13 +46,18 @@ export async function POST(request) {
       httpOnly: true, sameSite: 'lax', path: '/',
       secure: process.env.NODE_ENV === 'production',
     })
+    // nuovo ingresso: il popup di benvenuto deve tornare a comparire
+    store.delete(COOKIE_DEMO_AVVISO)
     return NextResponse.json({ ok: true, demo: true })
   }
 
   if (azione === 'avviso-visto') {
-    const visti = Number(profilo?.demo_avvisi_visti ?? 0) + 1
-    await supabase.from('profili').update({ demo_avvisi_visti: visti }).eq('id', user.id)
-    return NextResponse.json({ ok: true, visti })
+    // Solo per questo ingresso: al prossimo accesso alla demo il popup torna.
+    store.set(COOKIE_DEMO_AVVISO, '1', {
+      httpOnly: true, sameSite: 'lax', path: '/',
+      secure: process.env.NODE_ENV === 'production',
+    })
+    return NextResponse.json({ ok: true })
   }
 
   return NextResponse.json({ error: 'Azione non riconosciuta.' }, { status: 400 })

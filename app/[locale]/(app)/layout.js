@@ -41,16 +41,18 @@ export default async function AppLayout({ children }) {
   let altreStagioni = []
   let newsletterNonLette = 0
   let contattiNonLetti = 0
+  let demoAvvisiVisti = 0
 
   if (user) {
     const { data: profilo } = await supabase
-      .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore, newsletter_vista_il, nome_visualizzato, nome_completo, prova_creata, benvenuto_visto').eq('id', user.id).maybeSingle()
+      .from('profili').select('ruolo, supervisore, portiere_id, permessi_collaboratore, newsletter_vista_il, nome_visualizzato, nome_completo, prova_creata, benvenuto_visto, demo_avvisi_visti').eq('id', user.id).maybeSingle()
     const { stagione, ownerId } = await getStagioneAttiva(supabase, user.id)
     isStaff = profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff'
     isSupervisore = profilo?.supervisore === true
     isPortiere = profilo?.ruolo === 'portiere'
     portiereId = profilo?.portiere_id ?? null
     ruoloUtente = profilo?.ruolo ?? null
+    demoAvvisiVisti = Number(profilo?.demo_avvisi_visti ?? 0)
     societa = stagione?.societa_nome ?? null
     logo = stagione?.logo_url ?? null
     stagioneNome = stagione?.nome ?? null
@@ -183,7 +185,6 @@ export default async function AppLayout({ children }) {
   const demoAttiva = demoCfg.attiva && !!demoCfg.ownerId
   const demoVisibile = demoAttiva && ruoloUtente === 'allenatore' && user?.id !== demoCfg.ownerId
   const demoInCorso = demoVisibile && (await inDemo())
-  const demoAvvisiVisti = Number(profilo?.demo_avvisi_visti ?? 0)
   const mostraDemoPopup = demoInCorso && demoAvvisiVisti < demoCfg.avvisiIngresso
 
   // Carica ordine sidebar personalizzato dal supervisore

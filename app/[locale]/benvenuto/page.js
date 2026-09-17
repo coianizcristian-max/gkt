@@ -1,6 +1,5 @@
 import { Link } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { getTranslations } from 'next-intl/server'
 
 export async function generateMetadata() {
@@ -17,34 +16,16 @@ export default async function BenvenutoPage({ searchParams }) {
   const t = await getTranslations('benvenuto')
   const { data: { user } } = await supabase.auth.getUser()
 
-  // ATTENZIONE: la presenza di una sessione NON significa che sia dell'utente
-  // che ha appena confermato l'email. Se il link di conferma viene aperto in un
-  // browser dove e' gia' loggato qualcun altro (tipico: l'allenatore che prova
-  // il proprio invito, o un familiare), mandarlo "alla sua area" lo porta
-  // nell'account SBAGLIATO. Con un invito in corso ci fidiamo solo della prova
-  // certa: l'invito risulta consumato proprio da chi e' loggato ora.
-  let loggato = !!user
-  let invitoDaCollegare = false
-
-  if (token) {
-    loggato = false
-    if (user) {
-      const admin = createAdminClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
-      )
-      const { data: invito } = await admin
-        .from('inviti')
-        .select('consumato_da')
-        .eq('token', token)
-        .maybeSingle()
-      loggato = invito?.consumato_da === user.id
-    }
-    // Invito ancora da agganciare: il passaggio dal login non e' un ostacolo,
-    // e' il punto in cui il collegamento avviene davvero. Lo diciamo chiaro,
-    // cosi' l'utente capisce perche' deve fare un passo in piu'.
-    invitoDaCollegare = !loggato
-  }
+  // REGOLA UNICA PER GLI INVITI: chi arriva da un invito passa SEMPRE dal
+  // login, senza eccezioni. Due motivi:
+  //  1. la presenza di una sessione non dimostra che sia dell'utente appena
+  //     confermato — se il link si apre in un browser dove e' loggato qualcun
+  //     altro (tipico: l'allenatore che prova il proprio invito), mandarlo
+  //     "alla sua area" lo porta nell'account SBAGLIATO;
+  //  2. un comportamento solo, sempre uguale, e' spiegabile in una frase e fa
+  //     passare il collegamento sempre per lo stesso identico punto.
+  const invitoDaCollegare = !!token
+  const loggato = !!user && !token
 
   // Se l'invito non risulta ancora collegato, il login e' il passo che lo
   // completa: gli passiamo il token, cosi' scatta al primo accesso.

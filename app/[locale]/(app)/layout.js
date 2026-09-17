@@ -7,6 +7,7 @@ import VersionePopup from '@/app/components/VersionePopup'
 import DemoBanner from '@/app/components/DemoBanner'
 import DemoGuardia from '@/app/components/DemoGuardia'
 import DemoPopup from '@/app/components/DemoPopup'
+import DemoOspiteNewsletter from '@/app/components/DemoOspiteNewsletter'
 import DemoEntra from '@/app/components/DemoEntra'
 import { getDemoConfig, inDemo, inOspite, avvisoDemoVisto, contestoDati } from '@/lib/demo'
 import BenvenutoPopup from '@/app/components/BenvenutoPopup'
@@ -327,12 +328,21 @@ export default async function AppLayout({ children }) {
         </footer>
       </div>
       {demoInCorso && <DemoBanner dataTaglio={demoCfg.dataTaglio} ospite={demoOspite} />}
+      {/* Solo per chi arriva da /d: non e' registrato, quindi ha senso
+          proporgli la newsletter. Un preparatore gia' iscritto che entra
+          in demo dal menu NON lo vede. */}
+      {demoOspite && <DemoOspiteNewsletter />}
       {demoInCorso && <DemoGuardia />}
+      {/* Scaletta dei popup. In demo si ferma qui: dopo il popup demo NON
+          deve subentrare quello di benvenuto (con i piani) ne' l'avviso di
+          nuova versione. Fuori dalla demo il comportamento e' invariato. */}
       {mostraDemoPopup
         ? <DemoPopup dataTaglio={demoCfg.dataTaglio} />
-        : mostraBenvenuto
-          ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} ruolo={ruoloUtente} mostraPiani={mostraPiani} demoDisponibile={demoVisibile} />
-          : (versioneNuova && <VersionePopup versione={versioneNuova} />)}
+        : demoInCorso
+          ? null
+          : mostraBenvenuto
+            ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} ruolo={ruoloUtente} mostraPiani={mostraPiani} demoDisponibile={demoVisibile} />
+            : (versioneNuova && <VersionePopup versione={versioneNuova} />)}
     </div>
   )
 }

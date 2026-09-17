@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import IconaTipoPartita from '@/app/components/IconaTipoPartita'
 import { tipologiaTradotta } from '@/lib/elenchi'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
@@ -342,6 +343,7 @@ export default function CalendarioMeseSupervisione({ allenamenti, partite = [], 
                       <i className="calx-edot" style={{ background: col.dot || 'rgba(255,255,255,.9)' }} />
                       {hhmm(ev.ora_inizio) && <b>{hhmm(ev.ora_inizio)}</b>}
                       <span className="calx-ev-label">{ev._tipo === 'partita' ? labelPartitaCella(ev) : ev.squadra_nome}</span>
+                      {ev._tipo === 'partita' && <IconaTipoPartita tipo={ev.tipo} className="calx-ev-tipo" />}
                     </span>
                   )
                 })}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import IconaTipoPartita from '@/app/components/IconaTipoPartita'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
 
@@ -21,10 +22,11 @@ function RigaPartita({ p, compact = false }) {
       <span className="pr-data">{fmtData(p.data)}</span>
       <span className="pr-cat">{p.squadra_nome}</span>
       <span className="pr-match">
+        <IconaTipoPartita tipo={p.tipo} size={13} className="pr-tipo-ico" title={t('tipo_' + (p.tipo || 'campionato'))} />
         {p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'} {p.avversario || '—'}
-        {!compact && p.tipo !== 'campionato' && (
+        {!compact && (
           <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--ink-soft)', background: 'var(--carta)', borderRadius: 4, padding: '1px 5px' }}>
-            {t('tipo_' + p.tipo)}
+            {t('tipo_' + (p.tipo || 'campionato'))}
           </span>
         )}
       </span>
@@ -35,9 +37,10 @@ function RigaPartita({ p, compact = false }) {
   )
 }
 
-export default function PartiteLista({ partite, categorie, isPortiere = false }) {
+export default function PartiteLista({ partite, categorie, isPortiere = false, oggiIso = null }) {
   const t = useTranslations('partiteLista')
-  const oggi = new Date().toISOString().slice(0, 10)
+  // oggiIso: in demo e' la data di riferimento, non quella del browser.
+  const oggi = oggiIso || new Date().toISOString().slice(0, 10)
   const [range, setRange] = useState(7)
   const [tabTipo, setTabTipo] = useState('campionato')
 

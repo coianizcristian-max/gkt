@@ -11,12 +11,13 @@ const PERCORSI = {
   amichevole: 'M7 11l3-3 3 2 4-4M3 12l4 4 3-1 3 2 4-3 4 2',
 }
 
-export default function IconaTipoPartita({ tipo, size = 11, className = '' }) {
+export default function IconaTipoPartita({ tipo, size = 11, className = '', title = null }) {
   const d = PERCORSI[tipo] ?? PERCORSI.campionato
   return (
     <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
-      aria-hidden="true" focusable="false">
+      aria-hidden={title ? undefined : 'true'} role={title ? 'img' : undefined} focusable="false">
+      {title ? <title>{title}</title> : null}
       <path d={d} />
     </svg>
   )

@@ -77,7 +77,7 @@ export default async function PartitePage() {
         </Guida>
         )}
         {stagione
-          ? <PartiteLista partite={partite} categorie={categorie} isPortiere={isPortiere} />
+          ? <PartiteLista partite={partite} categorie={categorie} isPortiere={isPortiere} oggiIso={oggiCtx} />
           : <div className="empty">{c('nessunaStagione')}</div>}
       </div>
     </>

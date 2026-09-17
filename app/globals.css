@@ -2198,3 +2198,6 @@ body:has(.demo-banner) .shell { padding-top: 38px; }
 /* Tipologia nella riga compatta della preview */
 .calx-badge { display: inline-flex; align-items: center; gap: 5px; }
 .calx-badge-ico { flex: 0 0 auto; opacity: 0.9; }
+
+/* Icona tipologia nell'elenco partite */
+.pr-tipo-ico { flex: 0 0 auto; margin-right: 5px; opacity: 0.7; vertical-align: -1px; }

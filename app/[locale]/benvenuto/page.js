@@ -24,6 +24,7 @@ export default async function BenvenutoPage({ searchParams }) {
   // nell'account SBAGLIATO. Con un invito in corso ci fidiamo solo della prova
   // certa: l'invito risulta consumato proprio da chi e' loggato ora.
   let loggato = !!user
+  let invitoDaCollegare = false
 
   if (token) {
     loggato = false
@@ -39,6 +40,10 @@ export default async function BenvenutoPage({ searchParams }) {
         .maybeSingle()
       loggato = invito?.consumato_da === user.id
     }
+    // Invito ancora da agganciare: il passaggio dal login non e' un ostacolo,
+    // e' il punto in cui il collegamento avviene davvero. Lo diciamo chiaro,
+    // cosi' l'utente capisce perche' deve fare un passo in piu'.
+    invitoDaCollegare = !loggato
   }
 
   // Se l'invito non risulta ancora collegato, il login e' il passo che lo
@@ -61,13 +66,14 @@ export default async function BenvenutoPage({ searchParams }) {
         <div style={{ fontSize: 52, marginBottom: 8 }}>✅</div>
         <h1 style={{ fontSize: 26, margin: '0 0 12px', color: '#0d2137' }}>{t('titolo')}</h1>
         <p style={{ color: '#5a7080', fontSize: 15, lineHeight: 1.6, margin: '0 0 28px' }}>
-          {t('intro')}{loggato ? t('prontoLoggato') : t('prontoNonLoggato')}
+          {t('intro')}
+          {loggato ? t('prontoLoggato') : invitoDaCollegare ? t('prontoInvito') : t('prontoNonLoggato')}
         </p>
         <Link href={href} className="btn" style={{
           display: 'inline-block', background: '#0a7ec2', color: '#fff', padding: '13px 28px',
           borderRadius: 999, fontWeight: 700, textDecoration: 'none', fontSize: 15,
         }}>
-          {loggato ? t('ctaLoggato') : t('ctaNonLoggato')}
+          {loggato ? t('ctaLoggato') : invitoDaCollegare ? t('ctaInvito') : t('ctaNonLoggato')}
         </Link>
       </div>
     </div>

@@ -695,7 +695,9 @@
     "prontoLoggato": " Von hier kannst du deine Saison, deine Torhüter und deine Trainings organisieren.",
     "prontoNonLoggato": " Melde dich mit E-Mail und Passwort an, um zu starten.",
     "ctaLoggato": "Zu deinem Bereich →",
-    "ctaNonLoggato": "Jetzt anmelden →"
+    "ctaNonLoggato": "Jetzt anmelden →",
+    "prontoInvito": " melde dich mit E-Mail und Passwort an, um die Verknüpfung mit deinem Team abzuschließen.",
+    "ctaInvito": "Anmelden und verknüpfen →"
   },
   "allenatorePubblico": {
     "metaNonTrovato": "Trainer nicht gefunden",

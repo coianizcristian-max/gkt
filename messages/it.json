@@ -695,7 +695,9 @@
     "prontoLoggato": " da qui puoi iniziare a organizzare la tua stagione, i tuoi portieri e i tuoi allenamenti.",
     "prontoNonLoggato": " accedi con la tua email e password per iniziare.",
     "ctaLoggato": "Vai alla tua area →",
-    "ctaNonLoggato": "Accedi ora →"
+    "ctaNonLoggato": "Accedi ora →",
+    "prontoInvito": " accedi con la tua email e password per completare il collegamento alla tua squadra.",
+    "ctaInvito": "Accedi e collegati →"
   },
   "allenatorePubblico": {
     "metaNonTrovato": "Allenatore non trovato",

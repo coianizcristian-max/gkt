@@ -695,7 +695,9 @@
     "prontoLoggato": " from here you can start organizing your season, your goalkeepers and your trainings.",
     "prontoNonLoggato": " sign in with your email and password to get started.",
     "ctaLoggato": "Go to your area →",
-    "ctaNonLoggato": "Sign in now →"
+    "ctaNonLoggato": "Sign in now →",
+    "prontoInvito": " sign in with your email and password to finish linking to your team.",
+    "ctaInvito": "Sign in and link →"
   },
   "allenatorePubblico": {
     "metaNonTrovato": "Coach not found",

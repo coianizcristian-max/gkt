@@ -39,6 +39,10 @@ export default async function AllenamentoPage({ params }) {
     supabase.from('profili').select('ruolo, portiere_id, supervisore_id').eq('id', user?.id).maybeSingle(),
     db.from('allenamenti').select('*, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('id', id).maybeSingle(),
   ])
+
+  // In demo una seduta successiva alla data di riferimento e' solo programmata:
+  // esiste con i suoi esercizi, ma non ha ancora valutazioni.
+  const svoltaDemo = entroTaglio(allenamento?.data, taglio)
   if (!allenamento) notFound()
 
   // Risolvi accorpata_con: può contenere squadra_id (vecchia) o allenamento_id (nuova).
@@ -79,9 +83,11 @@ export default async function AllenamentoPage({ params }) {
   // ── VISTA PORTIERE ────────────────────────────────────────────────────────
   if (profilo?.ruolo === 'portiere') {
     const [{ data: mia }, { data: aeRows }] = await Promise.all([
-      db.from('valutazioni')
-        .select('id, presente, voto, note, voto_portiere, feedback_portiere, nota_portiere')
-        .eq('allenamento_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
+      svoltaDemo
+        ? db.from('valutazioni')
+            .select('id, presente, voto, note, voto_portiere, feedback_portiere, nota_portiere')
+            .eq('allenamento_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle()
+        : Promise.resolve({ data: null }),
       db.from('allenamento_esercizi')
         .select('ordine, esercizi(id, titolo, tipologia, descrizione_breve, descrizione, immagine_url)')
         .eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),
@@ -241,7 +247,9 @@ export default async function AllenamentoPage({ params }) {
       db.from('iscrizioni').select('id, portieri(id, nome, cognome)')
         .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
       caricaParametri(supabase, await getLocale()),
-      db.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
+      svoltaDemo
+        ? db.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id)
+        : Promise.resolve({ data: [] }),
       supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
       db.from('esercizi').select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, profili(ruolo), esercizio_attributi(attributo_id)').order('titolo'),
       db.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),

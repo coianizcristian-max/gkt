@@ -6,7 +6,7 @@ import EserciziManager from '@/app/components/EserciziManager'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getOwnerId } from '@/lib/tenant'
-import { contestoDati, entroTaglio } from '@/lib/demo'
+import { contestoDati, entroTaglio, ownerDati } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 function getAdmin() {
@@ -31,7 +31,7 @@ export default async function EserciziPage() {
   ])
   const canLibreria = isUnlocked('esercizi_libreria', gatingCfg, abbAttivo)
 
-  const ownerId = await getOwnerId(supabase, user.id)
+  const ownerId = await ownerDati(supabase, user.id)
 
   // Carica supervisore_id — se l'utente è un preparatore con responsabile
   const { data: profiloExt } = await supabase

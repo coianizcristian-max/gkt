@@ -8,6 +8,7 @@ import ExportButtons from '@/app/components/ExportButtons'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getOwnerId } from '@/lib/tenant'
+import { contestoDati, entroTaglio, ownerDati } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -22,7 +23,7 @@ export default async function ArchivioPage({ searchParams }) {
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/dashboard')
 
-  const ownerId = await getOwnerId(supabase, user.id)
+  const ownerId = await ownerDati(supabase, user.id)
   const [gatingCfg, abbAttivo] = await Promise.all([
     getGatingConfig(supabase),
     hasAbbonamento(supabase, user.id),

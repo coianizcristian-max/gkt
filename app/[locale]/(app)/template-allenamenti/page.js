@@ -4,7 +4,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Guida from '@/app/components/Guida'
 import TemplateManager from '@/app/components/TemplateManager'
 import { getOwnerId } from '@/lib/tenant'
-import { contestoDati, entroTaglio } from '@/lib/demo'
+import { contestoDati, entroTaglio, ownerDati } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 function getAdmin() {
@@ -22,7 +22,7 @@ export default async function TemplateAllenamentiPage() {
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
-  const ownerId = await getOwnerId(supabase, user.id)
+  const ownerId = await ownerDati(supabase, user.id)
 
   // Query base: garantisce sempre la lista dei template, anche se qualcosa
   // nella parte di arricchimento (esercizi/attributi) dovesse fallire.

@@ -24,6 +24,11 @@ export default async function PartitaPage({ params }) {
     supabase.from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle(),
     db.from('partite').select('*, squadre(nome)').eq('id', id).maybeSingle(),
   ])
+
+  // In demo una partita successiva alla data di riferimento non e' ancora
+  // stata giocata: si nascondono risultato e valutazioni.
+  const giocataDemo = entroTaglio(partita?.data, taglio)
+  if (partita && !giocataDemo) { partita.gol_fatti = null; partita.gol_subiti = null }
   if (!partita) notFound()
 
   const dataLabel = new Date(partita.data + 'T00:00:00')
@@ -41,8 +46,10 @@ export default async function PartitaPage({ params }) {
     const [{ data: isc }, { data: miaVal }] = await Promise.all([
       db.from('iscrizioni')
         .select('squadra_id').eq('stagione_id', partita.stagione_id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
-      db.from('valutazioni_partita').select('presente, voto, punti, note, gol_subiti')
-        .eq('partita_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
+      giocataDemo
+        ? db.from('valutazioni_partita').select('presente, voto, punti, note, gol_subiti')
+            .eq('partita_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle()
+        : Promise.resolve({ data: null }),
     ])
     if (!isc || isc.squadra_id !== partita.squadra_id) notFound()
 
@@ -94,7 +101,9 @@ export default async function PartitaPage({ params }) {
       db.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', partita.stagione_id),
       db.from('iscrizioni').select('portieri(id, nome, cognome)')
         .eq('stagione_id', partita.stagione_id).eq('squadra_id', partita.squadra_id),
-      db.from('valutazioni_partita').select('portiere_id, presente, voto, punti, gol_subiti, note, fuori_categoria').eq('partita_id', id),
+      giocataDemo
+        ? db.from('valutazioni_partita').select('portiere_id, presente, voto, punti, gol_subiti, note, fuori_categoria').eq('partita_id', id)
+        : Promise.resolve({ data: [] }),
       supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
       supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'punti_partita').eq('attivo', true).order('ordine'),
       db.from('squadre_avversarie').select('nome').eq('stagione_id', partita.stagione_id),

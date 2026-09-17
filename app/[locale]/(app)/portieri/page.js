@@ -7,7 +7,7 @@ import PortieriSearch from '@/app/components/PortieriSearch'
 import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import { puoVisualizzare } from '@/lib/permessi'
 import { getStagioneAttiva, getOwnerId } from '@/lib/tenant'
-import { contestoDati, entroTaglio } from '@/lib/demo'
+import { contestoDati, entroTaglio, ownerDati } from '@/lib/demo'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +26,7 @@ export default async function PortieriPage() {
     redirect('/dashboard')
   }
 
-  const ownerId = await getOwnerId(supabase, user?.id)
+  const ownerId = await ownerDati(supabase, user?.id)
   const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
 
   let squadre = []

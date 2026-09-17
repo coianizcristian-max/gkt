@@ -66,8 +66,9 @@ export default async function CalendarioPage() {
       avversario: p.avversario ?? '',
       casa: p.casa,
       tipo: p.tipo ?? 'campionato',
-      gol_fatti: p.gol_fatti,
-      gol_subiti: p.gol_subiti,
+      // dopo la data di riferimento la partita non e' ancora stata giocata
+      gol_fatti: entroTaglio(p.data, taglio) ? p.gol_fatti : null,
+      gol_subiti: entroTaglio(p.data, taglio) ? p.gol_subiti : null,
       ora_ritrovo: p.ora_ritrovo ?? null,
       ora_inizio: p.ora_inizio ?? null,
       _tipo: 'partita',
@@ -195,7 +196,7 @@ export default async function CalendarioPage() {
         {stagione
           ? (isPortiere
             ? <CalendarioPortiereTabs allenamenti={allenamenti} partite={partite} categorie={categorie} oggiStr={oggiStr} />
-            : <CalendarioMese allenamenti={allenamenti} partite={partite} categorie={categorie} vista="staff" />)
+            : <CalendarioMese allenamenti={allenamenti} partite={partite} categorie={categorie} vista="staff" oggiIso={oggiStr} />)
           : <div className="empty">{c('nessunaStagione')}</div>}
       </div>
     </>

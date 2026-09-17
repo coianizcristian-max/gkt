@@ -10,13 +10,14 @@ import { useTranslations, useLocale } from 'next-intl'
 const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
 const pad = (n) => String(n).padStart(2, '0')
 
-export default function CalendarioMese({ allenamenti, partite = [], categorie, vista = 'staff' }) {
+export default function CalendarioMese({ allenamenti, partite = [], categorie, vista = 'staff', oggiIso = null }) {
   const t = useTranslations('calendarioMese')
   const locale = useLocale()
   const dl = DATE_LOCALE[locale] || 'it-IT'
   const router = useRouter()
   const isPortiere = vista === 'portiere'
-  const oggi = new Date()
+  // oggiIso: in modalita' demo e' la data di riferimento, non quella del browser.
+  const oggi = oggiIso ? new Date(oggiIso + 'T12:00:00') : new Date()
   const [cursor, setCursor] = useState(() => new Date(oggi.getFullYear(), oggi.getMonth(), 1))
   const [filtro, setFiltro] = useState('')
   const [selectedDay, setSelectedDay] = useState(null)

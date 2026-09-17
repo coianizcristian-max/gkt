@@ -281,6 +281,12 @@ export default async function AppLayout({ children }) {
           </div>
         </Link>
         {brandSwitcher && <div className="brand-switcher-wrap"><StagioneSwitcher stagioni={brandAltre} stagioneCorrenteId={brandStagioneId} /></div>}
+        {demoInCorso && (brandSocieta || brandStagione) && (
+          <div className="brand-demo">
+            {brandSocieta && <span className="brand-demo-societa">{brandSocieta}</span>}
+            {brandStagione && <span className="brand-demo-stagione">{brandStagione}</span>}
+          </div>
+        )}
         <div className="sidebar-lang" style={{ padding: '4px 8px 8px' }}><LanguageSwitcher /></div>
         {couponGiorni != null && (
           <div style={{margin:'4px 8px 8px',padding:'6px 10px',background:'rgba(232,167,44,0.15)',borderRadius:'var(--r-sm)',fontSize:12,color:'var(--giallo)',fontWeight:600,lineHeight:1.3}}>

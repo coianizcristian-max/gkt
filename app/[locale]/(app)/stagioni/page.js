@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getOwnerId } from '@/lib/tenant'
+import { contestoDati, entroTaglio, ownerDati } from '@/lib/demo'
 import { Link } from '@/i18n/routing'
 import StagioniAllenatoreManager from '@/app/components/StagioniAllenatoreManager'
 import Guida from '@/app/components/Guida'
@@ -19,7 +20,7 @@ export default async function StagioniPage() {
     .from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/dashboard')
 
-  const ownerId = await getOwnerId(supabase, user.id)
+  const ownerId = await ownerDati(supabase, user.id)
 
   const [{ data: stagioni }, { data: profiloCorrente }] = await Promise.all([
     supabase.from('stagioni')

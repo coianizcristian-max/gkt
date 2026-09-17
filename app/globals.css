@@ -2178,3 +2178,14 @@ body:has(.demo-banner) .shell { padding-top: 38px; }
   opacity: 0.7; pointer-events: none;
 }
 .calx-ev-label { padding-right: 10px; }
+
+/* Stagione demo nell'intestazione, al posto del selettore */
+.brand-demo {
+  display: flex; flex-direction: column; gap: 1px;
+  margin: 2px 8px 10px; padding: 6px 10px;
+  background: rgba(232, 167, 44, 0.16);
+  border: 1px solid rgba(232, 167, 44, 0.45);
+  border-radius: var(--r-sm); line-height: 1.25;
+}
+.brand-demo-societa { font-size: 13px; font-weight: 600; color: var(--giallo); }
+.brand-demo-stagione { font-size: 12px; color: #cbd6df; }

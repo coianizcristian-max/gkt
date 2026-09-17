@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import CategorieManager from '@/app/components/CategorieManager'
 import Guida from '@/app/components/Guida'
 import { getStagioneAttiva, getOwnerId } from '@/lib/tenant'
-import { contestoDati, entroTaglio } from '@/lib/demo'
+import { contestoDati, entroTaglio, ownerDati } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -17,7 +17,7 @@ export default async function CategoriePage() {
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
-  const ownerId = await getOwnerId(supabase, user.id)
+  const ownerId = await ownerDati(supabase, user.id)
   const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user.id)
   const { data: categorie } = await db.from('squadre').select('id, nome, ordine').eq('owner_id', ownerId).order('ordine')
   let attive = []

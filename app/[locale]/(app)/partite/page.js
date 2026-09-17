@@ -43,12 +43,19 @@ export default async function PartitePage() {
       db.from('valutazioni_partita').select('partita_id').eq('presente', true),
     ])
     const partiteConVal = new Set((vPar.data ?? []).map((v) => v.partita_id))
-    partite = (pa.data ?? []).map((p) => ({
-      id: p.id, data: p.data, squadra_id: p.squadra_id, avversario: p.avversario,
-      casa: p.casa, gol_fatti: p.gol_fatti, gol_subiti: p.gol_subiti,
-      tipo: p.tipo ?? 'campionato', squadra_nome: p.squadre?.nome ?? '',
-      ha_valutazioni: partiteConVal.has(p.id),
-    }))
+    partite = (pa.data ?? []).map((p) => {
+      // In demo una partita successiva alla data di riferimento non e' ancora
+      // stata giocata: niente risultato e niente valutazioni.
+      const giocata = entroTaglio(p.data, taglio)
+      return {
+        id: p.id, data: p.data, squadra_id: p.squadra_id, avversario: p.avversario,
+        casa: p.casa,
+        gol_fatti: giocata ? p.gol_fatti : null,
+        gol_subiti: giocata ? p.gol_subiti : null,
+        tipo: p.tipo ?? 'campionato', squadra_nome: p.squadre?.nome ?? '',
+        ha_valutazioni: giocata && partiteConVal.has(p.id),
+      }
+    })
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
   }
 

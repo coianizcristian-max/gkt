@@ -5,7 +5,7 @@ import ObiettiviManager from '@/app/components/ObiettiviManager'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getStagioneAttiva, getOwnerId } from '@/lib/tenant'
-import { contestoDati, entroTaglio } from '@/lib/demo'
+import { contestoDati, entroTaglio, ownerDati } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 import { getLocale } from 'next-intl/server'
 import { caricaParametri } from '@/lib/parametri'
@@ -55,7 +55,7 @@ export default async function ObiettiviPortierePage({ params }) {
   let trendPerObiettivo = {}
 
   if (canObiettivi && obIds.length > 0) {
-    const ownerId = await getOwnerId(supabase, user?.id)
+    const ownerId = await ownerDati(supabase, user?.id)
     const [{ data: parRows }, { data: esRows }, { data: obParRows }, { data: obEsRows }] = await Promise.all([
       caricaParametri(supabase, await getLocale()),
       db.from('esercizi').select('id, titolo').eq('allenatore_id', ownerId).eq('archiviato', false).order('titolo'),

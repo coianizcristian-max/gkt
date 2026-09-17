@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { trackEvento } from '@/app/components/PostHogProvider'
 
 // ---------------------------------------------------------------------------
 // GKSeason — captcha con Cloudflare Turnstile.
@@ -52,13 +54,35 @@ const Captcha = forwardRef(function Captcha(
   { sitekey, onVerify, onExpire, theme = 'light', action },
   ref
 ) {
+  const t = useTranslations('common')
   const contenitore = useRef(null)
   const idWidget = useRef(null)
   const [errore, setErrore] = useState(false)
+  // un solo evento per montaggio: se il widget riprova da solo non vogliamo
+  // decine di eventi identici che falsano il conteggio in PostHog
+  const erroreTracciato = useRef(false)
+
   // i callback in un ref: cosi' il widget si crea UNA volta sola e non si
   // ricrea a ogni render del form (che azzererebbe il token gia' ottenuto)
   const callbacks = useRef({ onVerify, onExpire })
   callbacks.current = { onVerify, onExpire }
+
+  // Registra il problema una volta sola. Serve a sapere QUANTE persone
+  // restano davvero bloccate qui: senza questo, un utente che non riesce a
+  // entrare per colpa del captcha e' invisibile.
+  function segnalaProblema(motivo, codice) {
+    setErrore(true)
+    callbacks.current.onExpire?.()
+    if (erroreTracciato.current) return
+    erroreTracciato.current = true
+    try {
+      trackEvento('captcha_errore', {
+        motivo,
+        codice: codice ?? null,
+        pagina: typeof window !== 'undefined' ? window.location.pathname : null,
+      })
+    } catch { /* il tracciamento non deve mai rompere il login */ }
+  }
 
   useImperativeHandle(ref, () => ({
     // stesso nome del metodo di hCaptcha, per non cambiare le pagine
@@ -86,13 +110,12 @@ const Captcha = forwardRef(function Captcha(
           callback: (token) => callbacks.current.onVerify?.(token),
           'expired-callback': () => callbacks.current.onExpire?.(),
           'timeout-callback': () => callbacks.current.onExpire?.(),
-          'error-callback': () => {
-            setErrore(true)
-            callbacks.current.onExpire?.()
-          },
+          // Turnstile passa un codice di errore: lo registriamo per capire
+          // se e' rete, browser o blocco di un'estensione.
+          'error-callback': (codice) => segnalaProblema('widget', codice),
         })
       })
-      .catch(() => setErrore(true))
+      .catch(() => segnalaProblema('script_non_caricato'))
 
     return () => {
       annullato = true
@@ -112,7 +135,7 @@ const Captcha = forwardRef(function Captcha(
       <div ref={contenitore} />
       {errore && (
         <p style={{ fontSize: 13, color: 'var(--rosso, #c0392b)', margin: '8px 0 0', textAlign: 'center' }}>
-          Verifica di sicurezza non disponibile. Ricarica la pagina.
+          {t('captchaNonDisponibile')}
         </p>
       )}
     </div>

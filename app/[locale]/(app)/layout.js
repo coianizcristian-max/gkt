@@ -4,6 +4,10 @@ import { getTranslations } from 'next-intl/server'
 import NavLink from '@/app/components/NavLink'
 import NavIcon from '@/app/components/NavIcon'
 import VersionePopup from '@/app/components/VersionePopup'
+import DemoBanner from '@/app/components/DemoBanner'
+import DemoPopup from '@/app/components/DemoPopup'
+import DemoEntra from '@/app/components/DemoEntra'
+import { getDemoConfig, inDemo } from '@/lib/demo'
 import BenvenutoPopup from '@/app/components/BenvenutoPopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
@@ -172,6 +176,16 @@ export default async function AppLayout({ children }) {
     }
   }
 
+  // ── Modalita' demo ────────────────────────────────────────────────────
+  // Visibile solo ai preparatori, solo se attivata dal pannello supervisore
+  // e mai al proprietario stesso della stagione demo.
+  const demoCfg = await getDemoConfig()
+  const demoAttiva = demoCfg.attiva && !!demoCfg.ownerId
+  const demoVisibile = demoAttiva && ruoloUtente === 'allenatore' && user?.id !== demoCfg.ownerId
+  const demoInCorso = demoVisibile && (await inDemo())
+  const demoAvvisiVisti = Number(profilo?.demo_avvisi_visti ?? 0)
+  const mostraDemoPopup = demoInCorso && demoAvvisiVisti < demoCfg.avvisiIngresso
+
   // Carica ordine sidebar personalizzato dal supervisore
   const { data: sidebarOrdineRows } = await supabase
     .from('sidebar_ordine').select('chiave, ordine').order('ordine')
@@ -260,6 +274,9 @@ export default async function AppLayout({ children }) {
         {voci.filter(v => v.href && v.href !== '/').map((v) => (
           <NavLink key={v.href} href={v.href} extraClass={v.href === '/supervisore' ? 'nav-link-supervisore' : ''}><NavIcon href={v.href} />{v.label}</NavLink>
         ))}
+        {demoVisibile && !demoInCorso && (
+          <DemoEntra label={t('stagioneDemo')} className="nav-link nav-demo" />
+        )}
         <div className="sidebar-foot">
           <Link href="/" className="nav-link nav-sito">{t('vaiAlSito')}</Link>
           <SignOutButton />
@@ -267,7 +284,8 @@ export default async function AppLayout({ children }) {
       </aside>
 
       {/* Header mobile con hamburger */}
-      <SidebarMobile voci={voci} brand={brand} />
+      <SidebarMobile voci={voci} brand={brand}
+        demoLabel={demoVisibile && !demoInCorso ? t('stagioneDemo') : null} />
 
       <div className="main-col">
         <main className="main">{children}</main>
@@ -279,9 +297,12 @@ export default async function AppLayout({ children }) {
           <Link href="/termini-di-servizio">{t('termini')}</Link>
         </footer>
       </div>
-      {mostraBenvenuto
-        ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} ruolo={ruoloUtente} mostraPiani={mostraPiani} />
-        : (versioneNuova && <VersionePopup versione={versioneNuova} />)}
+      {demoInCorso && <DemoBanner dataTaglio={demoCfg.dataTaglio} />}
+      {mostraDemoPopup
+        ? <DemoPopup dataTaglio={demoCfg.dataTaglio} />
+        : mostraBenvenuto
+          ? <BenvenutoPopup nome={benvenutoNome} giorni={benvenutoGiorni} ruolo={ruoloUtente} mostraPiani={mostraPiani} />
+          : (versioneNuova && <VersionePopup versione={versioneNuova} />)}
     </div>
   )
 }

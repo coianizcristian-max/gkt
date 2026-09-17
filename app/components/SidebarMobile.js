@@ -1,5 +1,7 @@
 'use client'
 
+import DemoEntra from '@/app/components/DemoEntra'
+
 import { useState, useEffect } from 'react'
 import { Link, usePathname } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
@@ -16,7 +18,7 @@ function MobileNavLink({ href, children, onClick, extraClass = '' }) {
   )
 }
 
-export default function SidebarMobile({ voci, brand }) {
+export default function SidebarMobile({ voci, brand, demoLabel }) {
   const c = useTranslations('common')
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
@@ -57,6 +59,7 @@ export default function SidebarMobile({ voci, brand }) {
             <div className="mob-lang" style={{ padding: '4px 12px 8px' }}>
               <LanguageSwitcher />
             </div>
+            {demoLabel && <DemoEntra label={demoLabel} className="mob-nav-link mob-nav-demo" />}
             {voci.map((v) =>
               v.type === 'divider' ? <div key={v.key} className="mob-divider" /> :
               v.type === 'signout' ? (

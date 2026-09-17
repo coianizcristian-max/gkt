@@ -49,6 +49,7 @@
     "jsonLdDescription": "Platform for goalkeeper coaches: training schedule, evaluations, statistics, drills and squad management in a single app."
   },
   "sidebar": {
+    "stagioneDemo": "Demo season",
     "andamento": "Trend",
     "obiettivi": "Goals",
     "percorso": "Path",
@@ -2880,5 +2881,21 @@
     "nessunaColonna": "Select at least one column.",
     "nessunDato": "No data for this season yet.",
     "nessunaIscrizione": "This goalkeeper is not enrolled in a category of the active season."
+  },
+  "demo": {
+      "badge": "Demo mode",
+      "popupTitolo": "You're about to explore a sample season",
+      "popupIntro": "This is a DEMO season, filled with realistic sample data up to {data}. It shows you what GKSeason looks like in real use, without you having to enter anything.",
+      "punto1": "You can browse every page and open every screen: calendar, goalkeepers, ratings, objectives, statistics and reports.",
+      "punto2": "It is read-only: forms still open, so you can see what goes in them, but saving is disabled.",
+      "punto3": "Data is filled in up to the date shown. After that date you'll find sessions already scheduled but not yet rated, just like in real life.",
+      "punto4": "Every feature is unlocked, including the full plan, so you can see everything the platform can do.",
+      "popupChiudi": "Explore the demo",
+      "bannerTitolo": "You're browsing the DEMO season",
+      "bannerData": "data filled in up to {data}",
+      "bannerEsci": "Leave the demo",
+      "bannerUscita": "Leaving…",
+      "stagioneDemo": "Demo season",
+      "soloLettura": "Not available in demo mode: the sample season is read-only."
   }
 }

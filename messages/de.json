@@ -49,6 +49,7 @@
     "jsonLdDescription": "Plattform für Torwarttrainer: Trainingskalender, Bewertungen, Statistiken, Übungen und Kaderverwaltung in einer App."
   },
   "sidebar": {
+    "stagioneDemo": "Demo-Saison",
     "andamento": "Verlauf",
     "obiettivi": "Ziele",
     "percorso": "Verlauf",
@@ -2880,5 +2881,21 @@
     "nessunaColonna": "Wähle mindestens eine Spalte.",
     "nessunDato": "Für diese Saison gibt es noch keine Daten.",
     "nessunaIscrizione": "Der Torwart ist in keiner Kategorie der aktiven Saison gemeldet."
+  },
+  "demo": {
+      "badge": "Demo-Modus",
+      "popupTitolo": "Du siehst gleich eine Beispielsaison",
+      "popupIntro": "Dies ist eine DEMO-Saison mit realistischen Beispieldaten bis zum {data}. Sie zeigt dir, wie GKSeason im Einsatz aussieht, ohne dass du etwas eingeben musst.",
+      "punto1": "Du kannst alle Seiten durchsehen und jede Ansicht öffnen: Kalender, Torhüter, Bewertungen, Ziele, Statistiken und Berichte.",
+      "punto2": "Nur Ansicht: Formulare öffnen sich zwar, damit du siehst, was hineingehört, aber das Speichern ist deaktiviert.",
+      "punto3": "Die Daten reichen bis zum angegebenen Datum. Danach findest du bereits geplante, aber noch nicht bewertete Einheiten — wie in der Realität.",
+      "punto4": "Alle Funktionen sind freigeschaltet, auch die des vollen Pakets, damit du wirklich alles sehen kannst.",
+      "popupChiudi": "Demo ansehen",
+      "bannerTitolo": "Du bist in der DEMO-Saison",
+      "bannerData": "Daten bis zum {data}",
+      "bannerEsci": "Demo verlassen",
+      "bannerUscita": "Wird verlassen…",
+      "stagioneDemo": "Demo-Saison",
+      "soloLettura": "Im Demo-Modus nicht verfügbar: die Beispielsaison ist schreibgeschützt."
   }
 }

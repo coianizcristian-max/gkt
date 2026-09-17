@@ -49,6 +49,7 @@
     "jsonLdDescription": "Piattaforma per preparatori dei portieri: calendario allenamenti, valutazioni, statistiche, esercizi e gestione squadra in un'unica app."
   },
   "sidebar": {
+    "stagioneDemo": "Stagione demo",
     "andamento": "Andamento",
     "obiettivi": "Obiettivi",
     "percorso": "Percorso",
@@ -2880,5 +2881,21 @@
     "nessunaColonna": "Seleziona almeno una colonna.",
     "nessunDato": "Non ci sono ancora dati per questa stagione.",
     "nessunaIscrizione": "Il portiere non risulta iscritto a una categoria della stagione attiva."
+  },
+  "demo": {
+      "badge": "Modalità demo",
+      "popupTitolo": "Stai per vedere una stagione di esempio",
+      "popupIntro": "Questa è una stagione DEMO, compilata con dati reali di esempio fino al {data}. Serve a mostrarti come si presenta GKSeason quando è in uso, senza che tu debba inserire nulla.",
+      "punto1": "Puoi navigare tutte le pagine e aprire tutte le schede: calendario, portieri, valutazioni, obiettivi, statistiche e report.",
+      "punto2": "È in sola visualizzazione: i moduli si aprono, così vedi quali dati si inseriscono, ma il salvataggio è disattivato.",
+      "punto3": "I dati sono compilati fino alla data indicata. Dopo quella data trovi allenamenti già programmati ma ancora da valutare, come succede nella realtà.",
+      "punto4": "Tutte le funzioni sono sbloccate, anche quelle del piano completo, così vedi davvero tutto quello che puoi fare.",
+      "popupChiudi": "Esplora la demo",
+      "bannerTitolo": "Stai navigando la stagione DEMO",
+      "bannerData": "dati compilati fino al {data}",
+      "bannerEsci": "Esci dalla demo",
+      "bannerUscita": "Uscita…",
+      "stagioneDemo": "Stagione demo",
+      "soloLettura": "Non disponibile in modalità demo: la stagione di esempio è in sola visualizzazione."
   }
 }

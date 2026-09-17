@@ -2090,3 +2090,36 @@ a.brand { text-decoration: none; color: inherit; }
 /* agenda portiere: evidenzia "da valutare" con bordino rosso sul quadrato del giorno */
 .agenda-row.da { border-left: 1px solid var(--linea); }
 .agenda-row.da .agenda-date { outline: 2px solid #e8a72c; outline-offset: 2px; }
+
+/* ── Modalita' demo ─────────────────────────────────────────────────── */
+.demo-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1200;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px; font-size: 13px;
+  background: var(--azzurro-scuro); color: var(--bianco);
+  box-shadow: 0 1px 6px rgba(20, 32, 43, 0.25);
+}
+.demo-banner-pallino {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--giallo); flex: 0 0 auto;
+}
+.demo-banner-testo { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.demo-banner-data { opacity: 0.85; }
+.demo-banner-esci {
+  margin-left: auto; flex: 0 0 auto; cursor: pointer;
+  background: rgba(255, 255, 255, 0.15); color: var(--bianco);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--r-sm); padding: 5px 12px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+}
+.demo-banner-esci:hover { background: rgba(255, 255, 255, 0.25); }
+.demo-banner-esci:disabled { opacity: 0.6; cursor: default; }
+/* la fascia e' fissa: lascio spazio in cima allo scheletro */
+body:has(.demo-banner) .shell { padding-top: 38px; }
+
+.nav-link.nav-demo, .mob-nav-link.mob-nav-demo {
+  width: 100%; text-align: left; cursor: pointer;
+  background: none; border: none; font-family: inherit; font-size: inherit;
+  color: var(--giallo); font-weight: 600;
+}
+.nav-link.nav-demo:hover, .mob-nav-link.mob-nav-demo:hover { background: rgba(232, 167, 44, 0.12); }

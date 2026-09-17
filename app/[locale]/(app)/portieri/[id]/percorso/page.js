@@ -23,10 +23,10 @@ export default async function PercorsoCrescitaPage({ params }) {
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const { data: portiere } = await db.from('portieri').select('id, nome, cognome').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
 
   const [gatingCfg, abbAttivo] = await Promise.all([
     getGatingConfig(supabase),

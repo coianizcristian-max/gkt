@@ -31,11 +31,11 @@ export default async function StatistichePortierePage({ params }) {
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const { data: portiere } = await db.from('portieri')
     .select('id, nome, cognome, data_nascita').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const { data: iscrizione } = stagione
     ? await db.from('iscrizioni')
         .select('id, squadra_id, squadre(nome)')

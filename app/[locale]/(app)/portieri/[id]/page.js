@@ -23,9 +23,11 @@ export default async function SchedaPortierePage({ params }) {
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
-  const [{ data: piediVoci }, { db, stagione: selezionata, ownerId, taglio, oggi: oggiCtx }, { data: portiere }] = await Promise.all([
+  // Il contesto va risolto PRIMA: le letture successive usano il suo client.
+  const { db, stagione: selezionata, ownerId, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
+
+  const [{ data: piediVoci }, { data: portiere }] = await Promise.all([
     supabase.from('elenco_voci').select('valore').eq('elenco', 'piede').eq('attivo', true).order('ordine'),
-    contestoDati(supabase, user?.id),
     db.from('portieri').select('*').eq('id', id).maybeSingle(),
   ])
   const piedi = (piediVoci ?? []).map((v) => v.valore)

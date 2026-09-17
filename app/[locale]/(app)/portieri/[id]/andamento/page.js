@@ -25,11 +25,11 @@ export default async function AndamentoPortierePage({ params }) {
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const { data: portiere } = await db.from('portieri')
     .select('id, nome, cognome').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const { data: iscrizione } = stagione
     ? await db.from('iscrizioni').select('squadra_id, squadre(nome)')
         .eq('stagione_id', stagione.id).eq('portiere_id', id).maybeSingle()

@@ -23,10 +23,10 @@ export default async function ObiettiviPortierePage({ params }) {
   if (profiloViewer?.ruolo === 'portiere' && profiloViewer.portiere_id !== id) notFound()
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
 
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const { data: portiere } = await db.from('portieri').select('id, nome, cognome').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
 
   const { data: obiettivi } = await db.from('obiettivi')
     .select('*').eq('portiere_id', id).eq('archiviato', false).order('created_at', { ascending: false })

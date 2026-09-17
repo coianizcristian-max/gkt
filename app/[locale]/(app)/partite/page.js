@@ -4,6 +4,7 @@ import Guida from '@/app/components/Guida'
 import PartiteLista from '@/app/components/PartiteLista'
 import { puoVisualizzare } from '@/lib/permessi'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -20,26 +21,26 @@ export default async function PartitePage() {
     redirect('/dashboard')
   }
 
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
 
   let partite = []
   let categorie = []
   if (stagione) {
-    let query = supabase.from('partite')
+    let query = db.from('partite')
       .select('id, data, squadra_id, avversario, casa, gol_fatti, gol_subiti, tipo, squadre(nome)')
       .eq('stagione_id', stagione.id).order('data', { ascending: false })
 
     // Il portiere vede solo le partite della sua categoria
     if (isPortiere && profilo.portiere_id) {
-      const { data: isc } = await supabase.from('iscrizioni')
+      const { data: isc } = await db.from('iscrizioni')
         .select('squadra_id').eq('stagione_id', stagione.id).eq('portiere_id', profilo.portiere_id).maybeSingle()
       if (isc?.squadra_id) query = query.eq('squadra_id', isc.squadra_id)
     }
 
     const [pa, cat, vPar] = await Promise.all([
       query,
-      supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-      supabase.from('valutazioni_partita').select('partita_id').eq('presente', true),
+      db.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
+      db.from('valutazioni_partita').select('partita_id').eq('presente', true),
     ])
     const partiteConVal = new Set((vPar.data ?? []).map((v) => v.partita_id))
     partite = (pa.data ?? []).map((p) => ({

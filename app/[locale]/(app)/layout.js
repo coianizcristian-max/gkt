@@ -5,9 +5,10 @@ import NavLink from '@/app/components/NavLink'
 import NavIcon from '@/app/components/NavIcon'
 import VersionePopup from '@/app/components/VersionePopup'
 import DemoBanner from '@/app/components/DemoBanner'
+import DemoGuardia from '@/app/components/DemoGuardia'
 import DemoPopup from '@/app/components/DemoPopup'
 import DemoEntra from '@/app/components/DemoEntra'
-import { getDemoConfig, inDemo, avvisoDemoVisto } from '@/lib/demo'
+import { getDemoConfig, inDemo, avvisoDemoVisto, contestoDati } from '@/lib/demo'
 import BenvenutoPopup from '@/app/components/BenvenutoPopup'
 import SignOutButton from '@/app/components/SignOutButton'
 import SidebarMobile from '@/app/components/SidebarMobile'
@@ -245,7 +246,25 @@ export default async function AppLayout({ children }) {
     { type: 'signout', key: 'signout' },
   ]
 
-  const brand = { href: schedaHref, logo, societa, stagioneNome, isStaff, altreStagioni, stagioneId }
+  // In demo l'intestazione deve dire dove sei: societa', stagione e logo
+  // sono quelli dell'account demo. Il selettore di stagione sparisce, perche'
+  // cambiarla scriverebbe il puntatore sul profilo (e la demo non scrive).
+  let brandLogo = logo, brandSocieta = societa, brandStagione = stagioneNome
+  let brandAltre = altreStagioni, brandStagioneId = stagioneId, brandSwitcher = isStaff
+  if (demoInCorso) {
+    const ctx = await contestoDati(supabase, user.id)
+    brandLogo = ctx.stagione?.logo_url ?? null
+    brandSocieta = ctx.stagione?.societa_nome ?? null
+    brandStagione = ctx.stagione?.nome ?? null
+    brandStagioneId = ctx.stagione?.id ?? null
+    brandAltre = []
+    brandSwitcher = false
+  }
+
+  const brand = {
+    href: schedaHref, logo: brandLogo, societa: brandSocieta,
+    stagioneNome: brandStagione, isStaff, altreStagioni: brandAltre, stagioneId: brandStagioneId,
+  }
 
   return (
     <div className="shell">
@@ -261,7 +280,7 @@ export default async function AppLayout({ children }) {
             {!isStaff && stagioneNome && <span className="brand-stagione">{t('stagione', { nome: stagioneNome })}</span>}
           </div>
         </Link>
-        {isStaff && <div className="brand-switcher-wrap"><StagioneSwitcher stagioni={altreStagioni} stagioneCorrenteId={stagioneId} /></div>}
+        {brandSwitcher && <div className="brand-switcher-wrap"><StagioneSwitcher stagioni={brandAltre} stagioneCorrenteId={brandStagioneId} /></div>}
         <div className="sidebar-lang" style={{ padding: '4px 8px 8px' }}><LanguageSwitcher /></div>
         {couponGiorni != null && (
           <div style={{margin:'4px 8px 8px',padding:'6px 10px',background:'rgba(232,167,44,0.15)',borderRadius:'var(--r-sm)',fontSize:12,color:'var(--giallo)',fontWeight:600,lineHeight:1.3}}>
@@ -300,6 +319,7 @@ export default async function AppLayout({ children }) {
         </footer>
       </div>
       {demoInCorso && <DemoBanner dataTaglio={demoCfg.dataTaglio} />}
+      {demoInCorso && <DemoGuardia />}
       {mostraDemoPopup
         ? <DemoPopup dataTaglio={demoCfg.dataTaglio} />
         : mostraBenvenuto

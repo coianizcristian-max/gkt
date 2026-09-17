@@ -1,5 +1,6 @@
 import { createClient, getUser } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import CalendarioMese from '@/app/components/CalendarioMese'
 import CalendarioPortiereTabs from '@/app/components/CalendarioPortiereTabs'
 import CalendarioAzioni from '@/app/components/CalendarioAzioni'
@@ -17,9 +18,9 @@ export default async function CalendarioPage() {
   // profilo e stagione dipendono solo da user.id, non l'uno dall'altro: nessun
   // redirect qui li separa (a differenza di dashboard/ricorrenze), quindi si
   // possono lanciare insieme senza rischi.
-  const [{ data: profilo }, { stagione }] = await Promise.all([
+  const [{ data: profilo }, { db, stagione, taglio, oggi: oggiCtx }] = await Promise.all([
     supabase.from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle(),
-    getStagioneAttiva(supabase, user?.id),
+    contestoDati(supabase, user?.id),
   ])
   const isPortiere = profilo?.ruolo === 'portiere'
 
@@ -33,7 +34,7 @@ export default async function CalendarioPage() {
     // vedono tutto (squadrePortiere resta null).
     let squadrePortiere = null
     if (isPortiere && profilo?.portiere_id) {
-      const { data: iscrPort } = await supabase.from('iscrizioni')
+      const { data: iscrPort } = await db.from('iscrizioni')
         .select('squadra_id').eq('portiere_id', profilo.portiere_id).eq('stagione_id', stagione.id)
       squadrePortiere = [...new Set((iscrPort ?? []).map((r) => r.squadra_id).filter(Boolean))]
     }
@@ -42,12 +43,12 @@ export default async function CalendarioPage() {
       : q
 
     const [al, cat, par] = await Promise.all([
-      soloSueSquadre(supabase.from('allenamenti')
+      soloSueSquadre(db.from('allenamenti')
         .select('id, data, squadra_id, ora_inizio, ora_fine, accorpata_con, nessuna_valutazione, squadra:squadre!allenamenti_squadra_id_fkey(nome)')
         .eq('stagione_id', stagione.id)).order('data'),
-      supabase.from('stagione_categorie')
+      db.from('stagione_categorie')
         .select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-      soloSueSquadre(supabase.from('partite')
+      soloSueSquadre(db.from('partite')
         .select('id, data, squadra_id, avversario, casa, gol_fatti, gol_subiti, tipo, ora_ritrovo, ora_inizio, squadre(nome)')
         .eq('stagione_id', stagione.id)).order('data'),
     ])
@@ -89,19 +90,23 @@ export default async function CalendarioPage() {
 
     const partIds = partite.map((p) => p.id)
     const allIds = allenamenti.map((a) => a.id)
+    // In demo le sedute e le partite dopo la data di taglio restano a calendario
+    // ma non hanno valutazioni: si vede la stagione compilata fino a quel giorno.
+    const partIdsVal = taglio ? partite.filter((p) => entroTaglio(p.data, taglio)).map((p) => p.id) : partIds
+    const allIdsVal = taglio ? allenamenti.filter((a) => entroTaglio(a.data, taglio)).map((a) => a.id) : allIds
 
     // Query indipendenti (partite dello staff / allenamenti valutati): prima
     // giravano una dopo l'altra, ora in parallelo.
     const [vprowsRes, vRes] = await Promise.all([
-      (!isPortiere && partIds.length)
-        ? supabase.from('valutazioni_partita').select('partita_id').not('voto', 'is', null).in('partita_id', partIds)
+      (!isPortiere && partIdsVal.length)
+        ? db.from('valutazioni_partita').select('partita_id').not('voto', 'is', null).in('partita_id', partIdsVal)
         : Promise.resolve({ data: [] }),
       isPortiere
-        ? ((allIds.length && profilo?.portiere_id)
-          ? supabase.from('valutazioni').select('allenamento_id, presente, voto_portiere, voto, note').eq('portiere_id', profilo.portiere_id).in('allenamento_id', allIds)
+        ? ((allIdsVal.length && profilo?.portiere_id)
+          ? db.from('valutazioni').select('allenamento_id, presente, voto_portiere, voto, note').eq('portiere_id', profilo.portiere_id).in('allenamento_id', allIdsVal)
           : Promise.resolve({ data: [] }))
-        : (allIds.length
-          ? supabase.from('valutazioni').select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allIds)
+        : (allIdsVal.length
+          ? db.from('valutazioni').select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allIdsVal)
           : Promise.resolve({ data: [] })),
     ])
 
@@ -130,13 +135,13 @@ export default async function CalendarioPage() {
 
     // Assenti annunciati per allenamenti E partite (solo staff): informativo, mai in statistiche/presenze.
     if (!isPortiere && (allenamenti.length || partite.length)) {
-      const { data: iscr } = await supabase.from('iscrizioni')
+      const { data: iscr } = await db.from('iscrizioni')
         .select('id, squadra_id, portieri(nome, cognome)')
         .eq('stagione_id', stagione.id)
       const iscrIds = (iscr ?? []).map((i) => i.id)
       let assenze = []
       if (iscrIds.length) {
-        const { data: ap } = await supabase.from('assenze_previste')
+        const { data: ap } = await db.from('assenze_previste')
           .select('iscrizione_id, data_inizio, data_fine, nota')
           .in('iscrizione_id', iscrIds)
         assenze = ap ?? []
@@ -167,7 +172,7 @@ export default async function CalendarioPage() {
     }
   }
 
-  const oggiStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
+  const oggiStr = oggiCtx
 
   return (
     <>

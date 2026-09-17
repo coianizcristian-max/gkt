@@ -6,6 +6,7 @@ import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import RicorrenzeTabs from '@/app/components/RicorrenzeTabs'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -19,7 +20,7 @@ export default async function RicorrenzePage() {
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
-  const { stagione } = await getStagioneAttiva(supabase, user.id)
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user.id)
 
   // Il gating non dipende dalla stagione: partiva solo dopo il blocco sotto,
   // qui viene lanciato subito e atteso solo quando serve.
@@ -33,10 +34,10 @@ export default async function RicorrenzePage() {
   let ricorrenzePartite = []
   if (stagione) {
     const [cat, ric, ricPar] = await Promise.all([
-      supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-      supabase.from('ricorrenze_stagionali').select('*').eq('stagione_id', stagione.id)
+      db.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
+      db.from('ricorrenze_stagionali').select('*').eq('stagione_id', stagione.id)
         .order('giorno_settimana').order('ora_inizio'),
-      supabase.from('ricorrenze_partite_stagionali').select('*').eq('stagione_id', stagione.id)
+      db.from('ricorrenze_partite_stagionali').select('*').eq('stagione_id', stagione.id)
         .order('giorno_settimana').order('data_inizio_ric'),
     ])
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)

@@ -2,6 +2,7 @@ import { Link } from '@/i18n/routing'
 import { tipologiaTradotta } from '@/lib/elenchi'
 import { notFound } from 'next/navigation'
 import { createClient, getUser } from '@/lib/supabase/server'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 
 function getAdmin() {
@@ -33,9 +34,10 @@ export default async function AllenamentoPage({ params }) {
 
   // profilo e allenamento sono indipendenti (il secondo dipende solo da :id):
   // prima giravano in sequenza.
+  const { db, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const [{ data: profilo }, { data: allenamento }] = await Promise.all([
     supabase.from('profili').select('ruolo, portiere_id, supervisore_id').eq('id', user?.id).maybeSingle(),
-    supabase.from('allenamenti').select('*, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('id', id).maybeSingle(),
+    db.from('allenamenti').select('*, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('id', id).maybeSingle(),
   ])
   if (!allenamento) notFound()
 
@@ -45,8 +47,8 @@ export default async function AllenamentoPage({ params }) {
   let accorpataConNome = null
   if (allenamento.accorpata_con) {
     const [{ data: checkAll }, { data: squadraAcc }] = await Promise.all([
-      supabase.from('allenamenti').select('id').eq('id', allenamento.accorpata_con).maybeSingle(),
-      supabase.from('squadre').select('nome').eq('id', allenamento.accorpata_con).maybeSingle(),
+      db.from('allenamenti').select('id').eq('id', allenamento.accorpata_con).maybeSingle(),
+      db.from('squadre').select('nome').eq('id', allenamento.accorpata_con).maybeSingle(),
     ])
 
     if (checkAll) {
@@ -77,10 +79,10 @@ export default async function AllenamentoPage({ params }) {
   // ── VISTA PORTIERE ────────────────────────────────────────────────────────
   if (profilo?.ruolo === 'portiere') {
     const [{ data: mia }, { data: aeRows }] = await Promise.all([
-      supabase.from('valutazioni')
+      db.from('valutazioni')
         .select('id, presente, voto, note, voto_portiere, feedback_portiere, nota_portiere')
         .eq('allenamento_id', id).eq('portiere_id', profilo.portiere_id).maybeSingle(),
-      supabase.from('allenamento_esercizi')
+      db.from('allenamento_esercizi')
         .select('ordine, esercizi(id, titolo, tipologia, descrizione_breve, descrizione, immagine_url)')
         .eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),
     ])
@@ -91,7 +93,7 @@ export default async function AllenamentoPage({ params }) {
     let punteggiCoach = []
     if (mia?.id && mia.voto != null) {
       const [{ data: pun }, { data: par }] = await Promise.all([
-        supabase.from('valutazione_punteggi').select('parametro_id, punteggio').eq('valutazione_id', mia.id),
+        db.from('valutazione_punteggi').select('parametro_id, punteggio').eq('valutazione_id', mia.id),
         caricaParametri(supabase, await getLocale()),
       ])
       const parMap = {}
@@ -235,15 +237,15 @@ export default async function AllenamentoPage({ params }) {
 
   const [bigBatch, eserciziResponsabile] = await Promise.all([
     Promise.all([
-      supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
-      supabase.from('iscrizioni').select('id, portieri(id, nome, cognome)')
+      db.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', allenamento.stagione_id),
+      db.from('iscrizioni').select('id, portieri(id, nome, cognome)')
         .eq('stagione_id', allenamento.stagione_id).eq('squadra_id', allenamento.squadra_id),
       caricaParametri(supabase, await getLocale()),
-      supabase.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
+      db.from('valutazioni').select('id, portiere_id, presente, voto, note').eq('allenamento_id', id),
       supabase.from('elenco_voci').select('valore, valore_num, ordine').eq('elenco', 'scala_voti').eq('attivo', true).order('ordine'),
-      supabase.from('esercizi').select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, profili(ruolo), esercizio_attributi(attributo_id)').order('titolo'),
-      supabase.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),
-      supabase.from('valutazioni')
+      db.from('esercizi').select('id, titolo, tipologia, descrizione_breve, descrizione, note, video_url, immagine_url, pubblico, allenatore_id, durata_minuti, recupero_minuti, profili(ruolo), esercizio_attributi(attributo_id)').order('titolo'),
+      db.from('allenamento_esercizi').select('esercizio_id, ordine').eq('allenamento_id', accorpataConAllenamentoId ?? id).order('ordine'),
+      db.from('valutazioni')
         .select('portiere_id, feedback_portiere, nota_portiere, voto_portiere, presente, portieri(nome, cognome)')
         .eq('allenamento_id', id)
         .or('feedback_portiere.not.is.null,voto_portiere.not.is.null')
@@ -276,7 +278,7 @@ export default async function AllenamentoPage({ params }) {
       ? supabase.from('profili').select('id, nome_visualizzato').in('id', allenatoreIds)
       : Promise.resolve({ data: [] }),
     eserciziOrdinati.length > 0
-      ? adminSel.from('esercizi')
+      ? db.from('esercizi')
           .select('id, titolo, tipologia, descrizione_breve, descrizione, immagine_url, video_url, pubblico, allenatore_id, durata_minuti, recupero_minuti')
           .in('id', eserciziOrdinati)
       : Promise.resolve({ data: [] }),
@@ -306,7 +308,7 @@ export default async function AllenamentoPage({ params }) {
   const iscrIds = (iscr ?? []).map((r) => r.id).filter(Boolean)
   let infortuniRows = []
   if (iscrIds.length) {
-    const { data: infData } = await supabase.from('infortuni')
+    const { data: infData } = await db.from('infortuni')
       .select('id, iscrizione_id, data_inizio')
       .in('iscrizione_id', iscrIds)
       .lte('data_inizio', allenamento.data)
@@ -320,7 +322,7 @@ export default async function AllenamentoPage({ params }) {
   // Solo informativo: non tocca presenze/valutazioni/statistiche.
   let assenzeRows = []
   if (iscrIds.length) {
-    const { data: apData } = await supabase.from('assenze_previste')
+    const { data: apData } = await db.from('assenze_previste')
       .select('iscrizione_id, nota')
       .in('iscrizione_id', iscrIds)
       .lte('data_inizio', allenamento.data)
@@ -356,7 +358,7 @@ export default async function AllenamentoPage({ params }) {
   const valIds = (vals ?? []).map((v) => v.id)
   const punteggiIniziali = {}
   if (valIds.length) {
-    const { data: pp } = await supabase.from('valutazione_punteggi')
+    const { data: pp } = await db.from('valutazione_punteggi')
       .select('valutazione_id, parametro_id, punteggio').in('valutazione_id', valIds)
     for (const x of pp ?? []) (punteggiIniziali[x.valutazione_id] ??= {})[x.parametro_id] = x.punteggio
   }

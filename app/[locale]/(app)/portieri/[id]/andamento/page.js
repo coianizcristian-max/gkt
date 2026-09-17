@@ -2,6 +2,7 @@ import { Link } from '@/i18n/routing'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { traduciParametri } from '@/lib/parametri'
 import { getTranslations, getLocale } from 'next-intl/server'
 import AndamentoMensile from '@/app/components/AndamentoMensile'
@@ -24,13 +25,13 @@ export default async function AndamentoPortierePage({ params }) {
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
-  const { data: portiere } = await supabase.from('portieri')
+  const { data: portiere } = await db.from('portieri')
     .select('id, nome, cognome').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const { data: iscrizione } = stagione
-    ? await supabase.from('iscrizioni').select('squadra_id, squadre(nome)')
+    ? await db.from('iscrizioni').select('squadra_id, squadre(nome)')
         .eq('stagione_id', stagione.id).eq('portiere_id', id).maybeSingle()
     : { data: null }
 
@@ -41,7 +42,7 @@ export default async function AndamentoPortierePage({ params }) {
   const canReport = isUnlocked('report_pdf_stagione', gatingCfg, abbAttivo)
 
   const { data: commentoRow } = stagione
-    ? await supabase.from('report_commenti')
+    ? await db.from('report_commenti')
         .select('commento_allenatore, commento_portiere')
         .eq('portiere_id', id).eq('stagione_id', stagione.id).maybeSingle()
     : { data: null }
@@ -52,9 +53,9 @@ export default async function AndamentoPortierePage({ params }) {
 
   if (stagione && iscrizione) {
     const [{ data: allen }, { data: part }] = await Promise.all([
-      supabase.from('allenamenti').select('id, data')
+      db.from('allenamenti').select('id, data')
         .eq('stagione_id', stagione.id).eq('squadra_id', iscrizione.squadra_id).lte('data', oggi),
-      supabase.from('partite').select('id, data')
+      db.from('partite').select('id, data')
         .eq('stagione_id', stagione.id).eq('squadra_id', iscrizione.squadra_id).lte('data', oggi),
     ])
 
@@ -63,18 +64,18 @@ export default async function AndamentoPortierePage({ params }) {
 
     const [{ data: val }, { data: valPar }] = await Promise.all([
       allenIds.length
-        ? supabase.from('valutazioni').select('id, allenamento_id, presente, voto, voto_portiere')
+        ? db.from('valutazioni').select('id, allenamento_id, presente, voto, voto_portiere')
             .eq('portiere_id', id).in('allenamento_id', allenIds)
         : { data: [] },
       partIds.length
-        ? supabase.from('valutazioni_partita').select('partita_id, presente, voto, gol_subiti, punti')
+        ? db.from('valutazioni_partita').select('partita_id, presente, voto, gol_subiti, punti')
             .eq('portiere_id', id).in('partita_id', partIds)
         : { data: [] },
     ])
 
     const valIds = (val ?? []).map((v) => v.id)
     const { data: punteggi } = valIds.length
-      ? await supabase.from('valutazione_punteggi')
+      ? await db.from('valutazione_punteggi')
           .select('valutazione_id, parametro_id, punteggio, parametri_valutazione(id, nome, ordine)')
           .in('valutazione_id', valIds)
       : { data: [] }

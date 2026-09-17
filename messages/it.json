@@ -2888,6 +2888,8 @@
     "nessunaIscrizione": "Il portiere non risulta iscritto a una categoria della stagione attiva."
   },
   "demo": {
+    "bloccoTitolo": "Versione DEMO",
+    "bloccoTesto": "Il salvataggio è disabilitato: stai guardando una stagione dimostrativa in sola visualizzazione.",
     "comeUscire": "Per tornare ai tuoi dati premi «Esci dalla demo» nella barra gialla in alto, sempre visibile mentre navighi.",
       "badge": "MODALITÀ DEMO",
       "popupTitolo": "Stai per vedere una stagione di esempio",

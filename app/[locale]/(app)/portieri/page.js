@@ -7,6 +7,7 @@ import PortieriSearch from '@/app/components/PortieriSearch'
 import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import { puoVisualizzare } from '@/lib/permessi'
 import { getStagioneAttiva, getOwnerId } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +27,7 @@ export default async function PortieriPage() {
   }
 
   const ownerId = await getOwnerId(supabase, user?.id)
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
 
   let squadre = []
   let iscrizioni = []
@@ -43,18 +44,18 @@ export default async function PortieriPage() {
   )
   if (stagione) {
     const [sq, isc, allen, cat] = await Promise.all([
-      supabase.from('squadre').select('id, nome, ordine').eq('owner_id', ownerId).order('ordine'),
-      supabase.from('iscrizioni')
+      db.from('squadre').select('id, nome, ordine').eq('owner_id', ownerId).order('ordine'),
+      db.from('iscrizioni')
         .select('squadra_id, numero_maglia, portieri(id, nome, cognome, foto_url, attivo, data_nascita)')
         .eq('stagione_id', stagione.id),
-      supabase.from('allenamenti').select('id').eq('stagione_id', stagione.id),
-      supabase.from('stagione_categorie').select('id').eq('stagione_id', stagione.id).limit(1),
+      db.from('allenamenti').select('id').eq('stagione_id', stagione.id),
+      db.from('stagione_categorie').select('id').eq('stagione_id', stagione.id).limit(1),
     ])
     squadre = sq.data ?? []
     iscrizioni = isc.data ?? []
     const allenIds = (allen.data ?? []).map((a) => a.id)
     if (allenIds.length) {
-      const { data: val } = await supabase.from('valutazioni').select('portiere_id, presente, voto').in('allenamento_id', allenIds)
+      const { data: val } = await db.from('valutazioni').select('portiere_id, presente, voto').in('allenamento_id', allenIds)
       valutazioni = val ?? []
     }
     haCategorie = (cat.data ?? []).length > 0
@@ -66,7 +67,7 @@ export default async function PortieriPage() {
   const portiereIds = iscrizioni.map((i) => i.portieri?.id).filter(Boolean)
   let tagPerPortiere = {}
   if (portiereIds.length) {
-    const { data: tagRows } = await supabase.from('portiere_tag').select('portiere_id, tag').in('portiere_id', portiereIds)
+    const { data: tagRows } = await db.from('portiere_tag').select('portiere_id, tag').in('portiere_id', portiereIds)
     for (const r of tagRows ?? []) (tagPerPortiere[r.portiere_id] ??= []).push(r.tag)
   }
 

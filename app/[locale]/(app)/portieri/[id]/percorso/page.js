@@ -6,6 +6,7 @@ import PercorsoTimeline from '@/app/components/PercorsoTimeline'
 import ReportStagione from '@/app/components/ReportStagione'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -22,10 +23,10 @@ export default async function PercorsoCrescitaPage({ params }) {
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
-  const { data: portiere } = await supabase.from('portieri').select('id, nome, cognome').eq('id', id).maybeSingle()
+  const { data: portiere } = await db.from('portieri').select('id, nome, cognome').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
 
   const [gatingCfg, abbAttivo] = await Promise.all([
     getGatingConfig(supabase),
@@ -64,7 +65,7 @@ export default async function PercorsoCrescitaPage({ params }) {
   const eventi = []
 
   // 1. Obiettivi: creazione e raggiungimento
-  const { data: obiettivi } = await supabase.from('obiettivi')
+  const { data: obiettivi } = await db.from('obiettivi')
     .select('id, titolo, categoria, stato, created_at, updated_at').eq('portiere_id', id)
   for (const o of obiettivi ?? []) {
     eventi.push({ tipo: 'obiettivo_creato', data: o.created_at?.slice(0, 10), titolo: o.titolo, categoria: o.categoria })
@@ -75,12 +76,12 @@ export default async function PercorsoCrescitaPage({ params }) {
 
   // 2. Allenamenti: voti particolarmente alti (≥8) o bassi (≤4) come momenti notevoli
   if (stagione) {
-    const { data: allenamenti } = await supabase.from('allenamenti')
+    const { data: allenamenti } = await db.from('allenamenti')
       .select('id, data, squadra:squadre!allenamenti_squadra_id_fkey(nome)').eq('stagione_id', stagione.id)
     const allenById = {}
     for (const a of allenamenti ?? []) allenById[a.id] = a
 
-    const { data: valutazioni } = await supabase.from('valutazioni')
+    const { data: valutazioni } = await db.from('valutazioni')
       .select('allenamento_id, voto, presente').eq('portiere_id', id).eq('presente', true).not('voto', 'is', null)
     for (const v of valutazioni ?? []) {
       const voto = Number(v.voto)
@@ -91,11 +92,11 @@ export default async function PercorsoCrescitaPage({ params }) {
     }
 
     // 3. Partite giocate con esito
-    const { data: partite } = await supabase.from('partite')
+    const { data: partite } = await db.from('partite')
       .select('id, data, avversario, gol_fatti, gol_subiti, tipo').eq('stagione_id', stagione.id)
     const partiteById = {}
     for (const p of partite ?? []) partiteById[p.id] = p
-    const { data: valPartite } = await supabase.from('valutazioni_partita')
+    const { data: valPartite } = await db.from('valutazioni_partita')
       .select('partita_id, voto, presente').eq('portiere_id', id).eq('presente', true)
     for (const v of valPartite ?? []) {
       const p = partiteById[v.partita_id]
@@ -113,7 +114,7 @@ export default async function PercorsoCrescitaPage({ params }) {
   eventi.sort((a, b) => (b.data ?? '').localeCompare(a.data ?? ''))
 
   const { data: commentoRow } = stagione
-    ? await supabase.from('report_commenti')
+    ? await db.from('report_commenti')
         .select('commento_allenatore, commento_portiere')
         .eq('portiere_id', id).eq('stagione_id', stagione.id).maybeSingle()
     : { data: null }

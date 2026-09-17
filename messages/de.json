@@ -2888,6 +2888,8 @@
     "nessunaIscrizione": "Der Torwart ist in keiner Kategorie der aktiven Saison gemeldet."
   },
   "demo": {
+    "bloccoTitolo": "DEMO-Version",
+    "bloccoTesto": "Speichern ist deaktiviert: Du siehst eine schreibgeschützte Beispielsaison.",
     "comeUscire": "Um zu deinen Daten zurückzukehren, klicke in der gelben Leiste oben auf „Demo verlassen“ — sie bleibt immer sichtbar.",
       "badge": "DEMO-MODUS",
       "popupTitolo": "Du siehst gleich eine Beispielsaison",

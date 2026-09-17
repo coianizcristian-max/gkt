@@ -4,6 +4,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Guida from '@/app/components/Guida'
 import TemplateManager from '@/app/components/TemplateManager'
 import { getOwnerId } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 function getAdmin() {

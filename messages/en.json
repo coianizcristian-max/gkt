@@ -2888,6 +2888,8 @@
     "nessunaIscrizione": "This goalkeeper is not enrolled in a category of the active season."
   },
   "demo": {
+    "bloccoTitolo": "DEMO version",
+    "bloccoTesto": "Saving is disabled: you are viewing a read-only sample season.",
     "comeUscire": "To go back to your own data, press \"Leave the demo\" in the yellow bar at the top, always visible while you browse.",
       "badge": "DEMO MODE",
       "popupTitolo": "You're about to explore a sample season",

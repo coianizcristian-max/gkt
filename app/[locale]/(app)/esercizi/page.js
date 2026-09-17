@@ -6,6 +6,7 @@ import EserciziManager from '@/app/components/EserciziManager'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getOwnerId } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 function getAdmin() {
@@ -23,6 +24,7 @@ export default async function EserciziPage() {
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
+  const { db, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const [gatingCfg, abbAttivo] = await Promise.all([
     getGatingConfig(supabase),
     hasAbbonamento(supabase, user.id),
@@ -37,7 +39,7 @@ export default async function EserciziPage() {
   const supervisoreId = profiloExt?.supervisore_id ?? null
 
   const [{ data: esercizi }, { data: tip }, { data: attributi }] = await Promise.all([
-    supabase.from('esercizi').select('*, esercizio_attributi(attributo_id)').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
+    db.from('esercizi').select('*, esercizio_attributi(attributo_id)').eq('allenatore_id', ownerId).eq('archiviato', false).order('created_at', { ascending: false }),
     supabase.from('elenco_voci').select('valore').eq('elenco', 'tipologie_esercizio').eq('attivo', true).order('ordine'),
     supabase.from('attributi_esercizio').select('id, nome').eq('attivo', true).order('ordine'),
   ])

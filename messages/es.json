@@ -2888,6 +2888,8 @@
     "nessunaIscrizione": "El portero no está inscrito en ninguna categoría de la temporada activa."
   },
   "demo": {
+    "bloccoTitolo": "Versión DEMO",
+    "bloccoTesto": "El guardado está desactivado: estás viendo una temporada de muestra en solo lectura.",
     "comeUscire": "Para volver a tus datos pulsa «Salir de la demo» en la barra amarilla superior, siempre visible mientras navegas.",
       "badge": "MODO DEMO",
       "popupTitolo": "Vas a ver una temporada de ejemplo",

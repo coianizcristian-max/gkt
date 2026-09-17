@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PortiereForm from '@/app/components/PortiereForm'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -18,7 +19,7 @@ export default async function NuovoPortierePage() {
   const { data: piediVoci } = await supabase
     .from('elenco_voci').select('valore').eq('elenco', 'piede').eq('attivo', true).order('ordine')
   const piedi = (piediVoci ?? []).map((v) => v.valore)
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
 
   let categorie = []
   if (stagione) {

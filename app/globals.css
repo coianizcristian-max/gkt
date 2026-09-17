@@ -2153,3 +2153,20 @@ body:has(.demo-banner) .shell { padding-top: 38px; }
 }
 .demo-richiamo-titolo { font-weight: 700; margin-bottom: 3px; }
 .demo-richiamo-testo { font-size: 14px; color: var(--ink-soft); line-height: 1.45; }
+
+/* Avviso di salvataggio bloccato in demo */
+.demo-avviso {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  z-index: 1300; display: flex; align-items: center; gap: 10px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 12px 14px; border-radius: var(--r);
+  background: var(--ink); color: var(--bianco);
+  box-shadow: 0 6px 24px rgba(20, 32, 43, 0.35);
+  font-size: 14px; line-height: 1.4;
+}
+.demo-avviso b { color: var(--giallo); flex: 0 0 auto; }
+.demo-avviso button {
+  margin-left: 4px; background: none; border: none; cursor: pointer;
+  color: var(--bianco); font-size: 14px; opacity: 0.7;
+}
+.demo-avviso button:hover { opacity: 1; }

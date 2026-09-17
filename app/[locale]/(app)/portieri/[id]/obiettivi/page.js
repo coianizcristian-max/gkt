@@ -5,6 +5,7 @@ import ObiettiviManager from '@/app/components/ObiettiviManager'
 import PaywallBanner from '@/app/components/PaywallBanner'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getStagioneAttiva, getOwnerId } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 import { getLocale } from 'next-intl/server'
 import { caricaParametri } from '@/lib/parametri'
@@ -22,21 +23,21 @@ export default async function ObiettiviPortierePage({ params }) {
   if (profiloViewer?.ruolo === 'portiere' && profiloViewer.portiere_id !== id) notFound()
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
 
-  const { data: portiere } = await supabase.from('portieri').select('id, nome, cognome').eq('id', id).maybeSingle()
+  const { data: portiere } = await db.from('portieri').select('id, nome, cognome').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
 
-  const { data: obiettivi } = await supabase.from('obiettivi')
+  const { data: obiettivi } = await db.from('obiettivi')
     .select('*').eq('portiere_id', id).eq('archiviato', false).order('created_at', { ascending: false })
 
-  const { data: proposte } = await supabase.from('proposte_obiettivi')
+  const { data: proposte } = await db.from('proposte_obiettivi')
     .select('*').eq('portiere_id', id).order('created_at', { ascending: false })
 
   const obIds = (obiettivi ?? []).map((o) => o.id)
   const sottoByObiettivo = {}
   if (obIds.length) {
-    const { data: sotto } = await supabase.from('sotto_obiettivi')
+    const { data: sotto } = await db.from('sotto_obiettivi')
       .select('*').in('obiettivo_id', obIds).order('ordine')
     for (const so of sotto ?? []) (sottoByObiettivo[so.obiettivo_id] ??= []).push(so)
   }
@@ -57,9 +58,9 @@ export default async function ObiettiviPortierePage({ params }) {
     const ownerId = await getOwnerId(supabase, user?.id)
     const [{ data: parRows }, { data: esRows }, { data: obParRows }, { data: obEsRows }] = await Promise.all([
       caricaParametri(supabase, await getLocale()),
-      supabase.from('esercizi').select('id, titolo').eq('allenatore_id', ownerId).eq('archiviato', false).order('titolo'),
-      supabase.from('obiettivo_parametri').select('obiettivo_id, parametro_id, parametri_valutazione(nome)').in('obiettivo_id', obIds),
-      supabase.from('obiettivo_esercizi').select('obiettivo_id, esercizio_id').in('obiettivo_id', obIds),
+      db.from('esercizi').select('id, titolo').eq('allenatore_id', ownerId).eq('archiviato', false).order('titolo'),
+      db.from('obiettivo_parametri').select('obiettivo_id, parametro_id, parametri_valutazione(nome)').in('obiettivo_id', obIds),
+      db.from('obiettivo_esercizi').select('obiettivo_id, esercizio_id').in('obiettivo_id', obIds),
     ])
     parametriTutti = parRows ?? []
     eserciziTutti = esRows ?? []
@@ -77,12 +78,12 @@ export default async function ObiettiviPortierePage({ params }) {
     const parametroIdsCollegati = [...new Set((obParRows ?? []).map((r) => r.parametro_id))]
     if (parametroIdsCollegati.length > 0) {
       // Tutte le valutazioni del portiere (per avere la data dell'allenamento)
-      const { data: allenRows } = await supabase.from('allenamenti')
+      const { data: allenRows } = await db.from('allenamenti')
         .select('id, data').eq('stagione_id', stagione?.id ?? 'none')
       const dataByAllenamento = {}
       for (const a of allenRows ?? []) dataByAllenamento[a.id] = a.data
 
-      const { data: valRows } = await supabase.from('valutazioni')
+      const { data: valRows } = await db.from('valutazioni')
         .select('id, allenamento_id').eq('portiere_id', id)
       const allenamentoByValutazione = {}
       for (const v of valRows ?? []) allenamentoByValutazione[v.id] = v.allenamento_id
@@ -90,7 +91,7 @@ export default async function ObiettiviPortierePage({ params }) {
 
       let punteggiRows = []
       if (valutazioneIds.length > 0) {
-        const { data } = await supabase.from('valutazione_punteggi')
+        const { data } = await db.from('valutazione_punteggi')
           .select('valutazione_id, parametro_id, punteggio')
           .in('valutazione_id', valutazioneIds)
           .in('parametro_id', parametroIdsCollegati)

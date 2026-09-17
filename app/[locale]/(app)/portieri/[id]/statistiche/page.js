@@ -7,6 +7,7 @@ import IndiceCrescita from '@/app/components/IndiceCrescita'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { calcolaIndiceCrescita } from '@/lib/indiceCrescita'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import ConfrontoPortieri from '@/app/components/ConfrontoPortieri'
 import RadarCompetenze from '@/app/components/RadarCompetenze'
 import ScorecardPortiere from '@/app/components/ScorecardPortiere'
@@ -30,13 +31,13 @@ export default async function StatistichePortierePage({ params }) {
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
-  const { data: portiere } = await supabase.from('portieri')
+  const { data: portiere } = await db.from('portieri')
     .select('id, nome, cognome, data_nascita').eq('id', id).maybeSingle()
   if (!portiere) notFound()
 
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
   const { data: iscrizione } = stagione
-    ? await supabase.from('iscrizioni')
+    ? await db.from('iscrizioni')
         .select('id, squadra_id, squadre(nome)')
         .eq('stagione_id', stagione.id).eq('portiere_id', id).maybeSingle()
     : { data: null }
@@ -83,15 +84,15 @@ export default async function StatistichePortierePage({ params }) {
   if (stagione) {
     // "Oggi" nel fuso italiano (Europe/Rome), non in UTC (vedi nota in statistiche/page.js).
     // .lte include anche oggi, così una seduta fatta oggi conta subito.
-    const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
-    const { data: allenamenti } = await supabase.from('allenamenti')
+    const oggiRoma = oggiCtx
+    const { data: allenamenti } = await db.from('allenamenti')
       .select('id, data, squadra_id').eq('stagione_id', stagione.id).lte('data', oggiRoma).order('data')
     const allenIds = (allenamenti ?? []).map((a) => a.id)
     const allenByDate = {}
     for (const a of allenamenti ?? []) allenByDate[a.id] = a.data
 
     // Partite con gol_subiti (campo della tabella partite, non valutazioni_partita)
-    const { data: par } = await supabase.from('partite')
+    const { data: par } = await db.from('partite')
       .select('id, data, tipo, gol_subiti, gol_fatti, avversario, casa')
       .eq('stagione_id', stagione.id).lte('data', oggiRoma).order('data')
     partiteRows = par ?? []
@@ -101,12 +102,12 @@ export default async function StatistichePortierePage({ params }) {
 
     const [va, vp, pm] = await Promise.all([
       allenIds.length
-        ? supabase.from('valutazioni')
+        ? db.from('valutazioni')
             .select('allenamento_id, presente, voto')
             .eq('portiere_id', id).in('allenamento_id', allenIds)
         : Promise.resolve({ data: [] }),
       partIds.length
-        ? supabase.from('valutazioni_partita')
+        ? db.from('valutazioni_partita')
             .select('partita_id, presente, voto, punti, gol_subiti, fuori_categoria')
             .eq('portiere_id', id).in('partita_id', partIds)
         : Promise.resolve({ data: [] }),
@@ -118,7 +119,7 @@ export default async function StatistichePortierePage({ params }) {
     // Infortuni del portiere in stagione: marca le sessioni cadute in un periodo di stop
     let _infortuni = []
     if (iscrizione?.id) {
-      const { data: _inf } = await supabase.from('infortuni')
+      const { data: _inf } = await db.from('infortuni')
         .select('data_inizio, data_fine').eq('iscrizione_id', iscrizione.id)
       _infortuni = _inf ?? []
     }
@@ -133,28 +134,28 @@ export default async function StatistichePortierePage({ params }) {
     })
     parametri = pm.data ?? []
 
-    const { data: vAllFull } = await supabase.from('valutazioni')
+    const { data: vAllFull } = await db.from('valutazioni')
       .select('id').eq('portiere_id', id)
       .in('allenamento_id', allenIds.length ? allenIds : ['none'])
     const valIds = (vAllFull ?? []).map((v) => v.id)
     if (valIds.length) {
-      const { data: pp2 } = await supabase.from('valutazione_punteggi')
+      const { data: pp2 } = await db.from('valutazione_punteggi')
         .select('valutazione_id, parametro_id, punteggio').in('valutazione_id', valIds)
       punteggi = pp2 ?? []
     }
 
     // Media di categoria per parametro (per il radar competenze)
     if (iscrizione?.squadra_id && allenIds.length) {
-      const { data: iscCatR } = await supabase.from('iscrizioni')
+      const { data: iscCatR } = await db.from('iscrizioni')
         .select('portiere_id').eq('stagione_id', stagione.id).eq('squadra_id', iscrizione.squadra_id)
       const catIdsR = (iscCatR ?? []).map((i) => i.portiere_id).filter((pid) => pid !== id)
       if (catIdsR.length) {
-        const { data: vCat } = await supabase.from('valutazioni')
+        const { data: vCat } = await db.from('valutazioni')
           .select('id').in('portiere_id', catIdsR).in('allenamento_id', allenIds)
         const vCatIds = (vCat ?? []).map((v) => v.id)
         let ppCat = []
         for (let i = 0; i < vCatIds.length; i += 500) {
-          const { data: pp } = await supabase.from('valutazione_punteggi')
+          const { data: pp } = await db.from('valutazione_punteggi')
             .select('parametro_id, punteggio').in('valutazione_id', vCatIds.slice(i, i + 500))
           ppCat = ppCat.concat(pp ?? [])
         }
@@ -206,11 +207,11 @@ export default async function StatistichePortierePage({ params }) {
   // Media categoria
   let mediaCat = null
   if (iscrizione?.squadra_id && stagione) {
-    const { data: iscCat } = await supabase.from('iscrizioni')
+    const { data: iscCat } = await db.from('iscrizioni')
       .select('portiere_id').eq('stagione_id', stagione.id).eq('squadra_id', iscrizione.squadra_id)
     const catIds = (iscCat ?? []).map((i) => i.portiere_id).filter((pid) => pid !== id)
     if (catIds.length) {
-      const { data: vCat } = await supabase.from('valutazioni')
+      const { data: vCat } = await db.from('valutazioni')
         .select('voto, presente').in('portiere_id', catIds)
       const votiCat = (vCat ?? []).filter((v) => v.presente && v.voto != null).map((v) => Number(v.voto))
       mediaCat = votiCat.length ? votiCat.reduce((s, x) => s + x, 0) / votiCat.length : null
@@ -279,10 +280,10 @@ export default async function StatistichePortierePage({ params }) {
   }
 
   // Obiettivi: percentuale completati (stato = 'raggiunto')
-  const { data: obiettiviRows } = await supabase.from('obiettivi').select('stato, scadenza').eq('portiere_id', id)
+  const { data: obiettiviRows } = await db.from('obiettivi').select('stato, scadenza').eq('portiere_id', id)
   let pctObiettivi = null
   if (obiettiviRows && obiettiviRows.length > 0) {
-    const oggiStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
+    const oggiStr = oggiCtx
     // Solo gli obiettivi "in gioco": raggiunti, oppure con scadenza già passata.
     // Quelli aperti e non ancora scaduti NON penalizzano l'indice.
     const rilevanti = obiettiviRows.filter((o) => o.stato === 'raggiunto' || (o.scadenza && o.scadenza <= oggiStr))
@@ -343,7 +344,7 @@ export default async function StatistichePortierePage({ params }) {
   // Grafico 7: presenze portiere vs altri portieri categoria (per mese)
   let g7 = []
   if (iscrizione?.squadra_id && stagione) {
-    const { data: iscCat } = await supabase.from('iscrizioni')
+    const { data: iscCat } = await db.from('iscrizioni')
       .select('portiere_id, portieri(nome, cognome)').eq('stagione_id', stagione.id).eq('squadra_id', iscrizione.squadra_id)
     const altriIds = (iscCat ?? []).filter((i) => i.portiere_id !== id)
     // Presenze mensili del portiere

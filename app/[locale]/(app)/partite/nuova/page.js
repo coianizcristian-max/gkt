@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PartitaForm from '@/app/components/PartitaForm'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -17,14 +18,14 @@ export default async function NuovaPartitaPage({ searchParams }) {
   const { data: profilo } = await supabase.from('profili').select('ruolo').eq('id', user?.id).maybeSingle()
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/dashboard')
 
-  const { stagione } = await getStagioneAttiva(supabase, user?.id)
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user?.id)
 
   let categorie = []
   let avversari = []
   if (stagione) {
     const [cat, avv] = await Promise.all([
-      supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-      supabase.from('squadre_avversarie').select('nome').eq('stagione_id', stagione.id),
+      db.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
+      db.from('squadre_avversarie').select('nome').eq('stagione_id', stagione.id),
     ])
     categorie = (cat.data ?? []).map((r) => r.squadre).filter(Boolean).sort((a, b) => a.ordine - b.ordine)
     avversari = [...new Set((avv.data ?? []).map((r) => r.nome))]

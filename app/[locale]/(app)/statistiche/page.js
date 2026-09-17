@@ -1,5 +1,6 @@
 import { createClient, getUser } from '@/lib/supabase/server'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import Guida from '@/app/components/Guida'
 import StatisticheClient from './StatisticheClient'
@@ -16,9 +17,9 @@ export default async function StatistichePage() {
   const user = await getUser()
 
   // profilo e stagione dipendono solo da user.id, senza redirect tra i due.
-  const [{ data: profilo }, { stagione }] = await Promise.all([
+  const [{ data: profilo }, { db, stagione, taglio, oggi: oggiCtx }] = await Promise.all([
     supabase.from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle(),
-    getStagioneAttiva(supabase, user?.id),
+    contestoDati(supabase, user?.id),
   ])
   const isPortiere = profilo?.ruolo === 'portiere'
 
@@ -41,15 +42,15 @@ export default async function StatistichePage() {
   // e prima delle 02:00 (ora legale) toISOString() darebbe ancora la data di ieri e
   // le sedute di oggi/ieri sparirebbero dalle statistiche. .lte include anche oggi,
   // così un allenamento fatto oggi conta subito (esclusi solo quelli futuri generati).
-  const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
+  const oggiRoma = oggiCtx
 
   const [{ data: iscr }, { data: cats }, { data: allen }, { data: part }] = await Promise.all([
-    supabase.from('iscrizioni')
+    db.from('iscrizioni')
       .select('portiere_id, squadra_id, numero_maglia, portieri(id, nome, cognome, foto_url)')
       .eq('stagione_id', stagione.id),
-    supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
-    supabase.from('allenamenti').select('id, squadra_id, data').eq('stagione_id', stagione.id).lte('data', oggiRoma),
-    supabase.from('partite').select('id, squadra_id, gol_fatti, gol_subiti, tipo, data').eq('stagione_id', stagione.id).lte('data', oggiRoma),
+    db.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id),
+    db.from('allenamenti').select('id, squadra_id, data').eq('stagione_id', stagione.id).lte('data', oggiRoma),
+    db.from('partite').select('id, squadra_id, gol_fatti, gol_subiti, tipo, data').eq('stagione_id', stagione.id).lte('data', oggiRoma),
   ])
 
   const allenIds = (allen ?? []).map((a) => a.id)
@@ -57,20 +58,20 @@ export default async function StatistichePage() {
 
   const [{ data: vAll }, { data: vPar }, { data: feedbackRows }, { data: votiPortiereRows }] = await Promise.all([
     allenIds.length
-      ? supabase.from('valutazioni').select('portiere_id, presente, voto, allenamento_id').in('allenamento_id', allenIds)
+      ? db.from('valutazioni').select('portiere_id, presente, voto, allenamento_id').in('allenamento_id', allenIds)
       : Promise.resolve({ data: [] }),
     partIds.length
-      ? supabase.from('valutazioni_partita').select('portiere_id, presente, voto, punti, gol_subiti, partita_id, fuori_categoria').in('partita_id', partIds)
+      ? db.from('valutazioni_partita').select('portiere_id, presente, voto, punti, gol_subiti, partita_id, fuori_categoria').in('partita_id', partIds)
       : Promise.resolve({ data: [] }),
     allenIds.length
-      ? supabase.from('valutazioni')
+      ? db.from('valutazioni')
         .select('portiere_id, feedback_portiere, voto_portiere, allenamento_id, portieri(nome, cognome), allenamenti(data, squadra:squadre!allenamenti_squadra_id_fkey(nome))')
         .in('allenamento_id', allenIds)
         .or('feedback_portiere.not.is.null,voto_portiere.not.is.null')
         .order('allenamento_id')
       : Promise.resolve({ data: [] }),
     allenIds.length
-      ? supabase.from('valutazioni').select('voto_portiere, allenamento_id').in('allenamento_id', allenIds).not('voto_portiere', 'is', null)
+      ? db.from('valutazioni').select('voto_portiere, allenamento_id').in('allenamento_id', allenIds).not('voto_portiere', 'is', null)
       : Promise.resolve({ data: [] }),
   ])
 

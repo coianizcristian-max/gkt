@@ -6,6 +6,7 @@ import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import TagManager from '@/app/components/TagManager'
 import AssenzePreviste from '@/app/components/AssenzePreviste'
 import { getStagioneAttiva } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -22,10 +23,10 @@ export default async function SchedaPortierePage({ params }) {
   const soloPortiere = profiloViewer?.ruolo === 'portiere'
   if (soloPortiere && profiloViewer.portiere_id !== id) notFound()
 
-  const [{ data: piediVoci }, { stagione: selezionata, ownerId }, { data: portiere }] = await Promise.all([
+  const [{ data: piediVoci }, { db, stagione: selezionata, ownerId, taglio, oggi: oggiCtx }, { data: portiere }] = await Promise.all([
     supabase.from('elenco_voci').select('valore').eq('elenco', 'piede').eq('attivo', true).order('ordine'),
-    getStagioneAttiva(supabase, user?.id),
-    supabase.from('portieri').select('*').eq('id', id).maybeSingle(),
+    contestoDati(supabase, user?.id),
+    db.from('portieri').select('*').eq('id', id).maybeSingle(),
   ])
   const piedi = (piediVoci ?? []).map((v) => v.valore)
   if (!portiere) notFound()
@@ -74,12 +75,12 @@ export default async function SchedaPortierePage({ params }) {
   // Categorie della stagione risolta + attributi/tag (indipendenti tra loro).
   const [catRes, attributiBatch] = await Promise.all([
     stagione
-      ? supabase.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id)
+      ? db.from('stagione_categorie').select('squadre(id, nome, ordine)').eq('stagione_id', stagione.id)
       : Promise.resolve(null),
     Promise.all([
       supabase.from('attributi_definizioni').select('*').eq('attivo', true).order('ordine'),
-      supabase.from('portiere_attributi').select('attributo_id, valore_testo, valore_num').eq('portiere_id', id),
-      supabase.from('portiere_tag').select('tag').eq('portiere_id', id),
+      db.from('portiere_attributi').select('attributo_id, valore_testo, valore_num').eq('portiere_id', id),
+      db.from('portiere_tag').select('tag').eq('portiere_id', id),
       supabase.from('elenco_voci').select('valore').eq('elenco', 'tag_portiere').eq('attivo', true).order('ordine'),
     ]),
   ])
@@ -92,7 +93,7 @@ export default async function SchedaPortierePage({ params }) {
   // Infortunio aperto (senza data_fine) per l'iscrizione risolta.
   let infortunioAperto = null
   if (iscrizione?.id) {
-    const { data: infA } = await supabase.from('infortuni')
+    const { data: infA } = await db.from('infortuni')
       .select('id, data_inizio, data_rientro_prevista')
       .eq('iscrizione_id', iscrizione.id).is('data_fine', null).maybeSingle()
     infortunioAperto = infA ?? null
@@ -103,12 +104,12 @@ export default async function SchedaPortierePage({ params }) {
   // ancora dato il voto. Esclude assenze e sedute non ancora marcate dal coach.
   let daValutare = 0
   if (soloPortiere && stagione && iscrizione?.squadra_id) {
-    const oggiRoma = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Rome' })
-    const { data: allR } = await supabase.from('allenamenti')
+    const oggiRoma = oggiCtx
+    const { data: allR } = await db.from('allenamenti')
       .select('id').eq('stagione_id', stagione.id).eq('squadra_id', iscrizione.squadra_id).lte('data', oggiRoma)
     const allIds = (allR ?? []).map((a) => a.id)
     if (allIds.length) {
-      const { data: valR } = await supabase.from('valutazioni')
+      const { data: valR } = await db.from('valutazioni')
         .select('presente, voto_portiere').eq('portiere_id', id).in('allenamento_id', allIds)
       daValutare = (valR ?? []).filter((v) => v.presente === true && v.voto_portiere == null).length
     }
@@ -117,7 +118,7 @@ export default async function SchedaPortierePage({ params }) {
   // Assenze annunciate (solo staff): promemoria informativo, mai in statistiche/presenze.
   let assenzePreviste = []
   if (!soloPortiere && iscrizione?.id) {
-    const { data: apRows } = await supabase.from('assenze_previste')
+    const { data: apRows } = await db.from('assenze_previste')
       .select('id, data_inizio, data_fine, nota')
       .eq('iscrizione_id', iscrizione.id)
       .order('data_inizio', { ascending: true })

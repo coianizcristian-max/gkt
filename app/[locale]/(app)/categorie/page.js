@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import CategorieManager from '@/app/components/CategorieManager'
 import Guida from '@/app/components/Guida'
 import { getStagioneAttiva, getOwnerId } from '@/lib/tenant'
+import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -17,11 +18,11 @@ export default async function CategoriePage() {
   if (!(profilo?.ruolo === 'allenatore' || profilo?.ruolo === 'staff')) redirect('/')
 
   const ownerId = await getOwnerId(supabase, user.id)
-  const { stagione } = await getStagioneAttiva(supabase, user.id)
-  const { data: categorie } = await supabase.from('squadre').select('id, nome, ordine').eq('owner_id', ownerId).order('ordine')
+  const { db, stagione, taglio, oggi: oggiCtx } = await contestoDati(supabase, user.id)
+  const { data: categorie } = await db.from('squadre').select('id, nome, ordine').eq('owner_id', ownerId).order('ordine')
   let attive = []
   if (stagione) {
-    const { data } = await supabase.from('stagione_categorie').select('squadra_id').eq('stagione_id', stagione.id)
+    const { data } = await db.from('stagione_categorie').select('squadra_id').eq('stagione_id', stagione.id)
     attive = (data ?? []).map((r) => r.squadra_id)
   }
 

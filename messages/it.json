@@ -773,6 +773,7 @@
     "consenso": "Inviando accetti che la tua email venga condivisa con l'allenatore per permettergli di risponderti."
   },
   "supervisore": {
+    "navDemo": "Demo",
     "eyebrow": "Supervisore",
     "titoloSito": "Supervisore · Sito",
     "sitoIntro": "Gestisci le sezioni della home pubblica: testi, immagini, ordine e visibilità. Le modifiche compaiono subito sul sito.",
@@ -2883,7 +2884,8 @@
     "nessunaIscrizione": "Il portiere non risulta iscritto a una categoria della stagione attiva."
   },
   "demo": {
-      "badge": "Modalità demo",
+    "comeUscire": "Per tornare ai tuoi dati premi «Esci dalla demo» nella barra gialla in alto, sempre visibile mentre navighi.",
+      "badge": "MODALITÀ DEMO",
       "popupTitolo": "Stai per vedere una stagione di esempio",
       "popupIntro": "Questa è una stagione DEMO, compilata con dati reali di esempio fino al {data}. Serve a mostrarti come si presenta GKSeason quando è in uso, senza che tu debba inserire nulla.",
       "punto1": "Puoi navigare tutte le pagine e aprire tutte le schede: calendario, portieri, valutazioni, obiettivi, statistiche e report.",
@@ -2897,5 +2899,24 @@
       "bannerUscita": "Uscita…",
       "stagioneDemo": "Stagione demo",
       "soloLettura": "Non disponibile in modalità demo: la stagione di esempio è in sola visualizzazione."
+  },
+  "demoConfig": {
+      "intro": "Configura la stagione demo che i preparatori possono visitare in sola lettura.",
+      "statoAttiva": "Demo attiva",
+      "statoSpenta": "Demo spenta",
+      "statoAttivaNota": "La voce «Stagione demo» è visibile in fondo al menu dei preparatori.",
+      "statoSpentaNota": "Nessun preparatore vede la voce nel menu. Niente cambia per gli utenti.",
+      "accendi": "Accendi",
+      "spegni": "Spegni",
+      "dataTaglio": "Data di riferimento",
+      "dataTaglioNota": "Fa da «oggi» dentro la demo: i dati successivi a questa data non vengono mostrati.",
+      "avvisi": "Avvisi all'ingresso",
+      "avvisiNota": "Quante volte mostrare il popup di benvenuto a ciascun preparatore.",
+      "salva": "Salva",
+      "salvataggio": "Salvataggio…",
+      "salvato": "Salvato",
+      "utenteDemo": "Utente proprietario della demo",
+      "riepilogo": "{stagioni} stagioni · {portieri} portieri · {esercizi} esercizi",
+      "utenteNonTrovato": "utente non trovato: la demo non può attivarsi"
   }
 }

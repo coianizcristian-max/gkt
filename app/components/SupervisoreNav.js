@@ -16,6 +16,7 @@ const VOCI = [
   { href: '/supervisore/metriche', key: 'navMetriche' },
   { href: '/supervisore/webinar', key: 'navWebinar' },
   { href: '/supervisore/versioni', key: 'navVersioni' },
+  { href: '/supervisore/demo', key: 'navDemo' },
 ]
 
 export default function SupervisoreNav() {

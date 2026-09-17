@@ -773,6 +773,7 @@
     "consenso": "Mit dem Senden stimmst du zu, dass deine E-Mail an den Trainer weitergegeben wird, damit er dir antworten kann."
   },
   "supervisore": {
+    "navDemo": "Demo",
     "eyebrow": "Supervisor",
     "titoloSito": "Supervisor · Website",
     "sitoIntro": "Verwalte die Bereiche der öffentlichen Startseite: Texte, Bilder, Reihenfolge und Sichtbarkeit. Änderungen erscheinen sofort auf der Website.",
@@ -2883,7 +2884,8 @@
     "nessunaIscrizione": "Der Torwart ist in keiner Kategorie der aktiven Saison gemeldet."
   },
   "demo": {
-      "badge": "Demo-Modus",
+    "comeUscire": "Um zu deinen Daten zurückzukehren, klicke in der gelben Leiste oben auf „Demo verlassen“ — sie bleibt immer sichtbar.",
+      "badge": "DEMO-MODUS",
       "popupTitolo": "Du siehst gleich eine Beispielsaison",
       "popupIntro": "Dies ist eine DEMO-Saison mit realistischen Beispieldaten bis zum {data}. Sie zeigt dir, wie GKSeason im Einsatz aussieht, ohne dass du etwas eingeben musst.",
       "punto1": "Du kannst alle Seiten durchsehen und jede Ansicht öffnen: Kalender, Torhüter, Bewertungen, Ziele, Statistiken und Berichte.",
@@ -2897,5 +2899,24 @@
       "bannerUscita": "Wird verlassen…",
       "stagioneDemo": "Demo-Saison",
       "soloLettura": "Im Demo-Modus nicht verfügbar: die Beispielsaison ist schreibgeschützt."
+  },
+  "demoConfig": {
+      "intro": "Konfiguriere die Demo-Saison, die Trainer schreibgeschützt ansehen können.",
+      "statoAttiva": "Demo aktiv",
+      "statoSpenta": "Demo aus",
+      "statoAttivaNota": "Der Eintrag „Demo-Saison“ ist unten im Trainer-Menü sichtbar.",
+      "statoSpentaNota": "Kein Trainer sieht den Eintrag. Für deine Nutzer ändert sich nichts.",
+      "accendi": "Einschalten",
+      "spegni": "Ausschalten",
+      "dataTaglio": "Stichtag",
+      "dataTaglioNota": "Gilt in der Demo als „heute“: Daten nach diesem Datum werden ausgeblendet.",
+      "avvisi": "Begrüßungsfenster",
+      "avvisiNota": "Wie oft das Begrüßungsfenster je Trainer erscheint.",
+      "salva": "Speichern",
+      "salvataggio": "Wird gespeichert…",
+      "salvato": "Gespeichert",
+      "utenteDemo": "Besitzer der Demo",
+      "riepilogo": "{stagioni} Saisons · {portieri} Torhüter · {esercizi} Übungen",
+      "utenteNonTrovato": "Konto nicht gefunden: die Demo kann nicht starten"
   }
 }

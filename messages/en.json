@@ -773,6 +773,7 @@
     "consenso": "By sending you agree that your email will be shared with the coach so they can reply to you."
   },
   "supervisore": {
+    "navDemo": "Demo",
     "eyebrow": "Supervisor",
     "titoloSito": "Supervisor · Site",
     "sitoIntro": "Manage the public homepage sections: text, images, order and visibility. Changes appear on the site immediately.",
@@ -2883,7 +2884,8 @@
     "nessunaIscrizione": "This goalkeeper is not enrolled in a category of the active season."
   },
   "demo": {
-      "badge": "Demo mode",
+    "comeUscire": "To go back to your own data, press \"Leave the demo\" in the yellow bar at the top, always visible while you browse.",
+      "badge": "DEMO MODE",
       "popupTitolo": "You're about to explore a sample season",
       "popupIntro": "This is a DEMO season, filled with realistic sample data up to {data}. It shows you what GKSeason looks like in real use, without you having to enter anything.",
       "punto1": "You can browse every page and open every screen: calendar, goalkeepers, ratings, objectives, statistics and reports.",
@@ -2897,5 +2899,24 @@
       "bannerUscita": "Leaving…",
       "stagioneDemo": "Demo season",
       "soloLettura": "Not available in demo mode: the sample season is read-only."
+  },
+  "demoConfig": {
+      "intro": "Configure the demo season coaches can visit in read-only mode.",
+      "statoAttiva": "Demo on",
+      "statoSpenta": "Demo off",
+      "statoAttivaNota": "The \"Demo season\" entry is visible at the bottom of the coaches' menu.",
+      "statoSpentaNota": "No coach sees the entry. Nothing changes for your users.",
+      "accendi": "Turn on",
+      "spegni": "Turn off",
+      "dataTaglio": "Reference date",
+      "dataTaglioNota": "Acts as \"today\" inside the demo: data after this date is hidden.",
+      "avvisi": "Welcome popups",
+      "avvisiNota": "How many times to show the welcome popup to each coach.",
+      "salva": "Save",
+      "salvataggio": "Saving…",
+      "salvato": "Saved",
+      "utenteDemo": "Demo owner account",
+      "riepilogo": "{stagioni} seasons · {portieri} goalkeepers · {esercizi} exercises",
+      "utenteNonTrovato": "account not found: the demo cannot start"
   }
 }

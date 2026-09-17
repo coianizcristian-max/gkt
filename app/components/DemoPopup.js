@@ -28,8 +28,8 @@ export default function DemoPopup({ dataTaglio }) {
       <div className={`versione-popup ${closing ? 'closing' : ''}`}>
         <div className="versione-header">
           <div>
-            <div className="versione-badge">{t('badge')}</div>
-            <h2 className="versione-titolo">{t('popupTitolo')}</h2>
+            <div className="demo-badge">{t('badge')}</div>
+            <h2 className="versione-titolo demo-titolo">{t('popupTitolo')}</h2>
             <div className="versione-numero">{t('bannerData', { data: dataTaglio })}</div>
           </div>
           <button className="versione-close" onClick={chiudi} type="button">✕</button>
@@ -45,6 +45,7 @@ export default function DemoPopup({ dataTaglio }) {
               </li>
             ))}
           </ul>
+          <div className="demo-uscita">{t('comeUscire')}</div>
         </div>
 
         <div className="versione-footer">

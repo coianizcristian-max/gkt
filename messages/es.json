@@ -773,6 +773,7 @@
     "consenso": "Al enviar aceptas que tu email se comparta con el entrenador para permitirle responderte."
   },
   "supervisore": {
+    "navDemo": "Demo",
     "eyebrow": "Supervisor",
     "titoloSito": "Supervisor · Sitio",
     "sitoIntro": "Gestiona las secciones de la home pública: textos, imágenes, orden y visibilidad. Los cambios aparecen de inmediato en el sitio.",
@@ -2883,7 +2884,8 @@
     "nessunaIscrizione": "El portero no está inscrito en ninguna categoría de la temporada activa."
   },
   "demo": {
-      "badge": "Modo demo",
+    "comeUscire": "Para volver a tus datos pulsa «Salir de la demo» en la barra amarilla superior, siempre visible mientras navegas.",
+      "badge": "MODO DEMO",
       "popupTitolo": "Vas a ver una temporada de ejemplo",
       "popupIntro": "Esta es una temporada DEMO, rellenada con datos de ejemplo realistas hasta el {data}. Sirve para mostrarte cómo se ve GKSeason en uso, sin que tengas que introducir nada.",
       "punto1": "Puedes recorrer todas las páginas y abrir todas las fichas: calendario, porteros, valoraciones, objetivos, estadísticas e informes.",
@@ -2897,5 +2899,24 @@
       "bannerUscita": "Saliendo…",
       "stagioneDemo": "Temporada demo",
       "soloLettura": "No disponible en modo demo: la temporada de ejemplo es solo de lectura."
+  },
+  "demoConfig": {
+      "intro": "Configura la temporada demo que los preparadores pueden visitar en solo lectura.",
+      "statoAttiva": "Demo activa",
+      "statoSpenta": "Demo apagada",
+      "statoAttivaNota": "La entrada «Temporada demo» aparece al final del menú de los preparadores.",
+      "statoSpentaNota": "Ningún preparador ve la entrada. Nada cambia para tus usuarios.",
+      "accendi": "Activar",
+      "spegni": "Apagar",
+      "dataTaglio": "Fecha de referencia",
+      "dataTaglioNota": "Hace de «hoy» dentro de la demo: los datos posteriores no se muestran.",
+      "avvisi": "Avisos de entrada",
+      "avvisiNota": "Cuántas veces mostrar el aviso de bienvenida a cada preparador.",
+      "salva": "Guardar",
+      "salvataggio": "Guardando…",
+      "salvato": "Guardado",
+      "utenteDemo": "Cuenta propietaria de la demo",
+      "riepilogo": "{stagioni} temporadas · {portieri} porteros · {esercizi} ejercicios",
+      "utenteNonTrovato": "cuenta no encontrada: la demo no puede activarse"
   }
 }

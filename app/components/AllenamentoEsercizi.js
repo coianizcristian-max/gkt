@@ -333,7 +333,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
 }
 
 // ─── Vista ordine: drag & drop + popup anteprima + stima + PDF ───────────────
-function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
+function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId, onRimuovi }) {
   const locale = useLocale()
   const dragIdx = useRef(null)
   const overIdx = useRef(null)
@@ -435,6 +435,10 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId }) {
               {e.immagine_url && (
                 <img src={e.immagine_url} className="drag-thumb" alt="" width={44} height={44}
                   loading="lazy" onError={(ev) => { ev.currentTarget.style.display = 'none' }} />
+              )}
+              {onRimuovi && (
+                <button type="button" className="drag-rimuovi" title={t('rimuovi')} aria-label={t('rimuovi')}
+                  onClick={(ev) => { ev.stopPropagation(); onRimuovi(eid) }}>✕</button>
               )}
             </div>
           )
@@ -538,6 +542,7 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
           tuttiEsercizi={tuttiEsercizi}
           onOrdineChange={(newOrd) => { setOrdine(newOrd); setDone(false) }}
           allenamentoId={allenamentoId}
+          onRimuovi={toggle}
         />
       )}
 

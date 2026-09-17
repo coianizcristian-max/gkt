@@ -1153,6 +1153,7 @@
     "salvaEsercizio": "💾 Save drill"
   },
   "allenamentoEsercizi": {
+    "rimuovi": "Remove from session",
     "durataLabel": "⏱ Duration: ",
     "recuperoLabel": "↩ Rest: ",
     "min": "min",

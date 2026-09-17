@@ -1153,6 +1153,7 @@
     "salvaEsercizio": "💾 Guardar ejercicio"
   },
   "allenamentoEsercizi": {
+    "rimuovi": "Quitar de la sesión",
     "durataLabel": "⏱ Duración: ",
     "recuperoLabel": "↩ Recuperación: ",
     "min": "min",

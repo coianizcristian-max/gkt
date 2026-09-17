@@ -1153,6 +1153,7 @@
     "salvaEsercizio": "💾 Salva esercizio"
   },
   "allenamentoEsercizi": {
+    "rimuovi": "Rimuovi dalla seduta",
     "durataLabel": "⏱ Durata: ",
     "recuperoLabel": "↩ Recupero: ",
     "min": "min",

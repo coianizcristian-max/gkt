@@ -301,7 +301,13 @@ export default async function AllenamentoPage({ params }) {
   const libreriaMia = tutti.filter((e) => e.allenatore_id === user?.id)
   const libreriaPubblica = tutti.filter((e) => e.pubblico && e.allenatore_id !== user?.id)
 
-  const eserciziSelezionati = (esSelRows ?? []).map((e) => ({ ...e, autore_nome: null }))
+  // L'ordine della seduta e' quello di eserciziOrdinati: la query usa .in(),
+  // che NON garantisce l'ordine della lista passata, quindi si riordina qui.
+  // Senza questo, la lista in alto mostrava gli esercizi in ordine di database.
+  const posizione = new Map(eserciziOrdinati.map((id, i) => [id, i]))
+  const eserciziSelezionati = (esSelRows ?? [])
+    .map((e) => ({ ...e, autore_nome: null }))
+    .sort((a, b) => (posizione.get(a.id) ?? 9999) - (posizione.get(b.id) ?? 9999))
 
   // Aggiungi esercizi già selezionati non presenti in libreria (es. di altri allenatori)
   const idNellaLibreria = new Set(tutti.map((e) => e.id))

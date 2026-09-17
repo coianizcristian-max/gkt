@@ -1153,6 +1153,7 @@
     "salvaEsercizio": "💾 Übung speichern"
   },
   "allenamentoEsercizi": {
+    "rimuovi": "Aus der Einheit entfernen",
     "durataLabel": "⏱ Dauer: ",
     "recuperoLabel": "↩ Pause: ",
     "min": "Min",

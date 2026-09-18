@@ -1618,7 +1618,8 @@
     "erroreGenerico": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "giaIscritto": "Du bist bereits für den Newsletter angemeldet.",
     "confermaInviata": "Wir haben dir eine E-Mail geschickt: Klicke auf den Link, um deine Anmeldung zu bestätigen.",
-    "erroreRete": "Netzwerkfehler. Bitte versuche es erneut."
+    "erroreRete": "Netzwerkfehler. Bitte versuche es erneut.",
+    "consenso": "Wenn du mit aktivem Häkchen auf die Schaltfläche drückst, abonnierst du den GKSeason-Newsletter: Updates und Neuigkeiten zur Plattform. Du kannst dich jederzeit über den Link am Ende jeder E-Mail abmelden. <privacy>Datenschutzerklärung</privacy>"
   },
   "couponBox": {
     "attivato": "✅ Code aktiviert! Du hast <b>{gg} Tage</b> vollen Zugriff. Die Seite wird in einer Sekunde aktualisiert.",

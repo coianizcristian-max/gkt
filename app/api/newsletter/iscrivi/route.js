@@ -38,10 +38,29 @@ async function inviaConferma(email, id, m) {
   return res.ok
 }
 
+const ORIGINI = ['demo']
+
+/**
+ * Registra l'iscrizione. Due modalita':
+ *  - standard (form del sito): riga inattiva + email di conferma (doppio opt-in)
+ *  - immediata (popup della demo da /d): il consenso e' l'atto del visitatore
+ *    che scrive l'email e preme il pulsante con l'informativa sotto al campo;
+ *    la riga nasce gia' attiva e si registrano data e origine del consenso.
+ */
+async function salvaConsenso(id, dati) {
+  const { error } = await admin.from('newsletter_iscritti').update(dati).eq('id', id)
+  if (!error) return
+  // Colonne consenso_il/origine non ancora create (migrazione non eseguita):
+  // l'iscrizione non deve fallire per questo.
+  const { attivo } = dati
+  const { error: e2 } = await admin.from('newsletter_iscritti').update({ attivo }).eq('id', id)
+  if (e2) throw e2
+}
+
 export async function POST(req) {
   try {
     const m = mailTexts(req)
-    const { email } = await req.json()
+    const { email, immediata, origine } = await req.json()
     const em = (email || '').trim().toLowerCase()
     if (!EMAIL_RE.test(em)) return NextResponse.json({ error: tApi(req, 'Email non valida.') }, { status: 400 })
 
@@ -50,6 +69,23 @@ export async function POST(req) {
 
     // Già iscritto e attivo: non facciamo nulla (niente downgrade, niente email).
     if (esistente?.attivo) return NextResponse.json({ ok: true, stato: 'gia_iscritto' })
+
+    if (immediata === true) {
+      const consenso = {
+        attivo: true,
+        consenso_il: new Date().toISOString(),
+        origine: ORIGINI.includes(origine) ? origine : 'demo',
+      }
+      let id = esistente?.id
+      if (!id) {
+        const { data: nuovo, error } = await admin.from('newsletter_iscritti')
+          .insert({ email: em, attivo: true }).select('id').single()
+        if (error) throw error
+        id = nuovo.id
+      }
+      await salvaConsenso(id, consenso)
+      return NextResponse.json({ ok: true, stato: 'iscritto' })
+    }
 
     // Esiste ma non confermato -> rimandiamo la conferma; non esiste -> lo creiamo inattivo.
     let id = esistente?.id

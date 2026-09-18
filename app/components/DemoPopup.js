@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
+import { Link } from '@/i18n/routing'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { trackMetaEvento } from '@/app/components/MetaPixel'
 import { leggiAttribuzione } from '@/app/components/AttribuzioneUtm'
@@ -70,7 +71,10 @@ export default function DemoPopup({ dataTaglio, ospite = false }) {
         const res = await fetch('/api/newsletter/iscrivi', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: em }),
+          // Iscrizione immediata: il consenso e' l'atto del visitatore che
+          // scrive l'email e preme il pulsante, con l'informativa sotto al
+          // campo. La route registra data e origine del consenso.
+          body: JSON.stringify({ email: em, immediata: true, origine: 'demo' }),
         })
         const dati = await res.json().catch(() => ({}))
         if (!res.ok) { setErrore(dati.error || tn('erroreGenerico')); setInvio(false); return }
@@ -78,7 +82,7 @@ export default function DemoPopup({ dataTaglio, ospite = false }) {
         // e' l'unico dato che resta tuo anche se il visitatore non si iscrive.
         const attribuzione = leggiAttribuzione() || {}
         trackMetaEvento('Lead', { fonte: attribuzione.utm_source || 'demo' })
-        trackEvento('newsletter_da_demo', { ...attribuzione, esito: dati.stato || 'conferma_inviata' })
+        trackEvento('newsletter_da_demo', { ...attribuzione, esito: dati.stato || 'iscritto' })
       } catch {
         setErrore(tn('erroreRete')); setInvio(false); return
       }
@@ -96,7 +100,10 @@ export default function DemoPopup({ dataTaglio, ospite = false }) {
 
   return (
     <div className="versione-overlay">
-      <div className={`versione-popup ${closing ? 'closing' : ''}`}>
+      {/* demo-popup: header e fondo fissi, solo il testo scorre. Cosi' su
+          mobile la spunta newsletter, l'email e il pulsante restano sempre
+          visibili anche quando il testo e' lungo. */}
+      <div className={`versione-popup demo-popup ${closing ? 'closing' : ''}`}>
         <div className="versione-header">
           <div>
             <div className="demo-badge">{t('badge')}</div>
@@ -119,8 +126,9 @@ export default function DemoPopup({ dataTaglio, ospite = false }) {
           <div className="demo-uscita">{t('comeUscire')}</div>
         </div>
 
+        <div className="demo-popup-fondo">
         {ospite && (
-          <div style={{ padding: '0 24px 4px' }}>
+          <div className="demo-popup-newsletter">
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
               <input
                 type="checkbox"
@@ -142,12 +150,14 @@ export default function DemoPopup({ dataTaglio, ospite = false }) {
               style={{
                 width: '100%', marginTop: 10, padding: '10px 12px', borderRadius: 8,
                 border: `1px solid ${errore ? 'var(--rosso, #d6493b)' : 'var(--linea, #d8dee4)'}`,
-                fontSize: 15, opacity: iscrivi ? 1 : 0.45,
+                fontSize: 16, opacity: iscrivi ? 1 : 0.45,
               }}
             />
 
-            <div style={{ fontSize: 12, color: 'var(--ink-soft, #6b7e8e)', marginTop: 8 }}>
-              {tn('desc')}
+            <div style={{ fontSize: 12, color: 'var(--ink-soft, #6b7e8e)', marginTop: 8, lineHeight: 1.45 }}>
+              {tn.rich('consenso', {
+                privacy: (ch) => <Link href="/privacy-policy" target="_blank" style={{ color: 'var(--azzurro)', textDecoration: 'underline' }}>{ch}</Link>,
+              })}
             </div>
 
             {errore && (
@@ -162,6 +172,7 @@ export default function DemoPopup({ dataTaglio, ospite = false }) {
           <button className="btn" onClick={conferma} type="button" disabled={invio}>
             {invio ? '…' : t('popupChiudi')}
           </button>
+        </div>
         </div>
       </div>
     </div>

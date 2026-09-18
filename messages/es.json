@@ -1618,7 +1618,8 @@
     "erroreGenerico": "Algo ha salido mal. Inténtalo de nuevo.",
     "giaIscritto": "Ya estás suscrito a la newsletter.",
     "confermaInviata": "Te hemos enviado un email: haz clic en el enlace para confirmar la suscripción.",
-    "erroreRete": "Error de red. Inténtalo de nuevo."
+    "erroreRete": "Error de red. Inténtalo de nuevo.",
+    "consenso": "Al pulsar el botón con la casilla marcada te suscribes a la newsletter de GKSeason: actualizaciones y novedades sobre la plataforma. Puedes darte de baja cuando quieras desde el enlace al final de cada email. <privacy>Política de privacidad</privacy>"
   },
   "couponBox": {
     "attivato": "✅ ¡Código activado! Tienes acceso completo durante <b>{gg} días</b>. La página se actualizará en un segundo.",

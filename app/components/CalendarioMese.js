@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { tipologiaTradotta } from '@/lib/elenchi'
 import IconaTipoPartita from '@/app/components/IconaTipoPartita'
+import LegendaSimboliPartita from '@/app/components/LegendaSimboliPartita'
 import { useRouter } from 'next/navigation'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
@@ -445,6 +446,8 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
         <span><i className="calx-ldot" style={{ background: '#7c3aed' }} />{t('legPartitaPassata')}</span>
         <span><i className="calx-ldot" style={{ background: '#c4b5fd', border: '1px solid #8b5cf6' }} />{t('legPartitaFutura')}</span>
       </div>
+      {/* simboli sulle caselle delle partite */}
+      <LegendaSimboliPartita />
 
       <div className="calx-bar">
         <div className="calx-nav">

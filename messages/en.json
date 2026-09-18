@@ -1618,7 +1618,8 @@
     "erroreGenerico": "Something went wrong. Please try again.",
     "giaIscritto": "You are already subscribed to the newsletter.",
     "confermaInviata": "We have sent you an email: click the link to confirm your subscription.",
-    "erroreRete": "Network error. Please try again."
+    "erroreRete": "Network error. Please try again.",
+    "consenso": "By pressing the button with the box ticked you subscribe to the GKSeason newsletter: updates and news about the platform. You can unsubscribe anytime from the link at the bottom of every email. <privacy>Privacy policy</privacy>"
   },
   "couponBox": {
     "attivato": "✅ Code activated! You have full access for <b>{gg} days</b>. The page will refresh in a second.",

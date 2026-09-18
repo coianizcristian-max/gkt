@@ -1618,7 +1618,8 @@
     "erroreGenerico": "Qualcosa è andato storto. Riprova.",
     "giaIscritto": "Sei già iscritto alla newsletter.",
     "confermaInviata": "Ti abbiamo inviato una email: clicca il link per confermare l'iscrizione.",
-    "erroreRete": "Errore di rete. Riprova."
+    "erroreRete": "Errore di rete. Riprova.",
+    "consenso": "Premendo il pulsante con la spunta attiva ti iscrivi alla newsletter GKSeason: aggiornamenti e novità sul gestionale. Puoi disiscriverti quando vuoi dal link in fondo a ogni email. <privacy>Informativa privacy</privacy>"
   },
   "couponBox": {
     "attivato": "✅ Codice attivato! Hai accesso completo per <b>{gg} giorni</b>. La pagina si aggiornerà tra un secondo.",

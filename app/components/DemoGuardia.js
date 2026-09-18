@@ -20,7 +20,12 @@ export default function DemoGuardia() {
     const originale = window.fetch.bind(window)
     const SCRITTURE = ['POST', 'PUT', 'PATCH', 'DELETE']
     // Rotte che devono continuare a funzionare anche in demo.
-    const CONSENTITE = ['/api/demo', '/auth/signout', '/api/benvenuto-visto', '/api/versione-vista']
+    // '/api/newsletter/iscrivi' serve al popup demo del visitatore arrivato
+    // da /d: non tocca i dati della stagione (scrive solo in
+    // newsletter_iscritti, lato server con service role) e senza questa
+    // eccezione il visitatore con il check attivo resta bloccato nel popup.
+    // Solo iscrivi: invia/anteprima/disiscrivi restano bloccate.
+    const CONSENTITE = ['/api/demo', '/auth/signout', '/api/benvenuto-visto', '/api/versione-vista', '/api/newsletter/iscrivi']
 
     window.fetch = async (input, init) => {
       try {

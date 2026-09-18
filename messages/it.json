@@ -845,7 +845,14 @@
     "thRec7": "Rec 7gg",
     "thRec30": "Rec 30gg",
     "recTip": "Record di contenuto creati dall'utente (allenamenti, valutazioni, obiettivi, iscrizioni…) nella finestra indicata",
-    "recLegenda": "Le colonne Rec 3/7/30gg mostrano quanti record ha creato ogni utente negli ultimi 3, 7 e 30 giorni — utile per capire chi sta usando davvero la piattaforma."
+    "recLegenda": "Le colonne Rec 3/7/30gg mostrano quanti record ha creato ogni utente negli ultimi 3, 7 e 30 giorni — utile per capire chi sta usando davvero la piattaforma.",
+    "utentiAttivi": "Utenti attivi ({giorni} gg)",
+    "nAllenatori": "{n} allenatori",
+    "nPortieri": "{n} portieri",
+    "nStaff": "{n} staff",
+    "attiviLegenda": "Righe evidenziate: utenti attivi, cioè che hanno creato dati in almeno {min} giorni diversi negli ultimi {giorni} giorni (escluso il tuo account).",
+    "thGiorni": "Giorni att. {giorni}gg",
+    "giorniTip": "In quanti giorni diversi l'utente ha creato dati negli ultimi {giorni} giorni (per i portieri contano anche i feedback agli allenamenti)"
   },
   "paywall": {
     "fallbackLabel": "Funzionalità a pagamento",

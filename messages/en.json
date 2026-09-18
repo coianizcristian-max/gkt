@@ -845,7 +845,14 @@
     "thRec7": "Rec 7d",
     "thRec30": "Rec 30d",
     "recTip": "Content records created by the user (trainings, evaluations, goals, enrolments…) within the given window",
-    "recLegenda": "The Rec 3/7/30d columns show how many records each user created in the last 3, 7 and 30 days — useful to see who is actually using the platform."
+    "recLegenda": "The Rec 3/7/30d columns show how many records each user created in the last 3, 7 and 30 days — useful to see who is actually using the platform.",
+    "utentiAttivi": "Active users ({giorni} d)",
+    "nAllenatori": "{n} coaches",
+    "nPortieri": "{n} goalkeepers",
+    "nStaff": "{n} staff",
+    "attiviLegenda": "Highlighted rows: active users, i.e. who created data on at least {min} different days in the last {giorni} days (your account excluded).",
+    "thGiorni": "Active days {giorni}d",
+    "giorniTip": "On how many different days the user created data in the last {giorni} days (for goalkeepers, training feedback also counts)"
   },
   "paywall": {
     "fallbackLabel": "Premium feature",

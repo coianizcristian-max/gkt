@@ -845,7 +845,14 @@
     "thRec7": "Reg 7d",
     "thRec30": "Reg 30d",
     "recTip": "Registros de contenido creados por el usuario (entrenamientos, evaluaciones, objetivos, inscripciones…) en la ventana indicada",
-    "recLegenda": "Las columnas Reg 3/7/30d muestran cuántos registros ha creado cada usuario en los últimos 3, 7 y 30 días — útil para ver quién usa realmente la plataforma."
+    "recLegenda": "Las columnas Reg 3/7/30d muestran cuántos registros ha creado cada usuario en los últimos 3, 7 y 30 días — útil para ver quién usa realmente la plataforma.",
+    "utentiAttivi": "Usuarios activos ({giorni} d)",
+    "nAllenatori": "{n} entrenadores",
+    "nPortieri": "{n} porteros",
+    "nStaff": "{n} staff",
+    "attiviLegenda": "Filas resaltadas: usuarios activos, es decir, que han creado datos en al menos {min} días distintos en los últimos {giorni} días (tu cuenta excluida).",
+    "thGiorni": "Días act. {giorni}d",
+    "giorniTip": "En cuántos días distintos el usuario ha creado datos en los últimos {giorni} días (para los porteros cuenta también el feedback de los entrenamientos)"
   },
   "paywall": {
     "fallbackLabel": "Función de pago",

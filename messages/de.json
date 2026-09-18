@@ -845,7 +845,14 @@
     "thRec7": "Ds 7T",
     "thRec30": "Ds 30T",
     "recTip": "Vom Nutzer erstellte Inhalts-Datensätze (Trainings, Bewertungen, Ziele, Anmeldungen…) im angegebenen Zeitraum",
-    "recLegenda": "Die Spalten Ds 3/7/30T zeigen, wie viele Datensätze jeder Nutzer in den letzten 3, 7 und 30 Tagen erstellt hat — nützlich, um zu sehen, wer die Plattform wirklich nutzt."
+    "recLegenda": "Die Spalten Ds 3/7/30T zeigen, wie viele Datensätze jeder Nutzer in den letzten 3, 7 und 30 Tagen erstellt hat — nützlich, um zu sehen, wer die Plattform wirklich nutzt.",
+    "utentiAttivi": "Aktive Nutzer ({giorni} T.)",
+    "nAllenatori": "{n} Trainer",
+    "nPortieri": "{n} Torhüter",
+    "nStaff": "{n} Staff",
+    "attiviLegenda": "Hervorgehobene Zeilen: aktive Nutzer, die in den letzten {giorni} Tagen an mindestens {min} verschiedenen Tagen Daten erstellt haben (dein Konto ausgenommen).",
+    "thGiorni": "Aktive Tage {giorni}T",
+    "giorniTip": "An wie vielen verschiedenen Tagen der Nutzer in den letzten {giorni} Tagen Daten erstellt hat (bei Torhütern zählt auch das Trainingsfeedback)"
   },
   "paywall": {
     "fallbackLabel": "Premium-Funktion",

@@ -6,7 +6,14 @@ import { getTranslations, getLocale } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
-const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
+const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
+
+// Utente "attivo": ha creato dati in almeno ATTIVO_MIN_GIORNI giorni diversi
+// negli ultimi ATTIVO_FINESTRA giorni. Il titolare non entra nel conteggio.
+const ATTIVO_FINESTRA = 15
+const ATTIVO_MIN_GIORNI = 3
+const ESCLUSI_ATTIVI = ['coianiz.cristian@gmail.com']
+const SFONDO_ATTIVO = '#eaf7ee'
 
 export default async function MetrichePage({ searchParams }) {
   const supabase = await createClient()
@@ -37,6 +44,29 @@ export default async function MetrichePage({ searchParams }) {
   for (const r of finestre ?? []) recMap[r.utente] = r
   const recDi = (id) => recMap[id] || {}
 
+  // Giorni diversi con attivita' negli ultimi 15 giorni, su TUTTI gli utenti
+  // (non solo quelli mostrati in tabella).
+  const { data: attivita } = await supabase.rpc('supervisore_utenti_attivi', { p_giorni: ATTIVO_FINESTRA })
+  const giorniMap = {}
+  for (const a of attivita ?? []) giorniMap[a.utente] = a
+  const giorniDi = (id) => giorniMap[id]?.giorni_attivi ?? 0
+  const escluso = (email) => ESCLUSI_ATTIVI.includes(String(email || '').toLowerCase())
+  const eAttivo = (id, email) => !escluso(email) && giorniDi(id) >= ATTIVO_MIN_GIORNI
+
+  const attivi = (attivita ?? []).filter((a) => !escluso(a.email) && a.giorni_attivi >= ATTIVO_MIN_GIORNI)
+  const perRuolo = (lista) => ({
+    allenatori: lista.filter((x) => x.ruolo === 'allenatore').length,
+    portieri: lista.filter((x) => x.ruolo === 'portiere').length,
+    staff: lista.filter((x) => x.ruolo === 'staff').length,
+  })
+  const attiviRuoli = perRuolo(attivi)
+  const mostratiRuoli = perRuolo(righe)
+  const dettaglioRuoli = (r) => [
+    t('nAllenatori', { n: r.allenatori }),
+    t('nPortieri', { n: r.portieri }),
+    ...(r.staff > 0 ? [t('nStaff', { n: r.staff })] : []),
+  ].join(' · ')
+
   const fmtData = (d) => d ? new Date(d).toLocaleString(dl, {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
   }) : '—'
@@ -44,10 +74,11 @@ export default async function MetrichePage({ searchParams }) {
   const RUOLO = { allenatore: t('ruoloAllenatore'), staff: t('ruoloStaff'), portiere: t('ruoloPortiere') }
   const ruoloLabel = (r) => RUOLO[r] || r || '—'
 
-  const Card = ({ valore, label }) => (
-    <div className="scheda" style={{ textAlign: 'center' }}>
+  const Card = ({ valore, label, sotto, sfondo }) => (
+    <div className="scheda" style={{ textAlign: 'center', ...(sfondo ? { background: sfondo } : {}) }}>
       <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--blu, #0a7ec2)' }}>{valore}</div>
       <div style={{ fontSize: 12, color: 'var(--ink-soft, #6b7e8e)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+      {sotto && <div style={{ fontSize: 12.5, color: 'var(--ink, #2a3b47)', marginTop: 6, fontWeight: 600 }}>{sotto}</div>}
     </div>
   )
 
@@ -70,7 +101,9 @@ export default async function MetrichePage({ searchParams }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
           <Card valore={rec3} label={t('record3')} />
           <Card valore={rec7} label={t('record7')} />
-          <Card valore={righe.length} label={t('iscrittiMostrati')} />
+          <Card valore={righe.length} label={t('iscrittiMostrati')} sotto={dettaglioRuoli(mostratiRuoli)} />
+          <Card valore={attivi.length} label={t('utentiAttivi', { giorni: ATTIVO_FINESTRA })}
+            sotto={dettaglioRuoli(attiviRuoli)} sfondo={SFONDO_ATTIVO} />
         </div>
 
         <div className="scheda" style={{ maxWidth: 'none' }}>
@@ -88,7 +121,11 @@ export default async function MetrichePage({ searchParams }) {
             </div>
           </div>
 
-          <p style={{ fontSize: 12.5, color: 'var(--ink-soft, #6b7e8e)', margin: '0 0 10px' }}>{t('recLegenda')}</p>
+          <p style={{ fontSize: 12.5, color: 'var(--ink-soft, #6b7e8e)', margin: '0 0 6px' }}>{t('recLegenda')}</p>
+          <p style={{ fontSize: 12.5, color: 'var(--ink-soft, #6b7e8e)', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 3, background: SFONDO_ATTIVO, border: '1px solid #b9e2c6', flexShrink: 0 }} />
+            {t('attiviLegenda', { min: ATTIVO_MIN_GIORNI, giorni: ATTIVO_FINESTRA })}
+          </p>
 
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
@@ -107,13 +144,16 @@ export default async function MetrichePage({ searchParams }) {
                   <th style={{ ...th, textAlign: 'right' }} title={t('recTip')}>{t('thRec3')}</th>
                   <th style={{ ...th, textAlign: 'right' }} title={t('recTip')}>{t('thRec7')}</th>
                   <th style={{ ...th, textAlign: 'right' }} title={t('recTip')}>{t('thRec30')}</th>
+                  <th style={{ ...th, textAlign: 'right' }} title={t('giorniTip', { giorni: ATTIVO_FINESTRA })}>{t('thGiorni', { giorni: ATTIVO_FINESTRA })}</th>
                 </tr>
               </thead>
               <tbody>
                 {righe.map((u, i) => {
                   const rr = recDi(u.id)
+                  const gg = giorniDi(u.id)
+                  const attivo = eAttivo(u.id, u.email)
                   return (
-                    <tr key={u.id ?? i}>
+                    <tr key={u.id ?? i} style={attivo ? { background: SFONDO_ATTIVO } : undefined}>
                       <td style={{ ...td, color: 'var(--ink-soft, #6b7e8e)' }}>{i + 1}</td>
                       <td style={td}>{u.email}</td>
                       <td style={td}>{ruoloLabel(u.ruolo)}</td>
@@ -131,11 +171,12 @@ export default async function MetrichePage({ searchParams }) {
                       <td style={tdRec(rr.r3 ?? 0)}>{rr.r3 ?? 0}</td>
                       <td style={tdRec(rr.r7 ?? 0)}>{rr.r7 ?? 0}</td>
                       <td style={tdRec(rr.r30 ?? 0)}>{rr.r30 ?? 0}</td>
+                      <td style={{ ...tdR, color: attivo ? 'var(--verde, #1f9d55)' : gg > 0 ? 'var(--ink, #2a3b47)' : 'var(--ink-soft, #6b7e8e)' }}>{gg}</td>
                     </tr>
                   )
                 })}
                 {righe.length === 0 && (
-                  <tr><td colSpan={13} style={{ ...td, color: 'var(--ink-soft, #6b7e8e)' }}>{t('nessunDato')}</td></tr>
+                  <tr><td colSpan={14} style={{ ...td, color: 'var(--ink-soft, #6b7e8e)' }}>{t('nessunDato')}</td></tr>
                 )}
               </tbody>
             </table>

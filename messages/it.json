@@ -851,7 +851,14 @@
     "thRec7": "Rec 7gg",
     "thRec30": "Rec 30gg",
     "recTip": "Record di contenuto creati dall'utente (allenamenti, valutazioni, obiettivi, iscrizioni…) nella finestra indicata",
-    "recLegenda": "Le colonne Rec 3/7/30gg mostrano quanti record ha creato ogni utente negli ultimi 3, 7 e 30 giorni — utile per capire chi sta usando davvero la piattaforma."
+    "recLegenda": "Le colonne Rec 3/7/30gg mostrano quanti record ha creato ogni utente negli ultimi 3, 7 e 30 giorni — utile per capire chi sta usando davvero la piattaforma.",
+    "utentiAttivi": "Utenti attivi ({giorni} gg)",
+    "nAllenatori": "{n} allenatori",
+    "nPortieri": "{n} portieri",
+    "nStaff": "{n} staff",
+    "attiviLegenda": "Righe evidenziate: utenti attivi, cioè che hanno creato dati in almeno {min} giorni diversi negli ultimi {giorni} giorni (escluso il tuo account).",
+    "thGiorni": "Giorni att. {giorni}gg",
+    "giorniTip": "In quanti giorni diversi l'utente ha creato dati negli ultimi {giorni} giorni (per i portieri contano anche i feedback agli allenamenti)"
   },
   "paywall": {
     "fallbackLabel": "Funzionalità a pagamento",
@@ -1624,7 +1631,8 @@
     "erroreGenerico": "Qualcosa è andato storto. Riprova.",
     "giaIscritto": "Sei già iscritto alla newsletter.",
     "confermaInviata": "Ti abbiamo inviato una email: clicca il link per confermare l'iscrizione.",
-    "erroreRete": "Errore di rete. Riprova."
+    "erroreRete": "Errore di rete. Riprova.",
+    "consenso": "Premendo il pulsante con la spunta attiva ti iscrivi alla newsletter GKSeason: aggiornamenti e novità sul gestionale. Puoi disiscriverti quando vuoi dal link in fondo a ogni email. <privacy>Informativa privacy</privacy>"
   },
   "couponBox": {
     "attivato": "✅ Codice attivato! Hai accesso completo per <b>{gg} giorni</b>. La pagina si aggiornerà tra un secondo.",
@@ -2961,5 +2969,18 @@
       "utenteDemo": "Utente proprietario della demo",
       "riepilogo": "{stagioni} stagioni · {portieri} portieri · {esercizi} esercizi",
       "utenteNonTrovato": "utente non trovato: la demo non può attivarsi"
+  },
+  "newsletterPagina": {
+    "metaTitle": "Newsletter · GKSeason",
+    "eyebrow": "GKSeason · Newsletter",
+    "confermataTitolo": "Iscrizione confermata!",
+    "confermataTesto": "Grazie! Riceverai le prossime newsletter di GKSeason con novità, consigli e aggiornamenti. Ti abbiamo appena mandato una mail di benvenuto.",
+    "demoInvito": "Intanto, vuoi vedere come funziona? Guarda una stagione completa, già compilata, senza registrarti.",
+    "demoBottone": "Guarda la stagione demo",
+    "disiscrittoTitolo": "Ti sei disiscritto",
+    "disiscrittoTesto": "Non riceverai più la newsletter di GKSeason. Se cambi idea puoi iscriverti di nuovo in qualsiasi momento dal sito.",
+    "erroreTitolo": "Link non valido",
+    "erroreTesto": "Il link che hai aperto non è valido o è scaduto. Se hai bisogno di aiuto scrivici a supporto@gkseason.it.",
+    "tornaSito": "Vai al sito"
   }
 }

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
+import { mailTexts, LOCALES } from '@/lib/i18nServer'
+import { prefissoLingua } from '@/lib/newsletterMail'
 
 const admin = createAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -7,21 +9,24 @@ const admin = createAdmin(
   { auth: { autoRefreshToken: false, persistSession: false } }
 )
 
-function pagina(msg) {
-  return new NextResponse(
-    `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-     <div style="font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:460px;margin:64px auto;text-align:center;padding:0 20px;color:#2a3b47;">
-       <h2 style="color:#0a5a8a;">GKSeason · Newsletter</h2>
-       <p style="font-size:15px;line-height:1.6;">${msg}</p>
-     </div>`,
-    { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
-  )
-}
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+/**
+ * Link "Disiscriviti" / "Annulla l'iscrizione" nelle mail e intestazione
+ * List-Unsubscribe. Disattiva l'iscrizione (non cancella la riga) e porta
+ * alla pagina /iscrizione-newsletter del sito. La lingua arriva da l= se presente
+ * (mail di benvenuto), altrimenti dal browser.
+ */
 export async function GET(req) {
-  const id = new URL(req.url).searchParams.get('id')
-  if (!id) return pagina('Link non valido.')
+  const url = new URL(req.url)
+  const id = url.searchParams.get('id')
+  const l = url.searchParams.get('l')
+  const locale = mailTexts(LOCALES.includes(l) ? l : req).locale
+  const vai = (esito) =>
+    NextResponse.redirect(new URL(`${prefissoLingua(locale)}/iscrizione-newsletter?esito=${esito}`, req.url))
+
+  if (!id || !UUID_RE.test(id)) return vai('errore')
   const { error } = await admin.from('newsletter_iscritti').update({ attivo: false }).eq('id', id)
-  if (error) return pagina('Si è verificato un errore. Riprova più tardi.')
-  return pagina('Sei stato disiscritto dalla newsletter. Non riceverai più email.')
+  if (error) return vai('errore')
+  return vai('disiscritto')
 }

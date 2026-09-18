@@ -2947,5 +2947,18 @@
       "utenteDemo": "Utente proprietario della demo",
       "riepilogo": "{stagioni} stagioni · {portieri} portieri · {esercizi} esercizi",
       "utenteNonTrovato": "utente non trovato: la demo non può attivarsi"
+  },
+  "newsletterPagina": {
+    "metaTitle": "Newsletter · GKSeason",
+    "eyebrow": "GKSeason · Newsletter",
+    "confermataTitolo": "Iscrizione confermata!",
+    "confermataTesto": "Grazie! Riceverai le prossime newsletter di GKSeason con novità, consigli e aggiornamenti. Ti abbiamo appena mandato una mail di benvenuto.",
+    "demoInvito": "Intanto, vuoi vedere come funziona? Guarda una stagione completa, già compilata, senza registrarti.",
+    "demoBottone": "Guarda la stagione demo",
+    "disiscrittoTitolo": "Ti sei disiscritto",
+    "disiscrittoTesto": "Non riceverai più la newsletter di GKSeason. Se cambi idea puoi iscriverti di nuovo in qualsiasi momento dal sito.",
+    "erroreTitolo": "Link non valido",
+    "erroreTesto": "Il link che hai aperto non è valido o è scaduto. Se hai bisogno di aiuto scrivici a supporto@gkseason.it.",
+    "tornaSito": "Vai al sito"
   }
 }

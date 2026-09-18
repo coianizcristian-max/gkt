@@ -2947,5 +2947,18 @@
       "utenteDemo": "Demo owner account",
       "riepilogo": "{stagioni} seasons · {portieri} goalkeepers · {esercizi} exercises",
       "utenteNonTrovato": "account not found: the demo cannot start"
+  },
+  "newsletterPagina": {
+    "metaTitle": "Newsletter · GKSeason",
+    "eyebrow": "GKSeason · Newsletter",
+    "confermataTitolo": "Subscription confirmed!",
+    "confermataTesto": "Thank you! You will receive the next GKSeason newsletters with news, tips and updates. We have just sent you a welcome email.",
+    "demoInvito": "Meanwhile, want to see how it works? Explore a complete season, already filled in, without signing up.",
+    "demoBottone": "See the demo season",
+    "disiscrittoTitolo": "You have unsubscribed",
+    "disiscrittoTesto": "You will no longer receive the GKSeason newsletter. If you change your mind, you can subscribe again at any time from the website.",
+    "erroreTitolo": "Invalid link",
+    "erroreTesto": "The link you opened is invalid or has expired. If you need help, write to us at supporto@gkseason.it.",
+    "tornaSito": "Go to the website"
   }
 }

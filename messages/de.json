@@ -2947,5 +2947,18 @@
       "utenteDemo": "Besitzer der Demo",
       "riepilogo": "{stagioni} Saisons · {portieri} Torhüter · {esercizi} Übungen",
       "utenteNonTrovato": "Konto nicht gefunden: die Demo kann nicht starten"
+  },
+  "newsletterPagina": {
+    "metaTitle": "Newsletter · GKSeason",
+    "eyebrow": "GKSeason · Newsletter",
+    "confermataTitolo": "Anmeldung bestätigt!",
+    "confermataTesto": "Danke! Sie erhalten die nächsten GKSeason-Newsletter mit Neuigkeiten, Tipps und Updates. Wir haben Ihnen gerade eine Willkommens-E-Mail geschickt.",
+    "demoInvito": "Möchten Sie in der Zwischenzeit sehen, wie es funktioniert? Entdecken Sie eine komplette, bereits ausgefüllte Saison, ohne sich zu registrieren.",
+    "demoBottone": "Demo-Saison ansehen",
+    "disiscrittoTitolo": "Sie haben sich abgemeldet",
+    "disiscrittoTesto": "Sie erhalten den GKSeason-Newsletter nicht mehr. Wenn Sie es sich anders überlegen, können Sie sich jederzeit auf der Website wieder anmelden.",
+    "erroreTitolo": "Ungültiger Link",
+    "erroreTesto": "Der geöffnete Link ist ungültig oder abgelaufen. Wenn Sie Hilfe brauchen, schreiben Sie uns an supporto@gkseason.it.",
+    "tornaSito": "Zur Website"
   }
 }

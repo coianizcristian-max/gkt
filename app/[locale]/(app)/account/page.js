@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import CouponBox from '@/app/components/CouponBox'
 import { hasAbbonamento } from '@/lib/gating'
-import { rigaValida } from '@/lib/stripeAbbonamenti'
+import { rigaValida, getAdmin } from '@/lib/stripeAbbonamenti'
 import DisdiciButton from '@/app/components/DisdiciButton'
 import CollegaSupervisoreBox from '@/app/components/CollegaSupervisoreBox'
 import CommentiRicevuti from '@/app/components/CommentiRicevuti'
@@ -31,7 +31,10 @@ export default async function AccountPage() {
   // Dettaglio abbonamento o coupon attivo
   // Ultima riga dell'utente; conta solo se dà ancora accesso (prima un
   // abbonamento scaduto compariva come "Attivo, rinnovo il <data passata>").
-  const { data: abbRows } = await supabase.from('abbonamenti')
+  // Lettura con il client di servizio, SEMPRE filtrata sull'utente loggato:
+  // l'esito non dipende dalle regole RLS della tabella.
+  const admin = getAdmin()
+  const { data: abbRows } = await admin.from('abbonamenti')
     .select('piano, scadenza, created_at, stato, stripe_subscription_id')
     .eq('allenatore_id', user.id)
     .order('created_at', { ascending: false }).limit(1)
@@ -41,7 +44,7 @@ export default async function AccountPage() {
   const giorniProva = provaRow ? Math.ceil((new Date(provaRow.scadenza) - new Date()) / (1000 * 60 * 60 * 24)) : null
   const fmtD = (d) => new Date(d).toLocaleDateString(dateLoc, { day: 'numeric', month: 'long', year: 'numeric' })
 
-  const { data: couponRow } = await supabase.from('coupon_utilizzi')
+  const { data: couponRow } = await admin.from('coupon_utilizzi')
     .select('scade_il, coupon:coupon_id(codice, durata_gg)')
     .eq('utente_id', user.id)
     .gt('scade_il', new Date().toISOString())

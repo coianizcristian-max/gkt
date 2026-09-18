@@ -108,7 +108,7 @@ export default function RegistratiClient({ token, datiInvito }) {
       const { createClient: cc } = await import('@/lib/supabase/client')
       const sb = cc()
       await sb.from('newsletter_iscritti').upsert(
-        { email: email.trim(), utente_id: data.user.id, attivo: true },
+        { email: email.trim().toLowerCase(), utente_id: data.user.id, attivo: true },
         { onConflict: 'email' }
       )
     }

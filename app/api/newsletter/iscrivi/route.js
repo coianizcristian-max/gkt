@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import { mailTexts, tApi } from '@/lib/i18nServer'
+import { benvenutoNewsletterHtml } from '@/lib/benvenutoNewsletterHtml'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const MITTENTE = 'GKSeason <notifiche@gkseason.it>'
@@ -52,22 +53,10 @@ async function inviaBenvenuto(email, id, m) {
   const unsub = `${SITE_URL}/api/newsletter/disiscrivi?id=${id}`
   const registrati = `${SITE_URL}${pref}/registrati?utm_source=newsletter&utm_medium=email&utm_campaign=benvenuto`
   const demo = `${SITE_URL}/d?utm_source=newsletter&utm_medium=email&utm_campaign=benvenuto`
-  const html = `<!doctype html><html lang="${m.htmlLang}"><body style="margin:0;padding:24px 0;background:#eef2f5;">
-    <div style="max-width:520px;margin:0 auto;font-family:'Segoe UI',Arial,sans-serif;background:#ffffff;border-radius:12px;overflow:hidden;">
-      <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-        <td bgcolor="#0a5a8a" style="background-color:#0a5a8a;padding:28px 32px;color:#ffffff;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#cfe4f2;">${m('nlEyebrow')}</div>
-          <h1 style="margin:6px 0 0;font-size:22px;color:#ffffff;">${m('nlBvTitolo')}</h1>
-        </td>
-      </tr></table>
-      <div style="padding:28px 32px;color:#2a3b47;font-size:15px;line-height:1.7;">
-        <p style="margin:0 0 16px;">${m('nlBvTesto')}</p>
-        <p style="margin:0 0 20px;">${m('nlBvInvito')}</p>
-        <p style="margin:0 0 12px;"><a href="${registrati}" style="display:inline-block;background:#0a7ec2;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;">${m('nlBvBottone')}</a></p>
-        <p style="margin:0 0 24px;font-size:14px;"><a href="${demo}" style="color:#0a7ec2;">${m('nlBvDemo')}</a></p>
-        <p style="margin:0;font-size:12px;color:#8899a8;border-top:1px solid #e6ebef;padding-top:16px;">${m('nlBvDisclaimer')} <a href="${unsub}" style="color:#8899a8;">${m('nlBvDisiscrivi')}</a></p>
-      </div>
-    </div></body></html>`
+  const html = benvenutoNewsletterHtml({
+    m, siteUrl: SITE_URL,
+    links: { registrati, demo, unsub, sito: `${SITE_URL}${pref || '/'}` },
+  })
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },

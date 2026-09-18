@@ -3,6 +3,7 @@ import { tApi } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import Stripe from 'stripe'
+import { fineGiornoRoma } from '@/lib/stripeAbbonamenti'
 
 function getAdmin() {
   return createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -50,7 +51,8 @@ export async function POST(request) {
 
       const promoParams = { coupon: stripeCoupon.id, code: codiceNorm }
       if (max_utilizzi) promoParams.max_redemptions = Number(max_utilizzi)
-      if (scadenza_attivazione) promoParams.expires_at = Math.floor(new Date(scadenza_attivazione).getTime() / 1000)
+      // valido fino alle 23:59:59 (ora italiana) del giorno scelto
+      if (scadenza_attivazione) promoParams.expires_at = Math.floor(fineGiornoRoma(scadenza_attivazione).getTime() / 1000)
 
       const promo = await stripe.promotionCodes.create(promoParams)
 
@@ -65,7 +67,11 @@ export async function POST(request) {
         stripe_promotion_code_id: promo.id,
         attivo: true,
       })
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+      if (error) {
+        // niente codice "fantasma" attivo su Stripe ma assente dal pannello
+        try { await stripe.promotionCodes.update(promo.id, { active: false }) } catch {}
+        return NextResponse.json({ error: error.message }, { status: 400 })
+      }
       return NextResponse.json({ ok: true })
     } catch (err) {
       console.error('stripe coupon error:', err)
@@ -103,8 +109,12 @@ export async function PATCH(request) {
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
       await stripe.promotionCodes.update(riga.stripe_promotion_code_id, { active: attivo })
     } catch (err) {
-      console.error('stripe promotion code toggle error:', err)
-      return NextResponse.json({ error: tApi(request, 'Errore Stripe: ') + err.message }, { status: 400 })
+      // Codice creato in modalità TEST che non esiste in LIVE: lo si deve poter
+      // disattivare comunque nel pannello (su Stripe live non c'è nulla da fare).
+      if (!(err?.code === 'resource_missing' && attivo === false)) {
+        console.error('stripe promotion code toggle error:', err)
+        return NextResponse.json({ error: tApi(request, 'Errore Stripe: ') + err.message }, { status: 400 })
+      }
     }
   }
 

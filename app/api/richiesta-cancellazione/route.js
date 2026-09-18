@@ -30,6 +30,26 @@ export async function POST(request) {
       console.warn('Log richiesta cancellazione non riuscito (tabella assente?):', e?.message)
     }
 
+    // Abbonamento a pagamento ancora vivo? Va fermato su Stripe PRIMA di
+    // cancellare l'account, altrimenti Stripe continua ad addebitare.
+    let avvisoStripe = ''
+    try {
+      const admin = createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+      const { data: abb } = await admin.from('abbonamenti')
+        .select('piano, stato, scadenza, stripe_subscription_id, stripe_customer_id')
+        .eq('allenatore_id', user.id).order('created_at', { ascending: false }).limit(1)
+      const a = abb?.[0]
+      if (a?.stripe_subscription_id && (a.stato === 'attivo' || a.stato === 'disdetto')) {
+        avvisoStripe = `<p style="color:#c0392b"><strong>ATTENZIONE: abbonamento Stripe ancora attivo</strong>
+          (${a.piano}, stato ${a.stato}, subscription ${a.stripe_subscription_id}, customer ${a.stripe_customer_id}).
+          Annullalo su Stripe prima di cancellare l'account.</p>`
+      } else if (a) {
+        avvisoStripe = `<p><strong>Abbonamento:</strong> ${a.piano} / ${a.stato}${a.stripe_customer_id ? ' (customer ' + a.stripe_customer_id + ')' : ''}</p>`
+      }
+    } catch (e) {
+      avvisoStripe = '<p><strong>Abbonamento:</strong> non verificato, controlla su Stripe.</p>'
+    }
+
     // Notifica al titolare + conferma all'utente.
     if (RESEND_API_KEY) {
       const nome = profilo?.nome_completo || '—'
@@ -44,6 +64,7 @@ export async function POST(request) {
                  <p><strong>Utente:</strong> ${nome} (${user.email})</p>
                  <p><strong>Ruolo:</strong> ${ruolo}</p>
                  <p><strong>User ID:</strong> ${user.id}</p>
+                 ${avvisoStripe}
                  <p>Da evadere entro 30 giorni con la procedura controllata.</p>`,
         }),
       }).catch((e) => console.error('Resend (titolare) fallita:', e?.message))

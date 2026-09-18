@@ -102,7 +102,7 @@ export default function GatingManager({
       <span className="prezzo-field-label">{label}</span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
         <span style={{ fontWeight: 600, fontSize: 13 }}>€</span>
-        <input type="number" min="0.50" step="0.10" value={prezzi[ruolo][piano]}
+        <input type="number" min="0.50" step="0.01" value={prezzi[ruolo][piano]}
           onChange={updPrezzo(ruolo, piano)} className="prezzo-field-input" />
       </div>
     </div>
@@ -189,7 +189,7 @@ export default function GatingManager({
         <h3 style={{ margin: '0 0 10px' }}>{t('feeTitolo')}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontWeight: 600 }}>€</span>
-          <input type="number" min="0.50" step="0.10" value={fee}
+          <input type="number" min="0.50" step="0.01" value={fee}
             onChange={(e) => { setFee(e.target.value); tocca() }}
             style={{ width: 90, padding: '8px 10px', border: '1px solid var(--linea)', borderRadius: 'var(--r-sm)', fontSize: 16 }} />
           <span style={{ color: 'var(--ink-soft)', fontSize: 13 }}>{t('feeUna')}</span>

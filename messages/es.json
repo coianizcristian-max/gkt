@@ -330,7 +330,13 @@
     "eliminaBottone": "Solicitar eliminación",
     "eliminaInvio": "Enviando…",
     "eliminaInviata": "Solicitud recibida. Te contactaremos para completar la eliminación en un plazo de 30 días. Revisa el correo de confirmación.",
-    "eliminaErrore": "No se pudo enviar la solicitud. Inténtalo de nuevo o escribe a info@gkseason.it."
+    "eliminaErrore": "No se pudo enviar la solicitud. Inténtalo de nuevo o escribe a info@gkseason.it.",
+    "validoFinoAl": "Válido hasta el {data}",
+    "provaTitolo": "Prueba gratuita activa",
+    "provaFino": "Todas las funciones desbloqueadas hasta el {data} (quedan {giorni} días)",
+    "staffTitolo": "Suscripción del entrenador titular",
+    "staffNotaOk": "Como colaborador usas la suscripción del entrenador que te invitó: está activa.",
+    "staffNotaNo": "Como colaborador usas la suscripción del entrenador que te invitó: ahora mismo no está activa, por eso algunas funciones están bloqueadas."
   },
   "contatti": {
     "eyebrow": "Área reservada",
@@ -845,14 +851,7 @@
     "thRec7": "Reg 7d",
     "thRec30": "Reg 30d",
     "recTip": "Registros de contenido creados por el usuario (entrenamientos, evaluaciones, objetivos, inscripciones…) en la ventana indicada",
-    "recLegenda": "Las columnas Reg 3/7/30d muestran cuántos registros ha creado cada usuario en los últimos 3, 7 y 30 días — útil para ver quién usa realmente la plataforma.",
-    "utentiAttivi": "Usuarios activos ({giorni} d)",
-    "nAllenatori": "{n} entrenadores",
-    "nPortieri": "{n} porteros",
-    "nStaff": "{n} staff",
-    "attiviLegenda": "Filas resaltadas: usuarios activos, es decir, que han creado datos en al menos {min} días distintos en los últimos {giorni} días (tu cuenta excluida).",
-    "thGiorni": "Días act. {giorni}d",
-    "giorniTip": "En cuántos días distintos el usuario ha creado datos en los últimos {giorni} días (para los porteros cuenta también el feedback de los entrenamientos)"
+    "recLegenda": "Las columnas Reg 3/7/30d muestran cuántos registros ha creado cada usuario en los últimos 3, 7 y 30 días — útil para ver quién usa realmente la plataforma."
   },
   "paywall": {
     "fallbackLabel": "Función de pago",
@@ -1625,8 +1624,7 @@
     "erroreGenerico": "Algo ha salido mal. Inténtalo de nuevo.",
     "giaIscritto": "Ya estás suscrito a la newsletter.",
     "confermaInviata": "Te hemos enviado un email: haz clic en el enlace para confirmar la suscripción.",
-    "erroreRete": "Error de red. Inténtalo de nuevo.",
-    "consenso": "Al pulsar el botón con la casilla marcada te suscribes a la newsletter de GKSeason: actualizaciones y novedades sobre la plataforma. Puedes darte de baja cuando quieras desde el enlace al final de cada email. <privacy>Política de privacidad</privacy>"
+    "erroreRete": "Error de red. Inténtalo de nuevo."
   },
   "couponBox": {
     "attivato": "✅ ¡Código activado! Tienes acceso completo durante <b>{gg} días</b>. La página se actualizará en un segundo.",
@@ -1879,7 +1877,14 @@
     "creaBtn": "+ Crear suscripción",
     "salvaBtn": "💾 Guardar cambios",
     "annulla": "Cancelar",
-    "elimina": "Eliminar"
+    "elimina": "Eliminar",
+    "stato_prova": "Prueba",
+    "pianoProva": "Prueba gratuita",
+    "stripeBadge": "Pagado con Stripe",
+    "avvisoStripeModifica": "ATENCIÓN: esta suscripción se paga con Stripe y sigue activa.\n\nModificarla aquí NO detiene ni cambia los cargos en Stripe, y en el próximo evento de Stripe los datos se realinearán.\nPara cancelar o reembolsar usa el panel de Stripe.\n\n¿Guardar de todos modos?",
+    "avvisoStripeElimina": "ATENCIÓN: esta suscripción se paga con Stripe y sigue activa.\n\nEliminarla aquí NO detiene los cargos: Stripe seguirá cobrando al cliente.\nCancélala primero desde el panel de Stripe.\n\n¿Eliminar de todos modos?",
+    "giaPresenteAggiorno": "Este usuario ya tiene una fila de suscripción (estado: {stato}). ¿La actualizo con los nuevos datos?",
+    "stripeAttivoBlocco": "Este usuario tiene una suscripción de Stripe activa: gestiónala desde Stripe o modifica su fila en la lista."
   },
   "gatingManager": {
     "intro": "Configura precios, prueba gratuita, funciones y accesos. Haz clic en <b>Guardar</b> al final para aplicar todos los cambios.",
@@ -1950,7 +1955,16 @@
       "Estadísticas detalladas de tu crecimiento",
       "Informe PDF de tu temporada",
       "Historial completo de evaluaciones y asistencias"
-    ]
+    ],
+    "staffTitolo": "Suscripción gestionada por el entrenador titular",
+    "staffTesto": "Como colaborador usas GKSeason con la suscripción del entrenador que te invitó: no tienes que pagar nada. Si algunas funciones están bloqueadas, pídele que revise su suscripción.",
+    "disdettoTitolo": "Renovación automática desactivada",
+    "attivoFino": "activa hasta el",
+    "manualeNota": "Esta suscripción la activó el administrador de GKSeason. Para cambios escribe a supporto@gkseason.it.",
+    "gestisciIntroDisdetto": "Has cancelado la renovación: la suscripción sigue activa hasta la fecha indicada. Si cambias de idea puedes reactivarla desde el portal seguro de Stripe.",
+    "attesaAttivazione": "¡Pago recibido! Estamos activando tu suscripción: recarga la página en unos segundos.",
+    "annullato": "Pago cancelado: no se ha realizado ningún cargo.",
+    "provaInCorso": "Tienes acceso gratuito hasta el {data}. Si eliges ahora el plan mensual o anual no pierdes los días restantes: el primer cargo se hará solo en esa fecha."
   },
   "cookieBanner": {
     "gestisci": "Gestionar las preferencias de cookies",
@@ -2947,18 +2961,5 @@
       "utenteDemo": "Cuenta propietaria de la demo",
       "riepilogo": "{stagioni} temporadas · {portieri} porteros · {esercizi} ejercicios",
       "utenteNonTrovato": "cuenta no encontrada: la demo no puede activarse"
-  },
-  "newsletterPagina": {
-    "metaTitle": "Newsletter · GKSeason",
-    "eyebrow": "GKSeason · Newsletter",
-    "confermataTitolo": "¡Suscripción confirmada!",
-    "confermataTesto": "¡Gracias! Recibirás las próximas newsletters de GKSeason con novedades, consejos y actualizaciones. Te acabamos de enviar un email de bienvenida.",
-    "demoInvito": "Mientras tanto, ¿quieres ver cómo funciona? Explora una temporada completa, ya rellenada, sin registrarte.",
-    "demoBottone": "Ver la temporada demo",
-    "disiscrittoTitolo": "Te has dado de baja",
-    "disiscrittoTesto": "Ya no recibirás la newsletter de GKSeason. Si cambias de idea, puedes volver a suscribirte en cualquier momento desde la web.",
-    "erroreTitolo": "Enlace no válido",
-    "erroreTesto": "El enlace que has abierto no es válido o ha caducado. Si necesitas ayuda, escríbenos a supporto@gkseason.it.",
-    "tornaSito": "Ir a la web"
   }
 }

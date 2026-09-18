@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 
-const NUM_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
+const NUM_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
 
-export default function AbbonatoClient({ abbonamento, prezzi, ruolo, lifetimeAttivo = true }) {
+export default function AbbonatoClient({ abbonamento, prezzi, ruolo, lifetimeAttivo = true, isStaff = false, attesaAttivazione = false, annullato = false, provaScadenza = null }) {
   const t = useTranslations('abbonatoClient')
   const locale = useLocale()
   const nl = NUM_LOCALE[locale] || 'it-IT'
@@ -51,25 +51,39 @@ export default function AbbonatoClient({ abbonamento, prezzi, ruolo, lifetimeAtt
     } catch (e) { setError(t('erroreReteBreve')); setLoading(null) }
   }
 
+  // Collaboratori/staff: l'accesso dipende dall'abbonamento del titolare.
+  if (isStaff) {
+    return (
+      <div className="scheda">
+        <h2 style={{ marginTop: 0 }}>{t('staffTitolo')}</h2>
+        <p className="sub-intro" style={{ margin: 0 }}>{t('staffTesto')}</p>
+      </div>
+    )
+  }
+
   if (abbonamento) {
     const pianoLabel = t('piano_' + abbonamento.piano)
+    const disdetto = abbonamento.stato === 'disdetto'
     return (
       <div>
         <div className="scheda abbonamento-attivo">
-          <div className="abb-icon">✅</div>
+          <div className="abb-icon">{disdetto ? '⏳' : '✅'}</div>
           <div>
-            <h2 style={{ margin: 0 }}>{t('attivoTitolo')}</h2>
+            <h2 style={{ margin: 0 }}>{disdetto ? t('disdettoTitolo') : t('attivoTitolo')}</h2>
             <p style={{ margin: '6px 0 0', color: 'var(--ink-soft)' }}>
               {t('pianoLabel')} <b>{pianoLabel}</b>
               {abbonamento.piano !== 'lifetime'
-                ? <> · {t('scadenza')} <b>{fmtData(abbonamento.scadenza)}</b></>
+                ? <> · {disdetto ? t('attivoFino') : t('scadenza')} <b>{fmtData(abbonamento.scadenza)}</b></>
                 : <> · <b>{t('nessunaScadenza')}</b></>}
             </p>
           </div>
         </div>
-        {abbonamento.piano !== 'lifetime' && (
+        {abbonamento.piano !== 'lifetime' && !abbonamento.gestibile && (
+          <p className="sub-intro" style={{ marginTop: 16 }}>{t('manualeNota')}</p>
+        )}
+        {abbonamento.piano !== 'lifetime' && abbonamento.gestibile && (
           <div style={{ marginTop: 20 }}>
-            <p className="sub-intro">{t('gestisciIntro')}</p>
+            <p className="sub-intro">{disdetto ? t('gestisciIntroDisdetto') : t('gestisciIntro')}</p>
             {error && <div className="err">{error}</div>}
             <button className="btn" onClick={portalStripe} disabled={loading === 'portal'} type="button">
               {loading === 'portal' ? t('caricamento') : t('gestisci')}
@@ -85,6 +99,9 @@ export default function AbbonatoClient({ abbonamento, prezzi, ruolo, lifetimeAtt
       <p className="sub-intro" style={{ fontSize: 15, marginBottom: 24 }}>
         {ruolo === 'portiere' ? t('introPortiere') : t('introCoach')}
       </p>
+      {attesaAttivazione && <div className="ok-msg" style={{ marginBottom: 16 }}>{t('attesaAttivazione')}</div>}
+      {annullato && !attesaAttivazione && <div className="sub-intro" style={{ marginBottom: 16 }}>{t('annullato')}</div>}
+      {provaScadenza && <div className="ok-msg" style={{ marginBottom: 16 }}>{t('provaInCorso', { data: fmtData(provaScadenza) })}</div>}
       {error && <div className="err" style={{ marginBottom: 16 }}>{error}</div>}
       <div className="piani-grid">
         {PIANI.map((p) => (

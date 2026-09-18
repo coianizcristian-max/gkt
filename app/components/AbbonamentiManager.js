@@ -5,14 +5,24 @@ import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 
-const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
+const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
 const STATO_STYLE = {
   attivo:     { bg: 'rgba(46,158,91,0.1)',   color: 'var(--campo)' },
   disdetto:   { bg: 'rgba(230,160,0,0.1)',   color: '#b8860b' },
   scaduto:    { bg: 'rgba(192,57,43,0.1)',   color: 'var(--rosso)' },
   cancellato: { bg: 'rgba(150,150,150,0.1)', color: 'var(--ink-soft)' },
+  prova:      { bg: 'rgba(10,126,194,0.1)',  color: 'var(--blu, #0a7ec2)' },
 }
-const isoDate = (d) => d ? new Date(d).toISOString().slice(0, 10) : ''
+// Data (giorno) nel fuso del browser, coerente con fineGiorno qui sotto.
+const isoDate = (d) => {
+  if (!d) return ''
+  const x = new Date(d)
+  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
+}
+// "fino al 30/06" deve comprendere tutto il 30: salvo le 23:59:59 locali.
+const fineGiorno = (yyyyMmDd) => (yyyyMmDd ? new Date(yyyyMmDd + 'T23:59:59').toISOString() : null)
+// Riga legata a un abbonamento Stripe ancora vivo (modificarla qui non ferma gli addebiti).
+const stripeVivo = (a) => !!a?.stripe_subscription_id && (a.stato === 'attivo' || a.stato === 'disdetto')
 
 export default function AbbonamentiManager({ abbonamenti, profili }) {
   const t = useTranslations('abbonamentiManager')
@@ -60,15 +70,16 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
     ).slice(0, 10)
   }, [profili, ricerca])
 
-  const pianoLabel = (p) => p === 'lifetime' ? t('pianoLifetime') : p === 'annuale' ? t('pianoAnnuale') : t('pianoMensile')
+  const pianoLabel = (p) => p === 'lifetime' ? t('pianoLifetime') : p === 'annuale' ? t('pianoAnnuale') : p === 'prova' ? t('pianoProva') : t('pianoMensile')
 
   async function salvaModifica(abb, form) {
+    if (stripeVivo(abb) && !confirm(t('avvisoStripeModifica'))) return
     setBusy(true); setMsg('')
     const supabase = createClient()
     const { error } = await supabase.from('abbonamenti').update({
       piano: form.piano,
       stato: form.stato,
-      scadenza: form.scadenza || null,
+      scadenza: form.piano === 'lifetime' ? null : fineGiorno(form.scadenza),
       nota: form.nota?.trim() || null,
     }).eq('id', abb.id)
     if (error) { setMsg('✕ ' + t('errore', { msg: error.message })) }
@@ -77,21 +88,29 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
   }
 
   async function creaNuovo(profiloId, form) {
+    // Una riga per persona: se esiste già (es. la prova) la aggiorno.
+    const esistente = abbonamenti.find((a) => a.allenatore_id === profiloId)
+    if (esistente && stripeVivo(esistente)) { setMsg('✕ ' + t('stripeAttivoBlocco')); return }
+    if (esistente && !confirm(t('giaPresenteAggiorno', { stato: t('stato_' + esistente.stato) }))) return
     setBusy(true); setMsg('')
     const supabase = createClient()
-    const { error } = await supabase.from('abbonamenti').insert({
-      allenatore_id: profiloId,
+    const campi = {
       piano: form.piano,
       stato: form.stato,
-      scadenza: form.scadenza || null,
+      scadenza: form.piano === 'lifetime' ? null : fineGiorno(form.scadenza),
       nota: form.nota?.trim() || null,
-    })
+    }
+    const { error } = esistente
+      ? await supabase.from('abbonamenti').update(campi).eq('id', esistente.id)
+      : await supabase.from('abbonamenti').insert({ allenatore_id: profiloId, ...campi })
     if (error) { setMsg('✕ ' + t('errore', { msg: error.message })) }
     else { setMsg('✓ ' + t('creato')); setNuovoFor(null); router.refresh() }
     setBusy(false)
   }
 
   async function eliminaAbb(id) {
+    const riga = abbonamenti.find((a) => a.id === id)
+    if (stripeVivo(riga) && !confirm(t('avvisoStripeElimina'))) return
     if (!confirm(t('confermaElim'))) return
     setBusy(true)
     const supabase = createClient()
@@ -145,6 +164,7 @@ export default function AbbonamentiManager({ abbonamenti, profili }) {
                     {a.scadenza && a.piano !== 'lifetime' && ` · ${t('scade', { data: fmtData(a.scadenza) })}`}
                     {' · '}{t('dal', { data: fmtData(a.created_at) })}
                   </div>
+                  {a.stripe_subscription_id && <div style={{ fontSize: 11, marginTop: 4, fontWeight: 700, color: '#635bff' }}>💳 {t('stripeBadge')}{stripeVivo(a) ? '' : ' · ' + t('stato_' + a.stato)}</div>}
                   {a.nota && <div style={{ fontSize: 12, marginTop: 4, color: 'var(--ink)', background: 'var(--soft, #f6f8fb)', display: 'inline-block', padding: '2px 8px', borderRadius: 6 }}>📝 {a.nota}</div>}
                 </div>
                 <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700,
@@ -243,6 +263,7 @@ function EditForm({ abb, onSave, onDelete, onCancel, busy, isNew = false }) {
             <option value="mensile">{t('pianoMensile')}</option>
             <option value="annuale">{t('pianoAnnuale')}</option>
             <option value="lifetime">{t('pianoLifetimeLungo')}</option>
+            <option value="prova">{t('pianoProva')}</option>
           </select>
         </div>
         <div className="field" style={{ margin: 0 }}>
@@ -252,6 +273,7 @@ function EditForm({ abb, onSave, onDelete, onCancel, busy, isNew = false }) {
             <option value="disdetto">{t('stato_disdetto')}</option>
             <option value="scaduto">{t('stato_scaduto')}</option>
             <option value="cancellato">{t('stato_cancellato')}</option>
+            <option value="prova">{t('stato_prova')}</option>
           </select>
         </div>
         {form.piano !== 'lifetime' && (

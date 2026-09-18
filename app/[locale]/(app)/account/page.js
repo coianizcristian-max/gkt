@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import CouponBox from '@/app/components/CouponBox'
 import { hasAbbonamento } from '@/lib/gating'
+import { rigaValida } from '@/lib/stripeAbbonamenti'
 import DisdiciButton from '@/app/components/DisdiciButton'
 import CollegaSupervisoreBox from '@/app/components/CollegaSupervisoreBox'
 import CommentiRicevuti from '@/app/components/CommentiRicevuti'
@@ -15,7 +16,7 @@ export default async function AccountPage() {
   const supabase = await createClient()
   const t = await getTranslations('account')
   const locale = await getLocale()
-  const dateLoc = locale === 'it' ? 'it-IT' : locale === 'de' ? 'de-DE' : 'en-GB'
+  const dateLoc = locale === 'it' ? 'it-IT' : locale === 'de' ? 'de-DE' : locale === 'es' ? 'es-ES' : 'en-GB'
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
@@ -28,10 +29,17 @@ export default async function AccountPage() {
   ])
 
   // Dettaglio abbonamento o coupon attivo
-  const { data: abbRow } = await supabase.from('abbonamenti')
-    .select('piano, scadenza, created_at, stato')
-    .eq('allenatore_id', user.id).in('stato', ['attivo', 'disdetto'])
-    .order('created_at', { ascending: false }).limit(1).maybeSingle()
+  // Ultima riga dell'utente; conta solo se dà ancora accesso (prima un
+  // abbonamento scaduto compariva come "Attivo, rinnovo il <data passata>").
+  const { data: abbRows } = await supabase.from('abbonamenti')
+    .select('piano, scadenza, created_at, stato, stripe_subscription_id')
+    .eq('allenatore_id', user.id)
+    .order('created_at', { ascending: false }).limit(1)
+  const ultimaAbb = abbRows?.[0] ?? null
+  const abbRow = ultimaAbb && ultimaAbb.stato !== 'prova' && rigaValida(ultimaAbb) ? ultimaAbb : null
+  const provaRow = ultimaAbb && ultimaAbb.stato === 'prova' && rigaValida(ultimaAbb) ? ultimaAbb : null
+  const giorniProva = provaRow ? Math.ceil((new Date(provaRow.scadenza) - new Date()) / (1000 * 60 * 60 * 24)) : null
+  const fmtD = (d) => new Date(d).toLocaleDateString(dateLoc, { day: 'numeric', month: 'long', year: 'numeric' })
 
   const { data: couponRow } = await supabase.from('coupon_utilizzi')
     .select('scade_il, coupon:coupon_id(codice, durata_gg)')
@@ -95,7 +103,9 @@ export default async function AccountPage() {
                   <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
                     {abbRow.stato === 'disdetto'
                       ? t.rich('attivoFinoAl', { data: new Date(abbRow.scadenza).toLocaleDateString(dateLoc, { day: 'numeric', month: 'long', year: 'numeric' }), b: (ch) => <b>{ch}</b> })
-                      : t('rinnovoIl', { data: new Date(abbRow.scadenza).toLocaleDateString(dateLoc, { day: 'numeric', month: 'long', year: 'numeric' }) })}
+                      : abbRow.stripe_subscription_id
+                        ? t('rinnovoIl', { data: fmtD(abbRow.scadenza) })
+                        : t('validoFinoAl', { data: fmtD(abbRow.scadenza) })}
                   </div>
                 )}
                 {abbRow.piano === 'lifetime' && (
@@ -116,6 +126,26 @@ export default async function AccountPage() {
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
                   {t('scadeIl', { data: new Date(couponRow.scade_il).toLocaleDateString(dateLoc, { day: 'numeric', month: 'long', year: 'numeric' }), giorni: giorniCoupon })}
+                </div>
+              </div>
+            </div>
+          ) : provaRow ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 28 }}>🎁</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 16 }}>{t('provaTitolo')}</div>
+                <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
+                  {t('provaFino', { data: fmtD(provaRow.scadenza), giorni: giorniProva })}
+                </div>
+              </div>
+            </div>
+          ) : profilo?.ruolo === 'staff' ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 28 }}>{abbonamentoAttivo ? '✅' : '🔓'}</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 16 }}>{t('staffTitolo')}</div>
+                <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 2 }}>
+                  {abbonamentoAttivo ? t('staffNotaOk') : t('staffNotaNo')}
                 </div>
               </div>
             </div>

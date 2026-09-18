@@ -330,7 +330,13 @@
     "eliminaBottone": "Löschung beantragen",
     "eliminaInvio": "Wird gesendet…",
     "eliminaInviata": "Antrag erhalten. Wir kontaktieren dich, um die Löschung innerhalb von 30 Tagen abzuschließen. Prüfe deine Bestätigungs-E-Mail.",
-    "eliminaErrore": "Der Antrag konnte nicht gesendet werden. Bitte versuche es erneut oder schreibe an info@gkseason.it."
+    "eliminaErrore": "Der Antrag konnte nicht gesendet werden. Bitte versuche es erneut oder schreibe an info@gkseason.it.",
+    "validoFinoAl": "Gültig bis {data}",
+    "provaTitolo": "Kostenloser Test aktiv",
+    "provaFino": "Alle Funktionen freigeschaltet bis {data} (noch {giorni} Tage)",
+    "staffTitolo": "Abo des Cheftrainers",
+    "staffNotaOk": "Als Mitarbeiter nutzt du das Abo des Trainers, der dich eingeladen hat: Es ist aktiv.",
+    "staffNotaNo": "Als Mitarbeiter nutzt du das Abo des Trainers, der dich eingeladen hat: Es ist derzeit nicht aktiv, daher sind einige Funktionen gesperrt."
   },
   "contatti": {
     "eyebrow": "Geschützter Bereich",
@@ -845,14 +851,7 @@
     "thRec7": "Ds 7T",
     "thRec30": "Ds 30T",
     "recTip": "Vom Nutzer erstellte Inhalts-Datensätze (Trainings, Bewertungen, Ziele, Anmeldungen…) im angegebenen Zeitraum",
-    "recLegenda": "Die Spalten Ds 3/7/30T zeigen, wie viele Datensätze jeder Nutzer in den letzten 3, 7 und 30 Tagen erstellt hat — nützlich, um zu sehen, wer die Plattform wirklich nutzt.",
-    "utentiAttivi": "Aktive Nutzer ({giorni} T.)",
-    "nAllenatori": "{n} Trainer",
-    "nPortieri": "{n} Torhüter",
-    "nStaff": "{n} Staff",
-    "attiviLegenda": "Hervorgehobene Zeilen: aktive Nutzer, die in den letzten {giorni} Tagen an mindestens {min} verschiedenen Tagen Daten erstellt haben (dein Konto ausgenommen).",
-    "thGiorni": "Aktive Tage {giorni}T",
-    "giorniTip": "An wie vielen verschiedenen Tagen der Nutzer in den letzten {giorni} Tagen Daten erstellt hat (bei Torhütern zählt auch das Trainingsfeedback)"
+    "recLegenda": "Die Spalten Ds 3/7/30T zeigen, wie viele Datensätze jeder Nutzer in den letzten 3, 7 und 30 Tagen erstellt hat — nützlich, um zu sehen, wer die Plattform wirklich nutzt."
   },
   "paywall": {
     "fallbackLabel": "Premium-Funktion",
@@ -1625,8 +1624,7 @@
     "erroreGenerico": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "giaIscritto": "Du bist bereits für den Newsletter angemeldet.",
     "confermaInviata": "Wir haben dir eine E-Mail geschickt: Klicke auf den Link, um deine Anmeldung zu bestätigen.",
-    "erroreRete": "Netzwerkfehler. Bitte versuche es erneut.",
-    "consenso": "Wenn du mit aktivem Häkchen auf die Schaltfläche drückst, abonnierst du den GKSeason-Newsletter: Updates und Neuigkeiten zur Plattform. Du kannst dich jederzeit über den Link am Ende jeder E-Mail abmelden. <privacy>Datenschutzerklärung</privacy>"
+    "erroreRete": "Netzwerkfehler. Bitte versuche es erneut."
   },
   "couponBox": {
     "attivato": "✅ Code aktiviert! Du hast <b>{gg} Tage</b> vollen Zugriff. Die Seite wird in einer Sekunde aktualisiert.",
@@ -1879,7 +1877,14 @@
     "creaBtn": "+ Abo erstellen",
     "salvaBtn": "💾 Änderungen speichern",
     "annulla": "Abbrechen",
-    "elimina": "Löschen"
+    "elimina": "Löschen",
+    "stato_prova": "Test",
+    "pianoProva": "Kostenloser Test",
+    "stripeBadge": "Mit Stripe bezahlt",
+    "avvisoStripeModifica": "ACHTUNG: Dieses Abo wird über Stripe bezahlt und ist noch aktiv.\n\nÄnderungen hier stoppen oder ändern die Stripe-Abbuchungen NICHT, und beim nächsten Stripe-Ereignis werden die Daten neu abgeglichen.\nZum Kündigen oder Erstatten nutze das Stripe-Dashboard.\n\nTrotzdem speichern?",
+    "avvisoStripeElimina": "ACHTUNG: Dieses Abo wird über Stripe bezahlt und ist noch aktiv.\n\nLöschen hier stoppt die Abbuchungen NICHT: Stripe belastet den Kunden weiter.\nKündige es zuerst im Stripe-Dashboard.\n\nTrotzdem löschen?",
+    "giaPresenteAggiorno": "Dieser Nutzer hat bereits eine Abo-Zeile (Status: {stato}). Mit den neuen Daten aktualisieren?",
+    "stripeAttivoBlocco": "Dieser Nutzer hat ein aktives Stripe-Abo: Verwalte es in Stripe oder bearbeite seine Zeile in der Liste."
   },
   "gatingManager": {
     "intro": "Konfiguriere Preise, kostenlose Testphase, Funktionen und Zugänge. Klicke unten auf <b>Speichern</b>, um alle Änderungen zu übernehmen.",
@@ -1950,7 +1955,16 @@
       "Detailstatistiken deiner Entwicklung",
       "PDF-Bericht deiner Saison",
       "Vollständiger Verlauf von Bewertungen und Anwesenheit"
-    ]
+    ],
+    "staffTitolo": "Abo wird vom Cheftrainer verwaltet",
+    "staffTesto": "Als Mitarbeiter nutzt du GKSeason über das Abo des Trainers, der dich eingeladen hat: Du musst nichts bezahlen. Wenn Funktionen gesperrt sind, bitte ihn, sein Abo zu prüfen.",
+    "disdettoTitolo": "Automatische Verlängerung deaktiviert",
+    "attivoFino": "aktiv bis",
+    "manualeNota": "Dieses Abo wurde vom GKSeason-Administrator aktiviert. Für Änderungen schreibe an supporto@gkseason.it.",
+    "gestisciIntroDisdetto": "Du hast die Verlängerung gekündigt: Das Abo bleibt bis zum angegebenen Datum aktiv. Wenn du es dir anders überlegst, kannst du es im sicheren Stripe-Portal reaktivieren.",
+    "attesaAttivazione": "Zahlung erhalten! Wir aktivieren dein Abo: Lade die Seite in ein paar Sekunden neu.",
+    "annullato": "Zahlung abgebrochen: Es wurde nichts abgebucht.",
+    "provaInCorso": "Du hast bis zum {data} kostenlosen Zugang. Wenn du jetzt das Monats- oder Jahresabo wählst, verlierst du die restlichen Tage nicht: Die erste Abbuchung erfolgt erst an diesem Datum."
   },
   "cookieBanner": {
     "gestisci": "Cookie-Einstellungen verwalten",
@@ -2947,18 +2961,5 @@
       "utenteDemo": "Besitzer der Demo",
       "riepilogo": "{stagioni} Saisons · {portieri} Torhüter · {esercizi} Übungen",
       "utenteNonTrovato": "Konto nicht gefunden: die Demo kann nicht starten"
-  },
-  "newsletterPagina": {
-    "metaTitle": "Newsletter · GKSeason",
-    "eyebrow": "GKSeason · Newsletter",
-    "confermataTitolo": "Anmeldung bestätigt!",
-    "confermataTesto": "Danke! Sie erhalten die nächsten GKSeason-Newsletter mit Neuigkeiten, Tipps und Updates. Wir haben Ihnen gerade eine Willkommens-E-Mail geschickt.",
-    "demoInvito": "Möchten Sie in der Zwischenzeit sehen, wie es funktioniert? Entdecken Sie eine komplette, bereits ausgefüllte Saison, ohne sich zu registrieren.",
-    "demoBottone": "Demo-Saison ansehen",
-    "disiscrittoTitolo": "Sie haben sich abgemeldet",
-    "disiscrittoTesto": "Sie erhalten den GKSeason-Newsletter nicht mehr. Wenn Sie es sich anders überlegen, können Sie sich jederzeit auf der Website wieder anmelden.",
-    "erroreTitolo": "Ungültiger Link",
-    "erroreTesto": "Der geöffnete Link ist ungültig oder abgelaufen. Wenn Sie Hilfe brauchen, schreiben Sie uns an supporto@gkseason.it.",
-    "tornaSito": "Zur Website"
   }
 }

@@ -330,7 +330,13 @@
     "eliminaBottone": "Request deletion",
     "eliminaInvio": "Sending…",
     "eliminaInviata": "Request received. We will contact you to complete the deletion within 30 days. Check your confirmation email.",
-    "eliminaErrore": "We couldn't send the request. Please try again or write to info@gkseason.it."
+    "eliminaErrore": "We couldn't send the request. Please try again or write to info@gkseason.it.",
+    "validoFinoAl": "Valid until {data}",
+    "provaTitolo": "Free trial active",
+    "provaFino": "All features unlocked until {data} ({giorni} days left)",
+    "staffTitolo": "Head coach's subscription",
+    "staffNotaOk": "As a collaborator you use the subscription of the coach who invited you: it is active.",
+    "staffNotaNo": "As a collaborator you use the subscription of the coach who invited you: it is not active right now, so some features are locked."
   },
   "contatti": {
     "eyebrow": "Reserved area",
@@ -845,14 +851,7 @@
     "thRec7": "Rec 7d",
     "thRec30": "Rec 30d",
     "recTip": "Content records created by the user (trainings, evaluations, goals, enrolments…) within the given window",
-    "recLegenda": "The Rec 3/7/30d columns show how many records each user created in the last 3, 7 and 30 days — useful to see who is actually using the platform.",
-    "utentiAttivi": "Active users ({giorni} d)",
-    "nAllenatori": "{n} coaches",
-    "nPortieri": "{n} goalkeepers",
-    "nStaff": "{n} staff",
-    "attiviLegenda": "Highlighted rows: active users, i.e. who created data on at least {min} different days in the last {giorni} days (your account excluded).",
-    "thGiorni": "Active days {giorni}d",
-    "giorniTip": "On how many different days the user created data in the last {giorni} days (for goalkeepers, training feedback also counts)"
+    "recLegenda": "The Rec 3/7/30d columns show how many records each user created in the last 3, 7 and 30 days — useful to see who is actually using the platform."
   },
   "paywall": {
     "fallbackLabel": "Premium feature",
@@ -1625,8 +1624,7 @@
     "erroreGenerico": "Something went wrong. Please try again.",
     "giaIscritto": "You are already subscribed to the newsletter.",
     "confermaInviata": "We have sent you an email: click the link to confirm your subscription.",
-    "erroreRete": "Network error. Please try again.",
-    "consenso": "By pressing the button with the box ticked you subscribe to the GKSeason newsletter: updates and news about the platform. You can unsubscribe anytime from the link at the bottom of every email. <privacy>Privacy policy</privacy>"
+    "erroreRete": "Network error. Please try again."
   },
   "couponBox": {
     "attivato": "✅ Code activated! You have full access for <b>{gg} days</b>. The page will refresh in a second.",
@@ -1879,7 +1877,14 @@
     "creaBtn": "+ Create subscription",
     "salvaBtn": "💾 Save changes",
     "annulla": "Cancel",
-    "elimina": "Delete"
+    "elimina": "Delete",
+    "stato_prova": "Trial",
+    "pianoProva": "Free trial",
+    "stripeBadge": "Paid with Stripe",
+    "avvisoStripeModifica": "WARNING: this subscription is paid with Stripe and still active.\n\nEditing it here does NOT stop or change Stripe charges, and the data will be realigned at the next Stripe event.\nUse the Stripe dashboard to cancel or refund.\n\nSave anyway?",
+    "avvisoStripeElimina": "WARNING: this subscription is paid with Stripe and still active.\n\nDeleting it here does NOT stop the charges: Stripe will keep billing the customer.\nCancel it from the Stripe dashboard first.\n\nDelete anyway?",
+    "giaPresenteAggiorno": "This user already has a subscription row (status: {stato}). Update it with the new data?",
+    "stripeAttivoBlocco": "This user has an active Stripe subscription: manage it from Stripe or edit their row in the list."
   },
   "gatingManager": {
     "intro": "Configure prices, free trial, features and access. Click <b>Save</b> at the bottom to apply all changes.",
@@ -1950,7 +1955,16 @@
       "Detailed statistics of your growth",
       "PDF report of your season",
       "Full history of evaluations and attendance"
-    ]
+    ],
+    "staffTitolo": "Subscription managed by the head coach",
+    "staffTesto": "As a collaborator you use GKSeason through the subscription of the coach who invited you: you don't need to pay anything. If some features are locked, ask them to check their subscription.",
+    "disdettoTitolo": "Auto-renewal turned off",
+    "attivoFino": "active until",
+    "manualeNota": "This subscription was activated by the GKSeason administrator. For changes, write to supporto@gkseason.it.",
+    "gestisciIntroDisdetto": "You cancelled the renewal: your subscription stays active until the date shown. If you change your mind you can reactivate it from Stripe's secure portal.",
+    "attesaAttivazione": "Payment received! We're activating your subscription: reload the page in a few seconds.",
+    "annullato": "Payment cancelled: you have not been charged.",
+    "provaInCorso": "You have free access until {data}. If you choose the monthly or yearly plan now you won't lose the remaining days: the first charge happens only on that date."
   },
   "cookieBanner": {
     "gestisci": "Manage cookie preferences",
@@ -2947,18 +2961,5 @@
       "utenteDemo": "Demo owner account",
       "riepilogo": "{stagioni} seasons · {portieri} goalkeepers · {esercizi} exercises",
       "utenteNonTrovato": "account not found: the demo cannot start"
-  },
-  "newsletterPagina": {
-    "metaTitle": "Newsletter · GKSeason",
-    "eyebrow": "GKSeason · Newsletter",
-    "confermataTitolo": "Subscription confirmed!",
-    "confermataTesto": "Thank you! You will receive the next GKSeason newsletters with news, tips and updates. We have just sent you a welcome email.",
-    "demoInvito": "Meanwhile, want to see how it works? Explore a complete season, already filled in, without signing up.",
-    "demoBottone": "See the demo season",
-    "disiscrittoTitolo": "You have unsubscribed",
-    "disiscrittoTesto": "You will no longer receive the GKSeason newsletter. If you change your mind, you can subscribe again at any time from the website.",
-    "erroreTitolo": "Invalid link",
-    "erroreTesto": "The link you opened is invalid or has expired. If you need help, write to us at supporto@gkseason.it.",
-    "tornaSito": "Go to the website"
   }
 }

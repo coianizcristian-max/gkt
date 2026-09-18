@@ -57,13 +57,13 @@ export default async function AbbonamentiSupPage() {
 
   const { data: abbRows } = await supabase
     .from('abbonamenti')
-    .select('id, allenatore_id, piano, stato, scadenza, nota, created_at')
+    .select('id, allenatore_id, piano, stato, scadenza, nota, created_at, stripe_subscription_id, stripe_customer_id')
     .order('created_at', { ascending: false })
 
   const { data: profili } = await supabase
     .from('profili')
     .select('id, nome_visualizzato, nome_completo')
-    .eq('ruolo', 'allenatore')
+    .in('ruolo', ['allenatore', 'portiere'])  // anche i portieri hanno un abbonamento proprio
     .order('nome_visualizzato')
 
   const emailById = {}

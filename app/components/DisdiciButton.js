@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 
-const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
+const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
 
 export default function DisdiciButton({ scadenza }) {
   const t = useTranslations('disdici')

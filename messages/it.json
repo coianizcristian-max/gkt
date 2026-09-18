@@ -330,7 +330,13 @@
     "eliminaBottone": "Richiedi cancellazione",
     "eliminaInvio": "Invio in corso…",
     "eliminaInviata": "Richiesta ricevuta. Ti ricontatteremo per completare la cancellazione entro 30 giorni. Controlla l'email di conferma.",
-    "eliminaErrore": "Non è stato possibile inviare la richiesta. Riprova o scrivi a info@gkseason.it."
+    "eliminaErrore": "Non è stato possibile inviare la richiesta. Riprova o scrivi a info@gkseason.it.",
+    "validoFinoAl": "Valido fino al {data}",
+    "provaTitolo": "Prova gratuita attiva",
+    "provaFino": "Tutte le funzionalità sbloccate fino al {data} ({giorni} giorni rimasti)",
+    "staffTitolo": "Abbonamento dell'allenatore titolare",
+    "staffNotaOk": "Come collaboratore usi l'abbonamento dell'allenatore che ti ha invitato: è attivo.",
+    "staffNotaNo": "Come collaboratore usi l'abbonamento dell'allenatore che ti ha invitato: al momento non è attivo, per questo alcune funzioni sono bloccate."
   },
   "contatti": {
     "eyebrow": "Area riservata",
@@ -845,14 +851,7 @@
     "thRec7": "Rec 7gg",
     "thRec30": "Rec 30gg",
     "recTip": "Record di contenuto creati dall'utente (allenamenti, valutazioni, obiettivi, iscrizioni…) nella finestra indicata",
-    "recLegenda": "Le colonne Rec 3/7/30gg mostrano quanti record ha creato ogni utente negli ultimi 3, 7 e 30 giorni — utile per capire chi sta usando davvero la piattaforma.",
-    "utentiAttivi": "Utenti attivi ({giorni} gg)",
-    "nAllenatori": "{n} allenatori",
-    "nPortieri": "{n} portieri",
-    "nStaff": "{n} staff",
-    "attiviLegenda": "Righe evidenziate: utenti attivi, cioè che hanno creato dati in almeno {min} giorni diversi negli ultimi {giorni} giorni (escluso il tuo account).",
-    "thGiorni": "Giorni att. {giorni}gg",
-    "giorniTip": "In quanti giorni diversi l'utente ha creato dati negli ultimi {giorni} giorni (per i portieri contano anche i feedback agli allenamenti)"
+    "recLegenda": "Le colonne Rec 3/7/30gg mostrano quanti record ha creato ogni utente negli ultimi 3, 7 e 30 giorni — utile per capire chi sta usando davvero la piattaforma."
   },
   "paywall": {
     "fallbackLabel": "Funzionalità a pagamento",
@@ -1625,8 +1624,7 @@
     "erroreGenerico": "Qualcosa è andato storto. Riprova.",
     "giaIscritto": "Sei già iscritto alla newsletter.",
     "confermaInviata": "Ti abbiamo inviato una email: clicca il link per confermare l'iscrizione.",
-    "erroreRete": "Errore di rete. Riprova.",
-    "consenso": "Premendo il pulsante con la spunta attiva ti iscrivi alla newsletter GKSeason: aggiornamenti e novità sul gestionale. Puoi disiscriverti quando vuoi dal link in fondo a ogni email. <privacy>Informativa privacy</privacy>"
+    "erroreRete": "Errore di rete. Riprova."
   },
   "couponBox": {
     "attivato": "✅ Codice attivato! Hai accesso completo per <b>{gg} giorni</b>. La pagina si aggiornerà tra un secondo.",
@@ -1879,7 +1877,14 @@
     "creaBtn": "+ Crea abbonamento",
     "salvaBtn": "💾 Salva modifiche",
     "annulla": "Annulla",
-    "elimina": "Elimina"
+    "elimina": "Elimina",
+    "stato_prova": "Prova",
+    "pianoProva": "Prova gratuita",
+    "stripeBadge": "Pagato con Stripe",
+    "avvisoStripeModifica": "ATTENZIONE: questo abbonamento è pagato con Stripe ed è ancora attivo.\n\nModificarlo qui NON ferma né cambia gli addebiti su Stripe, e al prossimo evento Stripe i dati verranno riallineati.\nPer disdire o rimborsare usa la dashboard Stripe.\n\nVuoi salvare comunque?",
+    "avvisoStripeElimina": "ATTENZIONE: questo abbonamento è pagato con Stripe ed è ancora attivo.\n\nEliminarlo qui NON ferma gli addebiti: Stripe continuerà a far pagare il cliente.\nPrima annullalo dalla dashboard Stripe.\n\nVuoi eliminarlo comunque?",
+    "giaPresenteAggiorno": "Questo utente ha già una riga abbonamento (stato: {stato}). La aggiorno con i nuovi dati?",
+    "stripeAttivoBlocco": "Questo utente ha un abbonamento Stripe attivo: gestiscilo da Stripe o modifica la sua riga nell'elenco."
   },
   "gatingManager": {
     "intro": "Configura prezzi, prova gratuita, funzionalità e accessi. Clicca <b>Salva</b> in fondo per applicare tutte le modifiche.",
@@ -1950,7 +1955,16 @@
       "Statistiche di dettaglio della tua crescita",
       "Report PDF della tua stagione",
       "Storico completo di valutazioni e presenze"
-    ]
+    ],
+    "staffTitolo": "Abbonamento gestito dal titolare",
+    "staffTesto": "Come collaboratore usi GKSeason con l'abbonamento dell'allenatore che ti ha invitato: non devi pagare nulla. Se alcune funzioni risultano bloccate, chiedi a lui di verificare il suo abbonamento.",
+    "disdettoTitolo": "Rinnovo automatico disattivato",
+    "attivoFino": "attivo fino al",
+    "manualeNota": "Questo abbonamento è stato attivato dall'amministratore di GKSeason. Per modifiche scrivi a supporto@gkseason.it.",
+    "gestisciIntroDisdetto": "Hai disdetto il rinnovo: l'abbonamento resta attivo fino alla data indicata. Se cambi idea puoi riattivarlo dal portale sicuro di Stripe.",
+    "attesaAttivazione": "Pagamento ricevuto! Stiamo attivando il tuo abbonamento: ricarica la pagina tra qualche secondo.",
+    "annullato": "Pagamento annullato: non è stato effettuato alcun addebito.",
+    "provaInCorso": "Hai accesso gratuito fino al {data}. Se scegli adesso il piano mensile o annuale non perdi i giorni rimasti: il primo addebito avverrà solo a quella data."
   },
   "cookieBanner": {
     "gestisci": "Gestisci le preferenze cookie",
@@ -2947,18 +2961,5 @@
       "utenteDemo": "Utente proprietario della demo",
       "riepilogo": "{stagioni} stagioni · {portieri} portieri · {esercizi} esercizi",
       "utenteNonTrovato": "utente non trovato: la demo non può attivarsi"
-  },
-  "newsletterPagina": {
-    "metaTitle": "Newsletter · GKSeason",
-    "eyebrow": "GKSeason · Newsletter",
-    "confermataTitolo": "Iscrizione confermata!",
-    "confermataTesto": "Grazie! Riceverai le prossime newsletter di GKSeason con novità, consigli e aggiornamenti. Ti abbiamo appena mandato una mail di benvenuto.",
-    "demoInvito": "Intanto, vuoi vedere come funziona? Guarda una stagione completa, già compilata, senza registrarti.",
-    "demoBottone": "Guarda la stagione demo",
-    "disiscrittoTitolo": "Ti sei disiscritto",
-    "disiscrittoTesto": "Non riceverai più la newsletter di GKSeason. Se cambi idea puoi iscriverti di nuovo in qualsiasi momento dal sito.",
-    "erroreTitolo": "Link non valido",
-    "erroreTesto": "Il link che hai aperto non è valido o è scaduto. Se hai bisogno di aiuto scrivici a supporto@gkseason.it.",
-    "tornaSito": "Vai al sito"
   }
 }

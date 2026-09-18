@@ -1,26 +1,30 @@
 import { NextResponse } from 'next/server'
-import { tApi } from '@/lib/i18nServer'
+import { tApi, localeFromRequest, DEFAULT_LOCALE } from '@/lib/i18nServer'
 import { createClient } from '@/lib/supabase/server'
-import Stripe from 'stripe'
+import { getStripe, getAdmin, ultimaRiga, customerValido } from '@/lib/stripeAbbonamenti'
 
+// Portale clienti Stripe: metodo di pagamento, fatture, disdetta/riattivazione.
 export async function POST(request) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: tApi(request, 'Non autenticato') }, { status: 401 })
 
-    const { data: abb } = await supabase.from('abbonamenti')
-      .select('stripe_customer_id').eq('allenatore_id', user.id).maybeSingle()
-    if (!abb?.stripe_customer_id) return NextResponse.json({ error: tApi(request, 'Nessun abbonamento trovato') }, { status: 404 })
+    const riga = await ultimaRiga(getAdmin(), user.id)
+    const stripe = getStripe()
+    const customerId = await customerValido(stripe, riga?.stripe_customer_id)
+    if (!customerId) return NextResponse.json({ error: tApi(request, 'Nessun abbonamento trovato') }, { status: 404 })
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+    const locale = localeFromRequest(request)
+    const prefisso = locale === DEFAULT_LOCALE ? '' : `/${locale}`
     const origin = request.headers.get('origin') ?? 'https://www.gkseason.it'
     const session = await stripe.billingPortal.sessions.create({
-      customer: abb.stripe_customer_id,
-      return_url: `${origin}/abbonati`,
+      customer: customerId,
+      return_url: `${origin}${prefisso}/abbonati`,
     })
     return NextResponse.json({ url: session.url })
   } catch (err) {
+    console.error('portal error:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

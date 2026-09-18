@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import { rateLimit } from '@/lib/rateLimit'
 import { hasAbbonamento } from '@/lib/gating'
+import { fineGiornoRoma } from '@/lib/stripeAbbonamenti'
 
 function getAdmin() {
   return createAdmin(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -34,7 +35,8 @@ export async function POST(request) {
       return NextResponse.json({ error: tApi(request, 'Questo codice è uno sconto: inseriscilo nella pagina di pagamento al momento dell\'abbonamento, non qui.') }, { status: 400 })
     }
 
-    if (coupon.scadenza_attivazione && new Date() > new Date(coupon.scadenza_attivazione + 'T23:59:59')) {
+    // valido per tutto l'ultimo giorno, ora italiana
+    if (coupon.scadenza_attivazione && new Date() > (fineGiornoRoma(coupon.scadenza_attivazione) ?? new Date(0))) {
       return NextResponse.json({ error: tApi(request, 'Il periodo per attivare questo codice è scaduto.') }, { status: 410 })
     }
 
@@ -51,8 +53,11 @@ export async function POST(request) {
     // Controlla se già usato da questo utente — SEMPRE una sola volta, per
     // sempre, anche se il precedente riscatto è già scaduto (non è un
     // "rinnovabile", è un vantaggio una tantum).
-    const { data: gia } = await admin.from('coupon_utilizzi')
-      .select('id, scade_il').eq('coupon_id', coupon.id).eq('utente_id', user.id).maybeSingle()
+    const { data: giaRighe, error: giaErr } = await admin.from('coupon_utilizzi')
+      .select('id, scade_il').eq('coupon_id', coupon.id).eq('utente_id', user.id)
+      .order('scade_il', { ascending: false }).limit(1)
+    if (giaErr) return NextResponse.json({ error: giaErr.message }, { status: 500 })
+    const gia = giaRighe?.[0]
     if (gia) {
       const scade = new Date(gia.scade_il)
       const messaggio = scade > new Date()
@@ -63,16 +68,20 @@ export async function POST(request) {
 
     // Controlla limite utilizzi
     if (coupon.max_utilizzi) {
-      const { count } = await admin.from('coupon_utilizzi')
+      const { count, error: cntErr } = await admin.from('coupon_utilizzi')
         .select('id', { count: 'exact', head: true }).eq('coupon_id', coupon.id)
+      if (cntErr) return NextResponse.json({ error: cntErr.message }, { status: 500 })
       if ((count ?? 0) >= coupon.max_utilizzi) {
         return NextResponse.json({ error: tApi(request, 'Limite di utilizzi di questo coupon raggiunto.') }, { status: 410 })
       }
     }
 
     // Attiva coupon
-    const scade_il = new Date()
-    scade_il.setDate(scade_il.getDate() + coupon.durata_gg)
+    const durata = Number(coupon.durata_gg)
+    if (!Number.isFinite(durata) || durata <= 0) {
+      return NextResponse.json({ error: tApi(request, 'Codice non valido o scaduto') }, { status: 400 })
+    }
+    const scade_il = new Date(Date.now() + durata * 24 * 60 * 60 * 1000)
 
     const { error: insErr } = await admin.from('coupon_utilizzi').insert({
       coupon_id: coupon.id,

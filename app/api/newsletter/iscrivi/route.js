@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import { mailTexts, tApi } from '@/lib/i18nServer'
-import { inviaConferma, inviaBenvenuto, salvaConsenso } from '@/lib/newsletterMail'
+import { inviaConferma, inviaBenvenuto, salvaConsenso, pulisciFonte } from '@/lib/newsletterMail'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -23,7 +23,9 @@ const ORIGINI = ['demo']
 export async function POST(req) {
   try {
     const m = mailTexts(req)
-    const { email, immediata, origine } = await req.json()
+    const { email, immediata, origine, fonte: fonteGrezza } = await req.json()
+    // Fonte di arrivo (utm_source, meta_ads, social_meta...) per le metriche.
+    const fonte = pulisciFonte(fonteGrezza)
     const em = (email || '').trim().toLowerCase()
     if (!EMAIL_RE.test(em)) return NextResponse.json({ error: tApi(req, 'Email non valida.') }, { status: 400 })
 
@@ -38,6 +40,7 @@ export async function POST(req) {
         attivo: true,
         consenso_il: new Date().toISOString(),
         origine: ORIGINI.includes(origine) ? origine : 'demo',
+        ...(fonte ? { fonte } : {}),
       }
       let id = esistente?.id
       if (!id) {
@@ -61,6 +64,10 @@ export async function POST(req) {
       if (error) throw error
       id = nuovo.id
     }
+    // La fonte si salva gia' qui: alla conferma (altra richiesta, dalla mail)
+    // l'informazione non sarebbe piu' disponibile. Se la colonna non esiste
+    // ancora, si ignora l'errore.
+    if (fonte) await admin.from('newsletter_iscritti').update({ fonte }).eq('id', id)
     await inviaConferma(em, id, m)
     return NextResponse.json({ ok: true, stato: 'conferma_inviata' })
   } catch (err) {

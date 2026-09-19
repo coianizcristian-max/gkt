@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { Link } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import SupervisoreNav from '@/app/components/SupervisoreNav'
+import NewsletterMetriche from './NewsletterMetriche'
 import { getTranslations, getLocale } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -105,6 +106,8 @@ export default async function MetrichePage({ searchParams }) {
           <Card valore={attivi.length} label={t('utentiAttivi', { giorni: ATTIVO_FINESTRA })}
             sotto={dettaglioRuoli(attiviRuoli)} sfondo={SFONDO_ATTIVO} />
         </div>
+
+        <NewsletterMetriche supabase={supabase} t={t} esclusi={ESCLUSI_ATTIVI} />
 
         <div className="scheda" style={{ maxWidth: 'none' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>

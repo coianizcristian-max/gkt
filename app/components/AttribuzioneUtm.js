@@ -14,6 +14,22 @@ export function leggiAttribuzione() {
   } catch { return null }
 }
 
+/**
+ * Fonte di arrivo in una parola, da salvare con l'iscrizione alla newsletter:
+ *  - utm_source se presente (es. 'facebook', 'instagram', 'newsletter')
+ *  - 'meta_ads'    se il link aveva fbclid (clic su inserzione Meta senza UTM)
+ *  - 'social_meta' se si arriva da facebook.com / instagram.com senza fbclid
+ *  - null          se diretto / sconosciuto
+ */
+export function fonteAttribuzione() {
+  const a = leggiAttribuzione()
+  if (!a) return null
+  if (a.utm_source) return String(a.utm_source).toLowerCase().slice(0, 40)
+  if (a.da_meta_ads) return 'meta_ads'
+  if (a.da_social_meta) return 'social_meta'
+  return null
+}
+
 export default function AttribuzioneUtm() {
   useEffect(() => {
     try {
@@ -24,6 +40,13 @@ export default function AttribuzioneUtm() {
         if (sp.get(k)) dati[k] = sp.get(k)
       }
       if (sp.get('fbclid')) dati.da_meta_ads = true
+      // Arrivo da Facebook/Instagram senza fbclid (post, bio, condivisioni)
+      try {
+        const ref = document.referrer ? new URL(document.referrer).hostname : ''
+        if (/(^|\.)(facebook|instagram)\.com$/i.test(ref) || /^(l|lm|m)\.facebook\.com$/i.test(ref)) {
+          dati.da_social_meta = true
+        }
+      } catch {}
       if (Object.keys(dati).length > 0) {
         dati.landing = window.location.pathname
         sessionStorage.setItem(CHIAVE, JSON.stringify(dati))

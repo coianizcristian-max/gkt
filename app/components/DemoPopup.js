@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { trackMetaEvento } from '@/app/components/MetaPixel'
-import { leggiAttribuzione } from '@/app/components/AttribuzioneUtm'
+import { leggiAttribuzione, fonteAttribuzione } from '@/app/components/AttribuzioneUtm'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -74,7 +74,7 @@ export default function DemoPopup({ dataTaglio, ospite = false }) {
           // Iscrizione immediata: il consenso e' l'atto del visitatore che
           // scrive l'email e preme il pulsante, con l'informativa sotto al
           // campo. La route registra data e origine del consenso.
-          body: JSON.stringify({ email: em, immediata: true, origine: 'demo' }),
+          body: JSON.stringify({ email: em, immediata: true, origine: 'demo', fonte: fonteAttribuzione() }),
         })
         const dati = await res.json().catch(() => ({}))
         if (!res.ok) { setErrore(dati.error || tn('erroreGenerico')); setInvio(false); return }

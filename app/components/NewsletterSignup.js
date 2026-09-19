@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { fonteAttribuzione } from '@/app/components/AttribuzioneUtm'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -18,7 +19,7 @@ export default function NewsletterSignup() {
     setStato('invio'); setMsg('')
     try {
       const res = await fetch('/api/newsletter/iscrivi', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: em }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: em, fonte: fonteAttribuzione() }),
       })
       const data = await res.json()
       if (!res.ok) { setStato('errore'); setMsg(data.error || t('erroreGenerico')); return }

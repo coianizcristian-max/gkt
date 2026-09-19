@@ -788,9 +788,9 @@ a { color: inherit; text-decoration: none; }
 .da-valutare { background: rgba(192,57,43,0.05); border: 1px solid rgba(192,57,43,0.2); border-radius: var(--r-sm); padding: 12px 14px; margin-bottom: 14px; }
 .da-valutare h3 { margin: 0 0 8px; font-size: 0.95rem; color: var(--rosso); }
 .dv-list { display: flex; flex-wrap: wrap; gap: 8px; }
-.dv-item { display: inline-flex; gap: 8px; align-items: baseline; padding: 4px 10px; background: var(--bianco); border: 1px solid var(--linea); border-radius: 999px; font-size: 0.85rem; text-decoration: none; color: var(--ink); }
+.dv-item { display: inline-flex; gap: 8px; align-items: baseline; padding: 4px 10px; background: var(--bianco); border: 1px solid var(--linea); border-radius: 16px; font-size: 0.85rem; text-decoration: none; color: var(--ink); }
 .dv-item:hover { border-color: var(--rosso); }
-.dv-data { font-weight: 700; color: var(--ink-soft); }
+.dv-data { font-weight: 700; color: var(--ink-soft); white-space: nowrap; flex-shrink: 0; }
 
 /* Checkbox "Nessuno" in valutazioni */
 .val-nessuno { display: flex; align-items: center; gap: 8px; font-weight: 600; padding: 8px 10px; background: var(--carta); border: 1px solid var(--linea); border-radius: var(--r-sm); margin-bottom: 4px; }
@@ -2134,8 +2134,22 @@ a.brand { text-decoration: none; color: inherit; }
 }
 .demo-banner-esci:hover { background: #000; }
 .demo-banner-esci:disabled { opacity: 0.6; cursor: default; }
-/* la fascia e' fissa: lascio spazio in cima allo scheletro */
-body:has(.demo-banner) .shell { padding-top: 38px; }
+/* la fascia e' fissa: lascio spazio in cima allo scheletro.
+   --demo-h = altezza reale della fascia, misurata da DemoBanner. */
+body:has(.demo-banner) .shell { padding-top: var(--demo-h, 38px); }
+/* mobile: l'intestazione col menu resta visibile sotto la fascia */
+body:has(.demo-banner) .mob-header { top: var(--demo-h, 38px); }
+body:has(.demo-banner) .mob-menu { top: calc(56px + var(--demo-h, 38px)); }
+/* il popup della demo sta sopra la fascia (il toast "Versione DEMO" resta sopra a tutto) */
+body:has(.demo-banner) .versione-overlay { z-index: 1250; }
+@media (max-width: 720px) {
+  /* fascia compatta su una riga: la data resta nel popup iniziale */
+  .demo-banner { padding: 6px 10px; gap: 8px; font-size: 12px; }
+  .demo-banner-testo { flex-wrap: nowrap; overflow: hidden; }
+  .demo-banner-testo b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .demo-banner-data { display: none; }
+  .demo-banner-esci { padding: 4px 10px; font-size: 12px; white-space: nowrap; }
+}
 
 .nav-link.nav-demo, .mob-nav-link.mob-nav-demo {
   width: 100%; text-align: left; cursor: pointer;

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 
 const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
@@ -24,6 +24,26 @@ export default function DemoBanner({ dataTaglio, ospite = false }) {
   const t = useTranslations('demo')
   const locale = useLocale()
   const [uscendo, setUscendo] = useState(false)
+  const ref = useRef(null)
+
+  // Altezza reale della fascia in --demo-h: il CSS la usa per spostare in
+  // basso contenuto e intestazione mobile (col menu), che altrimenti finiscono
+  // sotto la fascia quando va a capo su schermi stretti.
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const root = document.documentElement
+    const aggiorna = () => root.style.setProperty('--demo-h', `${Math.ceil(el.getBoundingClientRect().height)}px`)
+    aggiorna()
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(aggiorna) : null
+    ro?.observe(el)
+    window.addEventListener('resize', aggiorna)
+    return () => {
+      ro?.disconnect()
+      window.removeEventListener('resize', aggiorna)
+      root.style.removeProperty('--demo-h')
+    }
+  }, [])
 
   async function esci() {
     setUscendo(true)
@@ -41,7 +61,7 @@ export default function DemoBanner({ dataTaglio, ospite = false }) {
   }
 
   return (
-    <div className="demo-banner" role="status">
+    <div className="demo-banner" role="status" ref={ref}>
       <span className="demo-banner-pallino" aria-hidden="true" />
       <span className="demo-banner-testo">
         <b>{t('bannerTitolo')}</b>

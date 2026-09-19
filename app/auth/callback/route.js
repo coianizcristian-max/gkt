@@ -56,6 +56,9 @@ export async function GET(request) {
     // confermata lato server: mostriamo comunque la pagina di conferma,
     // che inviterà ad accedere invece che all'area riservata.
     if (next === '/benvenuto') return NextResponse.redirect(`${origin}/benvenuto${q}`)
+    // Link di recupero password non valido (aperto in un altro browser,
+    // superato da una richiesta piu' recente, scaduto): spiegalo in pagina.
+    if (next === '/reset-password') return NextResponse.redirect(`${origin}/login?link=scaduto`)
   }
   return NextResponse.redirect(`${origin}/login${q}`)
 }

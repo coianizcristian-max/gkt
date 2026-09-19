@@ -666,7 +666,10 @@
     "recuperaInviata": "Wir haben dir eine E-Mail zum Zurücksetzen des Passworts geschickt. Prüfe auch Spam und Werbung.",
     "mostra": "Anzeigen",
     "nascondi": "Verbergen",
-    "passwordDimenticata": "Passwort vergessen?"
+    "passwordDimenticata": "Passwort vergessen?",
+    "linkScaduto": "Der Link in der E-Mail ist nicht mehr gültig: Er ist abgelaufen, wurde bereits verwendet oder du hast einen neueren angefordert. Gib deine E-Mail ein, tippe einmal auf „Passwort vergessen?“ und öffne dann die zuletzt erhaltene E-Mail.",
+    "recuperaInvio": "Wird gesendet…",
+    "recuperaAttendi": "E-Mail gesendet · neue Anfrage in {s} s"
   },
   "registrati": {
     "sottotitolo": "Torhüter-Verwaltung",

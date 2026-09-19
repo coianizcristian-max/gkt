@@ -24,12 +24,31 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
   const captchaRef = useRef(null)
+  // Recupero password: messaggio accanto al link e pausa di 60 s dopo l'invio,
+  // cosi' non partono piu' mail (ogni nuova richiesta annulla il link prima).
+  const [recMsg, setRecMsg] = useState(null) // { tipo: 'ok' | 'err', testo }
+  const [recInvio, setRecInvio] = useState(false)
+  const [recAttesa, setRecAttesa] = useState(0)
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search)
-    if (p.get('scaduto')) setInfo(t('infoScaduto'))
+    // Link della mail non valido: da /auth/conferma o /auth/callback (?link=scaduto)
+    // oppure rimandato qui da Supabase con l'errore nell'hash (#error_code=otp_expired)
+    const h = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    if (p.get('link') === 'scaduto' || h.get('error_code') || h.get('error')) {
+      setError(t('linkScaduto'))
+      if (window.location.hash) history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+    else if (p.get('scaduto')) setInfo(t('infoScaduto'))
     else if (p.get('reset')) setInfo(t('infoReset'))
   }, [t])
+
+  // conto alla rovescia della pausa dopo l'invio della mail di recupero
+  useEffect(() => {
+    if (recAttesa <= 0) return
+    const id = setTimeout(() => setRecAttesa((s) => s - 1), 1000)
+    return () => clearTimeout(id)
+  }, [recAttesa])
 
   async function handleLogin(e) {
     e.preventDefault()
@@ -98,16 +117,19 @@ export default function LoginPage() {
   }
 
   async function recuperaPassword() {
+    if (recInvio || recAttesa > 0) return
     setError('')
     setInfo('')
+    setRecMsg(null)
     if (!email.trim()) {
-      setError(t('recuperaSenzaEmail'))
+      setRecMsg({ tipo: 'err', testo: t('recuperaSenzaEmail') })
       return
     }
     if (CAPTCHA_SITE_KEY && !captchaToken) {
-      setError(t('recuperaCaptcha'))
+      setRecMsg({ tipo: 'err', testo: t('recuperaCaptcha') })
       return
     }
+    setRecInvio(true)
     const supabase = createClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       captchaToken,
@@ -115,8 +137,13 @@ export default function LoginPage() {
     })
     captchaRef.current?.resetCaptcha()
     setCaptchaToken(null)
-    if (error) setError(t('recuperaErrore'))
-    else setInfo(t('recuperaInviata'))
+    setRecInvio(false)
+    if (error) {
+      setRecMsg({ tipo: 'err', testo: t('recuperaErrore') })
+    } else {
+      setRecMsg({ tipo: 'ok', testo: t('recuperaInviata') })
+      setRecAttesa(60)
+    }
   }
 
   return (
@@ -150,10 +177,15 @@ export default function LoginPage() {
             </div>
           </div>
           <div style={{ textAlign: 'right', marginBottom: 12 }}>
-            <button type="button" onClick={recuperaPassword}
-              style={{ background: 'none', border: 0, padding: 0, fontSize: 13, color: 'var(--azzurro, #0a7ec2)', fontWeight: 600, cursor: 'pointer' }}>
-              {t('passwordDimenticata')}
+            <button type="button" onClick={recuperaPassword} disabled={recInvio || recAttesa > 0}
+              style={{ background: 'none', border: 0, padding: 0, fontSize: 13, color: recAttesa > 0 ? 'var(--ink-soft)' : 'var(--azzurro, #0a7ec2)', fontWeight: 600, cursor: recAttesa > 0 ? 'default' : 'pointer' }}>
+              {recInvio ? t('recuperaInvio') : recAttesa > 0 ? t('recuperaAttendi', { s: recAttesa }) : t('passwordDimenticata')}
             </button>
+            {recMsg && (
+              <div className={recMsg.tipo === 'ok' ? 'ok-msg' : 'err'} style={{ textAlign: 'left', marginTop: 8, marginBottom: 0 }}>
+                {recMsg.testo}
+              </div>
+            )}
           </div>
           {CAPTCHA_SITE_KEY && (
             <div className="field" style={{ display: 'flex', justifyContent: 'center' }}>

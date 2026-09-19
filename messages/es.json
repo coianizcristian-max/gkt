@@ -666,7 +666,10 @@
     "recuperaInviata": "Te hemos enviado un correo para restablecer la contraseña. Revisa también spam y promociones.",
     "mostra": "Mostrar",
     "nascondi": "Ocultar",
-    "passwordDimenticata": "¿Contraseña olvidada?"
+    "passwordDimenticata": "¿Contraseña olvidada?",
+    "linkScaduto": "El enlace del email ya no es válido: ha caducado, ya se ha usado o has solicitado uno más reciente. Escribe tu email y toca «¿Contraseña olvidada?» una sola vez, luego abre el último email recibido.",
+    "recuperaInvio": "Enviando…",
+    "recuperaAttendi": "Email enviado · nueva solicitud en {s} s"
   },
   "registrati": {
     "sottotitolo": "Gestión de porteros",

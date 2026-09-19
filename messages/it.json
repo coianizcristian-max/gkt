@@ -666,7 +666,10 @@
     "recuperaInviata": "Ti abbiamo inviato una mail per reimpostare la password. Controlla anche spam e promozioni.",
     "mostra": "Mostra",
     "nascondi": "Nascondi",
-    "passwordDimenticata": "Password dimenticata?"
+    "passwordDimenticata": "Password dimenticata?",
+    "linkScaduto": "Il link della mail non è più valido: è scaduto, è già stato usato oppure ne hai richiesto uno più recente. Scrivi la tua email e tocca «Password dimenticata?» una sola volta, poi apri l'ultima mail ricevuta.",
+    "recuperaInvio": "Invio in corso…",
+    "recuperaAttendi": "Mail inviata · nuova richiesta tra {s} s"
   },
   "registrati": {
     "sottotitolo": "Gestione portieri",

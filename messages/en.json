@@ -666,7 +666,10 @@
     "recuperaInviata": "We’ve sent you an email to reset your password. Check spam and promotions too.",
     "mostra": "Show",
     "nascondi": "Hide",
-    "passwordDimenticata": "Forgot password?"
+    "passwordDimenticata": "Forgot password?",
+    "linkScaduto": "The link in the email is no longer valid: it has expired, was already used, or you requested a newer one. Enter your email and tap “Forgot password?” once, then open the latest email you received.",
+    "recuperaInvio": "Sending…",
+    "recuperaAttendi": "Email sent · new request in {s} s"
   },
   "registrati": {
     "sottotitolo": "Goalkeeper management",

@@ -156,7 +156,7 @@ export async function GET(request) {
   // 5) Salvagente: l'ospite non deve MAI coincidere con il proprietario della
   //    demo, altrimenti entrerebbe in scrittura sui dati dimostrativi.
   if (data.user.id === cfg.ownerId) {
-    await supabase.auth.signOut()
+    await supabase.auth.signOut({ scope: 'local' })
     return vaiA('/registrati')
   }
 
@@ -169,7 +169,7 @@ export async function GET(request) {
     .eq('id', data.user.id)
     .maybeSingle()
   if (profilo?.ruolo !== 'allenatore') {
-    await supabase.auth.signOut()
+    await supabase.auth.signOut({ scope: 'local' })
     return vaiA('/registrati')
   }
 

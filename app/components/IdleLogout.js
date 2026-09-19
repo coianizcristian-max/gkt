@@ -46,7 +46,10 @@ export default function IdleLogout() {
       uscendo.current = true
       clearTimeout(timer.current)
       try { window.localStorage.removeItem(CHIAVE) } catch {}
-      try { await supabase.auth.signOut() } catch {}
+      // scope 'local': chiude SOLO questa sessione. Con il default ('global')
+      // Supabase chiude tutte le sessioni dell'utente su ogni dispositivo: per
+      // l'account vetrina condiviso voleva dire buttare fuori tutti i visitatori.
+      try { await supabase.auth.signOut({ scope: 'local' }) } catch {}
       window.location.href = '/login?scaduto=1'
     }
 

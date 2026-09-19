@@ -5,7 +5,8 @@ export async function POST(request) {
   const { origin } = new URL(request.url)
   try {
     const supabase = await createClient()
-    await supabase.auth.signOut()
+    // solo questa sessione (vedi SignOutButton)
+    await supabase.auth.signOut({ scope: 'local' })
   } catch (_) {
     // ignora errori di signout, reindirizza comunque
   }

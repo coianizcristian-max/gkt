@@ -38,7 +38,10 @@ export async function GET(request) {
   )
 
   try {
-    await supabase.auth.signOut()
+    // scope 'local' OBBLIGATORIO: l'account ospite e' condiviso da tutti i
+    // visitatori. Il default ('global') chiudeva le sessioni di TUTTI quelli
+    // che in quel momento stavano guardando la demo.
+    await supabase.auth.signOut({ scope: 'local' })
   } catch {
     // Se il signout fallisce reindirizziamo comunque: i cookie qui sotto
     // vengono cancellati in ogni caso.

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 function fmtData(ts) {
   if (!ts) return '—'
-  return new Date(ts).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(ts).toLocaleDateString('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 export default async function ContattiRicevutiPage() {

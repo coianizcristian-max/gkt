@@ -40,7 +40,9 @@ export async function GET(request) {
   const { data: righe, error } = await q
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
+  // Ora italiana (il server gira in UTC)
   const fmt = (d) => d ? new Date(d).toLocaleString('it-IT', {
+    timeZone: 'Europe/Rome',
     day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit', second: '2-digit',
   }) : ''

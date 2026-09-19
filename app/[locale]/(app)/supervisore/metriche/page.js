@@ -68,7 +68,10 @@ export default async function MetrichePage({ searchParams }) {
     ...(r.staff > 0 ? [t('nStaff', { n: r.staff })] : []),
   ].join(' · ')
 
+  // Ora italiana: la pagina e' generata sul server (Vercel, in UTC); senza
+  // timeZone le ore risulterebbero indietro di 1-2 ore.
   const fmtData = (d) => d ? new Date(d).toLocaleString(dl, {
+    timeZone: 'Europe/Rome',
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
   }) : '—'
 

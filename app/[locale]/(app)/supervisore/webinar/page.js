@@ -38,7 +38,9 @@ export default async function WebinarPage() {
   }
   const listaCampagne = Object.values(campagne).sort((a, b) => new Date(b.ultimaAt) - new Date(a.ultimaAt))
 
+  // Ora italiana (pagina generata sul server in UTC)
   const fmtData = (d) => d ? new Date(d).toLocaleString(dl, {
+    timeZone: 'Europe/Rome',
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
   }) : '—'
 

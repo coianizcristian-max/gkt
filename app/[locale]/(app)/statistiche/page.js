@@ -5,8 +5,9 @@ import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import Guida from '@/app/components/Guida'
 import StatisticheClient from './StatisticheClient'
 import ConfrontoPortieri from '@/app/components/ConfrontoPortieri'
+import { datiConfrontoServer } from '@/lib/confrontoPortieriServer'
 import { infortuniPerPortiere } from '@/lib/infortuni'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, getLocale } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +18,7 @@ export default async function StatistichePage() {
   const user = await getUser()
 
   // profilo e stagione dipendono solo da user.id, senza redirect tra i due.
-  const [{ data: profilo }, { db, stagione, taglio, oggi: oggiCtx }] = await Promise.all([
+  const [{ data: profilo }, { db, stagione, taglio, oggi: oggiCtx, demo }] = await Promise.all([
     supabase.from('profili').select('ruolo, portiere_id').eq('id', user?.id).maybeSingle(),
     contestoDati(supabase, user?.id),
   ])
@@ -74,6 +75,9 @@ export default async function StatistichePage() {
       ? db.from('valutazioni').select('voto_portiere, allenamento_id').in('allenamento_id', allenIds).not('voto_portiere', 'is', null)
       : Promise.resolve({ data: [] }),
   ])
+
+  // In demo il confronto portieri si calcola qui (vedi lib/confrontoPortieriServer.js)
+  const confrontoDemo = demo ? await datiConfrontoServer(db, stagione.id, oggiRoma, await getLocale()) : null
 
   const catNome = {}
   for (const r of cats ?? []) if (r.squadre) catNome[r.squadre.id] = r.squadre.nome
@@ -206,7 +210,8 @@ export default async function StatistichePage() {
           <p style={{marginTop:10}}>{t.rich('guidaP4', { b: (ch) => <strong>{ch}</strong> })}</p>
           <p style={{marginTop:10}}>{t.rich('guidaP5', { b: (ch) => <strong>{ch}</strong> })}</p>
         </Guida>
-        <ConfrontoPortieri stagioneId={stagione.id} titolo={t('confrontoTitolo')} />
+        <ConfrontoPortieri stagioneId={stagione.id} titolo={t('confrontoTitolo')}
+          datiServer={confrontoDemo} />
         <StatisticheClient
           stats={stats}
           categorieOrd={categorieOrd}

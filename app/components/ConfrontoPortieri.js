@@ -7,7 +7,9 @@ import { createClient } from '@/lib/supabase/client'
 
 const COLORI = ['#0a7ec2', '#2fae66', '#e0a400', '#d6493b', '#7a5bd6', '#12a4a4', '#e0663b', '#4a5b68', '#c23fa0', '#5b8c00']
 
-export default function ConfrontoPortieri({ stagioneId, titolo, mioId = null, anonimo = false }) {
+// datiServer: in modalita' demo i dati arrivano gia' calcolati dal server
+// (lib/confrontoPortieriServer.js) e il componente non legge nulla dal browser.
+export default function ConfrontoPortieri({ stagioneId, titolo, mioId = null, anonimo = false, datiServer = null }) {
   const t = useTranslations('confrontoPortieri')
   const locale = useLocale()
   const titoloEff = titolo ?? t('titoloDefault')
@@ -18,6 +20,16 @@ export default function ConfrontoPortieri({ stagioneId, titolo, mioId = null, an
   const [metrica, setMetrica] = useState('presenze')
 
   useEffect(() => {
+    if (datiServer) {
+      const allenById = new Map(datiServer.allen.map((a) => [a.id, a.squadra_id]))
+      setRows(datiServer.rows)
+      setParametri(datiServer.parametri)
+      setMed({
+        vals: datiServer.vals, allenById, punteggi: datiServer.punteggi,
+        valById: new Map(datiServer.vals.map((v) => [v.id, v])),
+      })
+      return
+    }
     let vivo = true
     ;(async () => {
       const supabase = createClient()
@@ -25,9 +37,10 @@ export default function ConfrontoPortieri({ stagioneId, titolo, mioId = null, an
       if (vivo) setRows(data ?? [])
     })()
     return () => { vivo = false }
-  }, [stagioneId])
+  }, [stagioneId, datiServer])
 
   useEffect(() => {
+    if (datiServer) return
     let vivo = true
     ;(async () => {
       const supabase = createClient()
@@ -55,7 +68,7 @@ export default function ConfrontoPortieri({ stagioneId, titolo, mioId = null, an
       if (vivo) { setParametri(par ?? []); setMed({ vals: vals ?? [], allenById, punteggi, valById }) }
     })()
     return () => { vivo = false }
-  }, [stagioneId])
+  }, [stagioneId, datiServer])
 
   const nomeById = useMemo(() => {
     const m = {}

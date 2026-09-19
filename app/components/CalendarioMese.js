@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { tipologiaTradotta } from '@/lib/elenchi'
 import IconaTipoPartita from '@/app/components/IconaTipoPartita'
 import LegendaSimboliPartita from '@/app/components/LegendaSimboliPartita'
+import VeloPannelloGiorno from '@/app/components/VeloPannelloGiorno'
 import { useRouter } from 'next/navigation'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
@@ -13,6 +14,7 @@ const pad = (n) => String(n).padStart(2, '0')
 
 export default function CalendarioMese({ allenamenti, partite = [], categorie, vista = 'staff', oggiIso = null }) {
   const t = useTranslations('calendarioMese')
+  const tAz = useTranslations('calendarioAzioni')
   const locale = useLocale()
   const dl = DATE_LOCALE[locale] || 'it-IT'
   const router = useRouter()
@@ -23,6 +25,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const [filtro, setFiltro] = useState('')
   const [selectedDay, setSelectedDay] = useState(null)
   const [openId, setOpenId] = useState(null)
+  const chiudiPannello = useCallback(() => { setSelectedDay(null); setOpenId(null) }, [])
   const [previewExtra, setPreviewExtra] = useState({})
   const [loadingExtra, setLoadingExtra] = useState(false)
   const [previewPartite, setPreviewPartite] = useState({})
@@ -513,8 +516,10 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
       </div>{/* /calx-scroll */}
 
       {/* pannello giorno (desktop) */}
+      {/* su mobile il pannello diventa un popup dal basso: velo scuro dietro */}
+      <VeloPannelloGiorno aperto={!!selectedDay} onChiudi={chiudiPannello} />
       {selectedDay && (
-        <div className="calx-panel">
+        <div className="calx-panel" role="dialog" aria-label={selectedDateLabel}>
           <div className="calx-panel-head">
             <span className="calx-panel-ic">📅</span>
             <h3 className="calx-panel-title">{selectedDateLabel}</h3>
@@ -533,7 +538,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
           )}
 
           {selectedEvs.length === 0 && (
-            <p className="calx-empty">{t('nessunEvento')}{!isPortiere && t('nessunEventoStaff')}</p>
+            <p className="calx-empty">{t('nessunEvento')}{!isPortiere && <span className="calx-solo-desktop">{t('nessunEventoStaff')}</span>}</p>
           )}
 
           <div className="calx-rows">
@@ -544,6 +549,15 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
               </div>
             ))}
           </div>
+
+          {/* Solo mobile: nel popup i pulsanti in alto sono coperti, quindi li
+              ripeto qui con la data del giorno gia' impostata. */}
+          {!isPortiere && (
+            <div className="calx-panel-azioni">
+              <Link href={`/calendario/nuovo?data=${year}-${pad(month + 1)}-${pad(selectedDay)}`} className="btn-azione">{tAz('nuovoAllenamento')}</Link>
+              <Link href={`/partite/nuova?data=${year}-${pad(month + 1)}-${pad(selectedDay)}`} className="btn-azione">{tAz('nuovaPartita')}</Link>
+            </div>
+          )}
         </div>
       )}
 

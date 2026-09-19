@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import IconaTipoPartita from '@/app/components/IconaTipoPartita'
 import LegendaSimboliPartita from '@/app/components/LegendaSimboliPartita'
+import VeloPannelloGiorno from '@/app/components/VeloPannelloGiorno'
 import { tipologiaTradotta } from '@/lib/elenchi'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
@@ -20,6 +21,7 @@ export default function CalendarioMeseSupervisione({ allenamenti, partite = [], 
   const [filtro, setFiltro] = useState('')
   const [selectedDay, setSelectedDay] = useState(null)
   const [openId, setOpenId] = useState(null)
+  const chiudiPannello = useCallback(() => { setSelectedDay(null); setOpenId(null) }, [])
   const [previewExtra, setPreviewExtra] = useState({})
   const [loadingExtra, setLoadingExtra] = useState(false)
   const [previewPartite, setPreviewPartite] = useState({})
@@ -369,8 +371,10 @@ export default function CalendarioMeseSupervisione({ allenamenti, partite = [], 
       </div>
       </div>{/* /calx-scroll */}
 
+      {/* su mobile il pannello diventa un popup dal basso: velo scuro dietro */}
+      <VeloPannelloGiorno aperto={!!selectedDay} onChiudi={chiudiPannello} />
       {selectedDay && (
-        <div className="calx-panel">
+        <div className="calx-panel" role="dialog" aria-label={selectedDateLabel}>
           <div className="calx-panel-head">
             <span className="calx-panel-ic">📅</span>
             <h3 className="calx-panel-title">{selectedDateLabel}</h3>

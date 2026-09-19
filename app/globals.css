@@ -1991,6 +1991,37 @@ a.brand { text-decoration: none; color: inherit; }
 .calx-nb:hover:not(:disabled) { border-color: var(--azzurro); color: var(--azzurro); }
 .calx-nb:disabled { opacity: .4; cursor: default; }
 
+/* Pannello del giorno: su desktop resta sotto la griglia; su mobile diventa
+   un popup che sale dal basso, con velo scuro (VeloPannelloGiorno). */
+.calx-velo { display: none; }
+.calx-panel-azioni { display: none; }
+@media (max-width: 720px) {
+  .calx-velo {
+    display: block; position: fixed; inset: 0; z-index: 1100;
+    background: rgba(0, 0, 0, 0.45); animation: calxVelo .2s ease;
+  }
+  .calx-panel {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1101;
+    margin: 0; max-height: 85vh; max-height: 85dvh;
+    overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    border-radius: 18px 18px 0 0; border-bottom: none;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+    animation: calxSheet .25s ease;
+  }
+  /* intestazione con data, frecce e X sempre visibile mentre scorri */
+  .calx-panel-head { position: sticky; top: 0; z-index: 1; background: var(--bianco); }
+  .calx-solo-desktop { display: none; }
+  .calx-panel-azioni { display: flex; gap: 8px; flex-wrap: wrap; padding: 4px 14px 16px; }
+  .calx-panel-azioni .btn-azione { flex: 1 1 140px; text-align: center; }
+  .calx-panel-head::before {
+    content: ''; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 4px; border-radius: 4px; background: var(--linea);
+  }
+}
+@keyframes calxSheet { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes calxVelo { from { opacity: 0; } to { opacity: 1; } }
+
 .calx-summary { display: flex; gap: 10px; flex-wrap: wrap; padding: 13px 20px 2px; }
 .calx-chip {
   display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600;
@@ -2039,7 +2070,7 @@ a.brand { text-decoration: none; color: inherit; }
 @media (max-width: 600px) {
   /* Griglia leggibile su mobile: scorre in orizzontale, con celle
      abbastanza larghe da mostrare "18:30 · Categoria". Tocca un giorno
-     per aprire il dettaglio sotto (a tutta larghezza). */
+     per aprire il dettaglio in un popup dal basso. */
   .calx-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
   .calx-scroll .calx-grid { min-width: 640px; }
   .calx-cell { min-height: 94px; padding: 7px 6px; }

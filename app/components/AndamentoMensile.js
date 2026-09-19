@@ -161,21 +161,22 @@ function Blocco({ titolo, mesi, colonne, prefModo, prefColonne, nl, t }) {
           <>
             <Grafico serie={serie} etichette={mesi.map((m) => m.label)} nl={nl} />
             <div style={{ overflowX: 'auto' }}>
-              <table className="tabella" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              {/* and-tab: su mobile intestazioni su piu' righe e colonna Mese fissa (globals.css) */}
+              <table className="tabella and-tab" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left', padding: '8px 10px' }}>{t('mese')}</th>
+                    <th className="and-tab-mese" style={{ textAlign: 'left', padding: '8px 10px' }}>{t('mese')}</th>
                     {cols.map((c) => (
-                      <th key={c.id} style={{ textAlign: 'right', padding: '8px 10px', whiteSpace: 'nowrap' }}>{c.nome}</th>
+                      <th key={c.id} className="and-tab-col" style={{ textAlign: 'right', padding: '8px 10px' }}>{c.nome}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {mesi.map((m, i) => (
                     <tr key={m.key} style={{ borderTop: '1px solid var(--linea)' }}>
-                      <td style={{ padding: '8px 10px', color: m.parziale ? 'var(--ink-soft)' : undefined }}>{m.label}</td>
+                      <td className="and-tab-mese" style={{ padding: '8px 10px', color: m.parziale ? 'var(--ink-soft)' : undefined }}>{m.label}</td>
                       {cols.map((c) => (
-                        <td key={c.id} style={{ textAlign: 'right', padding: '8px 10px' }}>
+                        <td key={c.id} className="and-tab-num" style={{ textAlign: 'right', padding: '8px 10px' }}>
                           {valori[i][c.id]?.testo ?? '—'}
                         </td>
                       ))}

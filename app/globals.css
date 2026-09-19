@@ -1993,6 +1993,25 @@ a.brand { text-decoration: none; color: inherit; }
 
 /* Pannello del giorno: su desktop resta sotto la griglia; su mobile diventa
    un popup che sale dal basso, con velo scuro (VeloPannelloGiorno). */
+/* Tabelle "Andamento" nella scheda portiere: su PC intestazioni su una
+   riga come prima; su mobile vanno a capo, cosi' si vedono piu' colonne,
+   e la colonna Mese resta ferma mentre si scorre in orizzontale. */
+.and-tab-col { white-space: nowrap; vertical-align: bottom; }
+.and-tab-num { white-space: nowrap; }
+@media (max-width: 720px) {
+  .and-tab { font-size: 12.5px !important; }
+  .and-tab th.and-tab-col {
+    white-space: normal; min-width: 64px; max-width: 96px;
+    font-size: 11.5px; line-height: 1.2; overflow-wrap: break-word; hyphens: auto;
+    padding: 6px 6px !important;
+  }
+  .and-tab td.and-tab-num { padding: 7px 6px !important; }
+  .and-tab .and-tab-mese {
+    position: sticky; left: 0; z-index: 1; background: var(--bianco);
+    padding: 7px 8px !important; box-shadow: 1px 0 0 var(--linea);
+  }
+}
+
 .calx-velo { display: none; }
 .calx-panel-azioni { display: none; }
 @media (max-width: 720px) {

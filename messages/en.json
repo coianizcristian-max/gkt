@@ -2402,7 +2402,9 @@
     "aggiungi": "+ Add",
     "salvataggio": "Saving...",
     "salvato": "Saved ✓",
-    "salva": "Save evaluations"
+    "salva": "Save evaluations",
+    "nonConvocato": "Not called up",
+    "golSubitiMancanti": "Result not entered yet in the match details"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

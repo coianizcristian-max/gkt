@@ -79,49 +79,57 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
     setSaving(false)
   }
 
+  // Scheda di un portiere. Non convocato: una riga sola (nome + interruttore),
+  // niente campi spenti. Convocato: Voto, Punti e Gol subiti affiancati e
+  // allineati, sotto le note.
   const renderCard = (r, i, opts) => {
     const { onChange, onRemove, fuori } = opts
     return (
-      <div className={`val-card ${r.presente ? '' : 'assente'}`} key={r.portiere_id}>
-        <div className="val-head">
-          <label className="val-pres">
-            <input type="checkbox" checked={r.presente} onChange={(e) => onChange(i, { presente: e.target.checked })} /> {t('convocato')}
-          </label>
-          <span className="val-nome">
+      <div className={`val-card vp-card ${r.presente ? '' : 'assente'}`} key={r.portiere_id}>
+        <div className="vp-head">
+          <span className="vp-nome">
             {r.nome}
-            {fuori && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: 'var(--giallo)', background: 'rgba(232,167,44,0.14)', padding: '2px 8px', borderRadius: 999 }}>{t('fuoriCategoria')}{r.categoria ? ` · ${r.categoria}` : ''}</span>}
+            {fuori && <span className="vp-fuori">{t('fuoriCategoria')}{r.categoria ? ` · ${r.categoria}` : ''}</span>}
           </span>
-          <div className="val-voto">
-            <span>{t('voto')}</span>
-            {scalaVoti.length > 0 ? (
-              <select value={r.voto} disabled={!r.presente} onChange={(e) => onChange(i, { voto: e.target.value })}>
-                <option value="">&mdash;</option>
-                {scalaVoti.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            ) : (
-              <input type="number" step="0.25" value={r.voto} disabled={!r.presente} onChange={(e) => onChange(i, { voto: e.target.value })} />
-            )}
-          </div>
+          <label className={`vp-conv ${r.presente ? 'on' : ''}`}>
+            <input type="checkbox" checked={r.presente} onChange={(e) => onChange(i, { presente: e.target.checked })} />
+            <span>{r.presente ? t('convocato') : t('nonConvocato')}</span>
+          </label>
         </div>
         {r.presente && (
           <>
-            <div className="val-par">
-              <label>{t('punti')}</label>
-              <select value={r.punti} onChange={(e) => onChange(i, { punti: e.target.value })}>
-                <option value="">&mdash;</option>
-                {puntiOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
+            <div className="vp-campi">
+              <div className="vp-campo">
+                <label>{t('voto')}</label>
+                {scalaVoti.length > 0 ? (
+                  <select value={r.voto} onChange={(e) => onChange(i, { voto: e.target.value })}>
+                    <option value="">&mdash;</option>
+                    {scalaVoti.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                ) : (
+                  <input type="number" step="0.25" inputMode="decimal" value={r.voto} onChange={(e) => onChange(i, { voto: e.target.value })} />
+                )}
+              </div>
+              <div className="vp-campo">
+                <label>{t('punti')}</label>
+                <select value={r.punti} onChange={(e) => onChange(i, { punti: e.target.value })}>
+                  <option value="">&mdash;</option>
+                  {puntiOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div className="vp-campo">
+                <label>{t('golSubiti')}</label>
+                <input type="number" min="0" inputMode="numeric" value={r.gol_subiti} onChange={(e) => onChange(i, { gol_subiti: e.target.value })} />
+              </div>
             </div>
-            <div className="val-par">
-              <label>{t('golSubiti')}</label>
-              <input type="number" min="0" value={r.gol_subiti} onChange={(e) => onChange(i, { gol_subiti: e.target.value })} />
+            <div className="vp-note">
+              <label>{t('note')}</label>
+              <textarea rows="2" value={r.note} onChange={(e) => onChange(i, { note: e.target.value })} />
             </div>
-            <div className="field"><label>{t('note')}</label>
-              <textarea rows="2" value={r.note} onChange={(e) => onChange(i, { note: e.target.value })} /></div>
           </>
         )}
         {onRemove && (
-          <div style={{ textAlign: 'right' }}>
+          <div style={{ textAlign: 'right', marginTop: 8 }}>
             <button type="button" className="btn-mini btn-del" onClick={() => onRemove(i)}>{t('rimuovi')}</button>
           </div>
         )}
@@ -133,7 +141,7 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
     <div className="val-grid">
       {error && <div className="err">{error}</div>}
       <div className="val-nessuno">
-        {cleanSheet ? t('cleanSheet') : t('golSubitiTot', { n: golSubiti ?? '—' })}
+        {cleanSheet ? t('cleanSheet') : golSubiti == null ? t('golSubitiMancanti') : t('golSubitiTot', { n: golSubiti })}
       </div>
       {golNonCombaciano && (
         <div className="val-nessuno" style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', fontWeight: 600 }}>

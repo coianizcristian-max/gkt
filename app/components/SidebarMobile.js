@@ -62,7 +62,8 @@ export default function SidebarMobile({ voci, brand, demoLabel }) {
 
   return (
     <div className={`mob-header ${nascosto && !open ? 'mob-header-nascosto' : ''}`}>
-      <Link href={brand.href} className="mob-brand">
+      {/* staff: solo il logo, il nome della societa' lo mostra gia' il selettore stagione */}
+      <Link href={brand.href} className={`mob-brand${brand.isStaff ? ' mob-brand-logo' : ''}`}>
         {brand.logo
           ? <img src={brand.logo} alt="" className="brand-logo" />
           : <div className="glove">GK</div>}

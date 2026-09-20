@@ -2402,7 +2402,9 @@
     "aggiungi": "+ Aggiungi",
     "salvataggio": "Salvataggio...",
     "salvato": "Salvato ✓",
-    "salva": "Salva valutazioni"
+    "salva": "Salva valutazioni",
+    "nonConvocato": "Non convocato",
+    "golSubitiMancanti": "Risultato non ancora inserito nel dettaglio partita"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

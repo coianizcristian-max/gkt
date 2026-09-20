@@ -2402,7 +2402,9 @@
     "aggiungi": "+ Hinzufügen",
     "salvataggio": "Wird gespeichert...",
     "salvato": "Gespeichert ✓",
-    "salva": "Bewertungen speichern"
+    "salva": "Bewertungen speichern",
+    "nonConvocato": "Nicht nominiert",
+    "golSubitiMancanti": "Ergebnis in den Spieldetails noch nicht eingetragen"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

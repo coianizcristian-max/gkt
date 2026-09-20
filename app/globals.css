@@ -2778,7 +2778,8 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
 .tag-chip { padding: 4px 11px; font-size: 12px; }
 @media (max-width: 720px) {
   .spt-tabs { display: flex; flex-wrap: nowrap; gap: 2px; padding: 3px; }
-  .spt-tabs .sub-nav-link { flex: 1 1 0; min-width: 0; padding: 8px 2px; font-size: 13px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* scritte lunghe ("Assenze programmate (1)") vanno a capo invece di essere tagliate */
+  .spt-tabs .sub-nav-link { flex: 1 1 0; min-width: 0; padding: 6px 3px; font-size: 12.5px; line-height: 1.2; text-align: center; white-space: normal; }
   .tag-chip { padding: 3px 9px; font-size: 11.5px; }
   .inf-scheda.scheda { padding: 14px; }
 }

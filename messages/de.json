@@ -2399,7 +2399,7 @@
     "golSubiti": "Gegentore",
     "note": "Notizen",
     "rimuovi": "Entfernen",
-    "cleanSheet": "Zu null gespielt (0 Gegentore)",
+    "cleanSheet": "Zu null · 0 Gegentore",
     "golSubitiTot": "Gegentore: {n}",
     "golNonCombaciano": "⚠ Die Summe der Gegentore der Torhüter ({somma}) stimmt nicht mit dem Team-Gesamtwert ({tot}) überein.",
     "nessunPortiereCat": "Kein Torhüter in dieser Kategorie: füge unten einen aus einer anderen Kategorie hinzu, um das Spiel trotzdem zu bewerten.",
@@ -2415,7 +2415,8 @@
     "golSubitiMancanti": "Spielergebnis noch nicht eingetragen.",
     "puntiPortati": "Erzielte Punkte",
     "puntiAiuto": "Erzielte Punkte: wie viele Punkte der Torhüter der Mannschaft mit seiner Leistung gebracht hat (z. B. mit einer entscheidenden Parade). Nicht die Tabellenpunkte des Spiels.",
-    "inserisciRisultato": "Ergebnis eingeben →"
+    "inserisciRisultato": "Ergebnis eingeben →",
+    "altraCategoriaQuando": "Wann brauche ich das?"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

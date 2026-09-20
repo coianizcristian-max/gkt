@@ -2399,7 +2399,7 @@
     "golSubiti": "Goles encajados",
     "note": "Notas",
     "rimuovi": "Quitar",
-    "cleanSheet": "Portería a cero: sin goles encajados (0 goles)",
+    "cleanSheet": "Portería a cero · 0 goles encajados",
     "golSubitiTot": "Goles encajados: {n}",
     "golNonCombaciano": "⚠ La suma de los goles encajados por los porteros ({somma}) no coincide con el total del equipo ({tot}).",
     "nessunPortiereCat": "Ningún portero de esta categoría: añade uno de otra categoría aquí abajo para poder evaluar igualmente el partido.",
@@ -2415,7 +2415,8 @@
     "golSubitiMancanti": "Resultado del partido aún no introducido.",
     "puntiPortati": "Puntos aportados",
     "puntiAiuto": "Puntos aportados: cuántos puntos ha hecho ganar el portero al equipo con su actuación (por ejemplo con una parada decisiva). No son los puntos de liga del partido.",
-    "inserisciRisultato": "Introducir el resultado →"
+    "inserisciRisultato": "Introducir el resultado →",
+    "altraCategoriaQuando": "¿Cuándo sirve?"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

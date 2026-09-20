@@ -65,7 +65,7 @@ export default async function PartitaPage({ params }) {
           <h1>{partita.squadre?.nome}<span className="topbar-sub"> · {partita.casa ? c('casa') : c('trasferta')} vs {partita.avversario || '—'}</span></h1>
         </div>
         <div className="content">
-          <p className="sub-intro">{dataLabel}{orarioLabel ? ` · ${orarioLabel}` : ''}</p>
+          <p className="sub-intro pt-data">{dataLabel}{orarioLabel ? ` · ${orarioLabel}` : ''}</p>
           {partita.gol_fatti != null && partita.gol_subiti != null && (
             <div className="scheda" style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 24, fontWeight: 800, textAlign: 'center' }}>
@@ -170,7 +170,7 @@ export default async function PartitaPage({ params }) {
         <h1>{partita.squadre?.nome}<span className="topbar-sub"> · {partita.casa ? c('casa') : c('trasferta')} vs {partita.avversario || '—'}</span></h1>
       </div>
       <div className="content">
-        <p className="sub-intro">{dataLabel}{orarioLabel ? ` · ${orarioLabel}` : ''}</p>
+        <p className="sub-intro pt-data">{dataLabel}{orarioLabel ? ` · ${orarioLabel}` : ''}</p>
         <SchedePartitaMobile
           iniziale={giocata ? 'valutazioni' : 'dettaglio'}
           etichette={{ dettaglio: t('tabDettaglio'), valutazioni: t('tabValutazioni'), conteggio, vaiValutazioni: t('vaiValutazioni') }}

@@ -2399,7 +2399,7 @@
     "golSubiti": "Goals conceded",
     "note": "Notes",
     "rimuovi": "Remove",
-    "cleanSheet": "Clean sheet: no goals conceded (0 conceded)",
+    "cleanSheet": "Clean sheet · 0 goals conceded",
     "golSubitiTot": "Goals conceded: {n}",
     "golNonCombaciano": "⚠ The sum of goals conceded by the goalkeepers ({somma}) does not match the team total ({tot}).",
     "nessunPortiereCat": "No goalkeeper in this category: add one from another category below to evaluate the match anyway.",
@@ -2415,7 +2415,8 @@
     "golSubitiMancanti": "Match result not entered yet.",
     "puntiPortati": "Points earned",
     "puntiAiuto": "Points earned: how many points the goalkeeper won for the team with his performance (for example with a decisive save). Not the league points of the match.",
-    "inserisciRisultato": "Enter the result →"
+    "inserisciRisultato": "Enter the result →",
+    "altraCategoriaQuando": "When is this needed?"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

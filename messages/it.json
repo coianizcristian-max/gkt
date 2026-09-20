@@ -2399,7 +2399,7 @@
     "golSubiti": "Gol subiti",
     "note": "Note",
     "rimuovi": "Rimuovi",
-    "cleanSheet": "Clean sheet: porta inviolata (0 gol subiti)",
+    "cleanSheet": "Clean sheet · 0 gol subiti",
     "golSubitiTot": "Gol subiti: {n}",
     "golNonCombaciano": "⚠ La somma dei gol subiti dei portieri ({somma}) non coincide con il totale squadra ({tot}).",
     "nessunPortiereCat": "Nessun portiere di questa categoria: aggiungine uno di un’altra categoria qui sotto per valutare comunque la partita.",
@@ -2415,7 +2415,8 @@
     "golSubitiMancanti": "Risultato della partita non ancora inserito.",
     "puntiPortati": "Punti portati",
     "puntiAiuto": "Punti portati: quanti punti il portiere ha fatto guadagnare alla squadra con la sua prestazione (per esempio con una parata decisiva). Non sono i punti in classifica della partita.",
-    "inserisciRisultato": "Inserisci il risultato →"
+    "inserisciRisultato": "Inserisci il risultato →",
+    "altraCategoriaQuando": "Quando serve?"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

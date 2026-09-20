@@ -1,7 +1,7 @@
 'use client'
 
 import { vaiASchedaPartita } from '@/app/components/SchedePartitaMobile'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -23,6 +23,15 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
   const t = useTranslations('valutazioniPartita')
   const router = useRouter()
   const cleanSheet = golSubiti === 0
+  // Popup "che cosa sono i punti portati": si apre toccando la (i) accanto
+  // all'etichetta, si chiude toccando ovunque.
+  const [infoPunti, setInfoPunti] = useState(null)
+  useEffect(() => {
+    if (infoPunti == null) return
+    const chiudi = (e) => { if (!e.target.closest?.('.vp-i')) setInfoPunti(null) }
+    document.addEventListener('click', chiudi)
+    return () => document.removeEventListener('click', chiudi)
+  }, [infoPunti])
 
   const [rows, setRows] = useState(() => portieri.map((p) => makeRow(p, valIniziali[p.id])))
   const [extra, setExtra] = useState(() =>
@@ -112,7 +121,12 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
                 )}
               </div>
               <div className="vp-campo">
-                <label title={t('puntiAiuto')}>{t('puntiPortati')}</label>
+                <label className="vp-lab-info">
+                  {t('puntiPortati')}
+                  <button type="button" className="vp-i" aria-label={t('puntiAiuto')}
+                    onClick={() => setInfoPunti(infoPunti === r.portiere_id ? null : r.portiere_id)}>i</button>
+                </label>
+                {infoPunti === r.portiere_id && <span className="vp-bolla" role="tooltip">{t('puntiAiuto')}</span>}
                 <select value={r.punti} onChange={(e) => onChange(i, { punti: e.target.value })}>
                   <option value="">&mdash;</option>
                   {puntiOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -125,7 +139,7 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
             </div>
             <div className="vp-note">
               <label>{t('note')}</label>
-              <textarea rows="4" value={r.note} onChange={(e) => onChange(i, { note: e.target.value })} />
+              <textarea rows="6" value={r.note} onChange={(e) => onChange(i, { note: e.target.value })} />
             </div>
           </>
         )}
@@ -143,17 +157,16 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
       {error && <div className="err">{error}</div>}
       {golSubiti == null ? (
         // Risultato mancante: rimanda al dettaglio partita, dove si inserisce
-        <div className="val-nessuno vp-manca-ris">
+        <div className="val-nessuno vp-riep vp-manca-ris">
           <span>{t('golSubitiMancanti')}</span>
           <button type="button" className="btn-mini" onClick={() => vaiASchedaPartita('dettaglio')}>{t('inserisciRisultato')}</button>
         </div>
       ) : (
-        <div className="val-nessuno">
+        <div className="val-nessuno vp-riep">
           {cleanSheet ? t('cleanSheet') : t('golSubitiTot', { n: golSubiti })}
         </div>
       )}
-      {/* spiega una volta sola cosa sono i "punti portati" */}
-      <p className="vp-aiuto">{t('puntiAiuto')}</p>
+
       {golNonCombaciano && (
         <div className="val-nessuno" style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', fontWeight: 600 }}>
           {t('golNonCombaciano', { somma: sommaGolPortieri, tot: golSubiti })}
@@ -166,8 +179,12 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
       {rows.map((r, i) => renderCard(r, i, { onChange: setRow }))}
 
       <div className="elenco-blocco" style={{ marginTop: 6 }}>
-        <h3 style={{ marginBottom: 6 }}>{t('altraCategoria')}</h3>
-        <p className="sub-intro" style={{ marginTop: 0 }}>{t('altraCategoriaIntro')}</p>
+        <h3 className="vp-altri-tit">{t('altraCategoria')}</h3>
+        {/* spiegazione lunga raccolta: si apre solo se serve */}
+        <details className="vp-dett">
+          <summary>{t('altraCategoriaQuando')}</summary>
+          <p>{t('altraCategoriaIntro')}</p>
+        </details>
         {portieriAltri.length === 0 ? (
           <p className="sub-intro" style={{ margin: 0 }}>{t('nessunAltro')}</p>
         ) : (

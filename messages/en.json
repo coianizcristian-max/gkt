@@ -2404,7 +2404,9 @@
     "salvato": "Saved ✓",
     "salva": "Save evaluations",
     "nonConvocato": "Did not play",
-    "golSubitiMancanti": "Result not entered yet in the match details"
+    "golSubitiMancanti": "Result not entered yet in the match details",
+    "puntiPortati": "Points earned",
+    "puntiAiuto": "Points earned: how many points the goalkeeper won for the team with his performance (for example with a decisive save). Not the league points of the match."
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

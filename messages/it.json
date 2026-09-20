@@ -2404,7 +2404,9 @@
     "salvato": "Salvato ✓",
     "salva": "Salva valutazioni",
     "nonConvocato": "Non ha giocato",
-    "golSubitiMancanti": "Risultato non ancora inserito nel dettaglio partita"
+    "golSubitiMancanti": "Risultato non ancora inserito nel dettaglio partita",
+    "puntiPortati": "Punti portati",
+    "puntiAiuto": "Punti portati: quanti punti il portiere ha fatto guadagnare alla squadra con la sua prestazione (per esempio con una parata decisiva). Non sono i punti in classifica della partita."
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

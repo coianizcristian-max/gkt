@@ -111,7 +111,7 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
                 )}
               </div>
               <div className="vp-campo">
-                <label>{t('punti')}</label>
+                <label title={t('puntiAiuto')}>{t('puntiPortati')}</label>
                 <select value={r.punti} onChange={(e) => onChange(i, { punti: e.target.value })}>
                   <option value="">&mdash;</option>
                   {puntiOpts.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -143,6 +143,8 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
       <div className="val-nessuno">
         {cleanSheet ? t('cleanSheet') : golSubiti == null ? t('golSubitiMancanti') : t('golSubitiTot', { n: golSubiti })}
       </div>
+      {/* spiega una volta sola cosa sono i "punti portati" */}
+      <p className="vp-aiuto">{t('puntiAiuto')}</p>
       {golNonCombaciano && (
         <div className="val-nessuno" style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)', fontWeight: 600 }}>
           {t('golNonCombaciano', { somma: sommaGolPortieri, tot: golSubiti })}

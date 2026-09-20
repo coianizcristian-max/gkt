@@ -2404,7 +2404,9 @@
     "salvato": "Guardado ✓",
     "salva": "Guardar evaluaciones",
     "nonConvocato": "No ha jugado",
-    "golSubitiMancanti": "Resultado aún no introducido en el detalle del partido"
+    "golSubitiMancanti": "Resultado aún no introducido en el detalle del partido",
+    "puntiPortati": "Puntos aportados",
+    "puntiAiuto": "Puntos aportados: cuántos puntos ha hecho ganar el portero al equipo con su actuación (por ejemplo con una parada decisiva). No son los puntos de liga del partido."
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

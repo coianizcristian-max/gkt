@@ -5,6 +5,7 @@ import PortiereForm from '@/app/components/PortiereForm'
 import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import TagManager from '@/app/components/TagManager'
 import AssenzePreviste from '@/app/components/AssenzePreviste'
+import SchedaPortiereTabs from '@/app/components/SchedaPortiereTabs'
 import { getStagioneAttiva } from '@/lib/tenant'
 import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
@@ -175,27 +176,42 @@ export default async function SchedaPortierePage({ params }) {
           ]} />
         )}
 
-        {!soloPortiere && tagDisponibili.length > 0 && (
-          <TagManager portiereId={id} tagAttivi={tagAttivi} tagDisponibili={tagDisponibili} />
-        )}
-        {stagione && categorie.length > 0 ? (
-          <PortiereForm
-            portiere={portiere}
-            iscrizione={iscrizione}
-            categorie={categorie}
-            stagioneId={stagione.id}
-            piedi={piedi}
-            soloPortiere={soloPortiere}
-            attributiDef={attributiDef ?? []}
-            attributiValori={attributiValori}
-            infortunioAperto={infortunioAperto}
-          />
-        ) : (
-          <div className="empty">{c('setupStagioneCategoria')}</div>
-        )}
-        {!soloPortiere && iscrizione?.id && (
-          <AssenzePreviste iscrizioneId={iscrizione.id} assenzeIniziali={assenzePreviste} />
-        )}
+        {(() => {
+          const anagrafica = (
+            <>
+              {!soloPortiere && tagDisponibili.length > 0 && (
+                <TagManager portiereId={id} tagAttivi={tagAttivi} tagDisponibili={tagDisponibili} />
+              )}
+              {stagione && categorie.length > 0 ? (
+                <PortiereForm
+                  portiere={portiere}
+                  iscrizione={iscrizione}
+                  categorie={categorie}
+                  stagioneId={stagione.id}
+                  piedi={piedi}
+                  soloPortiere={soloPortiere}
+                  attributiDef={attributiDef ?? []}
+                  attributiValori={attributiValori}
+                  infortunioAperto={infortunioAperto}
+                />
+              ) : (
+                <div className="empty">{c('setupStagioneCategoria')}</div>
+              )}
+            </>
+          )
+          // Staff con portiere iscritto: anagrafica e assenze in due sottoschede
+          if (!soloPortiere && iscrizione?.id) {
+            const nAss = (assenzePreviste ?? []).length
+            return (
+              <SchedaPortiereTabs
+                etichette={{ anagrafica: tp('tabAnagrafica'), assenze: nAss ? `${tp('tabAssenze')} (${nAss})` : tp('tabAssenze') }}
+                anagrafica={anagrafica}
+                assenze={<AssenzePreviste iscrizioneId={iscrizione.id} assenzeIniziali={assenzePreviste} />}
+              />
+            )
+          }
+          return anagrafica
+        })()}
       </div>
     </>
   )

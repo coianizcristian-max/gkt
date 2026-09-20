@@ -174,7 +174,9 @@
     "navObiettivi": "Goals",
     "navStatistiche": "Statistics",
     "navPercorso": "Path",
-    "miaScheda": "My profile"
+    "miaScheda": "My profile",
+    "tabAnagrafica": "📋 Personal data",
+    "tabAssenze": "📅 Absences"
   },
   "calendario": {
     "tabAgenda": "Agenda",
@@ -1765,7 +1767,8 @@
     "al": "To (opt.)",
     "notaLabel": "Note (opt.)",
     "notaPlaceholder": "E.g. holiday, school commitment, call-up",
-    "aggiungi": "Add absence"
+    "aggiungi": "Add absence",
+    "comeFunziona": "ℹ️ How it works"
   },
   "obiettivoCollegamenti": {
     "parametriTitolo": "Linked evaluation parameters",

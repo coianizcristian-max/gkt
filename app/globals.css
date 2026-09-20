@@ -2765,3 +2765,7 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
   }
   .pt-azioni > * { flex: 1; margin: 0; }
 }
+
+/* Scheda portiere: sottoschede Anagrafica / Assenze (SchedaPortiereTabs) */
+.spt-tabs { margin: 0 0 14px; }
+.spt-anagrafica .spt-p-assenze, .spt-assenze .spt-p-anagrafica { display: none; }

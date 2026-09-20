@@ -174,7 +174,9 @@
     "navObiettivi": "Ziele",
     "navStatistiche": "Statistiken",
     "navPercorso": "Verlauf",
-    "miaScheda": "Mein Profil"
+    "miaScheda": "Mein Profil",
+    "tabAnagrafica": "📋 Stammdaten",
+    "tabAssenze": "📅 Abwesenheiten"
   },
   "calendario": {
     "tabAgenda": "Agenda",
@@ -1765,7 +1767,8 @@
     "al": "Bis (opt.)",
     "notaLabel": "Notiz (opt.)",
     "notaPlaceholder": "Z. B. Urlaub, schulische Verpflichtung, Nominierung",
-    "aggiungi": "Abwesenheit hinzufügen"
+    "aggiungi": "Abwesenheit hinzufügen",
+    "comeFunziona": "ℹ️ So funktioniert es"
   },
   "obiettivoCollegamenti": {
     "parametriTitolo": "Verknüpfte Bewertungsparameter",

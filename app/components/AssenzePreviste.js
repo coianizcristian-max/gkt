@@ -57,11 +57,13 @@ export default function AssenzePreviste({ iscrizioneId, assenzeIniziali = [] }) 
   }
 
   return (
-    <div className="scheda" style={{ marginTop: 16 }}>
+    <div className="scheda" style={{ marginTop: 0 }}>
       <h2 className="sezione-titolo" style={{ marginTop: 0 }}>{t('titolo')}</h2>
-      <p className="sub-intro">
-        {t.rich('intro', { b: (ch) => <b>{ch}</b> })}
-      </p>
+      {/* spiegazione raccolta: si legge una volta */}
+      <details className="info-dett">
+        <summary>{t('comeFunziona')}</summary>
+        <p>{t.rich('intro', { b: (ch) => <b>{ch}</b> })}</p>
+      </details>
       {err && <div className="err" style={{ marginBottom: 10 }}>{err}</div>}
 
       {lista.length > 0 ? (

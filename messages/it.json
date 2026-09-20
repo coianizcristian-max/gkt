@@ -174,7 +174,9 @@
     "navObiettivi": "Obiettivi",
     "navStatistiche": "Statistiche",
     "navPercorso": "Percorso",
-    "miaScheda": "La mia scheda"
+    "miaScheda": "La mia scheda",
+    "tabAnagrafica": "📋 Anagrafica",
+    "tabAssenze": "📅 Assenze"
   },
   "calendario": {
     "tabAgenda": "Agenda",
@@ -1765,7 +1767,8 @@
     "al": "Al (opz.)",
     "notaLabel": "Nota (opz.)",
     "notaPlaceholder": "Es. vacanza, impegno scolastico, convocazione",
-    "aggiungi": "Aggiungi assenza"
+    "aggiungi": "Aggiungi assenza",
+    "comeFunziona": "ℹ️ Come funzionano"
   },
   "obiettivoCollegamenti": {
     "parametriTitolo": "Parametri di valutazione collegati",

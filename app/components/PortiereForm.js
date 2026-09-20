@@ -315,8 +315,18 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
 
       {!soloPortiere && (
         <div style={{ margin: '4px 0 8px', padding: '12px 14px', borderRadius: 8, background: 'rgba(10,126,194,0.06)', border: '1px solid rgba(10,126,194,0.25)' }}>
-          <strong style={{ display: 'block', fontSize: 13, marginBottom: 6 }}>{t('minoriTitolo')}</strong>
-          <p style={{ fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.5, margin: 0 }}>{t('minoriInfo')}</p>
+          {/* in modifica il testo e' gia' stato letto alla creazione: lo raccolgo */}
+          {isEdit ? (
+            <details className="info-dett" style={{ margin: 0 }}>
+              <summary>{t('minoriTitolo')}</summary>
+              <p style={{ fontSize: 12.5 }}>{t('minoriInfo')}</p>
+            </details>
+          ) : (
+            <>
+              <strong style={{ display: 'block', fontSize: 13, marginBottom: 6 }}>{t('minoriTitolo')}</strong>
+              <p style={{ fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.5, margin: 0 }}>{t('minoriInfo')}</p>
+            </>
+          )}
           {!isEdit && (
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--ink)', marginTop: 10 }}>
               <input type="checkbox" checked={confermaMinori} onChange={(e) => setConfermaMinori(e.target.checked)} required style={{ marginTop: 2 }} />

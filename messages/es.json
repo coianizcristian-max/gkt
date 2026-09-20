@@ -174,7 +174,9 @@
     "navObiettivi": "Objetivos",
     "navStatistiche": "Estadísticas",
     "navPercorso": "Trayectoria",
-    "miaScheda": "Mi ficha"
+    "miaScheda": "Mi ficha",
+    "tabAnagrafica": "📋 Datos personales",
+    "tabAssenze": "📅 Ausencias"
   },
   "calendario": {
     "tabAgenda": "Agenda",
@@ -1765,7 +1767,8 @@
     "al": "Hasta (opc.)",
     "notaLabel": "Nota (opc.)",
     "notaPlaceholder": "P. ej. vacaciones, compromiso escolar, convocatoria",
-    "aggiungi": "Añadir ausencia"
+    "aggiungi": "Añadir ausencia",
+    "comeFunziona": "ℹ️ Cómo funciona"
   },
   "obiettivoCollegamenti": {
     "parametriTitolo": "Parámetros de evaluación vinculados",

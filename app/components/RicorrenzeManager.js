@@ -192,42 +192,47 @@ function RicorrenzaRiga({ ricorrenza, categorie, stagione, onChanged }) {
   const nomeAccorpata = categorie.find((c) => c.id === accorpaCon)?.nome ?? ''
 
   return (
-    <div className="lista-riga" style={{ flexWrap: 'wrap', gap: 8, alignItems: 'flex-end' }}>
-      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-        <span style={{ fontSize:11, color:'var(--ink-soft)' }}>{t('giorno')}</span>
+    <div className="lista-riga ric-riga">
+      {/* riepilogo in cima: si capisce al volo di che giorno e orario si tratta */}
+      <div className="ric-testa">
+        <b>{t('giorno_' + g)}</b>
+        <span>{oi?.slice(0, 5)}{ofine ? `–${ofine.slice(0, 5)}` : ''}</span>
+      </div>
+      <div className="ric-campo">
+        <span>{t('giorno')}</span>
         <select value={g} onChange={(e) => { setG(e.target.value); ch() }}>
           {[1,2,3,4,5,6,7].map((n) => <option key={n} value={n}>{t('giorno_' + n)}</option>)}
         </select>
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-        <span style={{ fontSize:11, color:'var(--ink-soft)' }}>{t('inizio')}</span>
+      <div className="ric-campo">
+        <span>{t('inizio')}</span>
         <input type="time" value={oi} onChange={(e) => { setOi(e.target.value); ch() }} />
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-        <span style={{ fontSize:11, color:'var(--ink-soft)' }}>{t('fine')}</span>
+      <div className="ric-campo">
+        <span>{t('fine')}</span>
         <input type="time" value={ofine} onChange={(e) => { setOfine(e.target.value); ch() }} />
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-        <span style={{ fontSize:11, color:'var(--ink-soft)' }}>{t('dal')}</span>
+      <div className="ric-campo">
+        <span>{t('dal')}</span>
         <input type="date" value={dStart} min={stagione?.data_inizio ?? ''} max={stagione?.data_fine ?? ''}
-          onChange={(e) => { setDStart(e.target.value); ch() }} style={{ width:130 }} />
+          onChange={(e) => { setDStart(e.target.value); ch() }} />
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-        <span style={{ fontSize:11, color:'var(--ink-soft)' }}>{t('al')}</span>
+      <div className="ric-campo">
+        <span>{t('al')}</span>
         <input type="date" value={dEnd} min={stagione?.data_inizio ?? ''} max={stagione?.data_fine ?? ''}
-          onChange={(e) => { setDEnd(e.target.value); ch() }} style={{ width:130 }} />
+          onChange={(e) => { setDEnd(e.target.value); ch() }} />
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-        <span style={{ fontSize:11, color:'var(--ink-soft)' }}>{t('accorpaCon')}</span>
-        <select value={accorpaCon} onChange={(e) => { setAccorpaCon(e.target.value); ch() }} style={{ maxWidth:160 }}>
+      <div className="ric-campo">
+        <span>{t('accorpaCon')}</span>
+        <select value={accorpaCon} onChange={(e) => { setAccorpaCon(e.target.value); ch() }}>
           <option value="">{t('nessunaAccorpa')}</option>
           {(categorie ?? []).filter((c) => c.id !== ricorrenza.squadra_id).map((c) => (
             <option key={c.id} value={c.id}>{c.nome}</option>
           ))}
         </select>
       </div>
-      <div style={{ display:'flex', gap:4, alignSelf:'flex-end' }}>
-        <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? '✓' : t('salva')}</button>
+      <div className="ric-azioni">
+        <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? `✓ ${t('salva')}` : t('salva')}</button>
         <button className="btn-mini btn-del" onClick={elimina} type="button">{t('elimina')}</button>
       </div>
       {accorpaCon && (

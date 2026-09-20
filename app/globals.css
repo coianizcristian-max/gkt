@@ -2890,3 +2890,26 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
   .guida-box { margin-bottom: 12px; }
   .guida-toggle { padding: 9px 12px; font-size: 0.9rem; }
 }
+
+/* Ricorrenze: ogni riga e' una schedina con riepilogo in cima (giorno e
+   orario) e i campi a due per riga; su PC restano in fila. */
+.ric-riga { align-items: flex-end; gap: 10px; flex-wrap: wrap; padding: 12px 14px; }
+.ric-testa { display: none; }
+.ric-campo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ric-campo > span { font-size: 11px; color: var(--ink-soft); }
+.ric-campo select, .ric-campo input { width: 100%; box-sizing: border-box; }
+.ric-azioni { display: flex; gap: 6px; align-self: flex-end; margin-left: auto; }
+@media (max-width: 720px) {
+  .ric-riga { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; padding: 12px; }
+  .ric-testa {
+    display: flex; align-items: baseline; gap: 8px; grid-column: 1 / -1;
+    padding-bottom: 6px; border-bottom: 1px solid var(--linea); margin-bottom: 2px;
+  }
+  .ric-testa b { font-size: 15px; }
+  .ric-testa span { font-size: 13px; color: var(--ink-soft); }
+  .ric-campo > span { font-size: 11.5px; }
+  .ric-campo select, .ric-campo input { min-height: 38px; padding: 6px 8px; font-size: 14.5px; max-width: none !important; }
+  .ric-azioni { grid-column: 1 / -1; margin-left: 0; }
+  .ric-azioni .btn-mini { flex: 1; padding: 8px 10px !important; font-size: 13px; }
+  .ric-riga > p { grid-column: 1 / -1; }
+}

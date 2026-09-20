@@ -95,20 +95,20 @@ export default function ProfiloForm({ profilo, userId }) {
   }
 
   return (
-    <div className="scheda">
+    <div className="scheda prof-form">
       {error && <div className="err">{error}</div>}
-      <p className="sub-intro" style={{ marginTop: 0, marginBottom: 12, fontSize: 13 }}>{t('intro')}</p>
+      <p className="sub-intro prof-intro" style={{ marginTop: 0, marginBottom: 12, fontSize: 13 }}>{t('intro')}</p>
       <div className="scheda-foto">
         <div className="foto-box">{preview ? <img loading="lazy" decoding="async" src={preview} alt="" /> : <span className="foto-ph">{t('nessunaFoto')}</span>}</div>
         <label className="foto-upload">{preview ? t('cambiaFoto') : t('caricaFoto')}<input type="file" accept="image/*" onChange={onFile} hidden /></label>
       </div>
       <div className="form-grid">
-        <div className="field"><label>{t('lNome')}</label><input value={f.nome_completo} onChange={upd('nome_completo')} required /></div>
-        <div className="field"><label>{t('lTelefono')}</label><input value={f.telefono} onChange={upd('telefono')} /></div>
-        <div className="field"><label>{t('lVia')}</label><input value={f.via} onChange={upd('via')} required /></div>
-        <div className="field"><label>{t('lCitta')}</label><input value={f.citta} onChange={upd('citta')} placeholder={t('phCitta')} required /></div>
-        <div className="field"><label>{t('lCap')}</label><input value={f.cap} onChange={upd('cap')} required /></div>
-        <div className="field"><label>{t('linguaPreferita')}</label>
+        <div className="field pr-nome"><label>{t('lNome')}</label><input value={f.nome_completo} onChange={upd('nome_completo')} required /></div>
+        <div className="field pr-tel"><label>{t('lTelefono')}</label><input value={f.telefono} onChange={upd('telefono')} /></div>
+        <div className="field pr-via"><label>{t('lVia')}</label><input value={f.via} onChange={upd('via')} required /></div>
+        <div className="field pr-citta"><label>{t('lCitta')}</label><input value={f.citta} onChange={upd('citta')} placeholder={t('phCitta')} required /></div>
+        <div className="field pr-cap"><label>{t('lCap')}</label><input value={f.cap} onChange={upd('cap')} required /></div>
+        <div className="field pr-lingua"><label>{t('linguaPreferita')}</label>
           <select value={f.lingua} onChange={upd('lingua')}>
             <option value="it">Italiano</option>
             <option value="en">English</option>
@@ -116,8 +116,8 @@ export default function ProfiloForm({ profilo, userId }) {
             <option value="es">Español</option>
           </select>
         </div>
-        <div className="field field-full">
-          <div style={{ background: 'var(--carta)', border: '1px solid var(--linea)', borderRadius: 10, padding: 12, display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'center' }}>
+        <div className="field field-full pr-disp">
+          <div className="pr-disp-box" style={{ background: 'var(--carta)', border: '1px solid var(--linea)', borderRadius: 10, padding: 12, display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'center' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, margin: 0 }}>
               <input type="checkbox" checked={f.disponibile} onChange={(e) => { setF((s) => ({ ...s, disponibile: e.target.checked })); setDone(false) }} />
               {t('disponibile')}
@@ -139,7 +139,7 @@ export default function ProfiloForm({ profilo, userId }) {
             <span style={{ color: 'var(--ink-soft)', fontSize: '0.85rem', flexBasis: '100%' }}>{t('disponibileNota')}</span>
           </div>
         </div>
-        <div className="field field-full">
+        <div className="field field-full pr-bio">
           <label>{t('bio')}</label>
           {!f.bio?.trim() && (
             <div style={{ background: '#fff7e6', border: '1px solid #f0c36d', borderRadius: 8, padding: '10px 12px', marginBottom: 8, fontSize: 13, lineHeight: 1.5 }}>
@@ -156,7 +156,9 @@ export default function ProfiloForm({ profilo, userId }) {
       <ListaEditabile titolo={t('certificati')} items={certificati}
         onSet={mkSet(certificati, setCertificati)} onAdd={mkAdd(certificati, setCertificati)} onDel={mkDel(certificati, setCertificati)}
         onMove={mkMove(certificati, setCertificati)} ph={t('phCertificati')} />
-      <div className="form-actions">
+      {/* su mobile il pulsante Salva resta fisso in fondo allo schermo:
+          la pagina e' lunga e cosi' non bisogna scorrere fino in fondo */}
+      <div className="form-actions pr-azioni">
         <button className="btn" onClick={salva} disabled={busy} type="button">{busy ? t('salvataggio') : done ? t('salvato') : t('salva')}</button>
       </div>
     </div>
@@ -167,7 +169,7 @@ function ListaEditabile({ titolo, items, onSet, onAdd, onDel, onMove, ph }) {
   const t = useTranslations('profiloForm')
   const stileFreccia = { padding: '4px 8px', lineHeight: 1, minWidth: 30 }
   return (
-    <div className="elenco-blocco">
+    <div className="elenco-blocco pr-lista">
       <h3>{titolo}</h3>
       {items.length === 0 && <p className="sub-intro">{t('nessunaVoce')}</p>}
       {items.map((v, i) => (

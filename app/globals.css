@@ -2648,3 +2648,38 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
   .es-form .es-azioni > * { flex: 1; margin: 0; }
   .es-form .es-azioni > .btn-del { flex: none; }
 }
+
+/* Profilo allenatore (ProfiloForm) su mobile: foto piu' piccola accanto al
+   pulsante, campi brevi a due per riga, meno spazi vuoti, elenchi compatti e
+   pulsante Salva sempre visibile in fondo allo schermo. */
+@media (max-width: 720px) {
+  .prof-form.scheda { padding: 14px; }
+  .prof-intro { font-size: 12.5px !important; margin-bottom: 10px !important; line-height: 1.45; }
+  .prof-form .scheda-foto { gap: 14px; margin-bottom: 14px; }
+  .prof-form .foto-box { width: 72px; height: 72px; flex: none; }
+  .prof-form .foto-upload { padding: 8px 14px; font-size: 14px; }
+  .prof-form .form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .prof-form .form-grid > .field { grid-column: auto; }
+  .pr-nome, .pr-via, .pr-disp, .pr-bio { grid-column: 1 / -1 !important; }
+  .pr-nome { order: 1; } .pr-tel { order: 2; } .pr-lingua { order: 3; }
+  .pr-via { order: 4; } .pr-citta { order: 5; } .pr-cap { order: 6; }
+  .pr-disp { order: 7; } .pr-bio { order: 8; }
+  .prof-form .field label { font-size: 13px; margin-bottom: 4px; }
+  .prof-form .field input, .prof-form .field select { padding: 9px 11px; }
+  .pr-disp-box { padding: 10px 12px !important; gap: 8px 14px !important; }
+  .pr-disp-box label { white-space: nowrap; }
+  .pr-disp-box input[type="checkbox"] { width: 20px; height: 20px; flex: none; margin: 0; padding: 0; }
+  .pr-disp-box select { width: auto; min-width: 110px; padding: 7px 10px; }
+  .pr-disp-box > span { font-size: 12.5px !important; line-height: 1.45; }
+  .pr-lista { margin-top: 14px; }
+  .pr-lista h3 { font-size: 15px; margin-bottom: 6px; }
+  .pr-lista .lista-riga { gap: 4px; margin-bottom: 6px; padding: 6px !important; }
+  .pr-lista > .btn-ghost { padding: 7px 14px; font-size: 13px; margin-top: 2px; }
+  .pr-lista .lista-riga .lista-nome { min-width: 0; padding: 8px 10px; }
+  .pr-lista .lista-riga .btn-mini { padding: 6px 7px !important; min-width: 28px !important; font-size: 12px; }
+  .pr-azioni {
+    position: sticky; bottom: 0; z-index: 5; margin: 14px -14px -14px; padding: 10px 14px;
+    background: var(--bianco); border-top: 1px solid var(--linea);
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.06); border-radius: 0 0 var(--r) var(--r);
+  }
+}

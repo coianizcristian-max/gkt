@@ -78,10 +78,15 @@ function RigaPartita({ p, andata = null, prossima = false, rigaRef = null }) {
           <span className="pm-cat">{p.squadra_nome}</span>
           {andata && (
             <span className="pm-andata" title={t('andataTitolo')}>
-              {t('andata')}{' '}
-              {esitoAndata
-                ? <b style={{ color: ESITO_COL[esitoAndata] }}>{andata.gol_fatti}–{andata.gol_subiti}</b>
-                : <b>–</b>}
+              {t('andata')}
+              {esitoAndata ? (
+                <>
+                  {/* esito esplicito (V/X/P): il punteggio e' sempre il nostro
+                      prima, anche se all'andata giocavamo in trasferta */}
+                  <span className="pm-esito pm-esito-mini" style={{ background: ESITO_COL[esitoAndata] }}>{esitoAndata}</span>
+                  <b>{andata.gol_fatti}–{andata.gol_subiti}</b>
+                </>
+              ) : <b>–</b>}
             </span>
           )}
         </span>

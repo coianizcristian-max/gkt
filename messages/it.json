@@ -1254,7 +1254,14 @@
     "salvataggio": "Salvataggio...",
     "salvato": "✓ Salvato",
     "salvaEsercizi": "Salva esercizi",
-    "senzaTipologia": "Senza tipologia"
+    "senzaTipologia": "Senza tipologia",
+    "aggiungiDaLibreria": "+ Aggiungi esercizi dalla libreria",
+    "titoloPannello": "Aggiungi esercizi",
+    "chiudi": "Chiudi",
+    "anteprimaPdf": "📄 Anteprima e PDF",
+    "filtri": "Filtri",
+    "tutteTipologie": "Tutte le tipologie ({n})",
+    "tipologia": "Tipologia"
   },
   "lavagnaEsercizio": {
     "erroreModifiche": "Errore nel salvataggio delle modifiche: ",

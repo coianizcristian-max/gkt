@@ -2683,3 +2683,55 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
     box-shadow: 0 -4px 12px rgba(0,0,0,0.06); border-radius: 0 0 var(--r) var(--r);
   }
 }
+
+/* Esercizi della seduta (AllenamentoEsercizi): libreria in un pannello */
+.ae-azioni { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+.ae-azioni .ae-apri { width: auto; padding: 10px 18px; }
+.ae-anteprima-btn { font-size: 13px; }
+.ae-pannello { margin: 8px 0 16px; border: 1px solid var(--linea); border-radius: var(--r); background: var(--bianco); box-shadow: var(--ombra); }
+.ae-pannello-testa { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--linea); }
+.ae-pannello-testa b { font-size: 16px; }
+.ae-chiudi { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--linea); background: var(--bianco); cursor: pointer; font-size: 15px; }
+.ae-pannello-corpo { padding: 10px 14px; }
+.ae-crea { display: flex; gap: 8px; margin: 8px 0; }
+.ae-crea .btn-ghost { flex: 1; font-size: 13px; padding: 8px 10px; }
+.ae-cerca { margin: 8px 0 4px; display: flex; flex-direction: column; gap: 6px; }
+.ae-cerca-riga { display: flex; gap: 6px; }
+.ae-cerca-riga select { flex: 1; min-width: 0; padding: 7px 10px; border: 1.5px solid var(--linea); border-radius: var(--r-sm); background: var(--carta); font: inherit; font-size: 13.5px; }
+.ae-filtri-btn { flex: none; padding: 7px 12px; border-radius: var(--r-sm); border: 1.5px solid var(--linea); background: var(--carta); font: inherit; font-size: 13px; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
+.ae-filtri-btn.on { border-color: var(--campo); color: var(--campo); }
+.ae-gruppo { margin-bottom: 12px; }
+.ae-gruppo-tit { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin: 10px 2px 0; }
+.ae-salva {
+  position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 14px; background: var(--bianco); border-top: 1px solid var(--linea); border-radius: 0 0 var(--r) var(--r);
+}
+.ae-salva-n { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.ae-salva .btn { width: auto; padding: 9px 20px; }
+.ae-salva-fuori { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 200; max-width: 480px; margin: 0 auto; }
+.ae-salva-fuori .ae-salva { position: static; border: 1px solid var(--linea); border-radius: 999px; box-shadow: 0 4px 20px rgba(20,32,43,0.18); }
+
+@media (max-width: 720px) {
+  .ae-azioni .ae-apri { flex: 1 1 100%; }
+  /* il pannello diventa una schermata intera: testa e barra Salva fisse */
+  .ae-pannello {
+    position: fixed; inset: 0; z-index: 1150; margin: 0; border: 0; border-radius: 0;
+    display: flex; flex-direction: column; animation: calxSheet .22s ease;
+    padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+  }
+  .ae-pannello-corpo { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 8px 12px 12px; }
+  .ae-salva { position: static; border-radius: 0; }
+  /* in demo la fascia gialla resta sopra: il pannello parte sotto di lei */
+  body:has(.demo-banner) .ae-pannello { top: var(--demo-h, 38px); }
+  /* schede esercizio a righe: miniatura a sinistra, testo, + a destra */
+  .ae-pannello .es-grid { grid-template-columns: 1fr; gap: 6px; }
+  .ae-pannello .es-tile { display: flex; align-items: center; min-height: 66px; border-width: 1.5px; }
+  .ae-pannello .es-tile-img { width: 66px; height: 66px !important; flex: none; }
+  .ae-pannello .es-tile-body { flex: 1; min-width: 0; padding: 6px 84px 6px 10px; }
+  .ae-pannello .es-tile-body { text-align: left; }
+  .ae-pannello .es-tile-body > div { justify-content: flex-start; text-align: left; }
+  .ae-pannello .es-tile-titolo { font-size: 14px; }
+  .ae-pannello .es-tile-desc { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .ae-pannello .es-tile-add { top: 50% !important; bottom: auto !important; right: 10px !important; transform: translateY(-50%); width: 34px !important; height: 34px !important; }
+  .ae-pannello .es-tile-pref { top: 50% !important; right: 50px !important; transform: translateY(-50%); }
+}

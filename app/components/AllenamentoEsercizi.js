@@ -25,8 +25,8 @@ function EsercizioPreview({ esercizio, onClose }) {
   const e = esercizio
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(20,32,43,0.55)', zIndex: 1000, backdropFilter: 'blur(2px)' }} />
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(20,32,43,0.55)', zIndex: 1400, backdropFilter: 'blur(2px)' }} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 1401, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
         <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '88vh', overflowY: 'auto', pointerEvents: 'all', boxShadow: '0 8px 40px rgba(20,32,43,0.22)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', borderBottom: '1px solid var(--linea)', position: 'sticky', top: 0, background: '#fff', borderRadius: '16px 16px 0 0' }}>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{e.titolo}</span>
@@ -70,6 +70,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
   const [cerca, setCerca] = useState('')
   const [filtroAttr, setFiltroAttr] = useState(new Set())
   const [modoFiltro, setModoFiltro] = useState('almeno') // 'almeno' | 'tutti'
+  const [filtriAperti, setFiltriAperti] = useState(false)
   const t = useTranslations('allenamentoEsercizi')
 
   useEffect(() => {
@@ -166,20 +167,20 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
         </div>
       )}
 
-      {/* Bottone crea nuovo esercizio */}
+      {/* Crea un esercizio nuovo: pulsanti piccoli, non e' l'azione principale */}
       {fonte === 'mia' && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-          <button className="btn" type="button" onClick={() => setShowLavagna(true)}>
-            {t('creaLavagna')}
-          </button>
-          <button className="btn" type="button" onClick={() => setShowNuovoModal(true)}>
+        <div className="ae-crea">
+          <button className="btn-ghost" type="button" onClick={() => setShowNuovoModal(true)}>
             {t('creaNuovo')}
+          </button>
+          <button className="btn-ghost" type="button" onClick={() => setShowLavagna(true)}>
+            {t('creaLavagna')}
           </button>
         </div>
       )}
 
-      {/* Ricerca testuale */}
-      <div style={{ margin: '8px 0 4px' }}>
+      {/* Ricerca testuale, tipologia e filtri */}
+      <div className="ae-cerca">
         <input
           type="search"
           value={cerca}
@@ -187,10 +188,21 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
           placeholder={t('cerca')}
           style={{ width: '100%', padding: '7px 12px', borderRadius: 'var(--r-sm)', border: '1.5px solid var(--linea)', fontSize: 14, background: 'var(--carta)', boxSizing: 'border-box' }}
         />
+        <div className="ae-cerca-riga">
+          <select value={tipologiaAttiva ?? ''} onChange={(e) => setTipologiaAttiva(e.target.value || null)} aria-label={t('tipologia')}>
+            <option value="">{t('tutteTipologie', { n: lista.length })}</option>
+            {chiavi.map((k) => <option key={k} value={k}>{tipologiaTradotta(k, locale)} ({gruppi[k].length})</option>)}
+          </select>
+          {attributiDisponibili.length > 0 && (
+            <button type="button" className={`ae-filtri-btn${filtroAttr.size ? ' on' : ''}`} onClick={() => setFiltriAperti((v) => !v)} aria-expanded={filtriAperti}>
+              {t('filtri')}{filtroAttr.size ? ` (${filtroAttr.size})` : ''} {filtriAperti ? '▴' : '▾'}
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Filtro attributi */}
-      {attributiDisponibili.length > 0 && (
+      {/* Filtro attributi: chiuso di default */}
+      {attributiDisponibili.length > 0 && filtriAperti && (
         <div style={{ margin: '8px 0 4px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
             <span style={{ fontSize: 12, color: 'var(--ink-soft)', marginRight: 2 }}>{t('attributi')}</span>
@@ -235,24 +247,11 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
         </div>
       ) : (
         <>
-          {/* Tab tipologie */}
-          <div className="sub-nav" style={{ flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
-            {chiavi.map((k) => (
-              <button
-                key={k}
-                type="button"
-                className={`sub-nav-link ${(tipologiaAttiva ?? chiavi[0]) === k ? 'active' : ''}`}
-                onClick={() => setTipologiaAttiva(k)}
-                style={{ fontSize: 12 }}
-              >
-                {tipologiaTradotta(k, locale)} ({gruppi[k].length})
-              </button>
-            ))}
-          </div>
-          {(() => {
-            const k = tipologiaAttiva ?? chiavi[0]
+          {(tipologiaAttiva && gruppi[tipologiaAttiva] ? [tipologiaAttiva] : chiavi).map((k) => {
             return (
-              <div className="elenco-blocco" key={k}>
+              <div className="elenco-blocco ae-gruppo" key={k}>
+                {/* con "tutte le tipologie" ogni gruppo ha il suo titolo */}
+                {!tipologiaAttiva && <div className="ae-gruppo-tit">{tipologiaTradotta(k, locale)} ({gruppi[k].length})</div>}
                 <div className="es-grid">
                   {(gruppi[k] ?? []).map((e) => {
                     const selezionato = sel.has(e.id)
@@ -276,6 +275,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
                         {/* Bottone + / ✓ */}
                         <button
                           type="button"
+                          className="es-tile-add"
                           onClick={() => onToggle(e.id)}
                           title={selezionato ? t('rimuoviSeduta') : t('aggiungiSeduta')}
                           style={{
@@ -292,7 +292,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
                         </button>
                         {/* Stella preferiti — solo libreria pubblica */}
                         {fonte === 'pubblica' && (
-                          <button type="button" onClick={(ev) => togglePreferito(ev, e.id)}
+                          <button type="button" className="es-tile-pref" onClick={(ev) => togglePreferito(ev, e.id)}
                             title={preferiti.has(e.id) ? t('rimuoviPreferiti') : t('aggiungiPreferiti')}
                             style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1, color: preferiti.has(e.id) ? 'var(--giallo, #e8a72c)' : '#ccc', padding: 2 }}>
                             {preferiti.has(e.id) ? '★' : '☆'}
@@ -304,7 +304,7 @@ function LibreriaView({ libreriaMia, libreriaPubblica, eserciziResponsabile = []
                 </div>
               </div>
             )
-          })()}
+          })}
         </>
       )}
       {showNuovoModal && (
@@ -473,7 +473,11 @@ function OrdineView({ ordine, tuttiEsercizi, onOrdineChange, allenamentoId, onRi
 export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], libreriaPubblica = [], eserciziResponsabile = [], selezionatiIniziali, selezionatiEsercizi = [], attributiDisponibili = [] }) {
   const router = useRouter()
   const t = useTranslations('allenamentoEsercizi')
-  const [tab, setTab] = useState('libreria')
+  // Libreria in un pannello che si apre con "+ Aggiungi esercizi" (a tutto
+  // schermo su mobile). L'elenco della seduta con l'ordine e' gia' sopra
+  // (EserciziSedutaEditor): qui non si ripete. Anteprima e PDF a richiesta.
+  const [pannello, setPannello] = useState(false)
+  const [anteprima, setAnteprima] = useState(false)
   const [sel, setSel] = useState(new Set(selezionatiIniziali))
   const [ordine, setOrdine] = useState(selezionatiIniziali)
   const [busy, setBusy] = useState(false)
@@ -509,34 +513,46 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
         const { error: iErr } = await supabase.from('allenamento_esercizi').insert(rows)
         if (iErr) throw iErr
       }
-      setDone(true); setTab('ordine'); router.refresh()
+      setDone(true); setPannello(false); router.refresh()
     } catch (err) { setError(err.message) }
     setBusy(false)
   }
 
+  // modifiche non ancora salvate (selezione o ordine diversi da quelli salvati)
+  const firma = (arr) => arr.join(',')
+  const modificato = firma(ordine.filter((id) => sel.has(id))) !== firma(selezionatiIniziali ?? [])
+
+  // pannello aperto su mobile: la pagina sotto non scorre
+  useEffect(() => {
+    if (!pannello || !window.matchMedia?.('(max-width: 720px)').matches) return
+    const prima = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prima }
+  }, [pannello])
+
+  const barraSalva = (
+    <div className="ae-salva">
+      <span className="ae-salva-n">{t('nSelezionati', { n: sel.size })}</span>
+      <button className="btn" onClick={salva} disabled={busy || !modificato} type="button">
+        {busy ? t('salvataggio') : done && !modificato ? t('salvato') : t('salvaEsercizi')}
+      </button>
+    </div>
+  )
+
   return (
-    <div className="lista-editor">
+    <div className="lista-editor ae">
       {error && <div className="err">{error}</div>}
-      <div className="sub-nav">
-        <button type="button" className={`sub-nav-link ${tab === 'libreria' ? 'active' : ''}`} onClick={() => setTab('libreria')}>
-          {t('tabLibreria', { n: sel.size })}
-        </button>
-        <button type="button" className={`sub-nav-link ${tab === 'ordine' ? 'active' : ''}`} onClick={() => setTab('ordine')}>
-          {t('tabOrdine')}
-        </button>
+
+      <div className="ae-azioni">
+        <button type="button" className="btn ae-apri" onClick={() => setPannello(true)}>{t('aggiungiDaLibreria')}</button>
+        {sel.size > 0 && (
+          <button type="button" className="btn-ghost ae-anteprima-btn" onClick={() => setAnteprima((v) => !v)} aria-expanded={anteprima}>
+            {t('anteprimaPdf')} {anteprima ? '▴' : '▾'}
+          </button>
+        )}
       </div>
 
-      {tab === 'libreria' && (
-        <LibreriaView
-          libreriaMia={libreriaMia}
-          libreriaPubblica={libreriaPubblica}
-          eserciziResponsabile={eserciziResponsabile}
-          sel={sel}
-          onToggle={toggle}
-          attributiDisponibili={attributiDisponibili}
-        />
-      )}
-      {tab === 'ordine' && (
+      {anteprima && sel.size > 0 && (
         <OrdineView
           ordine={ordine.filter((id) => sel.has(id))}
           tuttiEsercizi={tuttiEsercizi}
@@ -546,22 +562,28 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
         />
       )}
 
-      {/* Bottone salva fisso in basso a destra */}
-      <div style={{
-        position: 'fixed', bottom: 20, right: 20, zIndex: 200,
-        display: 'flex', alignItems: 'center', gap: 10,
-        background: 'var(--carta, #fff)', borderRadius: 40,
-        boxShadow: '0 4px 20px rgba(20,32,43,0.18)',
-        padding: '8px 16px 8px 14px',
-        border: '1px solid var(--linea)',
-      }}>
-        <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontWeight: 500 }}>
-          {t('nSelezionati', { n: sel.size })}
-        </span>
-        <button className="btn" onClick={salva} disabled={busy} type="button" style={{ borderRadius: 30, padding: '8px 20px' }}>
-          {busy ? t('salvataggio') : done ? t('salvato') : t('salvaEsercizi')}
-        </button>
-      </div>
+      {pannello && (
+        <div className="ae-pannello" role="dialog" aria-label={t('titoloPannello')}>
+          <div className="ae-pannello-testa">
+            <b>{t('titoloPannello')}</b>
+            <button type="button" className="ae-chiudi" onClick={() => setPannello(false)} aria-label={t('chiudi')}>✕</button>
+          </div>
+          <div className="ae-pannello-corpo">
+            <LibreriaView
+              libreriaMia={libreriaMia}
+              libreriaPubblica={libreriaPubblica}
+              eserciziResponsabile={eserciziResponsabile}
+              sel={sel}
+              onToggle={toggle}
+              attributiDisponibili={attributiDisponibili}
+            />
+          </div>
+          {barraSalva}
+        </div>
+      )}
+
+      {/* fuori dal pannello la barra compare solo se c'e' qualcosa da salvare */}
+      {!pannello && modificato && <div className="ae-salva-fuori">{barraSalva}</div>}
     </div>
   )
 }

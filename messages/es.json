@@ -1254,7 +1254,14 @@
     "salvataggio": "Guardando...",
     "salvato": "✓ Guardado",
     "salvaEsercizi": "Guardar ejercicios",
-    "senzaTipologia": "Sin tipología"
+    "senzaTipologia": "Sin tipología",
+    "aggiungiDaLibreria": "+ Añadir ejercicios de la biblioteca",
+    "titoloPannello": "Añadir ejercicios",
+    "chiudi": "Cerrar",
+    "anteprimaPdf": "📄 Vista previa y PDF",
+    "filtri": "Filtros",
+    "tutteTipologie": "Todos los tipos ({n})",
+    "tipologia": "Tipo"
   },
   "lavagnaEsercizio": {
     "erroreModifiche": "Error al guardar los cambios: ",

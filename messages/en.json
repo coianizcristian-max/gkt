@@ -1254,7 +1254,14 @@
     "salvataggio": "Saving...",
     "salvato": "✓ Saved",
     "salvaEsercizi": "Save drills",
-    "senzaTipologia": "No type"
+    "senzaTipologia": "No type",
+    "aggiungiDaLibreria": "+ Add exercises from the library",
+    "titoloPannello": "Add exercises",
+    "chiudi": "Close",
+    "anteprimaPdf": "📄 Preview and PDF",
+    "filtri": "Filters",
+    "tutteTipologie": "All types ({n})",
+    "tipologia": "Type"
   },
   "lavagnaEsercizio": {
     "erroreModifiche": "Error saving the changes: ",

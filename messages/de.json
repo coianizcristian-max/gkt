@@ -1254,7 +1254,14 @@
     "salvataggio": "Speichern...",
     "salvato": "✓ Gespeichert",
     "salvaEsercizi": "Übungen speichern",
-    "senzaTipologia": "Ohne Typ"
+    "senzaTipologia": "Ohne Typ",
+    "aggiungiDaLibreria": "+ Übungen aus der Bibliothek hinzufügen",
+    "titoloPannello": "Übungen hinzufügen",
+    "chiudi": "Schließen",
+    "anteprimaPdf": "📄 Vorschau und PDF",
+    "filtri": "Filter",
+    "tutteTipologie": "Alle Arten ({n})",
+    "tipologia": "Art"
   },
   "lavagnaEsercizio": {
     "erroreModifiche": "Fehler beim Speichern der Änderungen: ",

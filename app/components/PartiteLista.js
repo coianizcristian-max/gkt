@@ -149,7 +149,7 @@ export default function PartiteLista({ partite, categorie, isPortiere = false, o
 
   return (
     <div>
-      <div className="scheda" style={{ marginBottom: 16 }}>
+      <div className="scheda pm-scheda" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
           <h3 style={{ margin: 0 }}>{t('prossime')}</h3>
           <div style={{ display: 'flex', gap: 6 }}>

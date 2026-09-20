@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { tipologiaTradotta } from '@/lib/elenchi'
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useTransition } from 'react'
 import NuovoEsercizioModal from '@/app/components/NuovoEsercizioModal'
 import LavagnaEsercizioModal from '@/app/components/LavagnaEsercizioModal'
 import { useRouter } from 'next/navigation'
@@ -477,6 +477,11 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
   // schermo su mobile). L'elenco della seduta con l'ordine e' gia' sopra
   // (EserciziSedutaEditor): qui non si ripete. Anteprima e PDF a richiesta.
   const [pannello, setPannello] = useState(false)
+  // Dopo "Salva esercizi" il pannello resta aperto (con "Salvataggio…") finche'
+  // la pagina non ha finito di aggiornarsi: chiudendolo si vede subito
+  // l'elenco della seduta gia' aggiornato, senza passaggi intermedi.
+  const [aggiornando, avviaAggiornamento] = useTransition()
+  const [attesaAggiornamento, setAttesaAggiornamento] = useState(false)
   const [anteprima, setAnteprima] = useState(false)
   const [sel, setSel] = useState(new Set(selezionatiIniziali))
   const [ordine, setOrdine] = useState(selezionatiIniziali)
@@ -493,6 +498,13 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firmaSalvati])
   useEffect(() => { ripristina() }, [ripristina])
+  useEffect(() => {
+    if (attesaAggiornamento && !aggiornando) {
+      setAttesaAggiornamento(false)
+      setPannello(false)
+    }
+  }, [attesaAggiornamento, aggiornando])
+
   function chiudiPannello() {
     ripristina()
     setPannello(false)
@@ -530,7 +542,9 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
         const { error: iErr } = await supabase.from('allenamento_esercizi').insert(rows)
         if (iErr) throw iErr
       }
-      setDone(true); setPannello(false); router.refresh()
+      setDone(true)
+      setAttesaAggiornamento(true)
+      avviaAggiornamento(() => { router.refresh() })
     } catch (err) { setError(err.message) }
     setBusy(false)
   }
@@ -550,8 +564,8 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
   const barraSalva = (
     <div className="ae-salva">
       <span className="ae-salva-n">{t('nSelezionati', { n: sel.size })}</span>
-      <button className="btn" onClick={salva} disabled={busy || !modificato} type="button">
-        {busy ? t('salvataggio') : done && !modificato ? t('salvato') : t('salvaEsercizi')}
+      <button className="btn" onClick={salva} disabled={busy || attesaAggiornamento || !modificato} type="button">
+        {busy || attesaAggiornamento ? t('salvataggio') : done && !modificato ? t('salvato') : t('salvaEsercizi')}
       </button>
     </div>
   )

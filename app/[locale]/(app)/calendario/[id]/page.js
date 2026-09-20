@@ -23,7 +23,7 @@ import { caricaParametri } from '@/lib/parametri'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AllenamentoPage({ params }) {
+export default async function AllenamentoPage({ params, searchParams }) {
   const locale = await getLocale()
   const { id } = await params
   const supabase = await createClient()
@@ -407,6 +407,7 @@ export default async function AllenamentoPage({ params }) {
           </div>
         )}
         <AllenamentoTabs
+          iniziale={(await searchParams)?.tab}
           dettaglio={
             <AllenamentoForm allenamento={allenamento} categorie={categorie} stagioneId={allenamento.stagione_id} />
           }

@@ -2,9 +2,23 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
-export default function AllenamentoTabs({ dettaglio, valutazioni, esercizi, feedback }) {
+const SCHEDE = ['dettaglio', 'valutazioni', 'esercizi']
+
+// La scheda aperta sta anche nell'indirizzo (?tab=esercizi): dopo un
+// salvataggio la pagina si aggiorna e si resta sulla stessa scheda, invece di
+// tornare a "Dettaglio".
+export default function AllenamentoTabs({ dettaglio, valutazioni, esercizi, feedback, iniziale = 'dettaglio' }) {
   const t = useTranslations('allenamentoTabs')
-  const [tab, setTab] = useState('dettaglio')
+  const [tab, setTabState] = useState(SCHEDE.includes(iniziale) ? iniziale : 'dettaglio')
+  function setTab(nuova) {
+    setTabState(nuova)
+    try {
+      const url = new URL(window.location.href)
+      if (nuova === 'dettaglio') url.searchParams.delete('tab')
+      else url.searchParams.set('tab', nuova)
+      window.history.replaceState(window.history.state, '', url)
+    } catch {}
+  }
 
   return (
     <div>

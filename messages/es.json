@@ -1779,7 +1779,11 @@
     "eserciziTitolo": "Ejercicios vinculados",
     "eserciziIntro": "Vincula los ejercicios de tu biblioteca que usas para trabajar este objetivo.",
     "nessunEsercizio": "Ningún ejercicio en la biblioteca.",
-    "trendTitolo": "📈 Tendencia automática"
+    "trendTitolo": "📈 Tendencia automática",
+    "cercaEsercizio": "Busca entre tus {n} ejercicios para vincular…",
+    "nessunRisultato": "Ningún ejercicio con este título.",
+    "altriRisultati": "Otros {n}: escribe más letras para acotar.",
+    "scollega": "Desvincular"
   },
   "parametriValutazione": {
     "almenoUno": "Selecciona al menos un parámetro: lo necesitas para poder evaluar los entrenamientos.",

@@ -1779,7 +1779,11 @@
     "eserciziTitolo": "Verknüpfte Übungen",
     "eserciziIntro": "Verknüpfe die Übungen aus deiner Bibliothek, mit denen du an diesem Ziel arbeitest.",
     "nessunEsercizio": "Keine Übung in der Bibliothek.",
-    "trendTitolo": "📈 Automatischer Trend"
+    "trendTitolo": "📈 Automatischer Trend",
+    "cercaEsercizio": "In deinen {n} Übungen suchen und verknüpfen…",
+    "nessunRisultato": "Keine Übung mit diesem Titel.",
+    "altriRisultati": "{n} weitere: tippe mehr Buchstaben, um einzugrenzen.",
+    "scollega": "Verknüpfung lösen"
   },
   "parametriValutazione": {
     "almenoUno": "Wähle mindestens einen Parameter: Du brauchst ihn, um Trainings zu bewerten.",

@@ -1779,7 +1779,11 @@
     "eserciziTitolo": "Esercizi collegati",
     "eserciziIntro": "Collega gli esercizi della tua libreria che usi per lavorare su questo obiettivo.",
     "nessunEsercizio": "Nessun esercizio nella libreria.",
-    "trendTitolo": "📈 Trend automatico"
+    "trendTitolo": "📈 Trend automatico",
+    "cercaEsercizio": "Cerca tra i tuoi {n} esercizi da collegare…",
+    "nessunRisultato": "Nessun esercizio con questo titolo.",
+    "altriRisultati": "Altri {n}: scrivi qualche lettera in più per restringere.",
+    "scollega": "Scollega"
   },
   "parametriValutazione": {
     "almenoUno": "Seleziona almeno un parametro: ti serve per poter valutare gli allenamenti.",

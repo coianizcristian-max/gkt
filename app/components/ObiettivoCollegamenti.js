@@ -12,6 +12,16 @@ export function SelettoreCollegamenti({ obiettivoId, parametriTutti, parametriSe
   const [busyEs, setBusyEs] = useState(null)
   const selParSet = new Set(parametriSelezionati)
   const selEsSet = new Set(eserciziSelezionati)
+  // Esercizi: non si mostra piu' tutta la libreria (con centinaia di esercizi
+  // la pagina diventava lunghissima). Si vedono i collegati e si cercano gli
+  // altri per titolo: compaiono al massimo 8 risultati.
+  const [cercaEs, setCercaEs] = useState('')
+  const MAX_RISULTATI = 8
+  const eserciziCollegati = eserciziTutti.filter((e) => selEsSet.has(e.id))
+  const q = cercaEs.trim().toLowerCase()
+  const trovati = q
+    ? eserciziTutti.filter((e) => !selEsSet.has(e.id) && (e.titolo || '').toLowerCase().includes(q))
+    : []
 
   async function toggleParametro(parametroId) {
     setBusyPar(parametroId)
@@ -38,14 +48,14 @@ export function SelettoreCollegamenti({ obiettivoId, parametriTutti, parametriSe
   return (
     <div className="elenco-blocco">
       <h3>{t('parametriTitolo')}</h3>
-      <p className="sub-intro" style={{ marginTop: -6 }}>{t('parametriIntro')}</p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+      <p className="sub-intro oc-intro">{t('parametriIntro')}</p>
+      <div className="oc-chips" style={{ marginBottom: 16 }}>
         {parametriTutti.map((p) => {
           const attivo = selParSet.has(p.id)
           return (
-            <button key={p.id} type="button" onClick={() => toggleParametro(p.id)} disabled={busyPar === p.id}
+            <button key={p.id} type="button" className="oc-chip" onClick={() => toggleParametro(p.id)} disabled={busyPar === p.id}
               style={{
-                padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                borderRadius: 999, fontWeight: 600, cursor: 'pointer',
                 border: '1.5px solid var(--azzurro)',
                 background: attivo ? 'var(--azzurro)' : 'transparent',
                 color: attivo ? '#fff' : 'var(--azzurro)',
@@ -58,24 +68,40 @@ export function SelettoreCollegamenti({ obiettivoId, parametriTutti, parametriSe
       </div>
 
       <h3>{t('eserciziTitolo')}</h3>
-      <p className="sub-intro" style={{ marginTop: -6 }}>{t('eserciziIntro')}</p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        {eserciziTutti.map((e) => {
-          const attivo = selEsSet.has(e.id)
-          return (
-            <button key={e.id} type="button" onClick={() => toggleEsercizio(e.id)} disabled={busyEs === e.id}
-              style={{
-                padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                border: '1.5px solid var(--campo)',
-                background: attivo ? 'var(--campo)' : 'transparent',
-                color: attivo ? '#fff' : 'var(--campo)',
-              }}>
-              {attivo ? '✓ ' : ''}{e.titolo}
-            </button>
-          )
-        })}
-        {eserciziTutti.length === 0 && <p className="sub-intro">{t('nessunEsercizio')}</p>}
-      </div>
+      <p className="sub-intro oc-intro">{t('eserciziIntro')}</p>
+      {eserciziTutti.length === 0 ? (
+        <p className="sub-intro">{t('nessunEsercizio')}</p>
+      ) : (
+        <>
+          {/* esercizi gia' collegati: si tolgono con la x */}
+          {eserciziCollegati.length > 0 && (
+            <div className="oc-chips">
+              {eserciziCollegati.map((e) => (
+                <button key={e.id} type="button" className="oc-chip oc-chip-es on" onClick={() => toggleEsercizio(e.id)}
+                  disabled={busyEs === e.id} title={t('scollega')}>
+                  {e.titolo} <span aria-hidden="true">✕</span>
+                </button>
+              ))}
+            </div>
+          )}
+          <input type="search" className="oc-cerca" value={cercaEs} onChange={(ev) => setCercaEs(ev.target.value)}
+            placeholder={t('cercaEsercizio', { n: eserciziTutti.length })} />
+          {q && (
+            <div className="oc-risultati">
+              {trovati.length === 0 && <div className="oc-vuoto">{t('nessunRisultato')}</div>}
+              {trovati.slice(0, MAX_RISULTATI).map((e) => (
+                <button key={e.id} type="button" className="oc-ris" onClick={() => toggleEsercizio(e.id)} disabled={busyEs === e.id}>
+                  <span className="oc-ris-tit">{e.titolo}</span>
+                  <span className="oc-ris-add">+</span>
+                </button>
+              ))}
+              {trovati.length > MAX_RISULTATI && (
+                <div className="oc-vuoto">{t('altriRisultati', { n: trovati.length - MAX_RISULTATI })}</div>
+              )}
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

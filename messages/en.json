@@ -1779,7 +1779,11 @@
     "eserciziTitolo": "Linked drills",
     "eserciziIntro": "Link the drills from your library that you use to work on this goal.",
     "nessunEsercizio": "No drill in the library.",
-    "trendTitolo": "📈 Automatic trend"
+    "trendTitolo": "📈 Automatic trend",
+    "cercaEsercizio": "Search your {n} exercises to link…",
+    "nessunRisultato": "No exercise with this title.",
+    "altriRisultati": "{n} more: type a few more letters to narrow down.",
+    "scollega": "Unlink"
   },
   "parametriValutazione": {
     "almenoUno": "Select at least one parameter: you need it to evaluate trainings.",

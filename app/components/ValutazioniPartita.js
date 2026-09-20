@@ -19,7 +19,7 @@ function makeRow(p, v, categoria = null) {
   }
 }
 
-export default function ValutazioniPartita({ partitaId, golSubiti, portieri, portieriAltri = [], valIniziali, scalaVoti = [], puntiOpts = [] }) {
+export default function ValutazioniPartita({ partitaId, golSubiti, golFatti = null, portieri, portieriAltri = [], valIniziali, scalaVoti = [], puntiOpts = [] }) {
   const t = useTranslations('valutazioniPartita')
   const router = useRouter()
   const cleanSheet = golSubiti === 0
@@ -162,8 +162,13 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
           <button type="button" className="btn-mini" onClick={() => vaiASchedaPartita('dettaglio')}>{t('inserisciRisultato')}</button>
         </div>
       ) : (
-        <div className="val-nessuno vp-riep">
-          {cleanSheet ? t('cleanSheet') : t('golSubitiTot', { n: golSubiti })}
+        // Risultato sempre visibile, con il rimando per modificarlo nel dettaglio
+        <div className="val-nessuno vp-riep vp-ris">
+          <span>
+            {golFatti != null && <b className="vp-ris-num">{golFatti}–{golSubiti}</b>}
+            {cleanSheet ? t('cleanSheet') : t('golSubitiTot', { n: golSubiti })}
+          </span>
+          <button type="button" className="btn-mini" onClick={() => vaiASchedaPartita('dettaglio')}>{t('modificaRisultato')}</button>
         </div>
       )}
 

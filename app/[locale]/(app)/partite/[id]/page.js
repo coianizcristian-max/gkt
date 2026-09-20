@@ -151,6 +151,7 @@ export default async function PartitaPage({ params }) {
         <ValutazioniPartita
           partitaId={id}
           golSubiti={partita.gol_subiti}
+          golFatti={partita.gol_fatti}
           portieri={portieri}
           portieriAltri={portieriAltri}
           valIniziali={valIniziali}

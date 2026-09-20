@@ -2416,7 +2416,8 @@
     "puntiPortati": "Erzielte Punkte",
     "puntiAiuto": "Erzielte Punkte: wie viele Punkte der Torhüter der Mannschaft mit seiner Leistung gebracht hat (z. B. mit einer entscheidenden Parade). Nicht die Tabellenpunkte des Spiels.",
     "inserisciRisultato": "Ergebnis eingeben →",
-    "altraCategoriaQuando": "Wann brauche ich das?"
+    "altraCategoriaQuando": "Wann brauche ich das?",
+    "modificaRisultato": "Ändern →"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

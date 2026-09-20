@@ -2416,7 +2416,8 @@
     "puntiPortati": "Punti portati",
     "puntiAiuto": "Punti portati: quanti punti il portiere ha fatto guadagnare alla squadra con la sua prestazione (per esempio con una parata decisiva). Non sono i punti in classifica della partita.",
     "inserisciRisultato": "Inserisci il risultato →",
-    "altraCategoriaQuando": "Quando serve?"
+    "altraCategoriaQuando": "Quando serve?",
+    "modificaRisultato": "Modifica →"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

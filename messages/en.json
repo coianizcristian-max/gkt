@@ -2416,7 +2416,8 @@
     "puntiPortati": "Points earned",
     "puntiAiuto": "Points earned: how many points the goalkeeper won for the team with his performance (for example with a decisive save). Not the league points of the match.",
     "inserisciRisultato": "Enter the result →",
-    "altraCategoriaQuando": "When is this needed?"
+    "altraCategoriaQuando": "When is this needed?",
+    "modificaRisultato": "Edit →"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

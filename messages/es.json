@@ -2416,7 +2416,8 @@
     "puntiPortati": "Puntos aportados",
     "puntiAiuto": "Puntos aportados: cuántos puntos ha hecho ganar el portero al equipo con su actuación (por ejemplo con una parada decisiva). No son los puntos de liga del partido.",
     "inserisciRisultato": "Introducir el resultado →",
-    "altraCategoriaQuando": "¿Cuándo sirve?"
+    "altraCategoriaQuando": "¿Cuándo sirve?",
+    "modificaRisultato": "Modificar →"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

@@ -907,6 +907,9 @@ a { color: inherit; text-decoration: none; }
 }
 /* riepilogo gol sopra i portieri: una riga compatta */
 .vp-riep { padding: 8px 12px; font-size: 14px; font-weight: 600; }
+.vp-ris { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vp-ris-num { font-size: 16px; font-weight: 800; margin-right: 8px; }
+.vp-ris .btn-mini { white-space: nowrap; }
 /* etichetta con (i) e piccolo popup di spiegazione */
 .vp-campo { position: relative; }
 .vp-lab-info { display: inline-flex; align-items: center; gap: 4px; }

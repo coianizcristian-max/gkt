@@ -476,10 +476,6 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
 
   return (
     <div className="calx">
-      {/* su mobile la legenda e' chiusa: si apre col pulsante (spazio alla griglia) */}
-      <button type="button" className="calx-legenda-toggle" onClick={() => setLegendaAperta((v) => !v)} aria-expanded={legendaAperta}>
-        {t('legenda')} {legendaAperta ? '▴' : '▾'}
-      </button>
       <div className={`calx-legende${legendaAperta ? ' aperta' : ''}`}>
       <div className="calx-legenda">
         {isPortiere ? (
@@ -506,6 +502,11 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
           <span className="calx-title">{meseTitolo}</span>
           <button type="button" onClick={() => { setCursor(new Date(year, month + 1, 1)); setSelectedDay(null); setOpenId(null) }} aria-label={t('meseSucc')}>›</button>
         </div>
+        {/* su mobile la legenda e' chiusa: il pulsante sta nella stessa riga
+            del mese e del filtro, cosi' la griglia sale in alto */}
+        <button type="button" className="calx-legenda-toggle" onClick={() => setLegendaAperta((v) => !v)} aria-expanded={legendaAperta}>
+          {t('legenda')} {legendaAperta ? '▴' : '▾'}
+        </button>
         {categorie.length > 1 && (
           <select value={filtro} onChange={(e) => { setFiltro(e.target.value); setSelectedDay(null); setOpenId(null) }} aria-label={t('filtraCategoria')}>
             <option value="">{t('tutteCategorie')}</option>

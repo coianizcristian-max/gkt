@@ -178,7 +178,7 @@ export default async function CalendarioPage() {
 
   return (
     <>
-      <div className="topbar topbar-row">
+      <div className="topbar topbar-row topbar-cal">
         <div>
           <div className="eyebrow">{c('stagione', { nome: stagione?.nome ?? '—' })}</div>
           <h1>{t('titolo')}</h1>

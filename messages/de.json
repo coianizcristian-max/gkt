@@ -497,7 +497,9 @@
     "valutazioni": "Bewertungen",
     "paywallLabel": "Spielbewertungen",
     "nessunPortiereCat": "Kein Torhüter in dieser Kategorie für die Saison gemeldet.",
-    "altraCategoria": "Andere Kategorie"
+    "altraCategoria": "Andere Kategorie",
+    "tabDettaglio": "Details",
+    "tabValutazioni": "Bewertungen"
   },
   "obiettiviPortiere": {
     "titolo": "Ziele",

@@ -497,7 +497,9 @@
     "valutazioni": "Evaluaciones",
     "paywallLabel": "Evaluaciones de partido",
     "nessunPortiereCat": "Ningún portero inscrito en esta categoría para la temporada.",
-    "altraCategoria": "Otra categoría"
+    "altraCategoria": "Otra categoría",
+    "tabDettaglio": "Detalle",
+    "tabValutazioni": "Valoraciones"
   },
   "obiettiviPortiere": {
     "titolo": "Objetivos",

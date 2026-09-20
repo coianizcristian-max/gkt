@@ -497,7 +497,9 @@
     "valutazioni": "Valutazioni",
     "paywallLabel": "Valutazioni partita",
     "nessunPortiereCat": "Nessun portiere iscritto a questa categoria per la stagione.",
-    "altraCategoria": "Altra categoria"
+    "altraCategoria": "Altra categoria",
+    "tabDettaglio": "Dettaglio",
+    "tabValutazioni": "Valutazioni"
   },
   "obiettiviPortiere": {
     "titolo": "Obiettivi",

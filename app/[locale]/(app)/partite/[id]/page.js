@@ -5,6 +5,7 @@ import { contestoDati, entroTaglio } from '@/lib/demo'
 import PartitaForm from '@/app/components/PartitaForm'
 import ValutazioniPartita from '@/app/components/ValutazioniPartita'
 import PaywallBanner from '@/app/components/PaywallBanner'
+import SchedePartitaMobile from '@/app/components/SchedePartitaMobile'
 import { getGatingConfig, hasAbbonamento, isUnlocked } from '@/lib/gating'
 import { getTranslations } from 'next-intl/server'
 
@@ -132,6 +133,36 @@ export default async function PartitaPage({ params }) {
   const puntiOpts = (puntiRows ?? []).map((r) => ({ label: r.valore, value: r.valore_num }))
   const avversari = [...new Set((avvRows ?? []).map((r) => r.nome))]
 
+  // Su mobile la pagina e' divisa in due schede. Si apre su "Valutazioni" se la
+  // partita e' gia' stata giocata (e' quello che si viene a fare), altrimenti
+  // su "Dettaglio" (non c'e' ancora niente da valutare).
+  const oggiRif = oggiCtx || new Date().toISOString().slice(0, 10)
+  const giocata = giocataDemo && partita.data <= oggiRif
+  const nPortieri = portieri.length
+  const nValutati = portieri.filter((p) => valIniziali[p.id]?.presente != null).length
+  const conteggio = giocata && canValPartita && nPortieri > 0 ? `${nValutati}/${nPortieri}` : null
+
+  const sezioneValutazioni = (
+    <>
+      <h2 className="sezione-titolo">{t('valutazioni')}</h2>
+      {!canValPartita
+        ? <PaywallBanner chiave="valutazioni_partita" label={t('paywallLabel')} />
+        : (portieri.length > 0 || portieriAltri.length > 0) ? (
+        <ValutazioniPartita
+          partitaId={id}
+          golSubiti={partita.gol_subiti}
+          portieri={portieri}
+          portieriAltri={portieriAltri}
+          valIniziali={valIniziali}
+          scalaVoti={scalaVoti}
+          puntiOpts={puntiOpts}
+        />
+      ) : (
+        <div className="empty">{t('nessunPortiereCat')}</div>
+      )}
+    </>
+  )
+
   return (
     <>
       <div className="topbar">
@@ -140,23 +171,12 @@ export default async function PartitaPage({ params }) {
       </div>
       <div className="content">
         <p className="sub-intro">{dataLabel}{orarioLabel ? ` · ${orarioLabel}` : ''}</p>
-        <PartitaForm partita={partita} categorie={categorie} stagioneId={partita.stagione_id} avversari={avversari} />
-        <h2 className="sezione-titolo">{t('valutazioni')}</h2>
-        {!canValPartita
-          ? <PaywallBanner chiave="valutazioni_partita" label={t('paywallLabel')} />
-          : (portieri.length > 0 || portieriAltri.length > 0) ? (
-          <ValutazioniPartita
-            partitaId={id}
-            golSubiti={partita.gol_subiti}
-            portieri={portieri}
-            portieriAltri={portieriAltri}
-            valIniziali={valIniziali}
-            scalaVoti={scalaVoti}
-            puntiOpts={puntiOpts}
-          />
-        ) : (
-          <div className="empty">{t('nessunPortiereCat')}</div>
-        )}
+        <SchedePartitaMobile
+          iniziale={giocata ? 'valutazioni' : 'dettaglio'}
+          etichette={{ dettaglio: t('tabDettaglio'), valutazioni: t('tabValutazioni'), conteggio }}
+          dettaglio={<PartitaForm partita={partita} categorie={categorie} stagioneId={partita.stagione_id} avversari={avversari} />}
+          valutazioni={sezioneValutazioni}
+        />
       </div>
     </>
   )

@@ -497,7 +497,9 @@
     "valutazioni": "Evaluations",
     "paywallLabel": "Match evaluations",
     "nessunPortiereCat": "No goalkeeper enrolled in this category for the season.",
-    "altraCategoria": "Other category"
+    "altraCategoria": "Other category",
+    "tabDettaglio": "Details",
+    "tabValutazioni": "Evaluations"
   },
   "obiettiviPortiere": {
     "titolo": "Goals",

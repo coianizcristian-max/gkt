@@ -8,7 +8,7 @@ export default function AllenamentoTabs({ dettaglio, valutazioni, esercizi, feed
 
   return (
     <div>
-      <div className="sub-nav" style={{ marginBottom: 16 }}>
+      <div className="sub-nav at-tabs" style={{ marginBottom: 16 }}>
         <button
           type="button"
           className={`sub-nav-link ${tab === 'dettaglio' ? 'active' : ''}`}

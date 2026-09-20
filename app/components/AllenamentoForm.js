@@ -134,7 +134,7 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
   const altreCategorie = categorie.filter((c) => c.id !== f.squadra_id)
 
   return (
-    <form className="scheda" onSubmit={save}>
+    <form className="scheda af-form" onSubmit={save}>
       {error && <div className="err">{error}</div>}
       <div className="form-grid">
         <div className="field"><label>{t('data')}</label>
@@ -147,7 +147,7 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
           <input type="time" value={f.ora_inizio} onChange={upd('ora_inizio')} disabled={!!f.accorpata_con && orarioAccorpante && orarioAccorpante !== 'assente'} /></div>
         <div className="field"><label>{t('oraFine')}</label>
           <input type="time" value={f.ora_fine} onChange={upd('ora_fine')} disabled={!!f.accorpata_con && orarioAccorpante && orarioAccorpante !== 'assente'} /></div>
-        <div className="field">
+        <div className="field af-full">
           <label>{t('accorpataCon')}</label>
           <select value={f.accorpata_con} onChange={upd('accorpata_con')}>
             <option value="">{t('nessuna')}</option>
@@ -209,7 +209,7 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
           )}
         </div>
       )}
-      <div className="form-actions" style={{ justifyContent: isEdit ? 'space-between' : 'flex-end' }}>
+      <div className="form-actions af-azioni" style={{ justifyContent: isEdit ? 'space-between' : 'flex-end' }}>
         {isEdit && (
           <button type="button" className="btn-ghost" onClick={elimina} disabled={deleting || saving} style={{ color: 'var(--rosso)', borderColor: 'var(--rosso)' }}>
             {deleting ? t('eliminazione') : t('eliminaAllenamento')}

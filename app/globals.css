@@ -2769,3 +2769,31 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
 /* Scheda portiere: sottoschede Anagrafica / Assenze (SchedaPortiereTabs) */
 .spt-tabs { margin: 0 0 14px; }
 .spt-anagrafica .spt-p-assenze, .spt-assenze .spt-p-anagrafica { display: none; }
+
+/* Allenamento su mobile: le 3 schede su una riga, tutte visibili; modulo
+   dettaglio a due colonne (Data | Categoria, Inizio | Fine), meno spazi,
+   Salva sempre visibile in fondo. */
+@media (max-width: 720px) {
+  .at-tabs { display: flex; flex-wrap: nowrap; overflow: visible; gap: 2px; padding: 3px; }
+  .at-tabs .sub-nav-link { flex: 1 1 0; min-width: 0; padding: 8px 2px; font-size: 13px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .af-form.scheda { padding: 14px; }
+  .af-form .form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .af-form .form-grid > .field { grid-column: auto; min-width: 0; }
+  .af-form .form-grid > .field-full, .af-form .form-grid > .af-full { grid-column: 1 / -1; }
+  .af-form .field label { font-size: 13px; margin-bottom: 4px; }
+  .af-form .field input, .af-form .field select { padding: 9px 10px; min-width: 0; }
+  .af-form .field textarea { padding: 8px 10px; }
+  .af-azioni {
+    position: sticky; bottom: 0; z-index: 5; flex-direction: row !important; gap: 8px;
+    margin: 14px -14px -14px; padding: 10px 14px; background: var(--bianco);
+    border-top: 1px solid var(--linea); box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+    border-radius: 0 0 var(--r) var(--r);
+  }
+  .af-azioni > * { flex: 1; margin: 0; }
+  .af-azioni > div { display: flex; gap: 8px; }
+  .af-azioni > div > * { flex: 1; }
+  .af-azioni > .btn-ghost { flex: none; padding: 10px 12px; font-size: 13px; }
+}
+@media (max-width: 360px) {
+  .at-tabs .sub-nav-link { font-size: 12px; }
+}

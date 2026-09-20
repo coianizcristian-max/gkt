@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
+import { trackEvento } from '@/app/components/PostHogProvider'
 
 const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
 
@@ -45,6 +46,13 @@ export default function DemoBanner({ dataTaglio, ospite = false }) {
     }
   }, [])
 
+  // Ospite: esce dalla demo e va alla registrazione
+  function provaGratis(origine) {
+    setUscendo(true)
+    trackEvento('demo_prova_click', { origine })
+    window.location.href = '/api/ospite/esci?poi=registrati'
+  }
+
   async function esci() {
     setUscendo(true)
     if (ospite) {
@@ -64,12 +72,26 @@ export default function DemoBanner({ dataTaglio, ospite = false }) {
     <div className="demo-banner" role="status" ref={ref}>
       <span className="demo-banner-pallino" aria-hidden="true" />
       <span className="demo-banner-testo">
-        <b>{t('bannerTitolo')}</b>
+        {/* su mobile, per l'ospite, titolo corto: lo spazio va al pulsante */}
+        <b className={ospite ? 'demo-titolo-lungo' : undefined}>{t('bannerTitolo')}</b>
+        {ospite && <b className="demo-titolo-breve">{t('bannerTitoloBreve')}</b>}
         <span className="demo-banner-data">{t('bannerData', { data: dataLeggibile(dataTaglio, locale) })}</span>
       </span>
-      <button type="button" className="demo-banner-esci" onClick={esci} disabled={uscendo}>
-        {uscendo ? t('bannerUscita') : t('bannerEsci')}
-      </button>
+      {ospite ? (
+        <>
+          <button type="button" className="demo-banner-prova" onClick={() => provaGratis('fascia')} disabled={uscendo}>
+            <span className="demo-prova-lungo">{t('bannerProvaLungo')}</span>
+            <span className="demo-prova-breve">{t('bannerProva')}</span>
+          </button>
+          <button type="button" className="demo-banner-esci-link" onClick={esci} disabled={uscendo}>
+            {t('bannerEsciBreve')}
+          </button>
+        </>
+      ) : (
+        <button type="button" className="demo-banner-esci" onClick={esci} disabled={uscendo}>
+          {uscendo ? t('bannerUscita') : t('bannerEsci')}
+        </button>
+      )}
     </div>
   )
 }

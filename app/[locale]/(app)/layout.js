@@ -8,6 +8,7 @@ import DemoBanner from '@/app/components/DemoBanner'
 import DemoGuardia from '@/app/components/DemoGuardia'
 import DemoPopup from '@/app/components/DemoPopup'
 import DemoTracker from '@/app/components/DemoTracker'
+import DemoInvito from '@/app/components/DemoInvito'
 import DemoEntra from '@/app/components/DemoEntra'
 import { getDemoConfig, inDemo, inOspite, daNewsletter, avvisoDemoVisto, contestoDati } from '@/lib/demo'
 import BenvenutoPopup from '@/app/components/BenvenutoPopup'
@@ -336,6 +337,7 @@ export default async function AppLayout({ children }) {
       {demoInCorso && <DemoGuardia />}
       {/* Evento di conversione per le campagne: solo per chi arriva da /d. */}
       {demoOspite && <DemoTracker />}
+      {demoOspite && <DemoInvito />}
       {/* Scaletta dei popup. In demo si ferma qui: dopo il popup demo NON
           deve subentrare quello di benvenuto (con i piani) ne' l'avviso di
           nuova versione. Fuori dalla demo il comportamento e' invariato. */}

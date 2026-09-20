@@ -18,7 +18,11 @@ import { COOKIE_DEMO, COOKIE_DEMO_AVVISO, COOKIE_OSPITE } from '@/lib/demo'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request) {
-  const risposta = NextResponse.redirect(new URL('/', request.nextUrl.origin))
+  // ?poi=registrati -> dal pulsante "Provalo gratis" (fascia o invito):
+  // l'ospite esce dalla demo e arriva direttamente alla registrazione.
+  const versoRegistrazione = request.nextUrl.searchParams.get('poi') === 'registrati'
+  const destinazione = versoRegistrazione ? '/registrati?da=demo' : '/'
+  const risposta = NextResponse.redirect(new URL(destinazione, request.nextUrl.origin))
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,

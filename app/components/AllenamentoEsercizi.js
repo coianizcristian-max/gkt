@@ -480,6 +480,23 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
   const [anteprima, setAnteprima] = useState(false)
   const [sel, setSel] = useState(new Set(selezionatiIniziali))
   const [ordine, setOrdine] = useState(selezionatiIniziali)
+
+  // Riporta la selezione a quanto salvato davvero:
+  //  - quando la pagina si aggiorna (es. esercizi tolti dall'elenco della
+  //    seduta qui sopra): useState altrimenti terrebbe la selezione vecchia;
+  //  - quando si chiude il pannello senza salvare: si riparte puliti.
+  const firmaSalvati = (selezionatiIniziali ?? []).join(',')
+  const ripristina = useCallback(() => {
+    setSel(new Set(selezionatiIniziali ?? []))
+    setOrdine(selezionatiIniziali ?? [])
+    setDone(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firmaSalvati])
+  useEffect(() => { ripristina() }, [ripristina])
+  function chiudiPannello() {
+    ripristina()
+    setPannello(false)
+  }
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
@@ -566,7 +583,7 @@ export default function AllenamentoEsercizi({ allenamentoId, libreriaMia = [], l
         <div className="ae-pannello" role="dialog" aria-label={t('titoloPannello')}>
           <div className="ae-pannello-testa">
             <b>{t('titoloPannello')}</b>
-            <button type="button" className="ae-chiudi" onClick={() => setPannello(false)} aria-label={t('chiudi')}>✕</button>
+            <button type="button" className="ae-chiudi" onClick={chiudiPannello} aria-label={t('chiudi')}>✕</button>
           </div>
           <div className="ae-pannello-corpo">
             <LibreriaView

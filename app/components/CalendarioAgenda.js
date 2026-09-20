@@ -209,6 +209,15 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
     <div>
       {vuoto && <div className="agenda-empty">{t('agendaVuoto')}</div>}
 
+      {/* Da valutare IN CIMA: e' la cosa che il portiere deve fare. La sezione
+          compare solo se c'e' almeno un allenamento da valutare. */}
+      {daValutare.length > 0 && (
+        <>
+          <div className="agenda-sec">⭐ {t('agendaDaValutare')}</div>
+          {daValutare.map((a) => <Riga key={cid(a)} e={a} badge={t('badgeDaValutare')} badgeClass="b-da" />)}
+        </>
+      )}
+
       {recenti.length > 0 && (
         <>
           <div className="agenda-sec">{t('agendaRecenti')}</div>
@@ -220,13 +229,6 @@ export default function CalendarioAgenda({ allenamenti = [], partite = [], oggiS
         <>
           <div className="agenda-sec">{t('agendaProssimi')}</div>
           {prossimi.map((e) => { const b = badgeDi(e); return <Riga key={cid(e)} e={e} badge={b.badge} badgeClass={b.cls} /> })}
-        </>
-      )}
-
-      {daValutare.length > 0 && (
-        <>
-          <div className="agenda-sec">⭐ {t('agendaDaValutare')}</div>
-          {daValutare.map((a) => <Riga key={cid(a)} e={a} badge={t('badgeDaValutare')} badgeClass="b-da" />)}
         </>
       )}
     </div>

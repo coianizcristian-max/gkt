@@ -137,7 +137,8 @@
     "onbProfiloDesc": "Füge Name und Adresse (Straße, Stadt, PLZ) hinzu: Sie helfen Vereinen in deiner Umgebung, dich zu finden.",
     "proposteTitolo": "💡 Persönliche Zielvorschläge zu bearbeiten",
     "proposteRiga": "Der Torhüter <b>{nome}</b> hat {n, plural, one {# neuen persönlichen Vorschlag} other {# neue persönliche Vorschläge}} hinzugefügt",
-    "proposteGestisci": "verwalten →"
+    "proposteGestisci": "verwalten →",
+    "mostraTutti": "Alle anzeigen ({n})"
   },
   "partite": {
     "titolo": "Spiele",

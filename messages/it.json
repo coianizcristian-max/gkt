@@ -137,7 +137,8 @@
     "onbProfiloDesc": "Aggiungi nome e indirizzo (via, città, CAP): servono a farti trovare dalle società della tua zona.",
     "proposteTitolo": "💡 Proposte obiettivi personali da gestire",
     "proposteRiga": "Il portiere <b>{nome}</b> ha inserito {n, plural, one {# nuova proposta personale} other {# nuove proposte personali}}",
-    "proposteGestisci": "gestisci →"
+    "proposteGestisci": "gestisci →",
+    "mostraTutti": "Mostra tutti ({n})"
   },
   "partite": {
     "titolo": "Partite",

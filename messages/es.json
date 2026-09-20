@@ -137,7 +137,8 @@
     "onbProfiloDesc": "Añade nombre y dirección (calle, ciudad, C.P.): sirven para que te encuentren los clubes de tu zona.",
     "proposteTitolo": "💡 Propuestas de objetivos personales por gestionar",
     "proposteRiga": "El portero <b>{nome}</b> ha añadido {n, plural, one {# nueva propuesta personal} other {# nuevas propuestas personales}}",
-    "proposteGestisci": "gestionar →"
+    "proposteGestisci": "gestionar →",
+    "mostraTutti": "Mostrar todos ({n})"
   },
   "partite": {
     "titolo": "Partidos",

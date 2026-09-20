@@ -137,7 +137,8 @@
     "onbProfiloDesc": "Add name and address (street, city, ZIP): they help clubs in your area find you.",
     "proposteTitolo": "💡 Personal goal proposals to handle",
     "proposteRiga": "The goalkeeper <b>{nome}</b> added {n, plural, one {# new personal proposal} other {# new personal proposals}}",
-    "proposteGestisci": "manage →"
+    "proposteGestisci": "manage →",
+    "mostraTutti": "Show all ({n})"
   },
   "partite": {
     "titolo": "Matches",

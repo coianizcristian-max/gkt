@@ -4,6 +4,7 @@ import Guida from '@/app/components/Guida'
 import { redirect } from 'next/navigation'
 import { createClient, getUser } from '@/lib/supabase/server'
 import OnboardingChecklist from '@/app/components/OnboardingChecklist'
+import DashSezione from '@/app/components/DashSezione'
 import { getStagioneAttiva } from '@/lib/tenant'
 import { contestoDati, entroTaglio } from '@/lib/demo'
 
@@ -349,7 +350,7 @@ export default async function DashboardPage() {
   //    (lì restano vuoti, ma fanno vedere all'utente dove sta andando). ──
   const blocchiStandard = (
     <>
-      <div className="dash-grid">
+      <div className="dash-grid df-prossimi">
         {/* Prossimo allenamento */}
         <div className="scheda" style={{ maxWidth: 'none' }}>
           <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>{t('prossimoAllenamento')}</h3>
@@ -381,7 +382,8 @@ export default async function DashboardPage() {
       </div>
 
       {/* Link rapidi */}
-      <div className="scheda" style={{ marginTop: 16, maxWidth: 'none' }}>
+      {/* su mobile nascosto: le stesse voci sono nel menu */}
+      <div className="scheda df-rapido" style={{ marginTop: 16, maxWidth: 'none' }}>
         <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>{t('accessoRapido')}</h3>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <Link href="/portieri" className="btn-ghost" style={{ fontSize: 13 }}>{t('qkPortieri')}</Link>
@@ -457,11 +459,12 @@ export default async function DashboardPage() {
         {!demo && profilo?.ruolo === 'allenatore' && <OnboardingChecklist checks={checksOnboarding} />}
 
         {/* Widget principale: cosa devo fare oggi */}
+        {/* Su mobile l'ordine e' diverso (vedi .dash-flusso in globals.css):
+            prima cosa c'e' in programma, poi le cose da fare. */}
+        <div className="dash-flusso">
         {totDaValutare > 0 && (
-          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--rosso)', maxWidth: 'none' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--rosso)' }}>
-              ⚠ {t('coseDaValutare', { count: totDaValutare })}
-            </h3>
+          <DashSezione className="df-valutare" colore="var(--rosso)" aperta
+            titolo={`⚠ ${t('coseDaValutare', { count: totDaValutare })}`}>
             {daValutareAllenamenti.map((a) => (
               <Link key={a.id} href={`/calendario/${a.id}`} className="dv-item" style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>🏃 {t('allenamentoLabel')} — {a.squadra?.nome}</span>
@@ -474,20 +477,18 @@ export default async function DashboardPage() {
                 <span className="dv-data">{fmtData(p.data)}</span>
               </Link>
             ))}
-          </div>
+          </DashSezione>
         )}
 
         {totDaValutare === 0 && haAllenamenti && (
-          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--campo)', maxWidth: 'none' }}>
+          <div className="scheda df-valutare" style={{ marginBottom: 16, borderLeft: '4px solid var(--campo)', maxWidth: 'none' }}>
             <p style={{ margin: 0, color: 'var(--campo)', fontWeight: 600 }}>{t('tuttoValutato')}</p>
           </div>
         )}
 
         {portieriAttenzione.length > 0 && (
-          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--giallo)', maxWidth: 'none' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--giallo)' }}>
-              👁 {t('portieriDaAttenzionare', { count: portieriAttenzione.length })}
-            </h3>
+          <DashSezione className="df-attenzione" colore="var(--giallo)"
+            titolo={`👁 ${t('portieriDaAttenzionare', { count: portieriAttenzione.length })}`}>
             {portieriAttenzione.map((p) => (
               <Link key={p.id} href={`/portieri/${p.id}`} className="dv-item" style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -502,17 +503,12 @@ export default async function DashboardPage() {
                 </div>
               </Link>
             ))}
-          </div>
+          </DashSezione>
         )}
 
         {feedbackRecenti.length > 0 && (
-          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--campo)', maxWidth: 'none' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--campo)' }}>
-              💬 {t('feedbackRicevuti', { count: feedbackRecenti.length })}
-              <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--ink-soft)', marginLeft: 6 }}>
-                ({t('feedbackUltimi7')})
-              </span>
-            </h3>
+          <DashSezione className="df-feedback" colore="var(--campo)"
+            titolo={`💬 ${t('feedbackRicevuti', { count: feedbackRecenti.length })} (${t('feedbackUltimi7')})`}>
             {feedbackRecenti.map((f, i) => (
               <Link key={i} href={`/calendario/${f.allenamentoId}`} className="dv-item" style={{ display: 'block' }}>
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
@@ -546,14 +542,12 @@ export default async function DashboardPage() {
                 )}
               </Link>
             ))}
-          </div>
+          </DashSezione>
         )}
 
         {misurazioniDaFare.length > 0 && (
-          <div className="scheda" style={{ marginBottom: 16, borderLeft: '4px solid var(--azzurro)', maxWidth: 'none' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 10, color: 'var(--azzurro)' }}>
-              📏 {t('misurazioniDaFare', { count: misurazioniDaFare.length })}
-            </h3>
+          <DashSezione className="df-misure" colore="var(--azzurro)"
+            titolo={`📏 ${t('misurazioniDaFare', { count: misurazioniDaFare.length })}`}>
             {misurazioniDaFare.map((m) => (
               <Link key={m.testId} href={`/portieri/${m.portiereId}/obiettivi`} className="dv-item" style={{ display: 'block' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
@@ -565,10 +559,11 @@ export default async function DashboardPage() {
                 </div>
               </Link>
             ))}
-          </div>
+          </DashSezione>
         )}
 
         {blocchiStandard}
+        </div>
 
       </div>
     </>

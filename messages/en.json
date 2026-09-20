@@ -2155,7 +2155,11 @@
     "nessunaProssima": "No match in the next {range} days.",
     "senzaValutazioni": "⚠ Matches without evaluations",
     "nuovaPartita": "+ New match",
-    "nessunaTipo": "No {tipo} match this season."
+    "nessunaTipo": "No {tipo} match this season.",
+    "andata": "1st leg",
+    "andataTitolo": "Result of the first-leg match against this team",
+    "oggi": "Today",
+    "prossimaBadge": "Next"
   },
   "profiloForm": {
     "mNome": "Full name",

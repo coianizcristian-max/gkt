@@ -2155,7 +2155,11 @@
     "nessunaProssima": "Nessuna partita nei prossimi {range} giorni.",
     "senzaValutazioni": "⚠ Partite senza valutazioni",
     "nuovaPartita": "+ Nuova partita",
-    "nessunaTipo": "Nessuna partita di tipo {tipo} questa stagione."
+    "nessunaTipo": "Nessuna partita di tipo {tipo} questa stagione.",
+    "andata": "Andata",
+    "andataTitolo": "Risultato della gara d'andata contro questa squadra",
+    "oggi": "Oggi",
+    "prossimaBadge": "Prossima"
   },
   "profiloForm": {
     "mNome": "Nome completo",

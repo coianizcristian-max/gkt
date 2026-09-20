@@ -1,38 +1,105 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import IconaTipoPartita from '@/app/components/IconaTipoPartita'
 import { Link } from '@/i18n/routing'
 import { useTranslations, useLocale } from 'next-intl'
 
 const TIPI = ['campionato', 'coppa', 'amichevole', 'torneo']
 const TIPO_EMOJI = { campionato: '🏆', coppa: '🏅', amichevole: '🤝', torneo: '⚡' }
-const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
+const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE', es: 'es-ES' }
+const ESITO_COL = { V: 'var(--campo)', P: 'var(--rosso)', X: 'var(--giallo)' }
 
-function RigaPartita({ p, compact = false }) {
+const esitoDi = (p) => {
+  if (p?.gol_fatti == null || p?.gol_subiti == null) return null
+  return p.gol_fatti > p.gol_subiti ? 'V' : p.gol_fatti < p.gol_subiti ? 'P' : 'X'
+}
+
+// Nome avversario confrontabile: minuscole, senza accenti e spazi doppi
+const chiaveAvv = (s) => String(s || '').toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/\s+/g, ' ').trim()
+
+/**
+ * Per ogni partita di campionato cerca la gara precedente contro lo stesso
+ * avversario, nella stessa categoria: e' l'andata. Serve a mostrare nel
+ * girone di ritorno com'era finita, senza andare a cercarla.
+ */
+function mappaAndate(partite) {
+  const perChiave = new Map()
+  for (const p of partite) {
+    if ((p.tipo ?? 'campionato') !== 'campionato' || !chiaveAvv(p.avversario)) continue
+    const k = `${p.squadra_id}|${chiaveAvv(p.avversario)}`
+    if (!perChiave.has(k)) perChiave.set(k, [])
+    perChiave.get(k).push(p)
+  }
+  const andata = new Map()
+  for (const lista of perChiave.values()) {
+    lista.sort((a, b) => a.data.localeCompare(b.data))
+    for (let i = 1; i < lista.length; i++) andata.set(lista[i].id, lista[i - 1])
+  }
+  return andata
+}
+
+function RigaPartita({ p, andata = null, prossima = false, rigaRef = null }) {
   const t = useTranslations('partiteLista')
+  const tc = useTranslations('calendarioMese')
   const locale = useLocale()
   const dl = DATE_LOCALE[locale] || 'it-IT'
-  const fmtData = (d) => new Date(d + 'T00:00:00').toLocaleDateString(dl, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+  const d = new Date(p.data + 'T00:00:00')
+  const gSett = d.toLocaleDateString(dl, { weekday: 'short' }).replace('.', '')
+  const gNum = d.getDate()
+  const mese = d.toLocaleDateString(dl, { month: 'short' }).replace('.', '')
+  const dataEstesa = d.toLocaleDateString(dl, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
   const haRis = p.gol_fatti != null && p.gol_subiti != null
-  const esito = !haRis ? null : p.gol_fatti > p.gol_subiti ? 'V' : p.gol_fatti < p.gol_subiti ? 'P' : 'X'
-  const esitoCol = { V: 'var(--campo)', P: 'var(--rosso)', X: 'var(--giallo)' }
+  const esito = esitoDi(p)
+  const cs = haRis && p.gol_subiti === 0
+  const esitoAndata = esitoDi(andata)
+  const tipo = p.tipo || 'campionato'
+
   return (
-    <Link href={`/partite/${p.id}`} className="partita-row" style={compact ? { padding: '8px 12px' } : {}}>
-      <span className="pr-data">{fmtData(p.data)}</span>
-      <span className="pr-cat">{p.squadra_nome}</span>
-      <span className="pr-match">
-        <IconaTipoPartita tipo={p.tipo} size={13} className="pr-tipo-ico" title={t('tipo_' + (p.tipo || 'campionato'))} />
-        {p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'} {p.avversario || '—'}
-        {!compact && (
-          <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--ink-soft)', background: 'var(--carta)', borderRadius: 4, padding: '1px 5px' }}>
-            {t('tipo_' + (p.tipo || 'campionato'))}
+    <Link ref={rigaRef} href={`/partite/${p.id}`} className={`pm-row${prossima ? ' pm-prossima' : ''}`} title={dataEstesa}>
+      <span className="pm-data">
+        <span className="pm-gs">{gSett}</span>
+        <span className="pm-gn">{gNum}</span>
+        <span className="pm-me">{mese}</span>
+      </span>
+
+      <span className="pm-centro">
+        <span className="pm-avv">
+          <span className="pm-luogo" title={p.casa === true ? tc('casa') : p.casa === false ? tc('trasferta') : ''}>
+            {p.casa === true ? '🏠' : p.casa === false ? '✈' : '❔'}
           </span>
+          <span className="pm-avv-nome">{p.avversario || '—'}</span>
+        </span>
+        <span className="pm-info">
+          <IconaTipoPartita tipo={tipo} size={12} className="pm-tipo-ico" title={t('tipo_' + tipo)} />
+          <span className="pm-cat">{p.squadra_nome}</span>
+          {andata && (
+            <span className="pm-andata" title={t('andataTitolo')}>
+              {t('andata')}{' '}
+              {esitoAndata
+                ? <b style={{ color: ESITO_COL[esitoAndata] }}>{andata.gol_fatti}–{andata.gol_subiti}</b>
+                : <b>–</b>}
+            </span>
+          )}
+        </span>
+      </span>
+
+      <span className="pm-destra">
+        {haRis ? (
+          <>
+            <span className="pm-score">{p.gol_fatti}–{p.gol_subiti}</span>
+            <span className="pm-badges">
+              <span className="pm-esito" style={{ background: ESITO_COL[esito] }}>{esito}</span>
+              {cs && <span className="badge-cs">CS</span>}
+            </span>
+          </>
+        ) : (
+          <span className={prossima ? 'pm-prossima-badge' : 'pm-dagiocare'}>{prossima ? t('prossimaBadge') : '–'}</span>
         )}
       </span>
-      <span className="pr-score">{haRis ? `${p.gol_fatti}–${p.gol_subiti}` : '–'}</span>
-      {esito && <span style={{ fontSize: 12, fontWeight: 700, color: esitoCol[esito] }}>{esito}</span>}
-      {p.gol_subiti === 0 && haRis && <span className="badge-cs">CS</span>}
     </Link>
   )
 }
@@ -43,8 +110,9 @@ export default function PartiteLista({ partite, categorie, isPortiere = false, o
   const oggi = oggiIso || new Date().toISOString().slice(0, 10)
   const [range, setRange] = useState(7)
   const [tabTipo, setTabTipo] = useState('campionato')
+  const andate = useMemo(() => mappaAndate(partite), [partite])
 
-  const limiteData = new Date()
+  const limiteData = new Date(oggi + 'T00:00:00')
   limiteData.setDate(limiteData.getDate() + range)
   const limiteStr = limiteData.toISOString().slice(0, 10)
 
@@ -52,7 +120,27 @@ export default function PartiteLista({ partite, categorie, isPortiere = false, o
   const daValutare = !isPortiere
     ? partite.filter((p) => p.data < oggi && !p.ha_valutazioni).sort((a, b) => b.data.localeCompare(a.data)).slice(0, 5)
     : []
-  const perTipo = (tipo) => partite.filter((p) => (p.tipo ?? 'campionato') === tipo).sort((a, b) => b.data.localeCompare(a.data))
+  // Ordine CRESCENTE: dalla prima partita della stagione all'ultima
+  const perTipo = (tipo) => partite.filter((p) => (p.tipo ?? 'campionato') === tipo).sort((a, b) => a.data.localeCompare(b.data))
+  const lista = perTipo(tabTipo)
+  const idxProssima = lista.findIndex((p) => p.data >= oggi)
+
+  // Finestra a scorrimento: all'apertura (e al cambio scheda) la prossima
+  // partita finisce a meta' finestra, con le giocate sopra e le altre sotto.
+  // Se sono gia' state giocate tutte, si parte dal fondo (le ultime).
+  const finestraRef = useRef(null)
+  const prossimaRef = useRef(null)
+  useEffect(() => {
+    const box = finestraRef.current
+    if (!box) return
+    const riga = prossimaRef.current
+    if (riga) {
+      const dentro = riga.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop
+      box.scrollTop = Math.max(0, dentro - box.clientHeight / 2 + riga.offsetHeight / 2)
+    } else {
+      box.scrollTop = idxProssima === -1 ? box.scrollHeight : 0
+    }
+  }, [tabTipo, idxProssima])
 
   return (
     <div>
@@ -72,12 +160,12 @@ export default function PartiteLista({ partite, categorie, isPortiere = false, o
         </div>
         {prossime.length === 0
           ? <div className="empty" style={{ padding: '12px 0' }}>{t('nessunaProssima', { range })}</div>
-          : prossime.map((p) => <RigaPartita key={p.id} p={p} compact />)}
+          : <div className="pm-lista">{prossime.map((p) => <RigaPartita key={p.id} p={p} andata={andate.get(p.id)} />)}</div>}
 
         {!isPortiere && daValutare.length > 0 && (
           <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--linea)' }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--rosso)', marginBottom: 8 }}>{t('senzaValutazioni')}</div>
-            {daValutare.map((p) => <RigaPartita key={p.id} p={p} compact />)}
+            <div className="pm-lista">{daValutare.map((p) => <RigaPartita key={p.id} p={p} andata={andate.get(p.id)} />)}</div>
           </div>
         )}
       </div>
@@ -99,11 +187,22 @@ export default function PartiteLista({ partite, categorie, isPortiere = false, o
         })}
       </div>
 
-      <div className="partite-list">
-        {perTipo(tabTipo).length === 0
-          ? <div className="empty">{t('nessunaTipo', { tipo: t('tipo_' + tabTipo) })}</div>
-          : perTipo(tabTipo).map((p) => <RigaPartita key={p.id} p={p} />)}
-      </div>
+      {lista.length === 0
+        ? <div className="empty">{t('nessunaTipo', { tipo: t('tipo_' + tabTipo) })}</div>
+        : (
+          <div className="pm-finestra" ref={finestraRef}>
+            <div className="pm-lista">
+              {lista.map((p, i) => (
+                <div key={p.id} className="pm-slot">
+                  {/* separatore "Oggi" tra le giocate e quelle da giocare */}
+                  {i === idxProssima && i > 0 && <div className="pm-oggi"><span>{t('oggi')}</span></div>}
+                  <RigaPartita p={p} andata={andate.get(p.id)} prossima={i === idxProssima}
+                    rigaRef={i === idxProssima ? prossimaRef : null} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
     </div>
   )
 }

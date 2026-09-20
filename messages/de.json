@@ -2155,7 +2155,11 @@
     "nessunaProssima": "Kein Spiel in den nächsten {range} Tagen.",
     "senzaValutazioni": "⚠ Spiele ohne Bewertungen",
     "nuovaPartita": "+ Neues Spiel",
-    "nessunaTipo": "Kein Spiel vom Typ {tipo} in dieser Saison."
+    "nessunaTipo": "Kein Spiel vom Typ {tipo} in dieser Saison.",
+    "andata": "Hinspiel",
+    "andataTitolo": "Ergebnis des Hinspiels gegen diese Mannschaft",
+    "oggi": "Heute",
+    "prossimaBadge": "Nächstes"
   },
   "profiloForm": {
     "mNome": "Vollständiger Name",

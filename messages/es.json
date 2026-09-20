@@ -2155,7 +2155,11 @@
     "nessunaProssima": "Ningún partido en los próximos {range} días.",
     "senzaValutazioni": "⚠ Partidos sin evaluaciones",
     "nuovaPartita": "+ Nuevo partido",
-    "nessunaTipo": "Ningún partido de tipo {tipo} esta temporada."
+    "nessunaTipo": "Ningún partido de tipo {tipo} esta temporada.",
+    "andata": "Ida",
+    "andataTitolo": "Resultado del partido de ida contra este equipo",
+    "oggi": "Hoy",
+    "prossimaBadge": "Próximo"
   },
   "profiloForm": {
     "mNome": "Nombre completo",

@@ -2510,7 +2510,8 @@
     "allenamentiDaValutare": "Zu bewertende Trainings ({n})",
     "partiteDaValutare": "Zu bewertende Spiele ({n})",
     "daValutareHeader": "Zu bewerten ({n})",
-    "legenda": "Legende"
+    "legenda": "Legende",
+    "scorriGriglia": "Seitlich wischen, um die ganze Woche zu sehen"
   },
   "setupWizard": {
     "step1": "Schritt 1 von 4",

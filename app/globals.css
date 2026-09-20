@@ -2288,6 +2288,20 @@ a.brand { text-decoration: none; color: inherit; }
 .calx-state { font-size: 13px; font-weight: 700; margin: 12px 0 8px; }
 
 /* contenitore della griglia: normale su desktop, scorrevole in orizzontale su mobile */
+.calx-scroll-wrap { position: relative; }
+.calx-scroll-wrap::before, .calx-scroll-wrap::after {
+  content: ''; position: absolute; top: 0; bottom: 6px; width: 26px; z-index: 2;
+  pointer-events: none; opacity: 0; transition: opacity .2s;
+}
+.calx-scroll-wrap::before { left: 0; background: linear-gradient(to right, rgba(20,32,43,0.18), transparent); }
+.calx-scroll-wrap::after { right: 0; background: linear-gradient(to left, rgba(20,32,43,0.18), transparent); }
+.calx-scroll-wrap.ombra-sx::before, .calx-scroll-wrap.ombra-dx::after { opacity: 1; }
+.calx-scroll-hint {
+  display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 6px;
+  font-size: 12px; font-weight: 600; color: var(--ink-soft);
+}
+.calx-scroll-hint span { font-size: 18px; line-height: 1; color: var(--linea); font-weight: 800; }
+.calx-scroll-hint span.on { color: var(--azzurro); }
 .calx-scroll { min-width: 0; }
 
 @media (max-width: 820px) {
@@ -2299,23 +2313,21 @@ a.brand { text-decoration: none; color: inherit; }
   .calx-rcat { font-size: 14px; }
 }
 @media (max-width: 600px) {
-  /* Mese intero nello schermo (7 giorni visibili, niente scorrimento di lato):
-     ogni evento e' un blocchetto colorato con l'orario. Il dettaglio
-     (categoria, avversario, stato) si apre toccando il giorno, nel popup dal
-     basso; la lista completa e' nella scheda "Prossimi eventi". */
-  .calx-scroll { overflow-x: visible; padding-bottom: 0; }
-  .calx-scroll .calx-grid { min-width: 0; }
-  .calx-grid { gap: 3px; }
-  .calx-head { margin-bottom: 4px; }
-  .calx-dow { font-size: 10px; letter-spacing: 0; text-align: center; }
-  .calx-cell { min-height: 60px; padding: 4px 2px 3px; border-radius: 8px; gap: 3px; }
-  .calx-num { font-size: 12px; align-self: center; }
-  .calx-num-link a { pointer-events: none; padding: 0 2px; }
-  .calx-evs { gap: 2px; }
-  .calx-ev { font-size: 10px; padding: 2px 1px; justify-content: center; min-height: 15px; line-height: 1.1; border-radius: 4px; }
-  .calx-ev b { font-size: 10px; font-weight: 700; }
-  .calx-ev .calx-edot, .calx-ev .calx-ev-label, .calx-ev .calx-ev-tipo { display: none; }
-  .calx-more { font-size: 10px; text-align: center; }
+  /* Griglia leggibile su mobile: caselle larghe (orario + categoria) e
+     scorrimento orizzontale. Che si scorra lo dicono: la scritta sopra con le
+     frecce, le ombre ai lati quando c'e' altro da vedere e la colonna tagliata
+     a destra. All'apertura la colonna di oggi e' gia' in vista. */
+  .calx-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; scroll-behavior: smooth; }
+  .calx-scroll .calx-grid { min-width: 700px; }
+  .calx-grid { gap: 5px; }
+  .calx-cell { min-height: 92px; padding: 6px 5px; }
+  .calx-num { font-size: 13px; }
+  .calx-num-link a { pointer-events: none; }
+  /* chip su due righe: 1a riga orario, 2a riga categoria */
+  .calx-ev { font-size: 11px; padding: 4px 6px; flex-wrap: wrap; row-gap: 1px; line-height: 1.2; }
+  .calx-ev b { font-size: 12px; }
+  /* categoria / avversario: fino a due righe, poi puntini */
+  .calx-ev-label { flex-basis: 100%; font-weight: 600; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .calx-panel-title { font-size: 16px; }
   .calx-panel-head { padding: 14px 14px 11px; }
   .calx-rows { padding: 10px 10px 14px; }

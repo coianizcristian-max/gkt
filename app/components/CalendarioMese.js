@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { tipologiaTradotta } from '@/lib/elenchi'
 import IconaTipoPartita from '@/app/components/IconaTipoPartita'
 import LegendaSimboliPartita from '@/app/components/LegendaSimboliPartita'
@@ -26,6 +26,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const [selectedDay, setSelectedDay] = useState(null)
   const [openId, setOpenId] = useState(null)
   const [legendaAperta, setLegendaAperta] = useState(false)
+
   const chiudiPannello = useCallback(() => { setSelectedDay(null); setOpenId(null) }, [])
   const [previewExtra, setPreviewExtra] = useState({})
   const [loadingExtra, setLoadingExtra] = useState(false)
@@ -33,6 +34,46 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
 
   const year = cursor.getFullYear()
   const month = cursor.getMonth()
+
+  // Griglia scorrevole in orizzontale su mobile: ombre ai lati quando c'e'
+  // altro da vedere, e all'apertura del mese si porta in vista la colonna di oggi.
+  const scrollRef = useRef(null)
+  const [bordi, setBordi] = useState({ sx: false, dx: false })
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    let centrato = false
+    const aggiorna = () => setBordi({
+      sx: el.scrollLeft > 4,
+      dx: el.scrollLeft + el.clientWidth < el.scrollWidth - 4,
+    })
+    // La griglia puo' essere nascosta (scheda "Prossimi eventi"): si centra su
+    // oggi la prima volta che diventa visibile, poi si aggiornano solo le ombre.
+    const prepara = () => {
+      if (el.clientWidth === 0) return
+      if (!centrato) {
+        centrato = true
+        const oggiCella = el.querySelector('.calx-cell.oggi')
+        const prec = el.style.scrollBehavior
+        el.style.scrollBehavior = 'auto'
+        el.scrollLeft = oggiCella && el.scrollWidth > el.clientWidth
+          ? Math.max(0, oggiCella.offsetLeft - el.clientWidth / 2 + oggiCella.offsetWidth / 2)
+          : 0
+        el.style.scrollBehavior = prec
+      }
+      aggiorna()
+    }
+    prepara()
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(prepara) : null
+    ro?.observe(el)
+    el.addEventListener('scroll', aggiorna, { passive: true })
+    window.addEventListener('resize', aggiorna)
+    return () => {
+      ro?.disconnect()
+      el.removeEventListener('scroll', aggiorna)
+      window.removeEventListener('resize', aggiorna)
+    }
+  }, [year, month])
   const startDow = (new Date(year, month, 1).getDay() + 6) % 7
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const oggiStr = `${oggi.getFullYear()}-${pad(oggi.getMonth() + 1)}-${pad(oggi.getDate())}`
@@ -474,7 +515,15 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
       </div>
 
       {/* ---------- Griglia mese (scorrevole in orizzontale su mobile) ---------- */}
-      <div className="calx-scroll">
+      {(bordi.sx || bordi.dx) && (
+        <div className="calx-scroll-hint">
+          <span className={bordi.sx ? 'on' : ''}>‹</span>
+          {t('scorriGriglia')}
+          <span className={bordi.dx ? 'on' : ''}>›</span>
+        </div>
+      )}
+      <div className={`calx-scroll-wrap${bordi.sx ? ' ombra-sx' : ''}${bordi.dx ? ' ombra-dx' : ''}`}>
+      <div className="calx-scroll" ref={scrollRef}>
       <div className="calx-grid calx-head">
         {giorniShort.map((g, i) => <div key={i} className="calx-dow">{g}</div>)}
       </div>
@@ -521,6 +570,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
         })}
       </div>
       </div>{/* /calx-scroll */}
+      </div>
 
       {/* pannello giorno (desktop) */}
       {/* su mobile il pannello diventa un popup dal basso: velo scuro dietro */}

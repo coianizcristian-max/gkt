@@ -2510,7 +2510,8 @@
     "allenamentiDaValutare": "Entrenamientos por evaluar ({n})",
     "partiteDaValutare": "Partidos por evaluar ({n})",
     "daValutareHeader": "Por evaluar ({n})",
-    "legenda": "Leyenda"
+    "legenda": "Leyenda",
+    "scorriGriglia": "Desliza de lado para ver toda la semana"
   },
   "setupWizard": {
     "step1": "Paso 1 de 4",

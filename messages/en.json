@@ -2510,7 +2510,8 @@
     "allenamentiDaValutare": "Trainings to evaluate ({n})",
     "partiteDaValutare": "Matches to evaluate ({n})",
     "daValutareHeader": "To evaluate ({n})",
-    "legenda": "Legend"
+    "legenda": "Legend",
+    "scorriGriglia": "Swipe sideways to see the whole week"
   },
   "setupWizard": {
     "step1": "Step 1 of 4",

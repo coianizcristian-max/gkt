@@ -2510,7 +2510,8 @@
     "allenamentiDaValutare": "Allenamenti da valutare ({n})",
     "partiteDaValutare": "Partite da valutare ({n})",
     "daValutareHeader": "Da valutare ({n})",
-    "legenda": "Legenda"
+    "legenda": "Legenda",
+    "scorriGriglia": "Scorri di lato per vedere tutta la settimana"
   },
   "setupWizard": {
     "step1": "Passo 1 di 4",

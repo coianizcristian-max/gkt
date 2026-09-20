@@ -851,7 +851,11 @@ a { color: inherit; text-decoration: none; }
 .pm-score { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.1; }
 .pm-badges { display: flex; gap: 4px; }
 .pm-esito { color: #fff; font-size: 11px; font-weight: 800; line-height: 17px; min-width: 20px; padding: 0 6px; border-radius: 999px; text-align: center; }
-.pm-badges .badge-cs { padding: 0 6px; line-height: 17px; font-size: 11px; }
+.pm-badges { align-items: center; }
+.pm-cs {
+  display: inline-block; max-width: 40px; text-align: center; text-wrap: balance;
+  font-size: 10px; font-weight: 700; line-height: 1.1; color: var(--campo);
+}
 .pm-dagiocare { color: var(--ink-soft); font-weight: 700; }
 .pm-prossima-badge { font-size: 11px; font-weight: 800; color: #fff; background: var(--azzurro); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
 .pm-oggi { display: flex; align-items: center; gap: 8px; margin: 2px 2px 0; font-size: 11px; font-weight: 800; color: var(--azzurro); text-transform: uppercase; letter-spacing: 0.06em; }

@@ -44,6 +44,7 @@ function mappaAndate(partite) {
 function RigaPartita({ p, andata = null, prossima = false, rigaRef = null }) {
   const t = useTranslations('partiteLista')
   const tc = useTranslations('calendarioMese')
+  const ts = useTranslations('statistichePortiere')
   const locale = useLocale()
   const dl = DATE_LOCALE[locale] || 'it-IT'
   const d = new Date(p.data + 'T00:00:00')
@@ -98,7 +99,8 @@ function RigaPartita({ p, andata = null, prossima = false, rigaRef = null }) {
             <span className="pm-score">{p.gol_fatti}–{p.gol_subiti}</span>
             <span className="pm-badges">
               <span className="pm-esito" style={{ background: ESITO_COL[esito] }}>{esito}</span>
-              {cs && <span className="badge-cs">CS</span>}
+              {/* scritto per esteso, piccolo, su due righe ("Clean / sheet") */}
+              {cs && <span className="pm-cs">{ts('cleanSheet')}</span>}
             </span>
           </>
         ) : (

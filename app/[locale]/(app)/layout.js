@@ -274,7 +274,7 @@ export default async function AppLayout({ children }) {
 
   return (
     <div className="shell">
-      <IdentificaUtenteTracking id={user?.id ?? null} email={user?.email ?? null} ruolo={ruoloUtente} />
+      <IdentificaUtenteTracking id={user?.id ?? null} email={user?.email ?? null} ruolo={ruoloUtente} ospite={!!demoOspite} />
       {/* Niente logout per inattivita' per il visitatore della demo: non ha
           dati da proteggere e deve poter navigare senza essere buttato fuori. */}
       {user && !demoOspite && <IdleLogout />}

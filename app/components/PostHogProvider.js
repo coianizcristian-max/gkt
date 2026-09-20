@@ -100,6 +100,25 @@ export function identificaUtente({ id, email, ruolo, isTest }) {
   })
 }
 
+// Visitatore della demo (account ospite condiviso): NON va identificato.
+// Tutti i visitatori entrano con lo stesso account: con identify() PostHog li
+// fondeva in un'unica persona "ospite" (centinaia di pagine in piu' giorni) e
+// non si capiva quanti erano ne' cosa facevano. Qui ognuno resta un visitatore
+// anonimo separato; chi era gia' stato fuso viene staccato (reset) e riparte
+// con un nuovo id anonimo. Gli eventi portano visitatore_demo: true.
+export function impostaVisitatoreDemo(attivo, idOspite = null) {
+  if (typeof window === 'undefined') return
+  getPosthog().then((posthog) => {
+    if (!posthog) return
+    if (attivo) {
+      if (idOspite && posthog.get_distinct_id?.() === idOspite) posthog.reset()
+      posthog.register({ visitatore_demo: true })
+    } else {
+      posthog.unregister?.('visitatore_demo')
+    }
+  })
+}
+
 export function trackEvento(name, props = {}) {
   if (typeof window === 'undefined') return
   getPosthog().then((posthog) => {

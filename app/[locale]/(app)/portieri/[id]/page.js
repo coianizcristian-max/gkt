@@ -6,6 +6,7 @@ import OnboardingChecklist from '@/app/components/OnboardingChecklist'
 import TagManager from '@/app/components/TagManager'
 import AssenzePreviste from '@/app/components/AssenzePreviste'
 import SchedaPortiereTabs from '@/app/components/SchedaPortiereTabs'
+import InfortunioBox from '@/app/components/InfortunioBox'
 import { getStagioneAttiva } from '@/lib/tenant'
 import { contestoDati, entroTaglio } from '@/lib/demo'
 import { getTranslations } from 'next-intl/server'
@@ -192,7 +193,6 @@ export default async function SchedaPortierePage({ params }) {
                   soloPortiere={soloPortiere}
                   attributiDef={attributiDef ?? []}
                   attributiValori={attributiValori}
-                  infortunioAperto={infortunioAperto}
                 />
               ) : (
                 <div className="empty">{c('setupStagioneCategoria')}</div>
@@ -204,7 +204,13 @@ export default async function SchedaPortierePage({ params }) {
             const nAss = (assenzePreviste ?? []).length
             return (
               <SchedaPortiereTabs
-                etichette={{ anagrafica: tp('tabAnagrafica'), assenze: nAss ? `${tp('tabAssenze')} (${nAss})` : tp('tabAssenze') }}
+                etichette={{
+                  anagrafica: tp('tabAnagrafica'),
+                  infortuni: infortunioAperto ? `${tp('tabInfortuni')} ●` : tp('tabInfortuni'),
+                  assenze: nAss ? `${tp('tabAssenze')} (${nAss})` : tp('tabAssenze'),
+                }}
+                infortunato={!!infortunioAperto}
+                infortuni={<InfortunioBox iscrizioneId={iscrizione.id} infortunioAperto={infortunioAperto} />}
                 anagrafica={anagrafica}
                 assenze={<AssenzePreviste iscrizioneId={iscrizione.id} assenzeIniziali={assenzePreviste} />}
               />

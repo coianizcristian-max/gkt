@@ -176,7 +176,8 @@
     "navPercorso": "Path",
     "miaScheda": "My profile",
     "tabAnagrafica": "📋 Personal data",
-    "tabAssenze": "📅 Absences"
+    "tabAssenze": "📅 Absences",
+    "tabInfortuni": "🩹 Injuries"
   },
   "calendario": {
     "tabAgenda": "Agenda",
@@ -979,7 +980,8 @@
     "minoriTitolo": "Personal data and minors",
     "minoriInfo": "You are entering another person's personal data. If the goalkeeper is a minor, this data may only be processed if you have obtained the consent of the person with parental responsibility, as required by the GDPR (art. 8) and Italian privacy law. Only enter the data necessary for the sporting activity.",
     "minoriConferma": "I declare that I am authorised to enter this data and, if the goalkeeper is a minor, that I have the consent of the person with parental responsibility.",
-    "erroreMinoriConferma": "To save you must confirm that you are authorised to enter this data."
+    "erroreMinoriConferma": "To save you must confirm that you are authorised to enter this data.",
+    "statoInfortunio": "🩹 Injury status"
   },
   "partitaForm": {
     "phAvversario": "Opponent team name",

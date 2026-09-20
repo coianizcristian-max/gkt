@@ -2768,7 +2768,20 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
 
 /* Scheda portiere: sottoschede Anagrafica / Assenze (SchedaPortiereTabs) */
 .spt-tabs { margin: 0 0 14px; }
-.spt-anagrafica .spt-p-assenze, .spt-assenze .spt-p-anagrafica { display: none; }
+.spt-p { display: none; }
+.spt-anagrafica .spt-p-anagrafica, .spt-infortuni .spt-p-infortuni, .spt-assenze .spt-p-assenze { display: block; }
+.spt-tabs .spt-rosso:not(.active) { color: var(--rosso); }
+/* Tag: titolo e pastiglie sulla stessa riga, piu' piccole */
+.tag-scheda.scheda { padding: 12px 14px; }
+.tag-riga { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tag-tit { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin-right: 4px; }
+.tag-chip { padding: 4px 11px; font-size: 12px; }
+@media (max-width: 720px) {
+  .spt-tabs { display: flex; flex-wrap: nowrap; gap: 2px; padding: 3px; }
+  .spt-tabs .sub-nav-link { flex: 1 1 0; min-width: 0; padding: 8px 2px; font-size: 13px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tag-chip { padding: 3px 9px; font-size: 11.5px; }
+  .inf-scheda.scheda { padding: 14px; }
+}
 
 /* Allenamento su mobile: le 3 schede su una riga, tutte visibili; modulo
    dettaglio a due colonne (Data | Categoria, Inizio | Fine), meno spazi,

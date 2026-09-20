@@ -176,7 +176,8 @@
     "navPercorso": "Verlauf",
     "miaScheda": "Mein Profil",
     "tabAnagrafica": "📋 Stammdaten",
-    "tabAssenze": "📅 Abwesenheiten"
+    "tabAssenze": "📅 Abwesenheiten",
+    "tabInfortuni": "🩹 Verletzungen"
   },
   "calendario": {
     "tabAgenda": "Agenda",
@@ -979,7 +980,8 @@
     "minoriTitolo": "Personenbezogene Daten und Minderjährige",
     "minoriInfo": "Du gibst personenbezogene Daten einer anderen Person ein. Wenn der Torwart minderjährig ist, dürfen diese Daten nur verarbeitet werden, wenn du die Einwilligung der erziehungsberechtigten Person eingeholt hast, wie es die DSGVO (Art. 8) und das italienische Datenschutzrecht verlangen. Gib nur die für die sportliche Tätigkeit erforderlichen Daten ein.",
     "minoriConferma": "Ich erkläre, dass ich berechtigt bin, diese Daten einzugeben, und – falls der Torwart minderjährig ist – die Einwilligung der erziehungsberechtigten Person habe.",
-    "erroreMinoriConferma": "Zum Speichern musst du bestätigen, dass du zur Eingabe dieser Daten berechtigt bist."
+    "erroreMinoriConferma": "Zum Speichern musst du bestätigen, dass du zur Eingabe dieser Daten berechtigt bist.",
+    "statoInfortunio": "🩹 Verletzungsstatus"
   },
   "partitaForm": {
     "phAvversario": "Name der gegnerischen Mannschaft",

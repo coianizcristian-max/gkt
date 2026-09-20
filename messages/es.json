@@ -176,7 +176,8 @@
     "navPercorso": "Trayectoria",
     "miaScheda": "Mi ficha",
     "tabAnagrafica": "📋 Datos personales",
-    "tabAssenze": "📅 Ausencias"
+    "tabAssenze": "📅 Ausencias",
+    "tabInfortuni": "🩹 Lesiones"
   },
   "calendario": {
     "tabAgenda": "Agenda",
@@ -979,7 +980,8 @@
     "minoriTitolo": "Datos personales y menores",
     "minoriInfo": "Estás introduciendo datos personales de otra persona. Si el portero es menor de edad, estos datos solo pueden tratarse si has obtenido el consentimiento de quien ejerce la patria potestad, como exige el RGPD (art. 8) y la normativa italiana de privacidad. Introduce solo los datos necesarios para la actividad deportiva.",
     "minoriConferma": "Declaro que estoy autorizado a introducir estos datos y, si el portero es menor, que cuento con el consentimiento de quien ejerce la patria potestad.",
-    "erroreMinoriConferma": "Para guardar debes confirmar que estás autorizado a introducir estos datos."
+    "erroreMinoriConferma": "Para guardar debes confirmar que estás autorizado a introducir estos datos.",
+    "statoInfortunio": "🩹 Estado de lesión"
   },
   "partitaForm": {
     "phAvversario": "Nombre del equipo rival",

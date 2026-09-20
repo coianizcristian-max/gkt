@@ -35,15 +35,17 @@ export default function TagManager({ portiereId, tagAttivi, tagDisponibili }) {
   }
 
   return (
-    <div className="scheda" style={{ marginBottom: 16 }}>
-      <h3 style={{ marginTop: 0, marginBottom: 10, fontSize: 14 }}>{t('titolo')}</h3>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+    <div className="scheda tag-scheda" style={{ marginBottom: 16 }}>
+      {/* titolo e tag sulla stessa riga: occupano poco spazio */}
+      <div className="tag-riga">
+        <span className="tag-tit">{t('titolo')}</span>
         {tagDisponibili.map((tag) => {
           const attivo = attiviSet.has(tag)
           const c = colore(tag)
           return (
             <button key={tag} type="button" onClick={() => toggle(tag)} disabled={busy}
-              style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: `1.5px solid ${c}`, background: attivo ? c : 'transparent', color: attivo ? '#fff' : c, transition: 'all 0.15s' }}>
+              className="tag-chip"
+              style={{ borderRadius: 999, fontWeight: 600, cursor: 'pointer', border: `1.5px solid ${c}`, background: attivo ? c : 'transparent', color: attivo ? '#fff' : c, transition: 'all 0.15s' }}>
               {attivo ? '✓ ' : ''}{labelTag(tag)}
             </button>
           )

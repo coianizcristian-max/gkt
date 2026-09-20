@@ -176,7 +176,8 @@
     "navPercorso": "Percorso",
     "miaScheda": "La mia scheda",
     "tabAnagrafica": "📋 Anagrafica",
-    "tabAssenze": "📅 Assenze"
+    "tabAssenze": "📅 Assenze",
+    "tabInfortuni": "🩹 Infortuni"
   },
   "calendario": {
     "tabAgenda": "Agenda",
@@ -979,7 +980,8 @@
     "minoriTitolo": "Dati personali e minori",
     "minoriInfo": "Stai inserendo i dati personali di un'altra persona. Se il portiere è minorenne, questi dati possono essere trattati solo se hai raccolto il consenso di chi esercita la responsabilità genitoriale, come richiesto dal GDPR (art. 8) e dal Codice Privacy italiano. Inserisci solo i dati necessari all'attività sportiva.",
     "minoriConferma": "Dichiaro di essere autorizzato a inserire questi dati e, se il portiere è minorenne, di avere il consenso di chi esercita la responsabilità genitoriale.",
-    "erroreMinoriConferma": "Per salvare devi confermare di essere autorizzato a inserire questi dati."
+    "erroreMinoriConferma": "Per salvare devi confermare di essere autorizzato a inserire questi dati.",
+    "statoInfortunio": "🩹 Stato infortunio"
   },
   "partitaForm": {
     "phAvversario": "Nome squadra avversaria",

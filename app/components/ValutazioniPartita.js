@@ -60,8 +60,13 @@ export default function ValutazioniPartita({ partitaId, golSubiti, golFatti = nu
     setExtra((rs) => rs.filter((_, idx) => idx !== i)); setDone(false)
   }
 
-  const sommaGolPortieri = rows.reduce((s, r) => s + (r.presente && r.gol_subiti !== '' && r.gol_subiti != null ? Number(r.gol_subiti) : 0), 0)
-  const qualcheGolInserito = rows.some((r) => r.presente && r.gol_subiti !== '' && r.gol_subiti != null)
+  // Controllo sui gol subiti: contano TUTTI i portieri che hanno giocato,
+  // compresi quelli aggiunti da un'altra categoria (prima restavano fuori
+  // dalla somma e l'avviso scattava anche con i numeri giusti).
+  const tuttiIPortieri = [...rows, ...extra]
+  const golInserito = (r) => r.presente && r.gol_subiti !== '' && r.gol_subiti != null
+  const sommaGolPortieri = tuttiIPortieri.reduce((s, r) => s + (golInserito(r) ? Number(r.gol_subiti) : 0), 0)
+  const qualcheGolInserito = tuttiIPortieri.some(golInserito)
   const golNonCombaciano = golSubiti != null && qualcheGolInserito && sommaGolPortieri !== golSubiti
 
   async function salvaTutto() {

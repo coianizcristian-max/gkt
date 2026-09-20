@@ -206,6 +206,15 @@ function RicorrenzaRiga({ ricorrenza, categorie, stagione, onChanged }) {
         </select>
       </div>
       <div className="ric-campo">
+        <span>{t('accorpaCon')}</span>
+        <select value={accorpaCon} onChange={(e) => { setAccorpaCon(e.target.value); ch() }}>
+          <option value="">{t('nessunaAccorpa')}</option>
+          {(categorie ?? []).filter((c) => c.id !== ricorrenza.squadra_id).map((c) => (
+            <option key={c.id} value={c.id}>{c.nome}</option>
+          ))}
+        </select>
+      </div>
+      <div className="ric-campo">
         <span>{t('inizio')}</span>
         <OrarioSelect value={oi} onChange={(e) => { setOi(e.target.value); ch() }} />
       </div>
@@ -222,15 +231,6 @@ function RicorrenzaRiga({ ricorrenza, categorie, stagione, onChanged }) {
         <span>{t('al')}</span>
         <input type="date" value={dEnd} min={stagione?.data_inizio ?? ''} max={stagione?.data_fine ?? ''}
           onChange={(e) => { setDEnd(e.target.value); ch() }} />
-      </div>
-      <div className="ric-campo">
-        <span>{t('accorpaCon')}</span>
-        <select value={accorpaCon} onChange={(e) => { setAccorpaCon(e.target.value); ch() }}>
-          <option value="">{t('nessunaAccorpa')}</option>
-          {(categorie ?? []).filter((c) => c.id !== ricorrenza.squadra_id).map((c) => (
-            <option key={c.id} value={c.id}>{c.nome}</option>
-          ))}
-        </select>
       </div>
       <div className="ric-azioni">
         <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? `✓ ${t('salva')}` : t('salva')}</button>

@@ -2615,11 +2615,19 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
    (titolo e pulsanti su due righe basse, schede e barra del mese sottili,
    legenda come pulsantino nella barra del mese) */
 @media (max-width: 720px) {
-  .topbar-cal { flex-direction: column; align-items: stretch; gap: 8px; padding-bottom: 0; }
+  /* titolo a sinistra, i due pulsanti "+ Nuovo…" affiancati a destra sulla
+     stessa riga, con il testo su due righe */
+  .topbar-cal { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 0; flex-wrap: nowrap; }
+  .topbar-cal > div:first-child { min-width: 0; }
   .topbar-cal h1 { font-size: 22px; margin: 0; }
   .topbar-cal .eyebrow { font-size: 11px; }
-  .topbar-cal .cal-azioni { display: flex; flex-wrap: nowrap; gap: 8px; width: 100%; }
-  .topbar-cal .cal-azioni .btn-azione { flex: 1; justify-content: center; text-align: center; padding: 8px 6px; font-size: 13px; min-height: 0; }
+  .topbar-cal .cal-azioni { display: flex; flex-wrap: nowrap; gap: 6px; width: auto; flex: none; }
+  .topbar-cal .cal-azioni .btn-azione {
+    width: 92px; min-height: 0; padding: 6px 6px; border-radius: 12px;
+    font-size: 12px; line-height: 1.2; text-align: center; white-space: normal;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .topbar-cal .cal-azioni .btn-azione::before { margin-right: 3px; }
   .calview-tabs { margin-bottom: 10px; }
   .calview-tabs button { padding: 7px 10px; font-size: 13.5px; }
   .calx-bar { gap: 6px; margin-bottom: 8px; flex-wrap: nowrap; }

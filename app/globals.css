@@ -2913,3 +2913,22 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
   .ric-azioni .btn-mini { flex: 1; padding: 8px 10px !important; font-size: 13px; }
   .ric-riga > p { grid-column: 1 / -1; }
 }
+
+/* Barre a schede che scorrono di lato (sub-nav): quando c'e' altro fuori
+   schermo compare un'ombra sul bordo, che sparisce arrivati in fondo. Solo
+   CSS: le ombre sono sfondi ancorati al contenuto (local) e al contenitore
+   (scroll). Escluse le barre che stanno gia' tutte in una riga. */
+.sub-nav:not(.at-tabs):not(.spt-tabs):not(.cst-tabs):not(.calview-tabs) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  background-image:
+    linear-gradient(to right, var(--carta) 40%, rgba(246, 247, 244, 0)),
+    linear-gradient(to left, var(--carta) 40%, rgba(246, 247, 244, 0)),
+    radial-gradient(farthest-side at 0 50%, rgba(20, 32, 43, 0.34), rgba(20, 32, 43, 0)),
+    radial-gradient(farthest-side at 100% 50%, rgba(20, 32, 43, 0.34), rgba(20, 32, 43, 0));
+  background-position: left center, right center, left center, right center;
+  background-size: 26px 100%, 26px 100%, 18px 100%, 18px 100%;
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
+}

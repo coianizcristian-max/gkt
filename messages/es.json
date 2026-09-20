@@ -2384,7 +2384,7 @@
     "mese_12": "Dic"
   },
   "valutazioniPartita": {
-    "convocato": "Convocado",
+    "convocato": "Ha jugado",
     "fuoriCategoria": "fuera de categoría",
     "voto": "Nota",
     "punti": "Puntos",
@@ -2403,7 +2403,7 @@
     "salvataggio": "Guardando...",
     "salvato": "Guardado ✓",
     "salva": "Guardar evaluaciones",
-    "nonConvocato": "No convocado",
+    "nonConvocato": "No ha jugado",
     "golSubitiMancanti": "Resultado aún no introducido en el detalle del partido"
   },
   "eserciziSeduta": {

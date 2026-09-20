@@ -2384,7 +2384,7 @@
     "mese_12": "Dec"
   },
   "valutazioniPartita": {
-    "convocato": "Called up",
+    "convocato": "Played",
     "fuoriCategoria": "out of category",
     "voto": "Rating",
     "punti": "Points",
@@ -2403,7 +2403,7 @@
     "salvataggio": "Saving...",
     "salvato": "Saved ✓",
     "salva": "Save evaluations",
-    "nonConvocato": "Not called up",
+    "nonConvocato": "Did not play",
     "golSubitiMancanti": "Result not entered yet in the match details"
   },
   "eserciziSeduta": {

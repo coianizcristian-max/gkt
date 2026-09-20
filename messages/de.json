@@ -2384,7 +2384,7 @@
     "mese_12": "Dez"
   },
   "valutazioniPartita": {
-    "convocato": "Nominiert",
+    "convocato": "Hat gespielt",
     "fuoriCategoria": "außerhalb der Kategorie",
     "voto": "Note",
     "punti": "Punkte",
@@ -2403,7 +2403,7 @@
     "salvataggio": "Wird gespeichert...",
     "salvato": "Gespeichert ✓",
     "salva": "Bewertungen speichern",
-    "nonConvocato": "Nicht nominiert",
+    "nonConvocato": "Nicht gespielt",
     "golSubitiMancanti": "Ergebnis in den Spieldetails noch nicht eingetragen"
   },
   "eserciziSeduta": {

@@ -196,7 +196,14 @@
     "guidaP2": "Innerhalb eines Trainings kannst du: Anwesenheiten markieren, Note und Punkte pro Parameter für jeden Torhüter eingeben, die Übungen der Einheit hinzufügen und das Kennzeichen <b>„Keine Bewertung“</b> aktivieren, wenn das Training stattgefunden hat, du aber keine Noten eingeben möchtest (in diesem Fall erscheint es im Kalender trotzdem als grün/bewertet). Du kannst außerdem zwei Kategorien direkt im Formular zu einem gemeinsamen Training <b>zusammenlegen</b>.",
     "guidaP3": "Um <b>mehrere Trainings oder Spiele gesammelt zu löschen</b>, nutze den Bereich <ricorrenze>Serientermine → Massenlöschung</ricorrenze>, wo du nach Kategorie, Zeitraum und Vorhandensein oder Fehlen von Bewertungen filtern kannst.",
     "guidaP4": "Wenn du auf einen Tag klickst, zeigt die Vorschau auch die <b>angekündigten Abwesenheiten</b> (Torhüter mit einer geplanten Abwesenheit an diesem Datum) und bei Spielen die <b>Treff- und Anstoßzeiten</b>. In der Bewertungsmatrix eines Trainings kannst du außerdem <b>Verletzungen</b> markieren, die dann aus den Statistiken ausgeschlossen werden.",
-    "nuovoTitolo": "Neues Training"
+    "nuovoTitolo": "Neues Training",
+    "tabProssimi": "Nächste Termine",
+    "prossimiGiorni": "Nächste {n} Tage",
+    "nGiorni": "{n} T.",
+    "nessunEventoGiorni": "Keine Trainings oder Spiele in den nächsten {n} Tagen.",
+    "altriDaValutare": "Noch {n} zu bewerten: in der Monatsansicht.",
+    "nAssenti": "{n, plural, one {# abwesend} other {# abwesend}}",
+    "agendaPartita": "Spiel"
   },
   "statistiche": {
     "guidaP5": "Neben der Tabelle gibt es den <b>Wachstumsindex</b> (0-100, aus erreichten Zielen, Trainings- und Spieltrend sowie Anwesenheit), das <b>Kompetenz-Radar</b>, das sortierbare <b>Kategorie-Ranking</b>, die Diagramme zur <b>Trainingsbewertung</b> und den <b>Mannschaftstrend</b>. Im Feedback-Tab wählst du, wie viele Kommentare pro Seite erscheinen (10, 20, 50 oder alle), neueste zuerst.",
@@ -2500,7 +2507,8 @@
     "apriAllenamento": "Training öffnen →",
     "allenamentiDaValutare": "Zu bewertende Trainings ({n})",
     "partiteDaValutare": "Zu bewertende Spiele ({n})",
-    "daValutareHeader": "Zu bewerten ({n})"
+    "daValutareHeader": "Zu bewerten ({n})",
+    "legenda": "Legende"
   },
   "setupWizard": {
     "step1": "Schritt 1 von 4",

@@ -196,7 +196,14 @@
     "guidaP2": "Desde dentro de un entrenamiento puedes: marcar las asistencias, introducir nota y puntuaciones por parámetro para cada portero, añadir los ejercicios de la sesión y activar la casilla <b>“Sin evaluación”</b> si el entrenamiento se realizó pero no quieres introducir notas (en ese caso aparece igualmente como verde/evaluado en el calendario). También puedes <b>unir</b> dos categorías en un único entrenamiento compartido directamente desde el formulario.",
     "guidaP3": "Para <b>eliminar varios entrenamientos o partidos en bloque</b> usa la sección <ricorrenze>Recurrencias → Eliminación masiva</ricorrenze>, donde puedes filtrar por categoría, intervalo de fechas y presencia o ausencia de evaluaciones.",
     "guidaP4": "Al pulsar un día, en la vista previa también ves los <b>ausentes anunciados</b> (porteros con una ausencia programada en esa fecha) y, para los partidos, las <b>horas de encuentro e inicio</b>. En la parrilla de evaluación de un entrenamiento puedes además marcar las <b>lesiones</b>, luego excluidas de las estadísticas.",
-    "nuovoTitolo": "Nuevo entrenamiento"
+    "nuovoTitolo": "Nuevo entrenamiento",
+    "tabProssimi": "Próximos eventos",
+    "prossimiGiorni": "Próximos {n} días",
+    "nGiorni": "{n} d",
+    "nessunEventoGiorni": "Ningún entrenamiento ni partido en los próximos {n} días.",
+    "altriDaValutare": "Otros {n} por valorar: los encuentras en la vista Mes.",
+    "nAssenti": "{n, plural, one {# ausente} other {# ausentes}}",
+    "agendaPartita": "Partido"
   },
   "statistiche": {
     "guidaP5": "Además de la tabla encontrarás el <b>Índice de Crecimiento</b> (0-100, que combina objetivos logrados, evolución en entrenamientos y partidos y asistencia), el <b>radar de competencias</b>, el <b>ranking de categoría</b> ordenable por cada KPI, los gráficos de <b>valoración de los entrenamientos</b> y la <b>evolución del equipo</b>. En la pestaña Feedback eliges cuántos comentarios ver por página (10, 20, 50 o todos), del más reciente.",
@@ -2500,7 +2507,8 @@
     "apriAllenamento": "Abrir entrenamiento →",
     "allenamentiDaValutare": "Entrenamientos por evaluar ({n})",
     "partiteDaValutare": "Partidos por evaluar ({n})",
-    "daValutareHeader": "Por evaluar ({n})"
+    "daValutareHeader": "Por evaluar ({n})",
+    "legenda": "Leyenda"
   },
   "setupWizard": {
     "step1": "Paso 1 de 4",

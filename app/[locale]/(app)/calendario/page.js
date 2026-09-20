@@ -3,6 +3,7 @@ import { getStagioneAttiva } from '@/lib/tenant'
 import { contestoDati, entroTaglio } from '@/lib/demo'
 import CalendarioMese from '@/app/components/CalendarioMese'
 import CalendarioPortiereTabs from '@/app/components/CalendarioPortiereTabs'
+import CalendarioStaffTabs from '@/app/components/CalendarioStaffTabs'
 import CalendarioAzioni from '@/app/components/CalendarioAzioni'
 import Guida from '@/app/components/Guida'
 import { getTranslations } from 'next-intl/server'
@@ -196,7 +197,7 @@ export default async function CalendarioPage() {
         {stagione
           ? (isPortiere
             ? <CalendarioPortiereTabs allenamenti={allenamenti} partite={partite} categorie={categorie} oggiStr={oggiStr} />
-            : <CalendarioMese allenamenti={allenamenti} partite={partite} categorie={categorie} vista="staff" oggiIso={oggiStr} />)
+            : <CalendarioStaffTabs allenamenti={allenamenti} partite={partite} categorie={categorie} oggiStr={oggiStr} />)
           : <div className="empty">{c('nessunaStagione')}</div>}
       </div>
     </>

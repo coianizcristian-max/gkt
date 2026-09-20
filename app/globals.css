@@ -2000,6 +2000,36 @@ a.brand { text-decoration: none; color: inherit; }
 
 /* ===== Calendario portiere: tab Agenda/Mese + vista Agenda ===== */
 .calview-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+/* Calendario staff (CalendarioStaffTabs): schede solo su mobile, su PC la griglia */
+.cst-tabs, .cst-p-agenda { display: none; }
+.calx-legenda-toggle { display: none; }
+@media (max-width: 720px) {
+  .cst-tabs { display: flex; }
+  .cst-agenda .cst-p-agenda { display: block; }
+  .cst-agenda .cst-p-mese { display: none; }
+  /* legenda chiusa di default: si apre con "Legenda" */
+  .calx-legenda-toggle {
+    display: inline-flex; align-items: center; gap: 4px; margin: 0 0 10px; padding: 5px 12px;
+    border: 1px solid var(--linea); border-radius: 999px; background: var(--bianco);
+    font: inherit; font-size: 13px; font-weight: 600; color: var(--ink-soft); cursor: pointer;
+  }
+  .calx-legende { display: none; }
+  .calx-legende.aperta { display: block; }
+}
+.ags-row { padding: 9px 10px; margin-bottom: 6px; gap: 10px; }
+.ags-row.ags-oggi { box-shadow: inset 3px 0 0 var(--azzurro), var(--ombra); }
+.ags-gs { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); line-height: 1.1; }
+.ags-acc { font-weight: 600; color: var(--ink-soft); }
+.ags-ico { vertical-align: -1px; }
+.ags-ass { background: rgba(232,167,44,0.16); color: #8a5a00; }
+.ags-altri { margin: 2px 2px 10px; font-size: 12.5px; color: var(--ink-soft); }
+.ags-testa { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 16px 2px 8px; }
+.ags-giorni { display: flex; gap: 4px; }
+.ags-giorni button {
+  padding: 4px 12px; border-radius: 999px; border: 1px solid var(--linea); background: var(--bianco);
+  font: inherit; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); cursor: pointer;
+}
+.ags-giorni button.on { background: var(--azzurro); border-color: var(--azzurro); color: #fff; }
 .calview-tabs button { flex: 1; max-width: 180px; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--linea); background: var(--bianco); font: inherit; font-size: 14px; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
 .calview-tabs button.on { background: var(--azzurro); border-color: var(--azzurro); color: #fff; }
 .agenda-sec { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 700; margin: 16px 2px 8px; }
@@ -2223,18 +2253,23 @@ a.brand { text-decoration: none; color: inherit; }
   .calx-rcat { font-size: 14px; }
 }
 @media (max-width: 600px) {
-  /* Griglia leggibile su mobile: scorre in orizzontale, con celle
-     abbastanza larghe da mostrare "18:30 · Categoria". Tocca un giorno
-     per aprire il dettaglio in un popup dal basso. */
-  .calx-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
-  .calx-scroll .calx-grid { min-width: 640px; }
-  .calx-cell { min-height: 94px; padding: 7px 6px; }
-  .calx-num { font-size: 13px; }
-  .calx-num-link a { pointer-events: none; }
-  /* chip su due righe: 1a riga orario, 2a riga categoria (a tutta larghezza) */
-  .calx-ev { font-size: 11px; padding: 4px 7px; flex-wrap: wrap; row-gap: 1px; white-space: normal; overflow: visible; line-height: 1.2; }
-  .calx-ev b { font-size: 11.5px; }
-  .calx-ev-label { flex-basis: 100%; white-space: normal; overflow: visible; text-overflow: clip; font-weight: 600; }
+  /* Mese intero nello schermo (7 giorni visibili, niente scorrimento di lato):
+     ogni evento e' un blocchetto colorato con l'orario. Il dettaglio
+     (categoria, avversario, stato) si apre toccando il giorno, nel popup dal
+     basso; la lista completa e' nella scheda "Prossimi eventi". */
+  .calx-scroll { overflow-x: visible; padding-bottom: 0; }
+  .calx-scroll .calx-grid { min-width: 0; }
+  .calx-grid { gap: 3px; }
+  .calx-head { margin-bottom: 4px; }
+  .calx-dow { font-size: 10px; letter-spacing: 0; text-align: center; }
+  .calx-cell { min-height: 60px; padding: 4px 2px 3px; border-radius: 8px; gap: 3px; }
+  .calx-num { font-size: 12px; align-self: center; }
+  .calx-num-link a { pointer-events: none; padding: 0 2px; }
+  .calx-evs { gap: 2px; }
+  .calx-ev { font-size: 10px; padding: 2px 1px; justify-content: center; min-height: 15px; line-height: 1.1; border-radius: 4px; }
+  .calx-ev b { font-size: 10px; font-weight: 700; }
+  .calx-ev .calx-edot, .calx-ev .calx-ev-label, .calx-ev .calx-ev-tipo { display: none; }
+  .calx-more { font-size: 10px; text-align: center; }
   .calx-panel-title { font-size: 16px; }
   .calx-panel-head { padding: 14px 14px 11px; }
   .calx-rows { padding: 10px 10px 14px; }

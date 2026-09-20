@@ -196,7 +196,14 @@
     "guidaP2": "Dall’interno di un allenamento puoi: segnare le presenze, inserire voto e punteggi per parametro per ogni portiere, aggiungere gli esercizi della seduta, e attivare il flag <b>“Nessuna valutazione”</b> se l’allenamento si è svolto ma non vuoi inserire voti (in questo caso appare comunque come verde/valutato nel calendario). Puoi anche <b>accorpare</b> due categorie in un unico allenamento condiviso direttamente dal form.",
     "guidaP3": "Per <b>eliminare più allenamenti o partite in blocco</b> usa la sezione <ricorrenze>Ricorrenze → Eliminazione massiva</ricorrenze>, dove puoi filtrare per categoria, intervallo di date e presenza o assenza di valutazioni.",
     "guidaP4": "Cliccando un giorno, nella preview vedi anche gli <b>assenti annunciati</b> (portieri con un’assenza programmata su quella data) e, per le partite, gli <b>orari di ritrovo e inizio</b>. Nella griglia di valutazione di un allenamento puoi inoltre segnare gli <b>infortuni</b>, poi esclusi dalle statistiche.",
-    "nuovoTitolo": "Nuovo allenamento"
+    "nuovoTitolo": "Nuovo allenamento",
+    "tabProssimi": "Prossimi eventi",
+    "prossimiGiorni": "Prossimi {n} giorni",
+    "nGiorni": "{n} gg",
+    "nessunEventoGiorni": "Nessun allenamento o partita nei prossimi {n} giorni.",
+    "altriDaValutare": "Altri {n} da valutare: li trovi nella vista Mese.",
+    "nAssenti": "{n, plural, one {# assente} other {# assenti}}",
+    "agendaPartita": "Partita"
   },
   "statistiche": {
     "guidaP5": "Oltre alla tabella trovi l'<b>Indice di Crescita</b> (0-100, che combina obiettivi raggiunti, andamento di allenamenti e partite e presenze), il <b>radar delle competenze</b>, il <b>ranking di categoria</b> ordinabile per ogni KPI, i grafici di <b>gradimento degli allenamenti</b> e l'<b>andamento squadra</b>. Nel tab Feedback scegli quanti commenti vedere per pagina (10, 20, 50 o tutti), dal più recente.",
@@ -2500,7 +2507,8 @@
     "apriAllenamento": "Apri allenamento →",
     "allenamentiDaValutare": "Allenamenti da valutare ({n})",
     "partiteDaValutare": "Partite da valutare ({n})",
-    "daValutareHeader": "Da valutare ({n})"
+    "daValutareHeader": "Da valutare ({n})",
+    "legenda": "Legenda"
   },
   "setupWizard": {
     "step1": "Passo 1 di 4",

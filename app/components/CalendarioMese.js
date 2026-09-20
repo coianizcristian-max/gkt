@@ -25,6 +25,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
   const [filtro, setFiltro] = useState('')
   const [selectedDay, setSelectedDay] = useState(null)
   const [openId, setOpenId] = useState(null)
+  const [legendaAperta, setLegendaAperta] = useState(false)
   const chiudiPannello = useCallback(() => { setSelectedDay(null); setOpenId(null) }, [])
   const [previewExtra, setPreviewExtra] = useState({})
   const [loadingExtra, setLoadingExtra] = useState(false)
@@ -434,6 +435,11 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
 
   return (
     <div className="calx">
+      {/* su mobile la legenda e' chiusa: si apre col pulsante (spazio alla griglia) */}
+      <button type="button" className="calx-legenda-toggle" onClick={() => setLegendaAperta((v) => !v)} aria-expanded={legendaAperta}>
+        {t('legenda')} {legendaAperta ? '▴' : '▾'}
+      </button>
+      <div className={`calx-legende${legendaAperta ? ' aperta' : ''}`}>
       <div className="calx-legenda">
         {isPortiere ? (
           <>
@@ -451,6 +457,7 @@ export default function CalendarioMese({ allenamenti, partite = [], categorie, v
       </div>
       {/* simboli sulle caselle delle partite */}
       <LegendaSimboliPartita />
+      </div>
 
       <div className="calx-bar">
         <div className="calx-nav">

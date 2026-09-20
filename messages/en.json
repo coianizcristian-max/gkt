@@ -196,7 +196,14 @@
     "guidaP2": "Inside a training you can: mark attendance, enter a rating and per-parameter scores for each goalkeeper, add the session’s drills, and enable the <b>“No evaluation”</b> flag if the training took place but you don’t want to enter ratings (in that case it still appears as green/rated in the calendar). You can also <b>merge</b> two categories into a single shared training directly from the form.",
     "guidaP3": "To <b>delete multiple trainings or matches in bulk</b> use the <ricorrenze>Recurrences → Bulk deletion</ricorrenze> section, where you can filter by category, date range and presence or absence of evaluations.",
     "guidaP4": "When you click a day, the preview also shows the <b>announced absences</b> (goalkeepers with a scheduled absence on that date) and, for matches, the <b>meeting and kick-off times</b>. In a training’s evaluation grid you can also mark <b>injuries</b>, which are then excluded from statistics.",
-    "nuovoTitolo": "New training"
+    "nuovoTitolo": "New training",
+    "tabProssimi": "Upcoming",
+    "prossimiGiorni": "Next {n} days",
+    "nGiorni": "{n} d",
+    "nessunEventoGiorni": "No training sessions or matches in the next {n} days.",
+    "altriDaValutare": "{n} more to evaluate: find them in the Month view.",
+    "nAssenti": "{n, plural, one {# absent} other {# absent}}",
+    "agendaPartita": "Match"
   },
   "statistiche": {
     "guidaP5": "Besides the table you'll find the <b>Growth Index</b> (0-100, combining objectives achieved, training and match trends and attendance), the <b>skills radar</b>, the <b>category ranking</b> sortable by any KPI, the <b>session rating</b> charts and the <b>team trend</b>. In the Feedback tab you choose how many comments to show per page (10, 20, 50 or all), newest first.",
@@ -2500,7 +2507,8 @@
     "apriAllenamento": "Open training →",
     "allenamentiDaValutare": "Trainings to evaluate ({n})",
     "partiteDaValutare": "Matches to evaluate ({n})",
-    "daValutareHeader": "To evaluate ({n})"
+    "daValutareHeader": "To evaluate ({n})",
+    "legenda": "Legend"
   },
   "setupWizard": {
     "step1": "Step 1 of 4",

@@ -5,7 +5,6 @@ import { useRouter } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { useTranslations } from 'next-intl'
-import OrarioSelect from '@/app/components/OrarioSelect'
 
 // Autocomplete "avversario" custom: input di testo SEMPRE editabile (la tastiera
 // non viene mai bloccata) + lista suggerimenti sotto al campo, filtrata mentre
@@ -157,9 +156,9 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
             <option value="0">{c('trasferta')}</option>
           </select></div>
         <div className="field pf-rit"><label>{t('oraRitrovo')}</label>
-          <OrarioSelect value={f.ora_ritrovo} onChange={upd('ora_ritrovo')} /></div>
+          <input type="time" value={f.ora_ritrovo} onChange={upd('ora_ritrovo')} /></div>
         <div className="field pf-ini"><label>{t('oraInizio')}</label>
-          <OrarioSelect value={f.ora_inizio} onChange={upd('ora_inizio')} /></div>
+          <input type="time" value={f.ora_inizio} onChange={upd('ora_inizio')} /></div>
         <div className="field pf-comp"><label>{t('competizione')}</label>
           <select value={f.tipo} onChange={upd('tipo')}>
             <option value="campionato">{t('tipoCampionato')}</option>

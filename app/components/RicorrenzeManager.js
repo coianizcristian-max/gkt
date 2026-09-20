@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
-import OrarioSelect from '@/app/components/OrarioSelect'
 
 const DATE_LOCALE = { it: 'it-IT', en: 'en-GB', de: 'de-DE' }
 const pad = (n) => String(n).padStart(2, '0')
@@ -216,11 +215,11 @@ function RicorrenzaRiga({ ricorrenza, categorie, stagione, onChanged }) {
       </div>
       <div className="ric-campo">
         <span>{t('inizio')}</span>
-        <OrarioSelect value={oi} onChange={(e) => { setOi(e.target.value); ch() }} />
+        <input type="time" value={oi} onChange={(e) => { setOi(e.target.value); ch() }} />
       </div>
       <div className="ric-campo">
         <span>{t('fine')}</span>
-        <OrarioSelect value={ofine} onChange={(e) => { setOfine(e.target.value); ch() }} />
+        <input type="time" value={ofine} onChange={(e) => { setOfine(e.target.value); ch() }} />
       </div>
       <div className="ric-campo">
         <span>{t('dal')}</span>

@@ -2913,6 +2913,3 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
   .ric-azioni .btn-mini { flex: 1; padding: 8px 10px !important; font-size: 13px; }
   .ric-riga > p { grid-column: 1 / -1; }
 }
-
-/* Scelta orario a elenco (OrarioSelect) */
-.orario-select { font-variant-numeric: tabular-nums; }

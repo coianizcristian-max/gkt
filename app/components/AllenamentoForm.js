@@ -7,7 +7,6 @@ import { trackEvento } from '@/app/components/PostHogProvider'
 import DuplicaAllenamentoPicker from '@/app/components/DuplicaAllenamentoPicker'
 import DuplicaTemplatePicker from '@/app/components/DuplicaTemplatePicker'
 import { useTranslations } from 'next-intl'
-import OrarioSelect from '@/app/components/OrarioSelect'
 
 export default function AllenamentoForm({ allenamento, categorie, stagioneId, defaultData }) {
   const router = useRouter()
@@ -145,9 +144,9 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></div>
         <div className="field"><label>{t('oraInizio')}</label>
-          <OrarioSelect value={f.ora_inizio} onChange={upd('ora_inizio')} disabled={!!f.accorpata_con && orarioAccorpante && orarioAccorpante !== 'assente'} /></div>
+          <input type="time" value={f.ora_inizio} onChange={upd('ora_inizio')} disabled={!!f.accorpata_con && orarioAccorpante && orarioAccorpante !== 'assente'} /></div>
         <div className="field"><label>{t('oraFine')}</label>
-          <OrarioSelect value={f.ora_fine} onChange={upd('ora_fine')} disabled={!!f.accorpata_con && orarioAccorpante && orarioAccorpante !== 'assente'} /></div>
+          <input type="time" value={f.ora_fine} onChange={upd('ora_fine')} disabled={!!f.accorpata_con && orarioAccorpante && orarioAccorpante !== 'assente'} /></div>
         <div className="field af-full">
           <label>{t('accorpataCon')}</label>
           <select value={f.accorpata_con} onChange={upd('accorpata_con')}>

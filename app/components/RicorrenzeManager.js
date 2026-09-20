@@ -17,12 +17,28 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
   const [gen, setGen] = useState('')
   const haRange = !!(stagione?.data_inizio && stagione?.data_fine)
 
+  // Il nuovo giorno si aggiunge IN FONDO a quelli gia' presenti della
+  // categoria (l'elenco e' ordinato per giorno della settimana): si prende il
+  // primo giorno libero dopo l'ultimo, con gli stessi orari e le stesse date.
+  function nuovoGiorno(righe) {
+    const usati = new Set(righe.map((r) => r.giorno_settimana))
+    const ultimo = righe.length ? Math.max(...usati) : 0
+    for (let g = ultimo + 1; g <= 7; g++) if (!usati.has(g)) return g
+    for (let g = 1; g <= 7; g++) if (!usati.has(g)) return g
+    return ultimo || 1
+  }
+
   async function aggiungi(squadraId) {
     const supabase = createClient()
+    const righe = perCat(squadraId)
+    const ultima = righe[righe.length - 1]
     const { error } = await supabase.from('ricorrenze_stagionali').insert({
       stagione_id: stagione.id, squadra_id: squadraId,
-      giorno_settimana: 1, ora_inizio: '18:00',
-      data_inizio_ric: null, data_fine_ric: null,
+      giorno_settimana: nuovoGiorno(righe),
+      ora_inizio: ultima?.ora_inizio ?? '18:00',
+      ora_fine: ultima?.ora_fine ?? null,
+      data_inizio_ric: ultima?.data_inizio_ric ?? null,
+      data_fine_ric: ultima?.data_fine_ric ?? null,
     })
     if (error) alert(t('errore', { msg: error.message }))
     router.refresh()

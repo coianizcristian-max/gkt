@@ -499,7 +499,8 @@
     "nessunPortiereCat": "Nessun portiere iscritto a questa categoria per la stagione.",
     "altraCategoria": "Altra categoria",
     "tabDettaglio": "Dettaglio",
-    "tabValutazioni": "Valutazioni"
+    "tabValutazioni": "Valutazioni",
+    "vaiValutazioni": "Inserisci le valutazioni →"
   },
   "obiettiviPortiere": {
     "titolo": "Obiettivi",
@@ -2404,9 +2405,10 @@
     "salvato": "Salvato ✓",
     "salva": "Salva valutazioni",
     "nonConvocato": "Non ha giocato",
-    "golSubitiMancanti": "Risultato non ancora inserito nel dettaglio partita",
+    "golSubitiMancanti": "Risultato della partita non ancora inserito.",
     "puntiPortati": "Punti portati",
-    "puntiAiuto": "Punti portati: quanti punti il portiere ha fatto guadagnare alla squadra con la sua prestazione (per esempio con una parata decisiva). Non sono i punti in classifica della partita."
+    "puntiAiuto": "Punti portati: quanti punti il portiere ha fatto guadagnare alla squadra con la sua prestazione (per esempio con una parata decisiva). Non sono i punti in classifica della partita.",
+    "inserisciRisultato": "Inserisci il risultato →"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

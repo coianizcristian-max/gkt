@@ -173,7 +173,7 @@ export default async function PartitaPage({ params }) {
         <p className="sub-intro">{dataLabel}{orarioLabel ? ` · ${orarioLabel}` : ''}</p>
         <SchedePartitaMobile
           iniziale={giocata ? 'valutazioni' : 'dettaglio'}
-          etichette={{ dettaglio: t('tabDettaglio'), valutazioni: t('tabValutazioni'), conteggio }}
+          etichette={{ dettaglio: t('tabDettaglio'), valutazioni: t('tabValutazioni'), conteggio, vaiValutazioni: t('vaiValutazioni') }}
           dettaglio={<PartitaForm partita={partita} categorie={categorie} stagioneId={partita.stagione_id} avversari={avversari} />}
           valutazioni={sezioneValutazioni}
         />

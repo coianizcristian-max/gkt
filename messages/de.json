@@ -499,7 +499,8 @@
     "nessunPortiereCat": "Kein Torhüter in dieser Kategorie für die Saison gemeldet.",
     "altraCategoria": "Andere Kategorie",
     "tabDettaglio": "Details",
-    "tabValutazioni": "Bewertungen"
+    "tabValutazioni": "Bewertungen",
+    "vaiValutazioni": "Bewertungen eingeben →"
   },
   "obiettiviPortiere": {
     "titolo": "Ziele",
@@ -2404,9 +2405,10 @@
     "salvato": "Gespeichert ✓",
     "salva": "Bewertungen speichern",
     "nonConvocato": "Nicht gespielt",
-    "golSubitiMancanti": "Ergebnis in den Spieldetails noch nicht eingetragen",
+    "golSubitiMancanti": "Spielergebnis noch nicht eingetragen.",
     "puntiPortati": "Erzielte Punkte",
-    "puntiAiuto": "Erzielte Punkte: wie viele Punkte der Torhüter der Mannschaft mit seiner Leistung gebracht hat (z. B. mit einer entscheidenden Parade). Nicht die Tabellenpunkte des Spiels."
+    "puntiAiuto": "Erzielte Punkte: wie viele Punkte der Torhüter der Mannschaft mit seiner Leistung gebracht hat (z. B. mit einer entscheidenden Parade). Nicht die Tabellenpunkte des Spiels.",
+    "inserisciRisultato": "Ergebnis eingeben →"
   },
   "eserciziSeduta": {
     "oreMin": "{h}h {min}min",

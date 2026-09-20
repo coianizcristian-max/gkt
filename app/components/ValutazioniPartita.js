@@ -1,5 +1,6 @@
 'use client'
 
+import { vaiASchedaPartita } from '@/app/components/SchedePartitaMobile'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -124,7 +125,7 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
             </div>
             <div className="vp-note">
               <label>{t('note')}</label>
-              <textarea rows="2" value={r.note} onChange={(e) => onChange(i, { note: e.target.value })} />
+              <textarea rows="4" value={r.note} onChange={(e) => onChange(i, { note: e.target.value })} />
             </div>
           </>
         )}
@@ -140,9 +141,17 @@ export default function ValutazioniPartita({ partitaId, golSubiti, portieri, por
   return (
     <div className="val-grid">
       {error && <div className="err">{error}</div>}
-      <div className="val-nessuno">
-        {cleanSheet ? t('cleanSheet') : golSubiti == null ? t('golSubitiMancanti') : t('golSubitiTot', { n: golSubiti })}
-      </div>
+      {golSubiti == null ? (
+        // Risultato mancante: rimanda al dettaglio partita, dove si inserisce
+        <div className="val-nessuno vp-manca-ris">
+          <span>{t('golSubitiMancanti')}</span>
+          <button type="button" className="btn-mini" onClick={() => vaiASchedaPartita('dettaglio')}>{t('inserisciRisultato')}</button>
+        </div>
+      ) : (
+        <div className="val-nessuno">
+          {cleanSheet ? t('cleanSheet') : t('golSubitiTot', { n: golSubiti })}
+        </div>
+      )}
       {/* spiega una volta sola cosa sono i "punti portati" */}
       <p className="vp-aiuto">{t('puntiAiuto')}</p>
       {golNonCombaciano && (

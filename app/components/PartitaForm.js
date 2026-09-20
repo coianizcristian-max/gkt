@@ -135,45 +135,45 @@ export default function PartitaForm({ partita, categorie, stagioneId, avversari 
   }
 
   return (
-    <form className="scheda" onSubmit={save}>
+    <form className="scheda pf-form" onSubmit={save}>
       {error && <div className="err">{error}</div>}
       <div className="form-grid">
-        <div className="field"><label>{t('data')}</label>
+        <div className="field pf-data"><label>{t('data')}</label>
           <input type="date" value={f.data} onChange={upd('data')} required /></div>
-        <div className="field"><label>{t('categoria')}</label>
+        <div className="field pf-cat"><label>{t('categoria')}</label>
           <select value={f.squadra_id} onChange={upd('squadra_id')} disabled={isEdit} required>
             {categorie.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select></div>
-        <div className="field"><label>{t('avversario')}</label>
+        <div className="field pf-avv"><label>{t('avversario')}</label>
           <AvversarioInput
             value={f.avversario}
             onChange={(v) => { setF((s) => ({ ...s, avversario: v })); setDone(false) }}
             suggestions={avversari}
           /></div>
-        <div className="field"><label>{t('dove')}</label>
+        <div className="field pf-dove"><label>{t('dove')}</label>
           <select value={f.casa ? '1' : '0'} onChange={(e) => { setF((s) => ({ ...s, casa: e.target.value === '1' })); setDone(false) }}>
             <option value="1">{c('casa')}</option>
             <option value="0">{c('trasferta')}</option>
           </select></div>
-        <div className="field"><label>{t('oraRitrovo')}</label>
+        <div className="field pf-rit"><label>{t('oraRitrovo')}</label>
           <input type="time" value={f.ora_ritrovo} onChange={upd('ora_ritrovo')} /></div>
-        <div className="field"><label>{t('oraInizio')}</label>
+        <div className="field pf-ini"><label>{t('oraInizio')}</label>
           <input type="time" value={f.ora_inizio} onChange={upd('ora_inizio')} /></div>
-        <div className="field"><label>{t('competizione')}</label>
+        <div className="field pf-comp"><label>{t('competizione')}</label>
           <select value={f.tipo} onChange={upd('tipo')}>
             <option value="campionato">{t('tipoCampionato')}</option>
             <option value="coppa">{t('tipoCoppa')}</option>
             <option value="torneo">{t('tipoTorneo')}</option>
             <option value="amichevole">{t('tipoAmichevole')}</option>
           </select></div>
-        <div className="field"><label>{t('golFatti')}</label>
-          <input type="number" min="0" value={f.gol_fatti} onChange={upd('gol_fatti')} /></div>
-        <div className="field"><label>{t('golSubiti')}</label>
-          <input type="number" min="0" value={f.gol_subiti} onChange={upd('gol_subiti')} /></div>
-        <div className="field field-full"><label>{t('note')}</label>
+        <div className="field pf-gf pf-ris"><label>{t('golFatti')}</label>
+          <input type="number" min="0" inputMode="numeric" value={f.gol_fatti} onChange={upd('gol_fatti')} /></div>
+        <div className="field pf-gs pf-ris"><label>{t('golSubiti')}</label>
+          <input type="number" min="0" inputMode="numeric" value={f.gol_subiti} onChange={upd('gol_subiti')} /></div>
+        <div className="field field-full pf-note"><label>{t('note')}</label>
           <textarea rows="2" value={f.note} onChange={upd('note')} /></div>
       </div>
-      <div className="form-actions" style={{ justifyContent: isEdit ? 'space-between' : 'flex-end' }}>
+      <div className="form-actions pf-azioni" style={{ justifyContent: isEdit ? 'space-between' : 'flex-end' }}>
         {isEdit && (
           <button type="button" className="btn-ghost" onClick={elimina} disabled={deleting || saving} style={{ color: 'var(--rosso)', borderColor: 'var(--rosso)' }}>
             {deleting ? t('eliminazione') : t('eliminaPartita')}

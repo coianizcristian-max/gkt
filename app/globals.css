@@ -953,7 +953,7 @@ a { color: inherit; text-decoration: none; }
 .vp-note { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
 .vp-note textarea { width: 100%; box-sizing: border-box; min-height: 130px; font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--linea); border-radius: var(--r-sm); resize: vertical; }
 /* intestazione mobile dello staff: solo logo, lo spazio va al selettore stagione */
-.mob-brand-logo > div { display: none; }
+.mob-brand-logo > div:not(.glove) { display: none; }
 .mob-header .brand-switcher-wrap { flex: 1; min-width: 0; }
 
 /* Modulo partita (PartitaForm) compatto su mobile: due colonne, il
@@ -2868,4 +2868,17 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
 .oc-vuoto { padding: 8px 12px; font-size: 12.5px; color: var(--ink-soft); }
 @media (max-width: 720px) {
   .oc-chip { padding: 4px 10px; font-size: 11.5px; }
+}
+
+/* Intestazione delle pagine con pulsante (Portieri, Partite, Esercizi…) su
+   mobile: titolo a sinistra e pulsante sulla stessa riga a destra. Prima una
+   regola successiva annullava quella per il mobile e il titolo finiva a
+   destra, con il pulsante sotto: molto spazio perso in cima alla pagina. */
+@media (max-width: 720px) {
+  .topbar-row:not(.topbar-cal) { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; }
+  .topbar-row:not(.topbar-cal) > div:first-child { min-width: 0; }
+  .topbar-row:not(.topbar-cal) h1 { margin: 0; }
+  .topbar-row:not(.topbar-cal) .btn-azione { align-self: center; padding: 8px 14px; font-size: 13.5px; }
+  .guida-box { margin-bottom: 12px; }
+  .guida-toggle { padding: 9px 12px; font-size: 0.9rem; }
 }

@@ -2630,3 +2630,21 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
   .calx-bar .calx-legenda-toggle { margin: 0 0 0 auto; padding: 5px 9px; font-size: 12px; flex: none; }
   .calx-scroll-hint { font-size: 11.5px; margin-bottom: 4px; }
 }
+
+/* Modulo esercizio (EserciziManager, NuovoEsercizioModal) su mobile: meno
+   spazio vuoto tra i campi (le caselle restano grandi), Durata e Recupero
+   affiancati, "Pubblico" su una riga, Annulla e Salva affiancati. */
+@media (max-width: 720px) {
+  .es-form.scheda { padding: 14px; }
+  .es-form h2 { margin-bottom: 10px !important; }
+  .es-form .form-grid { grid-template-columns: 1fr 1fr; gap: 10px 10px; }
+  .es-form .form-grid > .field:not(.es-tempo) { grid-column: 1 / -1; }
+  .es-form .field label { margin-bottom: 4px; font-size: 13px; }
+  .es-form .es-tempo input { max-width: none !important; width: 100%; }
+  .es-form .es-tempo label span { display: block; font-size: 11px !important; }
+  .es-form .es-pubblico .val-nessuno { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 14px; text-align: left; }
+  .es-form .es-pubblico .val-nessuno input { flex: none; width: 20px; height: 20px; margin: 0; }
+  .es-form .es-azioni { flex-direction: row; gap: 8px; margin-top: 12px; }
+  .es-form .es-azioni > * { flex: 1; margin: 0; }
+  .es-form .es-azioni > .btn-del { flex: none; }
+}

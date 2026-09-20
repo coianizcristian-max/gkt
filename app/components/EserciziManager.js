@@ -430,7 +430,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
   }
 
   return (
-    <div className="scheda">
+    <div className="scheda es-form">
       <h2 style={{ margin: '0 0 16px', fontSize: 18 }}>{isEdit ? t('modificaEsercizio') : t('nuovoEsercizioTitolo')}</h2>
       {error && <div className="err">{error}</div>}
       <div className="form-grid">
@@ -490,7 +490,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
           <input type="url" value={f.video_url} onChange={upd('video_url')} placeholder="https://www.youtube.com/watch?v=..." />
           {f.video_url && <a href={f.video_url} target="_blank" rel="noopener noreferrer" style={{fontSize:12,color:'var(--azzurro)',marginTop:4,display:'inline-block'}}>{t('anteprimaLink')}</a>}
         </div>
-        <div className="field">
+        <div className="field es-tempo">
           <label>{t('durataEsercizio')} <span style={{ fontWeight: 400, color: 'var(--ink-soft)', fontSize: 12 }}>{t('minutiFacoltativo')}</span></label>
           <input
             type="number" min="0" step="0.5"
@@ -500,7 +500,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
             style={{ maxWidth: 120 }}
           />
         </div>
-        <div className="field">
+        <div className="field es-tempo">
           <label>{t('recupero')} <span style={{ fontWeight: 400, color: 'var(--ink-soft)', fontSize: 12 }}>{t('minutiFacoltativo')}</span></label>
           <input
             type="number" min="0" step="0.5"
@@ -510,7 +510,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
             style={{ maxWidth: 120 }}
           />
         </div>
-        <div className="field field-full">
+        <div className="field field-full es-pubblico">
           <label className="val-nessuno">
             <input type="checkbox" checked={f.pubblico} onChange={(e) => { setF((s) => ({ ...s, pubblico: e.target.checked })); setDone(false) }} />
             {t('pubblicoLabel')}
@@ -531,7 +531,7 @@ function EsercizioForm({ esercizio, tipologie, attributiDisponibili = [], allena
           </span>
         </div>
       )}
-      <div className="form-actions">
+      <div className="form-actions es-azioni">
         {onCancel && <button className="btn-ghost" onClick={onCancel} type="button">{c('annulla')}</button>}
         {isEdit && <button className="btn-mini btn-del" onClick={elimina} type="button">{t('archivia')}</button>}
         <button className="btn" onClick={salva} disabled={busy} type="button">

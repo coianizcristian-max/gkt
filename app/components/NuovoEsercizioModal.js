@@ -117,7 +117,7 @@ function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
   }
 
   return (
-    <div style={{ padding: '16px 0 0' }}>
+    <div className="es-form" style={{ padding: '16px 0 0' }}>
       {error && <div className="err" style={{ marginBottom: 12 }}>{error}</div>}
       <div className="form-grid">
         <div className="field field-full">
@@ -131,11 +131,11 @@ function EsercizioFormInline({ tipologie, allenatoreId, onSaved, onCancel }) {
             <option value="__nuova__">{t('nuovaTipologia')}</option>
           </select>
         </div>
-        <div className="field">
+        <div className="field es-tempo">
           <label>{t('durata')}</label>
           <input type="number" min="0" step="0.5" value={f.durata_minuti} onChange={upd('durata_minuti')} placeholder={t('phDurata')} />
         </div>
-        <div className="field">
+        <div className="field es-tempo">
           <label>{t('recupero')}</label>
           <input type="number" min="0" step="0.5" value={f.recupero_minuti} onChange={upd('recupero_minuti')} placeholder={t('phRecupero')} />
         </div>

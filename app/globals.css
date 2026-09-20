@@ -973,7 +973,7 @@ a { color: inherit; text-decoration: none; }
   .pf-note { order: 10; }
   .pf-ris input { text-align: center; font-size: 18px; font-weight: 800; background: #eef5fb; border-color: #cfe1f1; }
   .pf-azioni { flex-direction: row; gap: 8px; margin-top: 12px; }
-  .pf-azioni .btn-ghost { width: auto; flex: none; padding: 10px 12px; font-size: 13px; }
+  .pf-azioni .btn-ghost { width: auto; flex: 0 1 auto; padding: 10px 12px; font-size: 13px; }
   .pf-azioni > div { flex: 1; }
   .pf-azioni > div .btn { flex: 1; }
 }
@@ -2805,8 +2805,48 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
   .af-azioni > * { flex: 1; margin: 0; }
   .af-azioni > div { display: flex; gap: 8px; }
   .af-azioni > div > * { flex: 1; }
-  .af-azioni > .btn-ghost { flex: none; padding: 10px 12px; font-size: 13px; }
+  .af-azioni > .btn-ghost { flex: 0 1 auto; padding: 10px 12px; font-size: 13px; }
 }
 @media (max-width: 360px) {
   .at-tabs .sub-nav-link { font-size: 12px; }
+}
+
+/* Barre di azione su mobile: nessun pulsante puo' allargarle oltre lo
+   schermo. Le scritte lunghe (es. "Elimina allenamento") vanno a capo invece
+   di spingere "Salva" fuori dallo schermo. */
+@media (max-width: 720px) {
+  .af-azioni > *, .pf-azioni > *, .es-azioni > *, .pt-azioni > *, .va-azioni > *,
+  .af-azioni > div > *, .pf-azioni > div > * { min-width: 0; }
+  .af-azioni button, .pf-azioni button, .es-azioni button, .pt-azioni button, .va-azioni button {
+    white-space: normal; line-height: 1.2; overflow-wrap: anywhere;
+  }
+  .af-azioni > .btn-ghost, .pf-azioni > .btn-ghost { max-width: 42%; }
+}
+
+/* Valutazioni dell'allenamento (ValutazioniAllenamento) su mobile: nome,
+   presenza e voto su una riga, parametri a due colonne (etichetta sopra la
+   casella), tastiera numerica, Salva sempre visibile. */
+@media (max-width: 720px) {
+  .va-card.val-card { padding: 10px 12px; }
+  .va-card .val-head { flex-wrap: wrap; gap: 6px 10px; }
+  .va-card .val-nome { font-size: 15.5px; flex: 1 1 auto; min-width: 0; width: auto; }
+  .va-card .val-voto { width: auto; margin-left: auto; }
+  .va-card .val-voto select, .va-card .val-voto input { min-height: 36px; font-size: 15px; }
+  .va-inf-btn {
+    background: none !important; color: var(--rosso) !important; border: 1px dashed rgba(192,57,43,0.45) !important;
+    padding: 3px 9px !important; font-size: 12px !important; font-weight: 600;
+  }
+  .va-card .va-param { grid-template-columns: 1fr 1fr; gap: 8px 10px; margin: 10px 0 8px; }
+  .va-card .va-param .val-par { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 3px; }
+  .va-card .va-param .val-par label {
+    font-size: 11.5px; line-height: 1.25; min-height: 2.5em;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .va-card .va-param .val-par input { width: 100%; height: 38px; padding: 4px 6px; font-size: 16px; text-align: center; }
+  .va-card .field { margin-bottom: 0; }
+  .va-card .field label { font-size: 12px; margin-bottom: 3px; }
+  .va-azioni {
+    position: sticky; bottom: 0; z-index: 5; margin-top: 10px; padding: 10px 0;
+    background: var(--carta, #f6f7f4); border-top: 1px solid var(--linea);
+  }
 }

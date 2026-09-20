@@ -181,7 +181,7 @@ export default function ValutazioniAllenamento({
         {t('senzaValutazioni')}
       </label>
       {rows.map((r, i) => (
-        <div className={`val-card ${r.infortunato ? 'infortunato' : (r.presente ? '' : 'assente')}`} key={r.portiere_id}>
+        <div className={`val-card va-card ${r.infortunato ? 'infortunato' : (r.presente ? '' : 'assente')}`} key={r.portiere_id}>
           <div className="val-head">
             {r.infortunato ? (
               <span className="val-pres" style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: '#c0392b' }}>
@@ -238,7 +238,7 @@ export default function ValutazioniAllenamento({
                   <button type="button" className="btn-ghost btn-mini" onClick={() => setInfForm(null)}>{c('annulla')}</button>
                 </div>
               ) : (
-                <button type="button" className="btn-mini btn-ghost" style={{ fontSize: 12 }} onClick={() => apriForm(i)}>
+                <button type="button" className="btn-mini btn-ghost va-inf-btn" style={{ fontSize: 12 }} onClick={() => apriForm(i)}>
                   {t('segnaInfortunato')}
                 </button>
               )}
@@ -248,11 +248,11 @@ export default function ValutazioniAllenamento({
           {r.presente && !r.infortunato && (
             <>
               {parametri.length > 0 && (
-                <div className="val-parametri">
+                <div className="val-parametri va-param">
                   {parametri.map((par) => (
                     <div className="val-par" key={par.id}>
                       <label>{par.nome}</label>
-                      <input type="number" step="0.25" min="1" max="10"
+                      <input type="number" step="0.25" min="1" max="10" inputMode="decimal"
                         value={r.punteggi[par.id]} onChange={(e) => setPunt(i, par.id, e.target.value)} />
                     </div>
                   ))}
@@ -266,7 +266,8 @@ export default function ValutazioniAllenamento({
           )}
         </div>
       ))}
-      <div className="form-actions">
+      {/* su mobile Salva resta visibile in fondo: la lista dei portieri e' lunga */}
+      <div className="form-actions va-azioni">
         <button type="button" className="btn" onClick={salvaTutto} disabled={saving}>
           {savingLabel}
         </button>

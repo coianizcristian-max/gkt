@@ -2291,7 +2291,10 @@
     "dalLabel": "Von",
     "alLabel": "Bis",
     "eliminazioneInCorso": "Wird gelöscht...",
-    "eliminaSelezionati": "🗑 Ausgewählte {tipo} löschen"
+    "eliminaSelezionati": "🗑 Ausgewählte {tipo} löschen",
+    "nuovaRiga": "Neuer Tag",
+    "scegli": "— Wählen —",
+    "completaPrima": "Tag und Startzeit wählen"
   },
   "ricorrenzePartite": {
     "errore": "Fehler: {msg}",

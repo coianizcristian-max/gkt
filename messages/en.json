@@ -2291,7 +2291,10 @@
     "dalLabel": "From",
     "alLabel": "To",
     "eliminazioneInCorso": "Deleting...",
-    "eliminaSelezionati": "🗑 Delete selected {tipo}"
+    "eliminaSelezionati": "🗑 Delete selected {tipo}",
+    "nuovaRiga": "New day",
+    "scegli": "— Choose —",
+    "completaPrima": "Choose the day and start time"
   },
   "ricorrenzePartite": {
     "errore": "Error: {msg}",

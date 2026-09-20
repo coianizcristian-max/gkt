@@ -2291,7 +2291,10 @@
     "dalLabel": "Dal",
     "alLabel": "Al",
     "eliminazioneInCorso": "Eliminazione in corso...",
-    "eliminaSelezionati": "🗑 Elimina {tipo} selezionati"
+    "eliminaSelezionati": "🗑 Elimina {tipo} selezionati",
+    "nuovaRiga": "Nuovo giorno",
+    "scegli": "— Scegli —",
+    "completaPrima": "Scegli giorno e ora di inizio"
   },
   "ricorrenzePartite": {
     "errore": "Errore: {msg}",

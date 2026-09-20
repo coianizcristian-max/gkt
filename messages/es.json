@@ -2291,7 +2291,10 @@
     "dalLabel": "Desde",
     "alLabel": "Hasta",
     "eliminazioneInCorso": "Eliminación en curso...",
-    "eliminaSelezionati": "🗑 Eliminar {tipo} seleccionados"
+    "eliminaSelezionati": "🗑 Eliminar {tipo} seleccionados",
+    "nuovaRiga": "Nuevo día",
+    "scegli": "— Elegir —",
+    "completaPrima": "Elige el día y la hora de inicio"
   },
   "ricorrenzePartite": {
     "errore": "Error: {msg}",

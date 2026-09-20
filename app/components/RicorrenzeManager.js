@@ -17,12 +17,12 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
   const [gen, setGen] = useState('')
   const haRange = !!(stagione?.data_inizio && stagione?.data_fine)
 
-  // Il nuovo giorno si aggiunge IN FONDO a quelli gia' presenti della
-  // categoria (l'elenco e' ordinato per giorno della settimana): si prende il
-  // primo giorno libero dopo l'ultimo, con gli stessi orari e le stesse date.
-  function nuovoGiorno(righe) {
-    const usati = new Set(righe.map((r) => r.giorno_settimana))
-    const ultimo = righe.length ? Math.max(...usati) : 0
+  // Nuova riga VUOTA, in fondo all'elenco della categoria: giorno e orari li
+  // sceglie il preparatore. Se il giorno non puo' restare vuoto (database
+  // piu' vecchio) si ripiega sul primo giorno libero dopo l'ultimo.
+  function primoGiornoLibero(righe) {
+    const usati = new Set(righe.map((r) => r.giorno_settimana).filter(Boolean))
+    const ultimo = usati.size ? Math.max(...usati) : 0
     for (let g = ultimo + 1; g <= 7; g++) if (!usati.has(g)) return g
     for (let g = 1; g <= 7; g++) if (!usati.has(g)) return g
     return ultimo || 1
@@ -30,16 +30,14 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
 
   async function aggiungi(squadraId) {
     const supabase = createClient()
-    const righe = perCat(squadraId)
-    const ultima = righe[righe.length - 1]
-    const { error } = await supabase.from('ricorrenze_stagionali').insert({
-      stagione_id: stagione.id, squadra_id: squadraId,
-      giorno_settimana: nuovoGiorno(righe),
-      ora_inizio: ultima?.ora_inizio ?? '18:00',
-      ora_fine: ultima?.ora_fine ?? null,
-      data_inizio_ric: ultima?.data_inizio_ric ?? null,
-      data_fine_ric: ultima?.data_fine_ric ?? null,
-    })
+    const base = { stagione_id: stagione.id, squadra_id: squadraId, data_inizio_ric: null, data_fine_ric: null }
+    let { error } = await supabase.from('ricorrenze_stagionali').insert({ ...base, giorno_settimana: null, ora_inizio: null })
+    if (error) {
+      const righe = perCat(squadraId)
+      ;({ error } = await supabase.from('ricorrenze_stagionali').insert({
+        ...base, giorno_settimana: primoGiornoLibero(righe), ora_inizio: '18:00',
+      }))
+    }
     if (error) alert(t('errore', { msg: error.message }))
     router.refresh()
   }
@@ -173,8 +171,9 @@ export default function RicorrenzeManager({ stagione, categorie, ricorrenze }) {
 
 function RicorrenzaRiga({ ricorrenza, categorie, stagione, onChanged }) {
   const t = useTranslations('ricorrenzeManager')
-  const [g,          setG]          = useState(ricorrenza.giorno_settimana)
-  const [oi,         setOi]         = useState(ricorrenza.ora_inizio?.slice(0, 5) ?? '18:00')
+  // riga appena aggiunta: giorno e ora restano vuoti finche' non li sceglie il preparatore
+  const [g,          setG]          = useState(ricorrenza.giorno_settimana ?? '')
+  const [oi,         setOi]         = useState(ricorrenza.ora_inizio?.slice(0, 5) ?? '')
   const [ofine,      setOfine]      = useState(ricorrenza.ora_fine?.slice(0, 5) ?? '')
   const [accorpaCon, setAccorpaCon] = useState(ricorrenza.accorpata_con ?? '')
   const [dStart,     setDStart]     = useState(ricorrenza.data_inizio_ric ?? '')
@@ -183,12 +182,15 @@ function RicorrenzaRiga({ ricorrenza, categorie, stagione, onChanged }) {
   const [done, setDone] = useState(false)
   const ch = () => setDone(false)
 
+  const completa = !!g && !!oi
+
   async function salva() {
+    if (!completa) return
     setBusy(true)
     const supabase = createClient()
     const { error } = await supabase.from('ricorrenze_stagionali').update({
       giorno_settimana: Number(g),
-      ora_inizio: oi || '18:00',
+      ora_inizio: oi,
       ora_fine: ofine || null,
       accorpata_con: accorpaCon || null,
       data_inizio_ric: dStart || null,
@@ -211,12 +213,13 @@ function RicorrenzaRiga({ ricorrenza, categorie, stagione, onChanged }) {
     <div className="lista-riga ric-riga">
       {/* riepilogo in cima: si capisce al volo di che giorno e orario si tratta */}
       <div className="ric-testa">
-        <b>{t('giorno_' + g)}</b>
-        <span>{oi?.slice(0, 5)}{ofine ? `–${ofine.slice(0, 5)}` : ''}</span>
+        <b>{g ? t('giorno_' + g) : t('nuovaRiga')}</b>
+        <span>{oi ? `${oi.slice(0, 5)}${ofine ? `–${ofine.slice(0, 5)}` : ''}` : ''}</span>
       </div>
       <div className="ric-campo">
         <span>{t('giorno')}</span>
         <select value={g} onChange={(e) => { setG(e.target.value); ch() }}>
+          <option value="">{t('scegli')}</option>
           {[1,2,3,4,5,6,7].map((n) => <option key={n} value={n}>{t('giorno_' + n)}</option>)}
         </select>
       </div>
@@ -248,7 +251,8 @@ function RicorrenzaRiga({ ricorrenza, categorie, stagione, onChanged }) {
           onChange={(e) => { setDEnd(e.target.value); ch() }} />
       </div>
       <div className="ric-azioni">
-        <button className="btn-mini" onClick={salva} disabled={busy} type="button">{done ? `✓ ${t('salva')}` : t('salva')}</button>
+        <button className="btn-mini" onClick={salva} disabled={busy || !completa} type="button"
+          title={completa ? undefined : t('completaPrima')}>{done ? `✓ ${t('salva')}` : t('salva')}</button>
         <button className="btn-mini btn-del" onClick={elimina} type="button">{t('elimina')}</button>
       </div>
       {accorpaCon && (

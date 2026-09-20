@@ -1088,7 +1088,8 @@
     "subIntroPortiere": "Como portero, aquí los consultas en modo solo lectura: para sugerir un objetivo tuyo usa la pestaña «Propuesta de objetivos personales», que luego gestiona el preparador.",
     "subIntroCoach": "Usa la pestaña «Propuesta de objetivos personales» para recopilar y gestionar (✔/✘) las propuestas que llegan de los porteros.",
     "sottoLetturaTitolo": "Subobjetivos que monitorizar",
-    "scad": "Límite"
+    "scad": "Límite",
+    "comeFunzionano": "ℹ️ Cómo funcionan los objetivos"
   },
   "obiettivoMisurazioni": {
     "tipoValore": "Valor con unidad (p. ej. altura cm, tiempo seg)",

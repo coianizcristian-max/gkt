@@ -202,7 +202,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
   }
 
   return (
-    <form className="scheda" onSubmit={save}>
+    <form className="scheda pt-form" onSubmit={save}>
       {error && <div className="err">{error}</div>}
       {soloPortiere && <p className="sub-intro">{t('introPortiere')}</p>}
       {soloPortiere && (
@@ -218,7 +218,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
 
       {/* ── Stato infortunio (solo staff, richiede un'iscrizione) ── */}
       {!soloPortiere && iscrizione?.id && (
-        <div style={{ border: '1px solid var(--line, #e5e7eb)', borderRadius: 10, padding: 12, marginBottom: 14, background: inf ? '#fff4f4' : 'var(--bg-soft, #fafafa)' }}>
+        <div className="pt-inf" style={{ border: '1px solid var(--line, #e5e7eb)', borderRadius: 10, padding: 12, marginBottom: 14, background: inf ? '#fff4f4' : 'var(--bg-soft, #fafafa)' }}>
           {inf ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <span style={{ fontWeight: 700, color: '#c0392b' }}>{t('infortunato')}</span>
@@ -302,7 +302,7 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         <div className="field"><label>{t('squadraProvenienza')}</label>
           <input value={f.squadra_provenienza} onChange={upd('squadra_provenienza')} /></div>
 
-        <div className="field"><label>{t('indirizzo')}</label>
+        <div className="field pt-full"><label>{t('indirizzo')}</label>
           <input value={f.indirizzo} onChange={upd('indirizzo')} /></div>
         <div className="field"><label>{t('telefono')}</label>
           <input value={f.telefono} onChange={upd('telefono')} /></div>
@@ -345,7 +345,8 @@ export default function PortiereForm({ portiere, iscrizione, categorie, stagione
         </div>
       )}
 
-      <div className="form-actions">
+      {/* su mobile Annulla/Salva restano fissi in fondo allo schermo */}
+      <div className="form-actions pt-azioni">
         <button type="button" className="btn-ghost" onClick={tornaIndietro}>{c('annulla')}</button>
         <button type="submit" className="btn" disabled={saving}>
           {saving ? t('salvataggio') : (isEdit ? t('salvaModifiche') : t('creaPortiere'))}

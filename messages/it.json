@@ -1088,7 +1088,8 @@
     "subIntroPortiere": "Come portiere qui li consulti in sola lettura: per suggerire un tuo obiettivo usa il tab “Proposta obiettivi personali”, che il preparatore poi gestisce.",
     "subIntroCoach": "Usa il tab “Proposta obiettivi personali” per raccogliere e gestire (✔/✘) le proposte che arrivano dai portieri.",
     "sottoLetturaTitolo": "Sotto-obiettivi da monitorare",
-    "scad": "Scad."
+    "scad": "Scad.",
+    "comeFunzionano": "ℹ️ Come funzionano gli obiettivi"
   },
   "obiettivoMisurazioni": {
     "tipoValore": "Valore con unità (es. altezza cm, tempo sec)",

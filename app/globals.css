@@ -2735,3 +2735,33 @@ body:has(.demo-banner) .versione-overlay { z-index: 1250; }
   .ae-pannello .es-tile-add { top: 50% !important; bottom: auto !important; right: 10px !important; transform: translateY(-50%); width: 34px !important; height: 34px !important; }
   .ae-pannello .es-tile-pref { top: 50% !important; right: 50px !important; transform: translateY(-50%); }
 }
+
+/* Spiegazioni richiudibili (es. "Come funzionano gli obiettivi") */
+.info-dett { margin: 4px 0 14px; font-size: 13px; color: var(--ink-soft); }
+.info-dett summary { cursor: pointer; color: var(--azzurro); font-weight: 600; list-style: none; display: inline-flex; align-items: center; gap: 6px; }
+.info-dett summary::-webkit-details-marker { display: none; }
+.info-dett summary::after { content: '▾'; font-size: 12px; }
+.info-dett[open] summary::after { content: '▴'; }
+.info-dett p { margin: 8px 0 0; line-height: 1.55; max-width: 640px; }
+
+/* Scheda portiere (PortiereForm) su mobile: foto piccola, campi brevi a due
+   per riga, meno spazi vuoti, Annulla/Salva sempre visibili in fondo. */
+@media (max-width: 720px) {
+  .pt-form.scheda { padding: 14px; }
+  .pt-form .scheda-foto { gap: 14px; margin-bottom: 14px; }
+  .pt-form .foto-box { width: 72px; height: 72px; flex: none; }
+  .pt-form .foto-upload { padding: 8px 14px; font-size: 14px; }
+  .pt-form .form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pt-form .form-grid > .field { grid-column: auto; min-width: 0; }
+  .pt-form .form-grid > .field-full, .pt-form .form-grid > .pt-full { grid-column: 1 / -1; }
+  .pt-form .field label { font-size: 13px; margin-bottom: 4px; }
+  .pt-form .field input, .pt-form .field select { padding: 9px 10px; min-width: 0; }
+  .pt-inf { padding: 8px 10px !important; margin-bottom: 12px !important; }
+  .pt-azioni {
+    position: sticky; bottom: 0; z-index: 5; flex-direction: row !important; gap: 8px;
+    margin: 14px -14px -14px; padding: 10px 14px; background: var(--bianco);
+    border-top: 1px solid var(--linea); box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+    border-radius: 0 0 var(--r) var(--r);
+  }
+  .pt-azioni > * { flex: 1; margin: 0; }
+}

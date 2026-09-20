@@ -1088,7 +1088,8 @@
     "subIntroPortiere": "As a goalkeeper you view them read-only here: to suggest a goal of your own use the “Personal goal proposal” tab, which the coach then handles.",
     "subIntroCoach": "Use the “Personal goal proposal” tab to collect and handle (✔/✘) the proposals coming from the goalkeepers.",
     "sottoLetturaTitolo": "Sub-goals to monitor",
-    "scad": "Due"
+    "scad": "Due",
+    "comeFunzionano": "ℹ️ How goals work"
   },
   "obiettivoMisurazioni": {
     "tipoValore": "Value with unit (e.g. height cm, time sec)",

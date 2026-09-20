@@ -66,7 +66,11 @@ export default function ObiettiviManager({ portiereId, stagioneId, ruolo, obiett
         <ProposteObiettivi portiereId={portiereId} stagioneId={stagioneId} ruolo={ruolo} proposte={proposte} />
       ) : (
       <>
-      <p className="sub-intro">{t('subIntro')} {isPortiere ? t('subIntroPortiere') : t('subIntroCoach')}</p>
+      {/* spiegazione raccolta: si legge una volta, poi non serve piu' vederla */}
+      <details className="info-dett">
+        <summary>{t('comeFunzionano')}</summary>
+        <p>{t('subIntro')} {isPortiere ? t('subIntroPortiere') : t('subIntroCoach')}</p>
+      </details>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
         <div className="sub-nav" style={{ marginBottom: 0 }}>

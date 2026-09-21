@@ -1023,7 +1023,7 @@
     "obiettivi": "Obiettivi (cosa si dovrebbe fare)",
     "consuntivo": "Consuntivo (cosa si è fatto)",
     "note": "Note",
-    "orarioAuto": "🕒 Orario preso automaticamente dall'allenamento accorpante ({orario}): essendo la stessa seduta, l'orario è sempre lo stesso.",
+    "orarioAuto": "🕒 Orario, obiettivi e consuntivo presi automaticamente dall'allenamento accorpante ({orario}): essendo la stessa seduta sono sempre gli stessi. Per cambiarli, modifica l'allenamento accorpante.",
     "orarioAssente": "⚠ Non trovo ancora un allenamento della categoria accorpante in questa data: imposta qui l'orario provvisorio, si allineerà automaticamente non appena quell'allenamento viene creato con la stessa data.",
     "avvisoAccorpato": "⚠ Allenamento accorpato: nel calendario apparirà con cornice gialla. I portieri della categoria ospite vedranno la scheda di questa seduta.",
     "duplicaDaAllenamento": "📋 Duplica esercizi da un altro allenamento",

@@ -1023,7 +1023,7 @@
     "obiettivi": "Objectives (what should be done)",
     "consuntivo": "Report (what was done)",
     "note": "Notes",
-    "orarioAuto": "🕒 Time taken automatically from the merging training ({orario}): being the same session, the time is always the same.",
+    "orarioAuto": "🕒 Time, goals and summary taken automatically from the merging training ({orario}): being the same session, they are always the same. To change them, edit the merging training.",
     "orarioAssente": "⚠ I can't find a training of the merging category on this date yet: set a temporary time here, it will align automatically as soon as that training is created with the same date.",
     "avvisoAccorpato": "⚠ Merged training: it will appear with a yellow frame in the calendar. The goalkeepers of the guest category will see this session's sheet.",
     "duplicaDaAllenamento": "📋 Duplicate drills from another training",

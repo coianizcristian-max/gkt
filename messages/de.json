@@ -1023,7 +1023,7 @@
     "obiettivi": "Ziele (was gemacht werden soll)",
     "consuntivo": "Bericht (was gemacht wurde)",
     "note": "Notizen",
-    "orarioAuto": "🕒 Zeit automatisch vom zusammenlegenden Training übernommen ({orario}): da es dieselbe Einheit ist, ist die Zeit immer gleich.",
+    "orarioAuto": "🕒 Zeit, Ziele und Rückblick automatisch vom zusammenlegenden Training übernommen ({orario}): da es dieselbe Einheit ist, sind sie immer gleich. Zum Ändern das zusammenlegende Training bearbeiten.",
     "orarioAssente": "⚠ Ich finde noch kein Training der zusammenlegenden Kategorie an diesem Datum: Lege hier eine vorläufige Zeit fest, sie wird automatisch angeglichen, sobald dieses Training mit demselben Datum erstellt wird.",
     "avvisoAccorpato": "⚠ Zusammengelegtes Training: Es erscheint im Kalender mit gelbem Rahmen. Die Torhüter der Gastkategorie sehen die Übersicht dieser Einheit.",
     "duplicaDaAllenamento": "📋 Übungen aus einem anderen Training duplizieren",

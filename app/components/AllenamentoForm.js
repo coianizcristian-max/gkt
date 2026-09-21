@@ -60,21 +60,28 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
     router.push('/calendario'); router.refresh()
   }
 
-  // Se l'allenamento è accorpato a un'altra categoria, l'orario è inseparabile
-  // da quello: lo eredita sempre dall'allenamento accorpante nella stessa data.
+  // Se l'allenamento è accorpato a un'altra categoria e' la stessa seduta:
+  // orario, obiettivi e consuntivo si ereditano sempre dall'allenamento
+  // accorpante nella stessa data e qui non si modificano.
   useEffect(() => {
     let annullato = false
     async function sincronizzaOrario() {
       if (!f.accorpata_con || !f.data) { setOrarioAccorpante(null); return }
       const supabase = createClient()
       const { data: acc } = await supabase.from('allenamenti')
-        .select('ora_inizio, ora_fine')
+        .select('ora_inizio, ora_fine, obiettivi, consuntivo')
         .eq('stagione_id', stagioneId).eq('squadra_id', f.accorpata_con).eq('data', f.data)
         .maybeSingle()
       if (annullato) return
       if (acc) {
         setOrarioAccorpante(acc)
-        setF((s) => ({ ...s, ora_inizio: acc.ora_inizio?.slice(0, 5) ?? s.ora_inizio, ora_fine: acc.ora_fine?.slice(0, 5) ?? '' }))
+        setF((s) => ({
+          ...s,
+          ora_inizio: acc.ora_inizio?.slice(0, 5) ?? s.ora_inizio,
+          ora_fine: acc.ora_fine?.slice(0, 5) ?? '',
+          obiettivi: acc.obiettivi ?? '',
+          consuntivo: acc.consuntivo ?? '',
+        }))
       } else {
         setOrarioAccorpante('assente')
       }
@@ -105,9 +112,10 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
         const { error } = await supabase.from('allenamenti').update(payload).eq('id', allenamento.id)
         if (error) throw error
         // Se questo allenamento è "accorpante" per altri (altre categorie accorpate a questo),
-        // propaga il nuovo orario: è la stessa seduta, non ha senso restino disallineati.
+        // propaga orario, obiettivi e consuntivo: è la stessa seduta, non ha senso
+        // restino disallineati.
         await supabase.from('allenamenti')
-          .update({ ora_inizio: payload.ora_inizio, ora_fine: payload.ora_fine })
+          .update({ ora_inizio: payload.ora_inizio, ora_fine: payload.ora_fine, obiettivi: payload.obiettivi, consuntivo: payload.consuntivo })
           .eq('stagione_id', stagioneId).eq('data', f.data).eq('accorpata_con', f.squadra_id)
         setDone(true); setSaving(false); router.refresh()
       } else {
@@ -129,6 +137,9 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
       }
     } catch (err) { setError(err.message); setSaving(false) }
   }
+
+  // campi presi dall'allenamento accorpante (non modificabili qui)
+  const ereditato = !!f.accorpata_con && !!orarioAccorpante && orarioAccorpante !== 'assente'
 
   // Categorie "ospiti" = tutte tranne quella principale
   const altreCategorie = categorie.filter((c) => c.id !== f.squadra_id)
@@ -155,9 +166,9 @@ export default function AllenamentoForm({ allenamento, categorie, stagioneId, de
           </select>
         </div>
         <div className="field field-full"><label>{t('obiettivi')}</label>
-          <textarea rows="3" value={f.obiettivi} onChange={upd('obiettivi')} /></div>
+          <textarea rows="3" value={f.obiettivi} onChange={upd('obiettivi')} disabled={ereditato} /></div>
         <div className="field field-full"><label>{t('consuntivo')}</label>
-          <textarea rows="3" value={f.consuntivo} onChange={upd('consuntivo')} /></div>
+          <textarea rows="3" value={f.consuntivo} onChange={upd('consuntivo')} disabled={ereditato} /></div>
         <div className="field field-full"><label>{t('note')}</label>
           <textarea rows="2" value={f.note} onChange={upd('note')} /></div>
       </div>

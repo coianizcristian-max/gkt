@@ -1023,7 +1023,7 @@
     "obiettivi": "Objetivos (qué se debería hacer)",
     "consuntivo": "Resumen (qué se ha hecho)",
     "note": "Notas",
-    "orarioAuto": "🕒 Horario tomado automáticamente del entrenamiento principal ({orario}): al ser la misma sesión, el horario es siempre el mismo.",
+    "orarioAuto": "🕒 Horario, objetivos y resumen tomados automáticamente del entrenamiento principal ({orario}): al ser la misma sesión, son siempre los mismos. Para cambiarlos, edita el entrenamiento principal.",
     "orarioAssente": "⚠ Todavía no encuentro un entrenamiento de la categoría principal en esta fecha: define aquí el horario provisional, se ajustará automáticamente en cuanto se cree ese entrenamiento con la misma fecha.",
     "avvisoAccorpato": "⚠ Entrenamiento fusionado: en el calendario aparecerá con borde amarillo. Los porteros de la categoría invitada verán la ficha de esta sesión.",
     "duplicaDaAllenamento": "📋 Duplicar ejercicios de otro entrenamiento",

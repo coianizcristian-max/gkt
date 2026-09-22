@@ -684,7 +684,8 @@
     "passwordDimenticata": "Passwort vergessen?",
     "linkScaduto": "Der Link in der E-Mail ist nicht mehr gültig: Er ist abgelaufen, wurde bereits verwendet oder du hast einen neueren angefordert. Gib deine E-Mail ein, tippe einmal auf „Passwort vergessen?“ und öffne dann die zuletzt erhaltene E-Mail.",
     "recuperaInvio": "Wird gesendet…",
-    "recuperaAttendi": "E-Mail gesendet · neue Anfrage in {s} s"
+    "recuperaAttendi": "E-Mail gesendet · neue Anfrage in {s} s",
+    "recuperaTroppe": "Zu viele Anfragen in kurzer Zeit: Warte ein paar Minuten und versuche es erneut."
   },
   "registrati": {
     "sottotitolo": "Torhüter-Verwaltung",

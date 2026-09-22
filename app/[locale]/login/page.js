@@ -130,16 +130,19 @@ export default function LoginPage() {
       return
     }
     setRecInvio(true)
-    const supabase = createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      captchaToken,
-      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+    // la richiesta passa dal server: cosi' il link della mail vale in ogni
+    // browser (vedi app/api/recupero-password/route.js)
+    const res = await fetch('/api/recupero-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim(), captchaToken }),
     })
+    const error = res.ok ? null : { troppe: res.status === 429 }
     captchaRef.current?.resetCaptcha()
     setCaptchaToken(null)
     setRecInvio(false)
     if (error) {
-      setRecMsg({ tipo: 'err', testo: t('recuperaErrore') })
+      setRecMsg({ tipo: 'err', testo: error.troppe ? t('recuperaTroppe') : t('recuperaErrore') })
     } else {
       setRecMsg({ tipo: 'ok', testo: t('recuperaInviata') })
       setRecAttesa(60)

@@ -25,6 +25,16 @@ export async function GET(request) {
   const type = searchParams.get('type')
   const next = destinazioneSicura(searchParams.get('next') ?? (type === 'recovery' ? '/reset-password' : '/dashboard'))
 
+  // Mail vecchie, generate quando la richiesta partiva dal browser: il token ha
+  // il prefisso "pkce_" e va verificato da Supabase, non qui.
+  if (tokenHash?.startsWith('pkce_') && TIPI.includes(type)) {
+    const verifica = new URL(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/verify`)
+    verifica.searchParams.set('token', tokenHash)
+    verifica.searchParams.set('type', type)
+    verifica.searchParams.set('redirect_to', `${origin}/auth/callback?next=${next}`)
+    return NextResponse.redirect(verifica.toString())
+  }
+
   if (tokenHash && TIPI.includes(type)) {
     const supabase = await createClient()
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash })

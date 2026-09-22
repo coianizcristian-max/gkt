@@ -684,7 +684,8 @@
     "passwordDimenticata": "¿Contraseña olvidada?",
     "linkScaduto": "El enlace del email ya no es válido: ha caducado, ya se ha usado o has solicitado uno más reciente. Escribe tu email y toca «¿Contraseña olvidada?» una sola vez, luego abre el último email recibido.",
     "recuperaInvio": "Enviando…",
-    "recuperaAttendi": "Email enviado · nueva solicitud en {s} s"
+    "recuperaAttendi": "Email enviado · nueva solicitud en {s} s",
+    "recuperaTroppe": "Demasiadas solicitudes seguidas: espera unos minutos y vuelve a intentarlo."
   },
   "registrati": {
     "sottotitolo": "Gestión de porteros",

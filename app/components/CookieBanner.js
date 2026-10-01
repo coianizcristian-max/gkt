@@ -108,8 +108,8 @@ export default function CookieBanner() {
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <p style={{ margin: 0, fontSize: 14, color: '#d0dde7', flex: 1, minWidth: 260, lineHeight: 1.5 }}>
             {t.rich('intro', {
-              cookie: (ch) => <Link href="/cookie-policy" style={{ color: '#7ec8e3', textDecoration: 'underline' }}>{ch}</Link>,
-              privacy: (ch) => <Link href="/privacy-policy" style={{ color: '#7ec8e3', textDecoration: 'underline' }}>{ch}</Link>,
+              cookie: (ch) => <Link href="/cookie-policy" prefetch={false} style={{ color: '#7ec8e3', textDecoration: 'underline' }}>{ch}</Link>,
+              privacy: (ch) => <Link href="/privacy-policy" prefetch={false} style={{ color: '#7ec8e3', textDecoration: 'underline' }}>{ch}</Link>,
             })}
           </p>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>

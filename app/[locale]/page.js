@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/routing'
-import { getTranslations, getLocale } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import Image from 'next/image'
 import CercaAllenatoriBox from '@/app/components/CercaAllenatoriBox'
 import AreaLoginCta from '@/app/components/AreaLoginCta'
@@ -19,7 +19,12 @@ import { FUNZIONALITA, getGatingConfig } from '@/lib/gating'
 // costringerebbe Next.js a trattare la pagina come dinamica, vanificando
 // la cache. Il pulsante "sei loggato?" è isolato in un componente client
 // (AreaLoginCta) che controlla la sessione nel browser.
-export const revalidate = 60
+// La lingua si legge da params + setRequestLocale (non getLocale()), cosi'
+// la pagina resta statica per ogni lingua.
+// Refresh automatico ogni ora: le modifiche da Supervisore > Sito sono
+// comunque immediate grazie a /api/revalidate-home (tutte le lingue).
+// I cambi di prezzo/gating compaiono in home entro un'ora.
+export const revalidate = 3600
 
 const DEFAULT_PREZZI = {
   allenatore: { mensile: '9.90', annuale: '79.00', lifetime: '199.00' },
@@ -43,10 +48,11 @@ function gruppaPerTipo(lista) {
   return gruppi
 }
 
-export default async function Home() {
+export default async function Home({ params }) {
+  const { locale } = await params
+  setRequestLocale(locale)
   const supabase = getPublicClient()
-  const t = await getTranslations('home')
-  const locale = await getLocale()
+  const t = await getTranslations({ locale, namespace: 'home' })
   const [{ data: sezioni }, { data: prezziRows }, gatingCfg] = await Promise.all([
     supabase.from('sito_sezioni').select('*').eq('visibile', true).order('ordine'),
     supabase.from('funzionalita_config').select('chiave, label').like('chiave', 'prezzo_%'),
@@ -419,11 +425,11 @@ export default async function Home() {
       <footer className="landing-foot">
         GKSeason · {t('brandSubtitle')}
         <span className="landing-foot-sep">·</span>
-        <Link href="/privacy-policy">{t('footerPrivacy')}</Link>
+        <Link href="/privacy-policy" prefetch={false}>{t('footerPrivacy')}</Link>
         <span className="landing-foot-sep">·</span>
-        <Link href="/cookie-policy">{t('footerCookie')}</Link>
+        <Link href="/cookie-policy" prefetch={false}>{t('footerCookie')}</Link>
         <span className="landing-foot-sep">·</span>
-        <Link href="/termini-di-servizio">{t('footerTermini')}</Link>
+        <Link href="/termini-di-servizio" prefetch={false}>{t('footerTermini')}</Link>
       </footer>
     </div>
   )

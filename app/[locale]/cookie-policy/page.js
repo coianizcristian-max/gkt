@@ -1,16 +1,22 @@
-import { getTranslations, getLocale } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 
-export async function generateMetadata() {
-  const t = await getTranslations('legalCookie')
-  const c = await getTranslations('common')
-  const locale = await getLocale()
+// Pagina statica: generata al deploy per ogni lingua (generateStaticParams nel
+// layout [locale]) e servita dalla cache, senza consumare CPU a ogni visita.
+// La lingua va letta da params: getLocale() senza setRequestLocale renderebbe
+// la pagina dinamica.
+export const dynamic = 'force-static'
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'legalCookie' })
   return { title: t('metaTitle'), description: t('metaDescription') }
 }
 
-export default async function CookiePolicy() {
-  const t = await getTranslations('legalCookie')
-  const c = await getTranslations('common')
-  const locale = await getLocale()
+export default async function CookiePolicy({ params }) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations({ locale, namespace: 'legalCookie' })
+  const c = await getTranslations({ locale, namespace: 'common' })
   const Table = ({ ck }) => (
     <table className="legal-table">
       <thead><tr>{t.raw('cols').map((c, i) => <th key={i}>{c}</th>)}</tr></thead>

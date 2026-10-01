@@ -1,16 +1,22 @@
-import { getTranslations, getLocale } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 
-export async function generateMetadata() {
-  const t = await getTranslations('legalTermini')
-  const c = await getTranslations('common')
-  const locale = await getLocale()
+// Pagina statica: generata al deploy per ogni lingua (generateStaticParams nel
+// layout [locale]) e servita dalla cache, senza consumare CPU a ogni visita.
+// La lingua va letta da params: getLocale() senza setRequestLocale renderebbe
+// la pagina dinamica.
+export const dynamic = 'force-static'
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'legalTermini' })
   return { title: t('metaTitle'), description: t('metaDescription') }
 }
 
-export default async function TerminiDiServizio() {
-  const t = await getTranslations('legalTermini')
-  const c = await getTranslations('common')
-  const locale = await getLocale()
+export default async function TerminiDiServizio({ params }) {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getTranslations({ locale, namespace: 'legalTermini' })
+  const c = await getTranslations({ locale, namespace: 'common' })
   return (
     <div className="legal-page">
       <div className="legal-content">

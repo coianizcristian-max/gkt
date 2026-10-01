@@ -326,11 +326,11 @@ export default async function AppLayout({ children }) {
       <div className="main-col">
         <main className="main">{children}</main>
         <footer className="app-foot">
-          <Link href="/privacy-policy">{t('privacy')}</Link>
+          <Link href="/privacy-policy" prefetch={false}>{t('privacy')}</Link>
           <span>·</span>
-          <Link href="/cookie-policy">{t('cookie')}</Link>
+          <Link href="/cookie-policy" prefetch={false}>{t('cookie')}</Link>
           <span>·</span>
-          <Link href="/termini-di-servizio">{t('termini')}</Link>
+          <Link href="/termini-di-servizio" prefetch={false}>{t('termini')}</Link>
         </footer>
       </div>
       {demoInCorso && <DemoBanner dataTaglio={demoCfg.dataTaglio} ospite={demoOspite} />}

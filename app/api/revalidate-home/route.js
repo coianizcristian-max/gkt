@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 
 // Chiamata dall'editor del sito subito dopo ogni salvataggio/eliminazione di
 // una sezione, per far vedere la modifica in home immediatamente invece di
-// aspettare il refresh automatico della cache (fino a 60 secondi).
+// aspettare il refresh automatico della cache (fino a 1 ora).
 export async function POST(request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -14,6 +14,7 @@ export async function POST(request) {
   const { data: profilo } = await supabase.from('profili').select('supervisore').eq('id', user.id).maybeSingle()
   if (!profilo?.supervisore) return NextResponse.json({ error: tApi(request, 'Non autorizzato') }, { status: 403 })
 
-  revalidatePath('/')
+  // Tutte le lingue della home (/, /en, /de, /es) = route /[locale].
+  revalidatePath('/[locale]', 'page')
   return NextResponse.json({ ok: true })
 }

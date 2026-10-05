@@ -123,7 +123,7 @@ export default async function DashboardPage() {
       allenIdsVal.length ? db.from('valutazioni').select('allenamento_id').not('voto', 'is', null).in('allenamento_id', allenIdsVal) : Promise.resolve({ data: [] }),
       partitaIdsVal.length ? db.from('valutazioni_partita').select('partita_id').eq('presente', true).in('partita_id', partitaIdsVal) : Promise.resolve({ data: [] }),
       portiereIds.length && allenIdsVal.length ? db.from('valutazioni').select('portiere_id, allenamento_id, presente, voto').in('portiere_id', portiereIds).in('allenamento_id', allenIdsVal) : Promise.resolve({ data: [] }),
-      portiereIds.length ? db.from('obiettivi').select('portiere_id, scadenza, stato').in('portiere_id', portiereIds) : Promise.resolve({ data: [] }),
+      portiereIds.length ? db.from('obiettivi').select('portiere_id, scadenza, stato').in('portiere_id', portiereIds).eq('archiviato', false) : Promise.resolve({ data: [] }),
     ])
 
     const valutatiSet = new Set((valRows.data ?? []).map((v) => v.allenamento_id))
@@ -222,7 +222,7 @@ export default async function DashboardPage() {
     if (portiereIds.length) {
       const { data: obMis } = await supabase
         .from('obiettivi').select('id, titolo, portiere_id')
-        .in('portiere_id', portiereIds).eq('stagione_id', stagione.id)
+        .in('portiere_id', portiereIds).eq('stagione_id', stagione.id).eq('archiviato', false)
       const obById = {}
       for (const o of obMis ?? []) obById[o.id] = o
       const obIds = (obMis ?? []).map((o) => o.id)

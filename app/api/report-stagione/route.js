@@ -337,7 +337,7 @@ export async function GET(request) {
   const cleanSheet = partiteGiocate.filter((v) => partiteById[v.partita_id]?.gol_subiti === 0).length
   const puntiTotali = (vPar ?? []).reduce((s, v) => s + (v.punti != null ? Number(v.punti) : 0), 0)
 
-  const { data: obiettiviRows } = await supabase.from('obiettivi').select('*').eq('portiere_id', portiereId)
+  const { data: obiettiviRows } = await supabase.from('obiettivi').select('*').eq('portiere_id', portiereId).eq('archiviato', false)
   const obiettiviRaggiunti = (obiettiviRows ?? []).filter((o) => o.stato === 'raggiunto')
   const obiettiviAperti = (obiettiviRows ?? []).filter((o) => o.stato !== 'raggiunto')
 

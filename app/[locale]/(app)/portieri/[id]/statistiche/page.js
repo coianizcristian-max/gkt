@@ -280,7 +280,7 @@ export default async function StatistichePortierePage({ params }) {
   }
 
   // Obiettivi: percentuale completati (stato = 'raggiunto')
-  const { data: obiettiviRows } = await db.from('obiettivi').select('stato, scadenza').eq('portiere_id', id)
+  const { data: obiettiviRows } = await db.from('obiettivi').select('stato, scadenza').eq('portiere_id', id).eq('archiviato', false)
   let pctObiettivi = null
   if (obiettiviRows && obiettiviRows.length > 0) {
     const oggiStr = oggiCtx

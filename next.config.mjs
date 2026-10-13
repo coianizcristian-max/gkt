@@ -11,12 +11,15 @@ const csp = [
   "object-src 'none'",
   "frame-ancestors 'self'",
   "form-action 'self'",
-  "img-src 'self' data: blob: https://*.supabase.co https://www.facebook.com https://*.hcaptcha.com",
+  // Google Ads (gtag.js): script da googletagmanager.com; i ping di conversione
+  // vanno a google.com / google.it / googleadservices.com / googleads.g.doubleclick.net
+  // (come immagine o fetch); td.doubleclick.net e' l'iframe del conversion linker.
+  "img-src 'self' data: blob: https://*.supabase.co https://www.facebook.com https://*.hcaptcha.com https://www.google.com https://www.google.it https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.googletagmanager.com",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline' https://*.hcaptcha.com",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://eu.i.posthog.com https://eu-assets.i.posthog.com https://js.stripe.com https://*.hcaptcha.com https://hcaptcha.com https://challenges.cloudflare.com",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://eu.i.posthog.com https://eu-assets.i.posthog.com https://api.stripe.com https://*.hcaptcha.com https://challenges.cloudflare.com https://connect.facebook.net https://www.facebook.com https://nominatim.openstreetmap.org",
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.hcaptcha.com https://hcaptcha.com https://challenges.cloudflare.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://eu.i.posthog.com https://eu-assets.i.posthog.com https://js.stripe.com https://*.hcaptcha.com https://hcaptcha.com https://challenges.cloudflare.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://eu.i.posthog.com https://eu-assets.i.posthog.com https://api.stripe.com https://*.hcaptcha.com https://challenges.cloudflare.com https://connect.facebook.net https://www.facebook.com https://nominatim.openstreetmap.org https://www.google.com https://www.google.it https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.googletagmanager.com https://pagead2.googlesyndication.com",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.hcaptcha.com https://hcaptcha.com https://challenges.cloudflare.com https://td.doubleclick.net https://www.googletagmanager.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   "upgrade-insecure-requests",
@@ -44,6 +47,10 @@ const nextConfig = {
     return [
       { source: '/:path*', headers: securityHeaders },
       { source: '/registrati', headers: [{ key: 'Cache-Control', value: 'no-store, max-age=0, must-revalidate' }] },
+      // Landing degli annunci: fuori dai motori di ricerca (sono pagine a
+      // pagamento, duplicherebbero la home). AdsBot di Google le legge comunque.
+      { source: '/lp/:slug', headers: [{ key: 'X-Robots-Tag', value: 'noindex, follow' }] },
+      { source: '/:locale(en|de|es)/lp/:slug', headers: [{ key: 'X-Robots-Tag', value: 'noindex, follow' }] },
     ]
   },
   // Scorciatoia pubblica per i QR code: /d resta stabile per sempre, la

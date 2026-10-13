@@ -2,10 +2,14 @@
 
 import { useEffect } from 'react'
 
-// Salva i parametri di attribuzione (utm_*, fbclid) al primo atterraggio
+// Salva i parametri di attribuzione (utm_*, fbclid, gclid) al primo atterraggio
 // della sessione, così la registrazione può essere ricondotta alla campagna
 // che l'ha generata. Usa sessionStorage: vive solo per la sessione corrente.
 const CHIAVE = 'gkt-attribuzione'
+
+// Codici che Google Ads aggiunge ai link degli annunci (gclid = clic da
+// Search/Display, gbraid/wbraid = clic da iOS senza tracciamento cross-app).
+const CODICI_GOOGLE = ['gclid', 'gbraid', 'wbraid']
 
 export function leggiAttribuzione() {
   try {
@@ -18,6 +22,7 @@ export function leggiAttribuzione() {
  * Fonte di arrivo in una parola, da salvare con l'iscrizione alla newsletter:
  *  - utm_source se presente (es. 'facebook', 'instagram', 'newsletter')
  *  - 'meta_ads'    se il link aveva fbclid (clic su inserzione Meta senza UTM)
+ *  - 'google_ads'  se il link aveva gclid/gbraid/wbraid (clic su annuncio Google senza UTM)
  *  - 'social_meta' se si arriva da facebook.com / instagram.com senza fbclid
  *  - null          se diretto / sconosciuto
  */
@@ -26,6 +31,7 @@ export function fonteAttribuzione() {
   if (!a) return null
   if (a.utm_source) return String(a.utm_source).toLowerCase().slice(0, 40)
   if (a.da_meta_ads) return 'meta_ads'
+  if (a.da_google_ads) return 'google_ads'
   if (a.da_social_meta) return 'social_meta'
   return null
 }
@@ -40,6 +46,11 @@ export default function AttribuzioneUtm() {
         if (sp.get(k)) dati[k] = sp.get(k)
       }
       if (sp.get('fbclid')) dati.da_meta_ads = true
+      // Clic da Google Ads: teniamo anche il codice, cosi' su PostHog la
+      // registrazione resta collegata al clic anche se arriva giorni dopo.
+      for (const k of CODICI_GOOGLE) {
+        if (sp.get(k)) { dati.da_google_ads = true; dati[k] = sp.get(k).slice(0, 120) }
+      }
       // Arrivo da Facebook/Instagram senza fbclid (post, bio, condivisioni)
       try {
         const ref = document.referrer ? new URL(document.referrer).hostname : ''

@@ -7,6 +7,7 @@ import { routing } from '@/i18n/routing'
 import PostHogProvider from '@/app/components/PostHogProvider'
 import CookieBanner from '@/app/components/CookieBanner'
 import MetaPixel from '@/app/components/MetaPixel'
+import GoogleAds from '@/app/components/GoogleAds'
 import AttribuzioneUtm from '@/app/components/AttribuzioneUtm'
 import PwaInstaller from '@/app/components/PwaInstaller'
 
@@ -91,6 +92,7 @@ export default async function LocaleLayout({ children, params }) {
           <PostHogProvider>{children}</PostHogProvider>
           <CookieBanner />
           <MetaPixel />
+          <GoogleAds />
           <AttribuzioneUtm />
           <PwaInstaller />
         </NextIntlClientProvider>

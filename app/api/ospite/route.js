@@ -30,8 +30,8 @@ import { getDemoConfig, COOKIE_DEMO, COOKIE_DEMO_AVVISO, COOKIE_OSPITE, COOKIE_D
  */
 export const dynamic = 'force-dynamic'
 
-/** Parametri di attribuzione da far sopravvivere al redirect. */
-const TRACCIAMENTO = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid']
+/** Parametri di attribuzione da far sopravvivere al redirect (Meta e Google Ads). */
+const TRACCIAMENTO = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid', 'gbraid', 'wbraid']
 
 export async function GET(request) {
   const origin = request.nextUrl.origin

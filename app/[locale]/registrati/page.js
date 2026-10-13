@@ -6,6 +6,8 @@ export const dynamic = 'force-dynamic'
 export default async function RegistratiPage({ searchParams }) {
   const params = await searchParams
   const token = params?.invito ?? null
+  // ?ruolo=allenatore arriva dalle landing degli annunci: salta "chi sei".
+  const ruoloIniziale = params?.ruolo === 'allenatore' ? 'allenatore' : null
   let datiInvito = null
 
   if (token) {
@@ -36,5 +38,5 @@ export default async function RegistratiPage({ searchParams }) {
     }
   }
 
-  return <RegistratiClient token={token} datiInvito={datiInvito} />
+  return <RegistratiClient token={token} datiInvito={datiInvito} ruoloIniziale={ruoloIniziale} />
 }

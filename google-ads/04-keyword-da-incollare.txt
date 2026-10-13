@@ -1,0 +1,316 @@
+KEYWORD DA INCOLLARE NELL'INTERFACCIA WEB DI GOOGLE ADS
+============================================================
+[parentesi quadre] = corrispondenza esatta   "virgolette" = corrispondenza a frase
+Incolla il blocco di ogni gruppo nella casella "Parole chiave" del gruppo corrispondente.
+
+### GRUPPO: Software e app portieri
+URL finale: https://www.gkseason.it/lp/software-portieri
+CPC massimo iniziale: 1.50 EUR
+
+[software allenamento portieri]
+"software allenamento portieri"
+[software preparatore portieri]
+"software preparatore portieri"
+[software preparatore dei portieri]
+"software preparatore dei portieri"
+[software allenatore portieri]
+"software allenatore portieri"
+[software gestione portieri]
+"software gestione portieri"
+[gestionale portieri calcio]
+"gestionale portieri calcio"
+[gestionale allenamento portieri]
+"gestionale allenamento portieri"
+[gestionale preparatore portieri]
+"gestionale preparatore portieri"
+[programma gestione portieri calcio]
+"programma gestione portieri calcio"
+[app allenamento portieri]
+"app allenamento portieri"
+[app preparatore portieri]
+"app preparatore portieri"
+[app preparatore dei portieri]
+"app preparatore dei portieri"
+[app per preparatori dei portieri]
+"app per preparatori dei portieri"
+[app allenatore portieri]
+"app allenatore portieri"
+[app per allenare i portieri]
+"app per allenare i portieri"
+[app gestione portieri calcio]
+"app gestione portieri calcio"
+[piattaforma allenamento portieri]
+"piattaforma allenamento portieri"
+[gestione allenamenti portieri]
+"gestione allenamenti portieri"
+
+### GRUPPO: Programmazione allenamenti
+URL finale: https://www.gkseason.it/lp/allenamenti-portieri
+CPC massimo iniziale: 1.00 EUR
+
+[programmazione allenamento portieri]
+"programmazione allenamento portieri"
+[programmazione allenamenti portieri]
+"programmazione allenamenti portieri"
+[programmazione annuale portieri]
+"programmazione annuale portieri"
+[programmazione stagionale portieri]
+"programmazione stagionale portieri"
+[pianificazione allenamenti portieri]
+"pianificazione allenamenti portieri"
+[scheda allenamento portieri]
+"scheda allenamento portieri"
+[schede allenamento portieri]
+"schede allenamento portieri"
+[scheda allenamento portiere]
+"scheda allenamento portiere"
+[seduta allenamento portieri]
+"seduta allenamento portieri"
+[sedute allenamento portieri]
+"sedute allenamento portieri"
+[esercizi allenamento portieri]
+"esercizi allenamento portieri"
+[esercizi per portieri di calcio]
+"esercizi per portieri di calcio"
+[esercizi portieri calcio]
+"esercizi portieri calcio"
+[esercizi portieri settore giovanile]
+"esercizi portieri settore giovanile"
+[esercizi portieri under 12]
+"esercizi portieri under 12"
+[esercizi portieri under 14]
+"esercizi portieri under 14"
+[esercizi portieri under 15]
+"esercizi portieri under 15"
+[esercizi portieri under 17]
+"esercizi portieri under 17"
+[allenamento portieri settore giovanile]
+"allenamento portieri settore giovanile"
+[allenamento portieri giovanili]
+"allenamento portieri giovanili"
+[metodologia allenamento portieri]
+"metodologia allenamento portieri"
+[calendario allenamenti portieri]
+"calendario allenamenti portieri"
+[preparazione portieri calcio esercizi]
+"preparazione portieri calcio esercizi"
+
+### GRUPPO: Valutazione e statistiche
+URL finale: https://www.gkseason.it/lp/valutazione-portieri
+CPC massimo iniziale: 1.20 EUR
+
+[valutazione portieri calcio]
+"valutazione portieri calcio"
+[valutazione portiere calcio]
+"valutazione portiere calcio"
+[scheda valutazione portiere]
+"scheda valutazione portiere"
+[scheda valutazione portieri calcio]
+"scheda valutazione portieri calcio"
+[scheda valutazione portiere calcio]
+"scheda valutazione portiere calcio"
+[valutazione portieri giovanili]
+"valutazione portieri giovanili"
+[valutazione portiere settore giovanile]
+"valutazione portiere settore giovanile"
+[test valutazione portieri]
+"test valutazione portieri"
+[test portieri calcio]
+"test portieri calcio"
+[parametri valutazione portiere]
+"parametri valutazione portiere"
+[criteri valutazione portiere calcio]
+"criteri valutazione portiere calcio"
+[statistiche allenamento portieri]
+"statistiche allenamento portieri"
+[registro allenamenti portieri]
+"registro allenamenti portieri"
+[monitoraggio portieri calcio]
+"monitoraggio portieri calcio"
+[obiettivi allenamento portieri]
+"obiettivi allenamento portieri"
+[obiettivi portiere calcio]
+"obiettivi portiere calcio"
+[report portiere calcio]
+"report portiere calcio"
+[scheda portiere calcio]
+"scheda portiere calcio"
+[scheda tecnica portiere calcio]
+"scheda tecnica portiere calcio"
+
+### GRUPPO: Brand GKSeason
+URL finale: https://www.gkseason.it/
+CPC massimo iniziale: 0.50 EUR
+
+[gkseason]
+[gk season]
+[gkseason.it]
+[gkseason portieri]
+[gk season app]
+
+### PAROLE CHIAVE ESCLUSE (livello CAMPAGNA, corrispondenza generica)
+Incolla tutto il blocco in Campagna > Parole chiave > Parole chiave escluse.
+
+lavoro
+offerte di lavoro
+cercasi
+stipendio
+quanto guadagna
+concorso
+condominio
+condominiale
+portineria
+portinaio
+custode
+albergo
+hotel
+notturno
+di notte
+ccnl
+contratto
+guanti
+guanto
+maglia
+maglie
+scarpe
+divisa
+parastinchi
+pantaloni
+fifa
+ea fc
+fc 24
+fc 25
+fc 26
+efootball
+pes
+fantacalcio
+playstation
+ps5
+xbox
+gioco
+giochi
+football manager
+serie a
+serie b
+champions
+nazionale
+donnarumma
+buffon
+maignan
+sommer
+meret
+szczesny
+vicario
+carnesecchi
+di gregorio
+classifica
+corso
+corsi
+patentino
+uefa
+come diventare
+storia
+significato
+wikipedia
+video
+youtube
+libro
+libri
+tesi
+hockey
+pallamano
+pallanuoto
+rugby
+basket
+pallavolo
+volley
+
+### ANNUNCI (titoli max 30 caratteri, descrizioni max 90)
+
+--- Software e app portieri ---
+Titoli:
+  Software Preparatore Portieri   <- blocca in posizione 1   (29)
+  App Preparatore dei Portieri   (28)
+  Gestionale per Portieri   (23)
+  Gratis, Senza Carta di Credito   (30)
+  Fatto da un Preparatore   (23)
+  Allenamenti, Voti, Statistiche   (30)
+  Demo Senza Registrazione   (24)
+  Da PC e Smartphone   (18)
+  Programma Tutta la Stagione   (27)
+  GKSeason Gestione Portieri   (26)
+  Voti in 30 Secondi a Portiere   (29)
+  Libreria Esercizi Personale   (27)
+  Statistiche Automatiche   (23)
+  Registrati Gratis Oggi   (22)
+  Niente Excel, Niente Chat   (25)
+Descrizioni:
+  Allenamenti, valutazioni, statistiche ed esercizi in un'unica app per chi allena portieri.   (90)
+  Gratis, senza carta di credito. Funziona da telefono e da PC. Fatto da un preparatore.   (86)
+  Programmi la stagione una volta, valuti dopo ogni seduta, le statistiche si fanno da sole.   (90)
+  Prova la demo senza registrarti: una stagione vera con portieri, sedute e voti caricati.   (88)
+Percorso visualizzato: gkseason.it/preparatori/portieri
+
+--- Programmazione allenamenti ---
+Titoli:
+  Programma Allenamenti Portieri   <- blocca in posizione 1   (30)
+  Schede Allenamento Portieri   (27)
+  Calendario Automatico   (21)
+  Esercizi Portieri in Libreria   (29)
+  Lavagna per Disegnare Esercizi   (30)
+  Report PDF della Seduta   (23)
+  Gratis, Senza Carta di Credito   (30)
+  Fatto da un Preparatore   (23)
+  Sedute Tipo da Riusare   (22)
+  Da PC e Smartphone   (18)
+  La Stagione in un Pomeriggio   (28)
+  Demo Senza Registrazione   (24)
+  GKSeason per Preparatori   (24)
+  Dal Settore Giovanile in Su   (27)
+  Presenze e Voti dal Campo   (25)
+Descrizioni:
+  Calendario che si genera da solo, sedute con i tuoi esercizi, lavagna e report PDF.   (83)
+  Imposti giorni e categorie una volta: tutta la stagione compare nel calendario. Gratis.   (87)
+  La tua libreria di esercizi con obiettivo, materiale, durata e schema, da riusare.   (82)
+  Prova la demo senza registrarti: una stagione vera con sedute ed esercizi già caricati.   (87)
+Percorso visualizzato: gkseason.it/allenamenti/portieri
+
+--- Valutazione e statistiche ---
+Titoli:
+  Valutazione Portieri Calcio   <- blocca in posizione 1   (27)
+  Scheda Valutazione Portiere   (27)
+  Voti, Media e Andamento   (23)
+  Statistiche Automatiche   (23)
+  Clean Sheet e Gol Subiti   (24)
+  Report PDF per la Società   (25)
+  Parametri Decisi da Te   (22)
+  Percorso di Crescita Portiere   (29)
+  Gratis, Senza Carta di Credito   (30)
+  Fatto da un Preparatore   (23)
+  Voti in 30 Secondi a Portiere   (29)
+  Confronto tra Portieri   (22)
+  Demo Senza Registrazione   (24)
+  Da PC e Smartphone   (18)
+  GKSeason per Preparatori   (24)
+Descrizioni:
+  Voti per allenamento e partita, media, andamento, clean sheet e percorso di crescita.   (85)
+  Scegli i parametri che valuti davvero: presa, uscite, piedi, 1 contro 1. Report in PDF.   (87)
+  Valuti dal telefono prima di uscire dal campo. Le statistiche si costruiscono da sole.   (86)
+  Prova la demo senza registrarti: portieri, voti e statistiche di una stagione vera.   (83)
+Percorso visualizzato: gkseason.it/valutazione/portieri
+
+--- Brand GKSeason ---
+Titoli:
+  GKSeason, Sito Ufficiale   <- blocca in posizione 1   (24)
+  Gestionale per Portieri   (23)
+  Accedi o Registrati Gratis   (26)
+  Demo Senza Registrazione   (24)
+  Da PC e Smartphone   (18)
+  Fatto da un Preparatore   (23)
+  Allenamenti, Voti, Statistiche   (30)
+  Gratis, Senza Carta di Credito   (30)
+Descrizioni:
+  Il gestionale per chi allena i portieri: allenamenti, valutazioni, statistiche, esercizi.   (89)
+  Gratis, senza carta di credito. Funziona da telefono e da PC.   (61)
+Percorso visualizzato: gkseason.it/portieri
+

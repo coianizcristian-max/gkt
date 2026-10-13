@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { trackMetaEvento } from '@/app/components/MetaPixel'
+import { trackGoogleConversione } from '@/app/components/GoogleAds'
 import { leggiAttribuzione } from '@/app/components/AttribuzioneUtm'
 
 const CHIAVE = 'gk_demo_aperta_inviata'
@@ -44,6 +45,10 @@ export default function DemoTracker() {
       mezzo: attribuzione.utm_medium || null,
       campagna: attribuzione.utm_campaign || null,
     })
+
+    // Stesso evento su Google Ads (conversione secondaria "Demo aperta",
+    // da usare in osservazione, non come obiettivo di offerta).
+    trackGoogleConversione('demo')
 
     // Stesso evento su PostHog, dove puoi vedere l'imbuto completo
     // (demo aperta -> pagine viste -> newsletter -> registrazione).

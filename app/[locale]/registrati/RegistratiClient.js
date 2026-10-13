@@ -6,6 +6,7 @@ import { useRouter } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvento } from '@/app/components/PostHogProvider'
 import { trackMetaEvento } from '@/app/components/MetaPixel'
+import { trackGoogleConversione } from '@/app/components/GoogleAds'
 import { leggiAttribuzione } from '@/app/components/AttribuzioneUtm'
 import { useTranslations, useLocale } from 'next-intl'
 import Captcha from '@/app/components/Captcha'
@@ -14,7 +15,7 @@ import Captcha from '@/app/components/Captcha'
 // (meglio nessun captcha che un widget che punta al fornitore sbagliato).
 const CAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''
 
-export default function RegistratiClient({ token, datiInvito }) {
+export default function RegistratiClient({ token, datiInvito, ruoloIniziale = null }) {
   const router = useRouter()
   const t = useTranslations('registrati')
   const locale = useLocale()
@@ -36,7 +37,18 @@ export default function RegistratiClient({ token, datiInvito }) {
   const tokenInvalido = token && !datiInvito
   // Selezione ruolo: solo per chi arriva senza invito (auto-registrazione).
   // Chi ha un invito ha già il ruolo deciso dal link, non deve scegliere.
-  const [ruoloScelto, setRuoloScelto] = useState(datiInvito ? 'invitato' : null)
+  // /registrati?ruolo=allenatore (landing degli annunci): salta la domanda
+  // "chi sei" e mostra subito il modulo del preparatore.
+  const [ruoloScelto, setRuoloScelto] = useState(
+    datiInvito ? 'invitato' : (ruoloIniziale === 'allenatore' ? 'allenatore' : null)
+  )
+
+  // Conversione Google Ads: solo auto-registrazioni (chi arriva da un invito
+  // non e' un risultato della campagna e sporcherebbe l'ottimizzazione).
+  function segnalaConversioni() {
+    trackMetaEvento('CompleteRegistration')
+    if (!datiInvito) trackGoogleConversione('registrazione')
+  }
 
   async function handleSignup(e) {
     e.preventDefault()
@@ -152,13 +164,13 @@ export default function RegistratiClient({ token, datiInvito }) {
     if (data.session) {
       // Sessione immediata (email confirm disabilitata): vai all'app
       trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: false, ...(leggiAttribuzione() || {}) })
-      trackMetaEvento('CompleteRegistration')
+      segnalaConversioni()
       router.push('/dashboard')
       router.refresh()
     } else {
       // Email di conferma richiesta
       trackEvento('registrazione_completata', { tipo_invito: datiInvito?.tipo ?? null, richiede_conferma_email: true, ...(leggiAttribuzione() || {}) })
-      trackMetaEvento('CompleteRegistration')
+      segnalaConversioni()
       setMsg(t('mailConferma', { email: email.trim() }))
       setLoading(false)
     }

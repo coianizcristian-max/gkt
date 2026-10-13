@@ -1,6 +1,11 @@
 GKSeason — CAMPAGNA MIRATA: LANDING ANNUNCI + TAG GOOGLE ADS + ISTRUZIONI META
 ==============================================================================
-Pacchetto del 13 ottobre 2026. Base: main @ 63299f8 ("fix archiviazione obiettivi").
+Pacchetto del 13 ottobre 2026 (versione 3: landing senza il blocco prezzi).
+Base: main @ 63299f8 ("fix archiviazione obiettivi").
+
+SCADENZA: le landing devono essere online ENTRO IL 18 OTTOBRE. La campagna
+Google parte il 19 e manda i clic su gkseason.it/lp/...: senza deploy
+atterrano su un 404 e i clic si pagano lo stesso.
 
 
 COSA C'E' DENTRO
@@ -24,12 +29,13 @@ COSA FA IL CODICE
    Senza menu, senza ricerca allenatori: titolo che ripete la ricerca, hero
    con DUE TELEFONI con screenshot veri dell'app (presi dalla stagione demo,
    public/lp/*.webp), "Dentro GKSeason" con 5 schermate vere + testo,
-   prima/dopo, come funziona, per chi e', prezzi (letti dal DB come in home),
-   chi l'ha fatto, 4 FAQ, chiusura. Due soli pulsanti: "Crea l'account
-   gratis" (-> /registrati?ruolo=allenatore) e "Apri la demo senza
-   registrarti" (-> /d).
-   Pre-generate al build e rigenerate ogni ora (prezzi), noindex (X-Robots-Tag
-   + meta + robots.txt): non competono con la home su Google. AdsBot le legge.
+   prima/dopo, come funziona, per chi e', chi l'ha fatto, 4 FAQ, chiusura.
+   NESSUN BLOCCO PREZZI (tolto su tua richiesta: la pagina non legge piu'
+   niente dal database, e' completamente statica). Due soli pulsanti:
+   "Crea l'account gratis" (-> /registrati?ruolo=allenatore) e "Apri la
+   demo senza registrarti" (-> /d).
+   Pre-generate al build, noindex (X-Robots-Tag + meta + robots.txt): non
+   competono con la home su Google. AdsBot le legge.
    Testi e ordine delle schermate in lib/landingAds.js: per cambiare una
    frase o una foto modifichi solo quello (o sostituisci il .webp con lo
    stesso nome in public/lp/).
@@ -89,8 +95,10 @@ VERIFICHE FATTE
 
 DEPLOY — ORDINE CONSIGLIATO
 ---------------------------
-1) Google Ads: le azioni di conversione e il tag sono GIA' creati (13/10).
-   Stato della campagna in google-ads/CAMPAGNA-GOOGLE.md, sezione "Stato".
+1) Google Ads: TUTTO FATTO il 13/10 nel tuo account (tag, conversioni,
+   campagna pubblicata, 4 gruppi, 125 keyword, 73 escluse). Parte il 19/10,
+   finisce il 29/10. Dettagli e cose che restano da fare (verifica identita'
+   entro il 27/10) in google-ads/CAMPAGNA-GOOGLE.md, sezione "Stato".
 
 2) Variabili d'ambiente (Vercel: Production + Preview + Development; e .env.local)
      NEXT_PUBLIC_GADS_ID                  = AW-1012017816
@@ -120,8 +128,8 @@ DEPLOY — ORDINE CONSIGLIATO
        dopo aver accettato i cookie
      - PostHog: la pagina compare come "Landing annunci: software portieri"
 
-5) Poi le campagne, nell'ordine: Meta Fase 0-1 oggi (pubblici), reel in
-   settimana, Google Search appena hai le etichette.
+5) Poi Meta: Fase 0-1 (pubblici) appena puoi, reel in settimana
+   (meta-ads/CAMPAGNA-META.md). Google parte da sola il 19/10.
 
 
 SE QUALCOSA NON VA

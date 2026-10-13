@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import { setRequestLocale } from 'next-intl/server'
-import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { Link } from '@/i18n/routing'
 import LegalFooter from '@/app/components/LegalFooter'
 import { LANDING, SLUGS, PASSI, PRIMA_DOPO, PER_CHI, TOUR, SCHERMATE } from '@/lib/landingAds'
@@ -14,9 +13,9 @@ import './lp.css'
  * registrarsi o aprire la demo. Tutto il resto lo distrae.
  *
  * Le immagini sono screenshot veri dell'app presi dalla stagione demo da
- * telefono (public/lp/*.webp). I prezzi vengono dal database come in home
- * (funzionalita_config), con gli stessi valori di riserva; la pagina viene
- * rigenerata al massimo ogni ora.
+ * telefono (public/lp/*.webp). Niente prezzi, per scelta: chi arriva da un
+ * annuncio li scopre dentro l'app. La pagina e' completamente statica
+ * (generata al build, nessuna lettura dal database).
  *
  * Slug sconosciuti -> notFound() -> 404 (volutamente NON dynamicParams=false:
  * con il rewrite della lingua di next-intl quella strada restituisce la
@@ -26,10 +25,6 @@ import './lp.css'
  * su tutte le pagine; AttribuzioneUtm salva utm/gclid al primo atterraggio,
  * cosi' la registrazione resta attribuita all'annuncio.
  */
-export const revalidate = 3600
-
-const DEFAULT_PREZZI = { mensile: '9.90', annuale: '79.00', lifetime: '199.00' }
-
 export function generateStaticParams() {
   return SLUGS.map((slug) => ({ slug }))
 }
@@ -48,27 +43,11 @@ export async function generateMetadata({ params }) {
   }
 }
 
-async function leggiPrezzi() {
-  const prezzi = { ...DEFAULT_PREZZI }
-  try {
-    const supabase = createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    const { data } = await supabase.from('funzionalita_config').select('chiave, label').like('chiave', 'prezzo_allenatore_%')
-    for (const r of (data ?? [])) {
-      const m = r.chiave.match(/^prezzo_allenatore_(mensile|annuale|lifetime)$/)
-      if (m && r.label) prezzi[m[1]] = r.label
-    }
-  } catch {}
-  return prezzi
-}
-
-const euro = (v) => String(v).replace('.', ',')
-
 export default async function LandingAnnunci({ params }) {
   const { locale, slug } = await params
   setRequestLocale(locale)
   const c = LANDING[slug]
   if (!c) notFound()
-  const prezzi = await leggiPrezzi()
 
   const registrati = { pathname: '/registrati', query: { ruolo: 'allenatore' } }
   const hero = SCHERMATE[c.heroSchermata]
@@ -184,30 +163,8 @@ export default async function LandingAnnunci({ params }) {
         </div>
       </section>
 
-      {/* ── Prezzi ── */}
-      <section className="lp-sezione">
-        <div className="lp-inner lp-prezzi">
-          <h2>Quanto costa</h2>
-          <div className="lp-prezzi-griglia">
-            <div className="lp-prezzo">
-              <span className="lp-prezzo-nome">Base</span>
-              <span className="lp-prezzo-cifra">0 €</span>
-              <span className="lp-prezzo-nota">per sempre</span>
-              <p>Calendario, allenamenti, valutazioni, libreria esercizi, inviti ai portieri, export dei dati.</p>
-            </div>
-            <div className="lp-prezzo lp-prezzo-pieno">
-              <span className="lp-prezzo-nome">Completo</span>
-              <span className="lp-prezzo-cifra">{euro(prezzi.mensile)} €<small>/mese</small></span>
-              <span className="lp-prezzo-nota">oppure {euro(prezzi.annuale)} € l&apos;anno, o {euro(prezzi.lifetime)} € una volta per sempre</span>
-              <p>Tutto il base più obiettivi, statistiche di dettaglio, percorso di crescita, ricorrenze automatiche, report PDF completi.</p>
-            </div>
-          </div>
-          <p className="lp-prezzi-piede">Si parte sempre dal base, gratis. Le funzioni complete le provi per un periodo senza pagare e decidi dopo.</p>
-        </div>
-      </section>
-
       {/* ── Chi l'ha fatto ── */}
-      <section className="lp-sezione lp-sezione-alt">
+      <section className="lp-sezione">
         <div className="lp-inner lp-autore">
           <h2>Chi l&apos;ha fatto</h2>
           <p>
@@ -221,7 +178,7 @@ export default async function LandingAnnunci({ params }) {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="lp-sezione">
+      <section className="lp-sezione lp-sezione-alt">
         <div className="lp-inner lp-faq">
           <h2>Domande frequenti</h2>
           {c.faq.map((f) => (

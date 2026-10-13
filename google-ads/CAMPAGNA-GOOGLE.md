@@ -5,16 +5,21 @@
 Fatto:
 - Tag Google creato: **AW-1012017816**. Origine dati "Tag Google" (non la proprietà Analytics COIANIZ, che è di ArtLink).
 - Azioni di conversione: **Registrazione** (principale, etichetta `LzXlCOTDxJsdEJjVyOID`, conteggio una, finestra 30 giorni) e **Demo aperta** (etichetta `Z08FCOfDxJsdEJjVyOID`, categoria Visualizzazione di pagina: non usata per le offerte finché nessuna campagna ha quell'obiettivo). Conversioni avanzate: **spente** (manderebbero le email degli utenti a Google).
-- Campagna **"Search - Preparatori portieri"** creata come bozza completa: obiettivo Registrazioni (Visualizzazioni di pagina rimosso dagli obiettivi della campagna), solo Rete di ricerca, Italia "presenza", italiano, Massimizza i clic con CPC max 1,50 €, budget 6 €/giorno, AI Max spento, suffisso UTM, **data di inizio 19 ottobre 2026**, gruppo "Software e app portieri" con 36 keyword + annuncio (15 titoli, titolo 1 bloccato, 4 descrizioni), 4 sitelink, 4 callout.
+- Campagna **"Search - Preparatori portieri"** (id 24345263472) **pubblicata da te il 13/10**: obiettivo Registrazioni (Visualizzazioni di pagina rimosso dagli obiettivi della campagna), solo Rete di ricerca, Italia "presenza", italiano, Massimizza i clic con CPC max 1,50 €, budget 7 €/giorno, AI Max spento, suffisso UTM, **inizio 19 ottobre 2026, fine 29 ottobre 2026**, 4 sitelink, 4 callout. Stato "In attesa" fino al 19/10.
+- 4 gruppi di annunci, ognuno con il suo annuncio adattabile (titolo 1 bloccato in posizione 1):
+  - **Software e app portieri** — 36 keyword → `/lp/software-portieri` (15 titoli, 4 descrizioni)
+  - **Programmazione allenamenti** — 46 keyword → `/lp/allenamenti-portieri` (15 titoli, 4 descrizioni)
+  - **Valutazione e statistiche** — 38 keyword → `/lp/valutazione-portieri` (15 titoli, 4 descrizioni)
+  - **Brand GKSeason** — 5 keyword esatte → home (8 titoli, 2 descrizioni)
+  Totale 125 keyword (verificato nella tabella Parole chiave). Tutti gli annunci "esaminati, nessun problema relativo alle norme".
+- **73 parole chiave escluse** a livello campagna, corrispondenza generica (verificato: "1-10 di 73").
 
 Da fare (nell'ordine):
-1. **Pubblica campagna** (lo fai tu: Google Ads chiede che il clic che spende sia dell'inserzionista). Non ricaricare la scheda prima: in questa procedura di Google le keyword e l'annuncio restano in memoria solo finché la scheda è aperta.
-2. Subito dopo: metti la campagna **in pausa** (tabella Campagne → interruttore) finché le landing non sono online. Con inizio il 19/10 non spende comunque prima.
-3. Aggiungere gli altri 3 gruppi di annunci (Programmazione allenamenti, Valutazione e statistiche, Brand GKSeason): testi in `04-keyword-da-incollare.txt`, oppure chiedi a Claude.
-4. Aggiungere le 73 parole chiave escluse a livello campagna (stesso file).
-5. Rinominare "Gruppo di annunci 1" in "Software e app portieri".
-6. Dopo il deploy delle landing con le variabili NEXT_PUBLIC_GADS_*: riattivare la campagna.
-7. **Entro il 27 ottobre: verifica dell'identità dell'inserzionista** (Google la chiede; dopo quella data blocca gli annunci finché non è fatta).
+1. **Deploy di questo pacchetto + variabili NEXT_PUBLIC_GADS_* su Vercel entro il 18 ottobre.** Dal 19 gli annunci mandano su `/lp/...`: senza deploy atterrano su una pagina 404 e paghi i clic lo stesso.
+2. **Entro il 27 ottobre: verifica dell'identità dell'inserzionista** (Google la chiede; dopo quella data blocca gli annunci finché non è fatta). La trovi in Google Ads → Fatturazione / Amministrazione → Verifica dell'inserzionista.
+3. Dal 20 ottobre: controlli della parte C qui sotto (termini di ricerca ogni 2-3 giorni, le prime escluse nuove).
+4. Facoltativo: il sitelink "Prezzi" (→ home#prezzi) è ancora tra gli asset della campagna. Se non vuoi che il prezzo compaia nemmeno nell'annuncio, va tolto da Asset → Sitelink.
+5. La campagna scade il 29/10: se i risultati sono buoni, togli la data di fine (Impostazioni campagna → Date) qualche giorno prima, altrimenti si ferma da sola.
 
 ---
 

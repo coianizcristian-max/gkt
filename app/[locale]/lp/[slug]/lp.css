@@ -2,6 +2,8 @@
    Landing degli annunci (/lp/<slug>)
    Tutte le classi iniziano con .lp- per non toccare il resto del sito.
    Palette: quella della home (blu notte, azzurro, carta).
+   globals.css ha gia' `a { color: inherit; text-decoration: none }`: i colori
+   dei link vengono dati classe per classe.
    ───────────────────────────────────────────────────────────────────────── */
 
 .lp {
@@ -17,10 +19,9 @@
   min-height: 100vh;
   background: #fff;
   color: var(--lp-inchiostro);
+  overflow-x: hidden; /* i telefoni dell'hero sporgono */
 }
 
-/* globals.css ha gia' `a { color: inherit; text-decoration: none }`: qui i
-   colori dei link vengono dati classe per classe (.lp-btn-pieno, .lp-accedi). */
 .lp h1, .lp h2, .lp h3 { font-family: var(--font-display), system-ui, sans-serif; }
 
 /* ── Barra in alto: solo logo e accesso ── */
@@ -39,11 +40,12 @@
 .lp-accedi:hover { text-decoration: underline; }
 
 /* ── Hero ── */
-.lp-hero { background: var(--lp-notte); color: #fff; padding: 56px 24px 64px; }
+.lp-hero { background: var(--lp-notte); color: #fff; padding: 56px 24px 0; }
 .lp-hero-inner {
-  max-width: 1060px; margin: 0 auto;
-  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr); gap: 48px; align-items: center;
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); gap: 40px; align-items: end;
 }
+.lp-hero-testo { padding-bottom: 64px; }
 .lp-sopra { font-size: 15px; font-weight: 600; color: var(--lp-azzurro-chiaro); margin-bottom: 14px; }
 .lp-hero h1 { font-size: 44px; line-height: 1.08; letter-spacing: -.02em; color: #fff; }
 .lp-lead { font-size: 18px; line-height: 1.6; color: #b8d0de; margin-top: 18px; max-width: 540px; }
@@ -67,66 +69,58 @@
   background: var(--lp-campo) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.5l2.3 2.3L11.5 6' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;
 }
 
-/* ── Pannello prodotto (disegnato, nessuna immagine) ── */
-.lp-pannello {
-  background: #fff; color: var(--lp-inchiostro); border-radius: 14px; padding: 18px 18px 16px;
-  box-shadow: 0 24px 60px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.08);
-  font-size: 14px;
+/* Due telefoni: quello davanti intero, quello dietro spostato e un po' piu' piccolo.
+   Il bordo inferiore e' tagliato dall'hero: sembrano "appoggiati" sulla sezione dopo. */
+.lp-hero-telefoni { position: relative; height: 520px; z-index: 3; }
+.lp-tel-davanti { position: absolute; left: 40px; bottom: -40px; width: 290px; z-index: 2; }
+.lp-tel-dietro { position: absolute; left: 270px; bottom: 10px; width: 240px; z-index: 1; opacity: .92; transform: rotate(4deg); }
+
+/* ── Cornice telefono ── */
+.lp-tel {
+  background: #0b1520; border-radius: 34px; padding: 10px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.08), inset 0 0 0 2px #1b2a3a;
 }
-.lp-pan-testa { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--lp-linea); }
-.lp-pan-testa strong { display: block; font-family: var(--font-display); font-size: 19px; line-height: 1.1; }
-.lp-pan-cat { display: block; font-size: 13px; color: var(--lp-grigio); margin-top: 3px; }
-.lp-pan-tag { font-size: 12px; font-weight: 600; color: var(--lp-azzurro); background: #e6f3fb; border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
-
-.lp-pan-numeri { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
-.lp-pan-numeri div { background: var(--lp-alt); border-radius: 10px; padding: 10px 8px; text-align: center; }
-.lp-pan-numeri b { display: block; font-family: var(--font-display); font-size: 22px; line-height: 1; color: var(--lp-notte); }
-.lp-pan-numeri span { display: block; font-size: 11.5px; color: var(--lp-grigio); margin-top: 4px; }
-
-.lp-pan-barre { margin-top: 14px; display: grid; gap: 9px; }
-.lp-pan-barra { display: grid; grid-template-columns: 92px 1fr 32px; align-items: center; gap: 10px; font-size: 13px; }
-.lp-pan-barra span { color: var(--lp-grigio); }
-.lp-pan-barra i { display: block; height: 8px; background: var(--lp-alt); border-radius: 999px; overflow: hidden; }
-.lp-pan-barra i b { display: block; height: 100%; background: var(--lp-azzurro); border-radius: 999px; }
-.lp-pan-barra em { font-style: normal; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
-
-.lp-pan-trend { margin-top: 14px; }
-.lp-pan-trend span { font-size: 12px; color: var(--lp-grigio); }
-.lp-pan-trend svg { display: block; width: 100%; height: 64px; margin-top: 4px; }
-
-.lp-pan-sedute, .lp-pan-voti { list-style: none; padding: 0; margin: 6px 0 0; }
-.lp-pan-sedute li, .lp-pan-voti li {
-  display: grid; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--lp-linea);
-}
-.lp-pan-sedute li { grid-template-columns: 52px 1fr auto; }
-.lp-pan-sedute li:last-child, .lp-pan-voti li:last-child { border-bottom: 0; }
-.lp-pan-giorno { display: flex; flex-direction: column; font-size: 12px; color: var(--lp-grigio); line-height: 1.2; }
-.lp-pan-giorno b { font-family: var(--font-display); font-size: 15px; color: var(--lp-notte); }
-.lp-pan-seduta b, .lp-pan-chi b { display: block; font-size: 14px; }
-.lp-pan-seduta small, .lp-pan-chi small { display: block; font-size: 12px; color: var(--lp-grigio); }
-.lp-pan-nota { font-size: 12px; color: var(--lp-grigio); text-align: right; max-width: 150px; }
-.lp-pan-partita .lp-pan-giorno b { color: var(--lp-campo); }
-.lp-pan-piede { font-size: 12px; color: var(--lp-grigio); margin: 12px 0 0; line-height: 1.5; }
-
-.lp-pan-voti li { grid-template-columns: 44px 1fr auto; }
-.lp-pan-voto {
-  width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
-  background: #e6f3fb; color: var(--lp-azzurro); font-family: var(--font-display); font-weight: 700; font-size: 18px;
-}
-.lp-pan-voto-vuoto { background: var(--lp-alt); color: #9fb3c0; }
+.lp-tel-schermo { border-radius: 26px; overflow: hidden; background: #f6f7f4; aspect-ratio: 750 / 1300; }
+.lp-tel-schermo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
 
 /* ── Sezioni ── */
 .lp-sezione { padding: 64px 24px; }
 .lp-sezione-alt { background: var(--lp-alt); }
-.lp-inner { max-width: 960px; margin: 0 auto; }
+.lp-inner { max-width: 1000px; margin: 0 auto; }
 .lp-sezione h2, .lp-finale h2 { font-size: 30px; line-height: 1.2; letter-spacing: -.015em; }
+.lp-sotto { font-size: 17px; color: var(--lp-grigio); margin-top: 10px; }
 
-.lp-vantaggi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 32px; }
-.lp-vantaggio { border-top: 3px solid var(--lp-azzurro); padding-top: 18px; }
-.lp-icona { color: var(--lp-azzurro); display: block; margin-bottom: 12px; }
-.lp-vantaggio h3 { font-size: 19px; line-height: 1.25; margin-bottom: 8px; }
-.lp-vantaggio p { font-size: 15px; line-height: 1.6; color: var(--lp-grigio); }
+/* Tour: schermata + testo, alternati */
+.lp-tour { padding-top: 80px; }
+.lp-tappa {
+  display: grid; grid-template-columns: 260px 1fr; gap: 48px; align-items: center;
+  padding: 44px 0; border-bottom: 1px solid var(--lp-linea);
+}
+.lp-tappa:last-child { border-bottom: 0; }
+.lp-tappa-inv { grid-template-columns: 1fr 260px; }
+.lp-tappa-inv .lp-tappa-img { order: 2; }
+.lp-tappa-img .lp-tel { width: 240px; margin: 0 auto; box-shadow: 0 18px 40px rgba(13,33,55,.22), inset 0 0 0 2px #1b2a3a; }
+.lp-tappa h3 { font-size: 24px; line-height: 1.2; margin-bottom: 10px; }
+.lp-tappa p { font-size: 16px; line-height: 1.65; color: var(--lp-grigio); }
+.lp-punti { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; }
+.lp-punti li { font-size: 15px; display: flex; gap: 9px; align-items: flex-start; }
+.lp-punti li::before {
+  content: ''; width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; border-radius: 50%;
+  background: #e6f3fb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.5l2.3 2.3L11.5 6' fill='none' stroke='%230a7ec2' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;
+}
 
+/* Prima / dopo */
+.lp-confronto { margin-top: 28px; border: 1px solid var(--lp-linea); border-radius: 14px; overflow: hidden; background: #fff; }
+.lp-confronto-testa, .lp-confronto-riga { display: grid; grid-template-columns: 1fr 1fr; }
+.lp-confronto-testa span { padding: 14px 20px; font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+.lp-confronto-testa span:first-child { background: #f5f7f9; color: var(--lp-grigio); }
+.lp-confronto-testa span:last-child { background: var(--lp-notte); color: #fff; }
+.lp-confronto-riga { border-top: 1px solid var(--lp-linea); }
+.lp-confronto-riga span { padding: 16px 20px; font-size: 15px; line-height: 1.55; }
+.lp-prima { color: var(--lp-grigio); background: #fafbfc; }
+.lp-dopo { color: var(--lp-inchiostro); font-weight: 500; border-left: 1px solid var(--lp-linea); }
+
+/* Come funziona */
 .lp-passi { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
 .lp-passi li { display: flex; gap: 14px; align-items: flex-start; }
 .lp-passo-n {
@@ -135,6 +129,23 @@
 }
 .lp-passi h3 { font-size: 18px; margin-bottom: 6px; }
 .lp-passi p { font-size: 15px; line-height: 1.6; color: var(--lp-grigio); }
+
+/* Per chi e' */
+.lp-perchi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 28px; }
+.lp-perchi-voce { background: #fff; border: 1px solid var(--lp-linea); border-radius: 14px; padding: 22px 22px 20px; }
+.lp-perchi-voce h3 { font-size: 19px; margin-bottom: 8px; color: var(--lp-azzurro); }
+.lp-perchi-voce p { font-size: 15px; line-height: 1.6; color: var(--lp-grigio); }
+
+/* Prezzi */
+.lp-prezzi-griglia { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; margin-top: 28px; }
+.lp-prezzo { border: 1px solid var(--lp-linea); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 4px; }
+.lp-prezzo-pieno { border-color: var(--lp-azzurro); box-shadow: 0 0 0 3px #e6f3fb; }
+.lp-prezzo-nome { font-weight: 700; font-size: 15px; color: var(--lp-grigio); }
+.lp-prezzo-cifra { font-family: var(--font-display); font-weight: 700; font-size: 36px; line-height: 1.1; color: var(--lp-notte); }
+.lp-prezzo-cifra small { font-size: 16px; font-weight: 600; color: var(--lp-grigio); margin-left: 2px; }
+.lp-prezzo-nota { font-size: 14px; color: var(--lp-grigio); }
+.lp-prezzo p { font-size: 15px; line-height: 1.6; margin-top: 12px; color: var(--lp-inchiostro); }
+.lp-prezzi-piede { font-size: 15px; color: var(--lp-grigio); margin-top: 18px; }
 
 .lp-autore { max-width: 720px; }
 .lp-autore p { font-size: 17px; line-height: 1.7; color: #2f4552; margin-top: 16px; }
@@ -155,24 +166,40 @@
 .lp-finale p { font-size: 17px; color: #b8d0de; max-width: 560px; margin: 14px auto 0; line-height: 1.6; }
 .lp-finale .lp-cta { justify-content: center; }
 
-/* ── Telefono ── */
-@media (max-width: 860px) {
-  .lp-hero-inner { grid-template-columns: 1fr; gap: 36px; }
-  .lp-vantaggi, .lp-passi { grid-template-columns: 1fr; gap: 26px; }
+/* ── Tablet e telefono ── */
+@media (max-width: 900px) {
+  .lp-hero-inner { grid-template-columns: 1fr; gap: 8px; }
+  .lp-hero-testo { padding-bottom: 36px; }
+  .lp-hero-telefoni { height: 380px; max-width: 420px; margin: 0 auto; width: 100%; }
+  .lp-tel-davanti { left: 20px; bottom: -60px; width: 230px; }
+  .lp-tel-dietro { left: 210px; bottom: -10px; width: 190px; }
+  .lp-tappa, .lp-tappa-inv { grid-template-columns: 1fr; gap: 24px; text-align: left; }
+  .lp-tappa-inv .lp-tappa-img { order: 0; }
+  .lp-tappa-img .lp-tel { width: 220px; }
+  .lp-passi, .lp-perchi, .lp-prezzi-griglia { grid-template-columns: 1fr; gap: 20px; }
 }
 @media (max-width: 640px) {
   .lp-top { padding: 12px 16px; }
   .lp-brand-testo small { display: none; }
-  .lp-hero { padding: 40px 16px 48px; }
+  .lp-hero { padding: 40px 16px 0; }
   .lp-hero h1 { font-size: 32px; }
   .lp-lead { font-size: 16px; }
   .lp-cta { flex-direction: column; }
   .lp-btn { width: 100%; }
+  .lp-hero-telefoni { height: 330px; max-width: 340px; }
+  .lp-tel-davanti { left: 10px; width: 200px; bottom: -50px; }
+  .lp-tel-dietro { left: 170px; width: 160px; bottom: -8px; }
   .lp-sezione, .lp-finale { padding: 44px 16px; }
+  .lp-tour { padding-top: 70px; }
   .lp-sezione h2, .lp-finale h2 { font-size: 26px; }
-  .lp-pan-nota { display: none; }
-  .lp-pan-sedute li { grid-template-columns: 52px 1fr; }
-  .lp-pan-voti li { grid-template-columns: 44px 1fr; }
+  .lp-tappa { padding: 32px 0; }
+  .lp-tappa h3 { font-size: 21px; }
+  .lp-confronto-testa, .lp-confronto-riga { grid-template-columns: 1fr; }
+  .lp-confronto-testa span:first-child { display: none; }
+  .lp-prima { padding-bottom: 6px; }
+  .lp-prima::before { content: 'Oggi: '; font-weight: 700; color: #9fb3c0; }
+  .lp-dopo { border-left: 0; padding-top: 6px; }
+  .lp-dopo::before { content: 'Con GKSeason: '; font-weight: 700; color: var(--lp-azzurro); }
 }
 @media (prefers-reduced-motion: reduce) {
   .lp-btn { transition: none; }

@@ -21,14 +21,18 @@ COSA FA IL CODICE
      gkseason.it/lp/software-portieri
      gkseason.it/lp/allenamenti-portieri
      gkseason.it/lp/valutazione-portieri
-   Senza menu, senza ricerca allenatori, senza prezzi: titolo che ripete la
-   ricerca, un pannello disegnato (scheda portiere / settimana / valutazione),
-   3 vantaggi, come funziona, chi l'ha fatto, 4 FAQ, chiusura. Due soli
-   pulsanti: "Crea l'account gratis" (-> /registrati?ruolo=allenatore) e
-   "Apri la demo senza registrarti" (-> /d).
-   Statiche, pre-generate al build, noindex (X-Robots-Tag + meta + robots.txt):
-   non competono con la home su Google. AdsBot le legge comunque.
-   Testi in lib/landingAds.js: per cambiare una frase modifichi solo quello.
+   Senza menu, senza ricerca allenatori: titolo che ripete la ricerca, hero
+   con DUE TELEFONI con screenshot veri dell'app (presi dalla stagione demo,
+   public/lp/*.webp), "Dentro GKSeason" con 5 schermate vere + testo,
+   prima/dopo, come funziona, per chi e', prezzi (letti dal DB come in home),
+   chi l'ha fatto, 4 FAQ, chiusura. Due soli pulsanti: "Crea l'account
+   gratis" (-> /registrati?ruolo=allenatore) e "Apri la demo senza
+   registrarti" (-> /d).
+   Pre-generate al build e rigenerate ogni ora (prezzi), noindex (X-Robots-Tag
+   + meta + robots.txt): non competono con la home su Google. AdsBot le legge.
+   Testi e ordine delle schermate in lib/landingAds.js: per cambiare una
+   frase o una foto modifichi solo quello (o sostituisci il .webp con lo
+   stesso nome in public/lp/).
 
 2) Tag di conversione Google Ads (gtag.js), app/components/GoogleAds.js.
    Parte SOLO dopo il consenso cookie, come Pixel e PostHog. Due conversioni:
@@ -55,9 +59,10 @@ c'erano gia'. Le istruzioni sono in meta-ads/CAMPAGNA-META.md.
 
 FILE INCLUSI
 ------------
-  app/[locale]/lp/[slug]/page.js            NUOVO  - la landing (3 contenuti, 3 pannelli)
+  app/[locale]/lp/[slug]/page.js            NUOVO  - la landing (3 contenuti)
   app/[locale]/lp/[slug]/lp.css             NUOVO  - stili .lp-* (non tocca globals.css)
-  lib/landingAds.js                         NUOVO  - testi delle landing + passi
+  lib/landingAds.js                         NUOVO  - testi, tour, prima/dopo, per chi
+  public/lp/*.webp (7 file)                 NUOVI  - screenshot veri dell'app (demo, 750x1300)
   app/components/GoogleAds.js               NUOVO  - gtag.js + trackGoogleConversione()
   app/[locale]/layout.js                    MODIF. - monta <GoogleAds />
   app/[locale]/registrati/RegistratiClient.js  MODIF. - conversione Google + ruoloIniziale
@@ -84,14 +89,13 @@ VERIFICHE FATTE
 
 DEPLOY — ORDINE CONSIGLIATO
 ---------------------------
-1) Google Ads: crea le due azioni di conversione e prendi ID + etichette
-   (google-ads/CAMPAGNA-GOOGLE.md, parte A). Se vuoi deployare prima, va
-   bene lo stesso: senza variabili il tag resta spento, le landing funzionano.
+1) Google Ads: le azioni di conversione e il tag sono GIA' creati (13/10).
+   Stato della campagna in google-ads/CAMPAGNA-GOOGLE.md, sezione "Stato".
 
 2) Variabili d'ambiente (Vercel: Production + Preview + Development; e .env.local)
-     NEXT_PUBLIC_GADS_ID                  = AW-xxxxxxxxx
-     NEXT_PUBLIC_GADS_LABEL_REGISTRAZIONE = <etichetta "Registrazione">
-     NEXT_PUBLIC_GADS_LABEL_DEMO          = <etichetta "Demo aperta">
+     NEXT_PUBLIC_GADS_ID                  = AW-1012017816
+     NEXT_PUBLIC_GADS_LABEL_REGISTRAZIONE = LzXlCOTDxJsdEJjVyOID
+     NEXT_PUBLIC_GADS_LABEL_DEMO          = Z08FCOfDxJsdEJjVyOID
    NB: sono NEXT_PUBLIC_, entrano nel bundle al build -> dopo averle messe
    serve un redeploy (o il push di questo pacchetto, che lo provoca).
 
@@ -103,7 +107,7 @@ DEPLOY — ORDINE CONSIGLIATO
           git config user.email coianiz.cristian@gmail.com)
      git add -A
      git status
-         (devi vedere i 13 file dell'elenco sopra, niente altro)
+         (devi vedere i 13 file dell'elenco sopra + i 7 .webp, niente altro)
      git commit -m "Landing annunci /lp, tag conversione Google Ads, gclid in attribuzione"
      git push origin main
 

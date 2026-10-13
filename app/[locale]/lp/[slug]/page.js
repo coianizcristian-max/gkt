@@ -1,27 +1,35 @@
 import { notFound } from 'next/navigation'
 import { setRequestLocale } from 'next-intl/server'
+import { createClient as createPublicClient } from '@supabase/supabase-js'
 import { Link } from '@/i18n/routing'
 import LegalFooter from '@/app/components/LegalFooter'
-import { LANDING, SLUGS, PASSI } from '@/lib/landingAds'
+import { LANDING, SLUGS, PASSI, PRIMA_DOPO, PER_CHI, TOUR, SCHERMATE } from '@/lib/landingAds'
 import './lp.css'
 
 /**
  * Landing degli annunci: gkseason.it/lp/<slug>
  *
  * Una pagina sola, tre contenuti (lib/landingAds.js). Niente menu, niente
- * ricerca allenatori, niente prezzi: chi arriva da un annuncio deve fare una
- * cosa tra due, registrarsi o aprire la demo. Tutto il resto lo distrae.
+ * ricerca allenatori: chi arriva da un annuncio deve fare una cosa tra due,
+ * registrarsi o aprire la demo. Tutto il resto lo distrae.
  *
- * Statica: nessuna lettura dal database, quindi viene pre-generata al build
- * per ogni slug e per ogni lingua (i testi restano in italiano: le campagne
- * sono italiane). Slug sconosciuti -> notFound() -> 404 (volutamente NON
- * dynamicParams=false: con il rewrite della lingua di next-intl quella
- * strada restituisce la pagina 404 con stato 200).
+ * Le immagini sono screenshot veri dell'app presi dalla stagione demo da
+ * telefono (public/lp/*.webp). I prezzi vengono dal database come in home
+ * (funzionalita_config), con gli stessi valori di riserva; la pagina viene
+ * rigenerata al massimo ogni ora.
+ *
+ * Slug sconosciuti -> notFound() -> 404 (volutamente NON dynamicParams=false:
+ * con il rewrite della lingua di next-intl quella strada restituisce la
+ * pagina 404 con stato 200).
  *
  * Tracciamento: PostHog, Pixel Meta e tag Google arrivano dal layout, come
  * su tutte le pagine; AttribuzioneUtm salva utm/gclid al primo atterraggio,
  * cosi' la registrazione resta attribuita all'annuncio.
  */
+export const revalidate = 3600
+
+const DEFAULT_PREZZI = { mensile: '9.90', annuale: '79.00', lifetime: '199.00' }
+
 export function generateStaticParams() {
   return SLUGS.map((slug) => ({ slug }))
 }
@@ -36,17 +44,35 @@ export async function generateMetadata({ params }) {
     // Pagina a pagamento: non deve comparire nei risultati organici al posto
     // della home. AdsBot la legge comunque per il punteggio di qualita'.
     robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
-    openGraph: { title: c.titoloPagina, description: c.descrizione },
+    openGraph: { title: c.titoloPagina, description: c.descrizione, images: [{ url: SCHERMATE[c.heroSchermata].src }] },
   }
 }
+
+async function leggiPrezzi() {
+  const prezzi = { ...DEFAULT_PREZZI }
+  try {
+    const supabase = createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    const { data } = await supabase.from('funzionalita_config').select('chiave, label').like('chiave', 'prezzo_allenatore_%')
+    for (const r of (data ?? [])) {
+      const m = r.chiave.match(/^prezzo_allenatore_(mensile|annuale|lifetime)$/)
+      if (m && r.label) prezzi[m[1]] = r.label
+    }
+  } catch {}
+  return prezzi
+}
+
+const euro = (v) => String(v).replace('.', ',')
 
 export default async function LandingAnnunci({ params }) {
   const { locale, slug } = await params
   setRequestLocale(locale)
   const c = LANDING[slug]
   if (!c) notFound()
+  const prezzi = await leggiPrezzi()
 
   const registrati = { pathname: '/registrati', query: { ruolo: 'allenatore' } }
+  const hero = SCHERMATE[c.heroSchermata]
+  const hero2 = SCHERMATE[c.heroSchermata2]
 
   return (
     <div className="lp">
@@ -58,6 +84,7 @@ export default async function LandingAnnunci({ params }) {
         <Link href="/login" className="lp-accedi" prefetch={false}>Hai già un account? Accedi</Link>
       </header>
 
+      {/* ── Hero: testo + due telefoni con schermate vere ── */}
       <section className="lp-hero">
         <div className="lp-hero-inner">
           <div className="lp-hero-testo">
@@ -74,26 +101,58 @@ export default async function LandingAnnunci({ params }) {
               <li>Fatto da un preparatore dei portieri</li>
             </ul>
           </div>
-          <Pannello tipo={c.pannello} />
+          <div className="lp-hero-telefoni" aria-hidden="true">
+            <Telefono img={hero2} classe="lp-tel-dietro" />
+            <Telefono img={hero} classe="lp-tel-davanti" priorita />
+          </div>
         </div>
       </section>
 
-      <section className="lp-sezione">
+      {/* ── Tour dentro l'app ── */}
+      <section className="lp-sezione lp-tour">
         <div className="lp-inner">
-          <h2>{c.vantaggiTitolo}</h2>
-          <div className="lp-vantaggi">
-            {c.vantaggi.map((v) => (
-              <div className="lp-vantaggio" key={v.titolo}>
-                <Icona nome={v.icona} />
-                <h3>{v.titolo}</h3>
-                <p>{v.testo}</p>
+          <h2>Dentro GKSeason</h2>
+          <p className="lp-sotto">Schermate vere, prese dalla stagione demo che puoi aprire senza registrarti.</p>
+          {c.tour.map((chiave, i) => {
+            const t = TOUR[chiave]
+            const img = SCHERMATE[t.schermata]
+            return (
+              <div className={`lp-tappa${i % 2 ? ' lp-tappa-inv' : ''}`} key={chiave}>
+                <div className="lp-tappa-img"><Telefono img={img} /></div>
+                <div className="lp-tappa-testo">
+                  <h3>{t.titolo}</h3>
+                  <p>{t.testo}</p>
+                  <ul className="lp-punti">
+                    {t.punti.map((p) => <li key={p}>{p}</li>)}
+                  </ul>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ── Prima / dopo ── */}
+      <section className="lp-sezione lp-sezione-alt">
+        <div className="lp-inner">
+          <h2>Oggi, e con GKSeason</h2>
+          <div className="lp-confronto" role="table">
+            <div className="lp-confronto-testa" role="row">
+              <span role="columnheader">Come va di solito</span>
+              <span role="columnheader">Con GKSeason</span>
+            </div>
+            {PRIMA_DOPO.map((r) => (
+              <div className="lp-confronto-riga" role="row" key={r.prima}>
+                <span className="lp-prima" role="cell">{r.prima}</span>
+                <span className="lp-dopo" role="cell">{r.dopo}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="lp-sezione lp-sezione-alt">
+      {/* ── Come funziona ── */}
+      <section className="lp-sezione">
         <div className="lp-inner">
           <h2>Come funziona</h2>
           <ol className="lp-passi">
@@ -110,7 +169,45 @@ export default async function LandingAnnunci({ params }) {
         </div>
       </section>
 
+      {/* ── Per chi e' ── */}
+      <section className="lp-sezione lp-sezione-alt">
+        <div className="lp-inner">
+          <h2>Per chi allena portieri, a qualsiasi livello</h2>
+          <div className="lp-perchi">
+            {PER_CHI.map((p) => (
+              <div className="lp-perchi-voce" key={p.titolo}>
+                <h3>{p.titolo}</h3>
+                <p>{p.testo}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Prezzi ── */}
       <section className="lp-sezione">
+        <div className="lp-inner lp-prezzi">
+          <h2>Quanto costa</h2>
+          <div className="lp-prezzi-griglia">
+            <div className="lp-prezzo">
+              <span className="lp-prezzo-nome">Base</span>
+              <span className="lp-prezzo-cifra">0 €</span>
+              <span className="lp-prezzo-nota">per sempre</span>
+              <p>Calendario, allenamenti, valutazioni, libreria esercizi, inviti ai portieri, export dei dati.</p>
+            </div>
+            <div className="lp-prezzo lp-prezzo-pieno">
+              <span className="lp-prezzo-nome">Completo</span>
+              <span className="lp-prezzo-cifra">{euro(prezzi.mensile)} €<small>/mese</small></span>
+              <span className="lp-prezzo-nota">oppure {euro(prezzi.annuale)} € l&apos;anno, o {euro(prezzi.lifetime)} € una volta per sempre</span>
+              <p>Tutto il base più obiettivi, statistiche di dettaglio, percorso di crescita, ricorrenze automatiche, report PDF completi.</p>
+            </div>
+          </div>
+          <p className="lp-prezzi-piede">Si parte sempre dal base, gratis. Le funzioni complete le provi per un periodo senza pagare e decidi dopo.</p>
+        </div>
+      </section>
+
+      {/* ── Chi l'ha fatto ── */}
+      <section className="lp-sezione lp-sezione-alt">
         <div className="lp-inner lp-autore">
           <h2>Chi l&apos;ha fatto</h2>
           <p>
@@ -123,7 +220,8 @@ export default async function LandingAnnunci({ params }) {
         </div>
       </section>
 
-      <section className="lp-sezione lp-sezione-alt">
+      {/* ── FAQ ── */}
+      <section className="lp-sezione">
         <div className="lp-inner lp-faq">
           <h2>Domande frequenti</h2>
           {c.faq.map((f) => (
@@ -135,6 +233,7 @@ export default async function LandingAnnunci({ params }) {
         </div>
       </section>
 
+      {/* ── Chiusura ── */}
       <section className="lp-finale">
         <div className="lp-inner">
           <h2>Prova con i tuoi portieri</h2>
@@ -151,144 +250,21 @@ export default async function LandingAnnunci({ params }) {
   )
 }
 
-/* ───────────────────────── Pannelli dell'hero ───────────────────────── */
-
-function Pannello({ tipo }) {
-  if (tipo === 'settimana') return <PannelloSettimana />
-  if (tipo === 'valutazione') return <PannelloValutazione />
-  return <PannelloScheda />
-}
-
-// Scheda del portiere: voti per parametro e andamento recente.
-function PannelloScheda() {
-  const parametri = [
-    { nome: 'Presa', voto: 7.8 },
-    { nome: 'Uscite alte', voto: 6.9 },
-    { nome: 'Piedi', voto: 7.1 },
-    { nome: '1 contro 1', voto: 7.5 },
-  ]
-  // Ultimi 8 allenamenti, voti da 6 a 8 (asse y rovesciato nel disegno).
-  const voti = [6.5, 7, 6.5, 7, 7.5, 7, 7.5, 8]
-  const punti = voti.map((v, i) => `${(i * 220) / 7},${56 - ((v - 6) / 2) * 48}`).join(' ')
+/** Cornice telefono disegnata in CSS attorno a uno screenshot 750x1300. */
+function Telefono({ img, classe = '', priorita = false }) {
   return (
-    <div className="lp-pannello" aria-label="Esempio di scheda portiere">
-      <div className="lp-pan-testa">
-        <div>
-          <strong>Marco R.</strong>
-          <span className="lp-pan-cat">Under 15</span>
-        </div>
-        <span className="lp-pan-tag">Scheda portiere</span>
-      </div>
-      <div className="lp-pan-numeri">
-        <div><b>7,3</b><span>media voto</span></div>
-        <div><b>24/26</b><span>presenze</span></div>
-        <div><b>6</b><span>clean sheet</span></div>
-      </div>
-      <div className="lp-pan-barre">
-        {parametri.map((p) => (
-          <div className="lp-pan-barra" key={p.nome}>
-            <span>{p.nome}</span>
-            <i><b style={{ width: `${(p.voto / 10) * 100}%` }} /></i>
-            <em>{String(p.voto).replace('.', ',')}</em>
-          </div>
-        ))}
-      </div>
-      <div className="lp-pan-trend">
-        <span>Ultimi 8 allenamenti</span>
-        <svg viewBox="-4 -4 228 64" preserveAspectRatio="none" aria-hidden="true">
-          <polyline points={punti} fill="none" stroke="#0a7ec2" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-          {voti.map((v, i) => (
-            <circle key={i} cx={(i * 220) / 7} cy={56 - ((v - 6) / 2) * 48} r="3" fill="#fff" stroke="#0a7ec2" strokeWidth="2" />
-          ))}
-        </svg>
+    <div className={`lp-tel ${classe}`.trim()}>
+      <div className="lp-tel-schermo">
+        <img
+          src={img.src}
+          alt={img.alt}
+          width={750}
+          height={1300}
+          loading={priorita ? 'eager' : 'lazy'}
+          fetchPriority={priorita ? 'high' : 'auto'}
+          decoding="async"
+        />
       </div>
     </div>
   )
-}
-
-// Settimana di allenamenti generata dalle ricorrenze.
-function PannelloSettimana() {
-  const righe = [
-    { g: 'Mar', h: '18:00', cat: 'Under 15', cosa: 'Presa e posizionamento', nota: '3 esercizi, 75 min' },
-    { g: 'Mer', h: '18:30', cat: 'Under 17', cosa: 'Uscite alte e letture', nota: '4 esercizi, 90 min' },
-    { g: 'Gio', h: '18:00', cat: 'Under 15', cosa: 'Piedi e costruzione', nota: '3 esercizi, 75 min' },
-    { g: 'Sab', h: '15:00', cat: 'Under 15', cosa: 'Partita di campionato', nota: 'valutazione da fare', partita: true },
-  ]
-  return (
-    <div className="lp-pannello" aria-label="Esempio di settimana di allenamenti">
-      <div className="lp-pan-testa">
-        <div>
-          <strong>Settimana 12</strong>
-          <span className="lp-pan-cat">Under 15 e Under 17</span>
-        </div>
-        <span className="lp-pan-tag">Calendario</span>
-      </div>
-      <ul className="lp-pan-sedute">
-        {righe.map((r) => (
-          <li key={r.g + r.cat} className={r.partita ? 'lp-pan-partita' : ''}>
-            <span className="lp-pan-giorno"><b>{r.g}</b>{r.h}</span>
-            <span className="lp-pan-seduta"><b>{r.cosa}</b><small>{r.cat}</small></span>
-            <span className="lp-pan-nota">{r.nota}</span>
-          </li>
-        ))}
-      </ul>
-      <p className="lp-pan-piede">Generata dalle ricorrenze: due allenamenti a settimana per categoria, per tutta la stagione.</p>
-    </div>
-  )
-}
-
-// Valutazione di una seduta, portiere per portiere.
-function PannelloValutazione() {
-  const righe = [
-    { nome: 'Marco R.', voto: '7,5', stato: 'presente', nota: 'Buone uscite, piedi da migliorare' },
-    { nome: 'Luca B.', voto: '6,5', stato: 'presente', nota: 'Timido sul primo palo' },
-    { nome: 'Davide T.', voto: null, stato: 'assente', nota: 'Rientro previsto martedì' },
-  ]
-  return (
-    <div className="lp-pannello" aria-label="Esempio di valutazione di una seduta">
-      <div className="lp-pan-testa">
-        <div>
-          <strong>Allenamento di martedì</strong>
-          <span className="lp-pan-cat">Under 15, presa e posizionamento</span>
-        </div>
-        <span className="lp-pan-tag">Valutazione</span>
-      </div>
-      <ul className="lp-pan-voti">
-        {righe.map((r) => (
-          <li key={r.nome}>
-            <span className={`lp-pan-voto${r.voto ? '' : ' lp-pan-voto-vuoto'}`}>{r.voto ?? '–'}</span>
-            <span className="lp-pan-chi"><b>{r.nome}</b><small>{r.stato}</small></span>
-            <span className="lp-pan-nota">{r.nota}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="lp-pan-numeri">
-        <div><b>7,0</b><span>media seduta</span></div>
-        <div><b>7,1</b><span>media stagione</span></div>
-        <div><b>+0,3</b><span>sul mese scorso</span></div>
-      </div>
-    </div>
-  )
-}
-
-/* ───────────────────────────── Icone ───────────────────────────── */
-
-function Icona({ nome }) {
-  const comuni = { width: 28, height: 28, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }
-  switch (nome) {
-    case 'calendario':
-      return <svg {...comuni} className="lp-icona"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /><path d="M8 14h3M13 14h3M8 18h3" /></svg>
-    case 'voto':
-      return <svg {...comuni} className="lp-icona"><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.5 2.5L16 9.5" /></svg>
-    case 'grafico':
-      return <svg {...comuni} className="lp-icona"><path d="M4 19V5M4 19h16" /><path d="M7 15l4-5 3 3 5-6" /></svg>
-    case 'esercizi':
-      return <svg {...comuni} className="lp-icona"><path d="M9 20h6l-2-14h-2L9 20z" /><path d="M7 20h10" /><path d="M10 10h4" /></svg>
-    case 'template':
-      return <svg {...comuni} className="lp-icona"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
-    case 'report':
-      return <svg {...comuni} className="lp-icona"><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v4h4" /><path d="M9 12h6M9 16h6" /></svg>
-    default:
-      return null
-  }
 }

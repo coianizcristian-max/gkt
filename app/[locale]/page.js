@@ -21,10 +21,12 @@ import { FUNZIONALITA, getGatingConfig } from '@/lib/gating'
 // (AreaLoginCta) che controlla la sessione nel browser.
 // La lingua si legge da params + setRequestLocale (non getLocale()), cosi'
 // la pagina resta statica per ogni lingua.
-// Refresh automatico ogni ora: le modifiche da Supervisore > Sito sono
-// comunque immediate grazie a /api/revalidate-home (tutte le lingue).
-// I cambi di prezzo/gating compaiono in home entro un'ora.
-export const revalidate = 3600
+// Refresh automatico una volta al giorno (era ogni ora: 4 lingue x 24 render
+// al giorno per niente). Le modifiche da Supervisore > Sito sono comunque
+// immediate grazie a /api/revalidate-home (tutte le lingue). I cambi di
+// prezzo/gating compaiono in home entro un giorno, o subito ripubblicando
+// una sezione da Supervisore > Sito.
+export const revalidate = 86400
 
 const DEFAULT_PREZZI = {
   allenatore: { mensile: '9.90', annuale: '79.00', lifetime: '199.00' },

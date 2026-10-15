@@ -1,137 +1,32 @@
-GKSeason — CAMPAGNA MIRATA: LANDING ANNUNCI + TAG GOOGLE ADS + ISTRUZIONI META
-==============================================================================
-Pacchetto del 13 ottobre 2026, aggiornato alle 22:40. Base: main @ 48a50c6 ("fix campagna 1").
-NB: questo commit contiene GIA' tutto il pacchetto (landing senza prezzi inclusa):
-se hai deployato 48a50c6 non c'e' niente da pushare, il pacchetto serve da riferimento.
+GKSeason - RIDUZIONE CPU VERCEL (15 ottobre 2026)
+Base: main @ b08d31a
 
+COSA CAMBIA
+1) i18n/routing.js - il Link di tutto il sito ha il PREFETCH SPENTO di default.
+   Prima: ogni link visibile (13 voci di menu + ogni allenamento/portiere in
+   elenco) faceva eseguire in anticipo la pagina sul server, layout con ~15
+   query compreso. Era la voce principale del consumo (es. /calendario/[id]:
+   56 esecuzioni in 12 ore). Ora la pagina si genera solo al clic.
+   Effetto per l'utente: il cambio pagina puo' essere un attimo meno istantaneo.
+2) app/[locale]/allenatori/[id]/page.js - il profilo pubblico era DINAMICO per
+   errore (mancava setRequestLocale): ogni visita, Googlebot compreso, lo
+   rigenerava. Ora e' in cache 1 ora.
+3) app/[locale]/page.js - home rigenerata 1 volta al giorno invece di ogni ora
+   (le modifiche da Supervisore > Sito restano immediate).
+4) app/sitemap.js - rigenerata 1 volta al giorno.
+5) app/components/StagioniManager.js - unico link con next/link diretto: prefetch spento.
 
-COSA C'E' DENTRO
-----------------
-  meta-ads/CAMPAGNA-META.md        <- LE ISTRUZIONI PRINCIPALI: pubblici, reel di
-                                      auto-selezione, campagna conversioni, controlli
-  google-ads/CAMPAGNA-GOOGLE.md    <- conversioni, impostazioni campagna Search, cosa spegnere
-  google-ads/04-keyword-da-incollare.txt   keyword, escluse e annunci da incollare nel web
-  google-ads/01-keyword.csv, 02-negative.csv, 03-annunci.csv   (import Google Ads Editor)
-  anteprima/*.png                  <- come appaiono le tre landing (font di ripiego nel
-                                      render di prova: online c'e' Barlow come sul sito)
-  + i file del repo elencati sotto (percorsi gia' giusti: scompatta sopra D:\SITO\GKT)
+Nessuna migrazione SQL. Build completo verificato.
 
+DEPLOY
+  cd D:\SITO\GKT
+  (scompatta lo zip sopra)
+  git config user.email   -> coianiz.cristian@gmail.com
+  git add -A
+  git commit -m "Riduzione CPU Vercel: prefetch spento, cache profili pubblici, home e sitemap"
+  git push origin main
 
-COSA FA IL CODICE
------------------
-1) Tre landing per gli annunci Google, una per gruppo di keyword:
-     gkseason.it/lp/software-portieri
-     gkseason.it/lp/allenamenti-portieri
-     gkseason.it/lp/valutazione-portieri
-   Senza menu, senza ricerca allenatori: titolo che ripete la ricerca, hero
-   con DUE TELEFONI con screenshot veri dell'app (presi dalla stagione demo,
-   public/lp/*.webp), "Dentro GKSeason" con 5 schermate vere + testo,
-   prima/dopo, come funziona, per chi e', chi l'ha fatto, 4 FAQ, chiusura.
-   NESSUN BLOCCO PREZZI (scelta di Cristian, 13/10): la pagina non legge
-   il database ed e' completamente statica. Due soli pulsanti: "Crea l'account
-   gratis" (-> /registrati?ruolo=allenatore) e "Apri la demo senza
-   registrarti" (-> /d).
-   Pre-generate al build, noindex (X-Robots-Tag
-   + meta + robots.txt): non competono con la home su Google. AdsBot le legge.
-   Testi e ordine delle schermate in lib/landingAds.js: per cambiare una
-   frase o una foto modifichi solo quello (o sostituisci il .webp con lo
-   stesso nome in public/lp/).
-
-2) Tag di conversione Google Ads (gtag.js), app/components/GoogleAds.js.
-   Parte SOLO dopo il consenso cookie, come Pixel e PostHog. Due conversioni:
-     'registrazione'  da RegistratiClient (solo auto-registrazioni, non inviti)
-     'demo'           da DemoTracker (ingresso ospite da /d)
-   Senza le variabili d'ambiente non carica niente.
-
-3) Attribuzione: AttribuzioneUtm salva anche gclid/gbraid/wbraid (clic Google)
-   e /api/ospite li fa sopravvivere al redirect della demo. Su PostHog le
-   registrazioni da Google avranno utm_source=google + gclid.
-
-4) /registrati?ruolo=allenatore salta la domanda "chi sei?" e mostra subito
-   il modulo del preparatore (un passaggio in meno per chi arriva da annuncio).
-
-5) CSP in next.config.mjs: aggiunti i domini Google (googletagmanager,
-   googleadservices, google.com/.it, doubleclick). Senza, il tag sarebbe bloccato.
-
-Niente migrazioni SQL. Niente file di traduzione toccati (le landing sono
-solo in italiano, per scelta: le campagne sono italiane).
-
-Per la campagna META non serve nessun codice nuovo: DemoAperta, UTM e Pixel
-c'erano gia'. Le istruzioni sono in meta-ads/CAMPAGNA-META.md.
-
-
-FILE INCLUSI
-------------
-  app/[locale]/lp/[slug]/page.js            NUOVO  - la landing (3 contenuti)
-  app/[locale]/lp/[slug]/lp.css             NUOVO  - stili .lp-* (non tocca globals.css)
-  lib/landingAds.js                         NUOVO  - testi, tour, prima/dopo, per chi
-  public/lp/*.webp (7 file)                 NUOVI  - screenshot veri dell'app (demo, 750x1300)
-  app/components/GoogleAds.js               NUOVO  - gtag.js + trackGoogleConversione()
-  app/[locale]/layout.js                    MODIF. - monta <GoogleAds />
-  app/[locale]/registrati/RegistratiClient.js  MODIF. - conversione Google + ruoloIniziale
-  app/[locale]/registrati/page.js           MODIF. - legge ?ruolo=allenatore
-  app/components/DemoTracker.js             MODIF. - conversione Google 'demo'
-  app/components/AttribuzioneUtm.js         MODIF. - gclid/gbraid/wbraid, fonte 'google_ads'
-  app/api/ospite/route.js                   MODIF. - gclid/gbraid/wbraid nel redirect
-  lib/pagine-tracciate.js                   MODIF. - nomi PostHog delle landing
-  app/robots.js                             MODIF. - /lp/ disallow
-  next.config.mjs                           MODIF. - CSP Google + X-Robots-Tag su /lp/
-
-
-VERIFICHE FATTE
----------------
-  - esbuild (JSX) su tutti i componenti, node --check sui JS puri
-  - `next build` completo sul repo con queste modifiche: OK, le 3 landing
-    risultano pre-generate per it/en/de/es
-  - server avviato in locale: /lp/* -> 200, X-Robots-Tag presente,
-    nessuna richiesta a Google/Meta prima del consenso, dopo il consenso
-    parte gtag.js con config AW-..., gclid salvato in sessionStorage,
-    /registrati?ruolo=allenatore apre direttamente il modulo
-  - screenshot desktop e mobile delle tre landing (cartella anteprima)
-
-
-DEPLOY — ORDINE CONSIGLIATO
----------------------------
-1) Google Ads: le azioni di conversione e il tag sono GIA' creati (13/10).
-   Stato della campagna in google-ads/CAMPAGNA-GOOGLE.md, sezione "Stato".
-
-2) Variabili d'ambiente (Vercel: Production + Preview + Development; e .env.local)
-     NEXT_PUBLIC_GADS_ID                  = AW-1012017816
-     NEXT_PUBLIC_GADS_LABEL_REGISTRAZIONE = LzXlCOTDxJsdEJjVyOID
-     NEXT_PUBLIC_GADS_LABEL_DEMO          = Z08FCOfDxJsdEJjVyOID
-   NB: sono NEXT_PUBLIC_, entrano nel bundle al build -> dopo averle messe
-   serve un redeploy (o il push di questo pacchetto, che lo provoca).
-
-3) Scompatta lo zip sopra D:\SITO\GKT (sovrascrivi), poi:
-
-     cd D:\SITO\GKT
-     git config user.email
-         (deve stampare coianiz.cristian@gmail.com, altrimenti:
-          git config user.email coianiz.cristian@gmail.com)
-     git add -A
-     git status
-         (devi vedere i 13 file dell'elenco sopra + i 7 .webp, niente altro)
-     git commit -m "Landing annunci /lp, tag conversione Google Ads, gclid in attribuzione"
-     git push origin main
-
-4) Dopo il deploy, dal telefono:
-     - apri https://www.gkseason.it/lp/software-portieri  -> landing, due pulsanti
-     - "Crea l'account gratis" -> modulo subito visibile, senza "chi sei?"
-     - "Apri la demo senza registrarti" -> entri in demo come prima
-     - https://www.gkseason.it/lp/qualcosa -> pagina non trovata
-     - console browser: nessun "Refused to load ... Content Security Policy"
-       dopo aver accettato i cookie
-     - PostHog: la pagina compare come "Landing annunci: software portieri"
-
-5) Poi le campagne, nell'ordine: Meta Fase 0-1 oggi (pubblici), reel in
-   settimana, Google Search appena hai le etichette.
-
-
-SE QUALCOSA NON VA
-------------------
-- Landing 404: controlla che la cartella sia esattamente app/[locale]/lp/[slug]/
-  (con le parentesi quadre) e che lib/landingAds.js esista.
-- Nessuna conversione in Google Ads dopo 24h: variabili su Vercel assenti o
-  deploy non rifatto; oppure i cookie non sono stati accettati nel test.
-- "Refused to load https://www.googletagmanager.com": next.config.mjs vecchio.
-- Rollback: git revert HEAD (i file nuovi non danno fastidio se restano).
+VERIFICA (dopo 2-3 giorni)
+  Vercel > gkt > Observability > Functions: le invocazioni di /calendario/[id],
+  /dashboard e /allenatori/[id] devono scendere nettamente.
+  Rollback: git revert HEAD.

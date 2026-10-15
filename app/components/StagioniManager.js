@@ -24,7 +24,7 @@ export default function StagioniManager({ stagioni, ownerId }) {
       {stagioni.map((s) => (
         <StagioneRiga key={s.id} stagione={s} onAttiva={() => rendiAttiva(s.id)} onChanged={() => router.refresh()} />
       ))}
-      <Link href="/supervisore/stagioni/nuova" className="btn-azione" style={{ display: 'inline-block', marginTop: 8 }}>
+      <Link prefetch={false} href="/supervisore/stagioni/nuova" className="btn-azione" style={{ display: 'inline-block', marginTop: 8 }}>
         + Nuova stagione
       </Link>
     </div>

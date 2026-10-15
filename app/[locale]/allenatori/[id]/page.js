@@ -2,11 +2,18 @@ import { notFound } from 'next/navigation'
 import { Link } from '@/i18n/routing'
 import Image from 'next/image'
 import { createClient as createPublicClient } from '@supabase/supabase-js'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 
 // Pagina pubblica al 100% (nessuna personalizzazione per chi e' loggato), letta
-// anche dai motori di ricerca — cache di 5 minuti invece di rigenerare a ogni visita.
-export const revalidate = 300
+// anche dai motori di ricerca (che la visitano spesso) — cache di 1 ora invece
+// di rigenerare a ogni visita. Le modifiche al profilo compaiono entro un'ora.
+export const revalidate = 3600
+
+// Nessun profilo pre-generato al build: ognuno viene generato alla prima
+// visita e poi servito dalla cache (ISR) fino alla scadenza.
+export async function generateStaticParams() {
+  return []
+}
 
 function getPublicClient() {
   return createPublicClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
@@ -53,7 +60,11 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ProfiloAllenatorePublicPage({ params }) {
-  const { id } = await params
+  const { id, locale } = await params
+  // Senza setRequestLocale next-intl legge la lingua dagli header e la pagina
+  // diventa dinamica: la cache qui sopra veniva ignorata e ogni visita
+  // (Googlebot compreso) rigenerava il profilo da zero.
+  setRequestLocale(locale)
   const t = await getTranslations('allenatorePubblico')
   const profilo = await getProfiloPubblico(id)
 

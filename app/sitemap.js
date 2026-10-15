@@ -2,6 +2,9 @@ import { createClient as createPublicClient } from '@supabase/supabase-js'
 
 // La sitemap gira SENZA utente loggato: usa la RPC elenco_allenatori_pubblici
 // (SECURITY DEFINER, espone solo id e created_at) per bypassare le RLS.
+// Rigenerata al massimo una volta al giorno (la leggono solo i motori di ricerca).
+export const revalidate = 86400
+
 const BASE = 'https://www.gkseason.it'
 const LOCALES = ['it', 'en', 'de', 'es']
 const DEFAULT = 'it'
